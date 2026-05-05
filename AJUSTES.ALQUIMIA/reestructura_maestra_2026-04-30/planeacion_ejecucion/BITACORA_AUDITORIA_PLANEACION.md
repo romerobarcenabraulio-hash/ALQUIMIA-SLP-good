@@ -2443,6 +2443,23 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 
 ---
 
+## Humano · Q-003 R1+R2 HECHO — Backend vivo + Frontend conectado — 2026-05-05
+
+| Ítem | Estado | Evidencia |
+|------|--------|-----------|
+| **R1** Frontend Vercel | ✅ HECHO | `https://alquimia-slp.vercel.app` desplegado y accesible |
+| **R2** Backend Render | ✅ HECHO | `https://alquimia-slp.onrender.com/health` → `{"status":"ok","version":"1.0.0","environment":"development"}` |
+| **CORS** | ✅ HECHO | `alquimia-slp.vercel.app` en orígenes permitidos |
+| **NEXT_PUBLIC_API_URL** | ✅ HECHO | Configurada en Vercel → Redeploy exitoso |
+| **Failed to fetch** | ✅ RESUELTO | Simulador conectado al API público |
+
+**Pendiente de este paquete (ops menores):**
+- Agregar `ENVIRONMENT=production` en Render (actualmente responde `"environment":"development"`)
+- CI `.github/workflows/ci.yml` pendiente de subir (token sin scope `workflow` — deuda técnica menor)
+- Auditor: firma Q-003 cuando revise landing + auth stub
+
+---
+
 ## Aesthete · Solicitud Q-011 — Fase PRES-1 · Pulido presentación institucional — 2026-05-05
 
 **Performativa:** `PROPOSE` → CSA aprobó como Q-011 en cola  
@@ -2486,3 +2503,23 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 | 5 | `npm run lint` + `tsc --noEmit` pasan |
 
 **Siguiente acción:** CSA resuelve las 3 decisiones Planner → Ejecutor abre PR A → PR B → PR C.
+
+---
+
+## Ejecutor · **PRES-1 / Q-011** · PR A → B → C (pulido presentación) — 2026-05-06
+
+**Spec:** `PRES-1_pulido_presentacion_institucional.md` · Decisiones Planner aplicadas: cifras Opción **A**, CTA **"Ver escenario de referencia"**, KPIs ciudadano sin baseline **atenuados** (`opacity-40`, `pointer-events-none`, tooltip Radix).
+
+| PR | Archivos | Entrega |
+|----|-----------|---------|
+| **A** | `frontend/src/app/page.tsx` | Un aviso "no dictamen" destacado antes del fold; resto en `<details>` "Límites del análisis"; sección 17.1 sin repetir el mismo sustantivo legal tres veces; franja "Órdenes de magnitud ilustrativos" + 4 cifras en `text-sm font-normal`; tarjetas módulos con Lucide (sin emojis); CTAs unificados; footer verde alineado al tono hero. |
+| **B** | `frontend/src/components/simulator/SectionHero.tsx`, `frontend/src/components/layout/Header.tsx` | Copy hero sin "un clic"; kicker "Vista ciudadana · análisis orientativo" solo si `audience === 'citizen'`; KPIs sticky atenuados + tooltip "Disponibles tras captura de baseline" cuando ciudadano sin baseline (`isCircularityBaselineReadyForUi`). |
+| **C** | `frontend/src/app/aprende/page.tsx` | Kickers temáticos (sin "Sección N"); listas con `CheckCircle`/`XCircle` + `aria-label`; nav con `Link` de Next. |
+
+**Verificación técnica (archivos tocados):** `npx eslint` sobre los cuatro archivos anteriores → 0 problemas; `npm run type-check` (`tsc --noEmit`) → 0 errores. **`npm run lint` global** del repo sigue reportando issues **previos** en otros archivos (no introducidos por PRES-1).
+
+**PR / staging:** Abrir **tres PRs o commits** en orden A → B → C; URL staging para verificación Aesthete: **`https://alquimia-slp.vercel.app`** (trunk tras merge).
+
+**Auditor:** Revisar que el copy consolidado **no debilite** disclaimers legales ya aprobados (frase destacada + bullets en "Límites del análisis" conservan sustancia de no-oficialidad / no sustituye resoluciones).
+
+**23.1:** sin iniciar.
