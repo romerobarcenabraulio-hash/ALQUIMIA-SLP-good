@@ -1,4 +1,38 @@
 import Link from 'next/link'
+import { Recycle, BarChart2, FileText, Globe } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+
+const MODULOS: Array<{
+  ruta: string
+  Icon: LucideIcon
+  titulo: string
+  desc: string
+}> = [
+  {
+    ruta: '/simulator',
+    Icon: BarChart2,
+    titulo: 'Simulador interactivo',
+    desc: 'Variables en tiempo real: demografía, sensibilidades, huella y lectura documental asociada.',
+  },
+  {
+    ruta: '/ca-studio',
+    Icon: Recycle,
+    titulo: 'CA-Studio',
+    desc: 'Diseña centros de acopio en vista isométrica y escala urbana.',
+  },
+  {
+    ruta: '/hub',
+    Icon: FileText,
+    titulo: 'Hub de documentos',
+    desc: 'Paquetes ÁGORA: marco legal, modelo financiero, piezas para Cabildo y ciudadanía.',
+  },
+  {
+    ruta: '/aprende',
+    Icon: Globe,
+    titulo: 'Centro educativo',
+    desc: 'Flujos divulgativos sin cuenta; complemento a la demo guiada.',
+  },
+]
 
 export default function LandingPage() {
   return (
@@ -8,7 +42,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3 min-w-0">
             <span className="font-serif text-[20px] text-[#3B6D11] font-semibold shrink-0">ALQUIMIA</span>
             <span className="text-[10px] leading-snug text-[#8C8880] max-w-[17rem]">
-              Consultoría en circularidad municipal · propuesta técnica, no dictamen oficial hasta validación competente
+              Consultoría en circularidad municipal
             </span>
           </div>
           <nav className="hidden sm:flex items-center gap-4 text-[12px]">
@@ -27,15 +61,18 @@ export default function LandingPage() {
         <h1 className="font-serif text-[40px] sm:text-[52px] leading-[1.05] tracking-[-0.03em] text-[#1C1B18] mb-6 max-w-3xl mx-auto">
           Modela el programa de RSU de tu municipio con trazabilidad y rigor consultivo
         </h1>
-        <p className="text-[16px] text-[#6B6760] mb-8 max-w-2xl mx-auto leading-relaxed">
-          ALQUIMIA integra baseline, sensibilidades, documentos y narrativa institucional en un solo flujo. Los números y textos son propuestas de trabajo hasta que el ayuntamiento o la autoridad competente los valide.
+        <p className="text-[16px] text-[#6B6760] mb-6 max-w-2xl mx-auto leading-relaxed">
+          ALQUIMIA integra baseline, sensibilidades, documentos y narrativa institucional en un solo flujo orientado a decisiones locales.
+        </p>
+        <p className="text-[15px] font-medium text-[#1C1B18] mb-8 max-w-2xl mx-auto leading-snug">
+          No constituye dictamen ni documento oficial: las salidas son propuestas de consultoría hasta validación por la autoridad competente.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
           <Link
             href="/simulator"
             className="btn-primary text-[15px] px-8 py-3 text-center rounded-[10px]"
           >
-            Explorar demo guiada
+            Ver escenario de referencia
           </Link>
           <Link
             href="/login"
@@ -44,17 +81,18 @@ export default function LandingPage() {
             Acceder con cuenta institucional
           </Link>
         </div>
-        <p className="mt-6 text-[11px] text-[#A8A49C] max-w-xl mx-auto leading-relaxed">
-          La demo guiada usa datos de ejemplo y supuestos del simulador. El acceso institucional prepara el camino para sesiones trazables según la política de tu organización.
-        </p>
-      </section>
-
-      <section className="border-y border-[#E8E4DC] bg-[#FDFCFA]/80 py-10">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="font-serif text-[20px] text-[#1C1B18] mb-4 text-center">
-            Trazabilidad, registro de actividad y privacidad
-          </h2>
-          <ul className="space-y-3 text-[13px] text-[#6B6760] leading-relaxed">
+        <details className="mt-8 max-w-2xl mx-auto text-left border border-[#E8E4DC] rounded-[12px] bg-[#FDFCFA]/90 px-4 py-3">
+          <summary className="font-serif text-[15px] text-[#1C1B18] cursor-pointer list-none flex items-center gap-2 [&::-webkit-details-marker]:hidden">
+            <span className="text-[#3B6D11] select-none" aria-hidden>▸</span>
+            Límites del análisis
+          </summary>
+          <ul className="mt-4 space-y-3 text-[13px] text-[#6B6760] leading-relaxed list-none pl-0">
+            <li className="flex gap-2">
+              <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
+              <span>
+                Los <strong className="font-medium text-[#1C1B18]">números y textos en pantalla</strong> son <strong className="font-medium text-[#1C1B18]">propuestas de trabajo</strong> del simulador; no sustituyen publicación en medios oficiales ni resoluciones administrativas.
+              </span>
+            </li>
             <li className="flex gap-2">
               <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
               <span>
@@ -64,13 +102,35 @@ export default function LandingPage() {
             <li className="flex gap-2">
               <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
               <span>
-                Los <strong className="font-medium text-[#1C1B18]">documentos y métricas</strong> generados en pantalla son <strong className="font-medium text-[#1C1B18]">propuestas de consultoría</strong>; no sustituyen publicación en medios oficiales ni resoluciones administrativas.
+                Consulta el aviso legal y la política de privacidad de tu instancia cuando estén publicados.
+              </span>
+            </li>
+          </ul>
+        </details>
+        <p className="mt-6 text-[11px] text-[#A8A49C] max-w-xl mx-auto leading-relaxed">
+          El escenario de referencia usa datos ilustrativos y supuestos configurables; el acceso institucional prepara sesiones trazables según la política de tu organización.
+        </p>
+      </section>
+
+      <section className="border-y border-[#E8E4DC] bg-[#FDFCFA]/80 py-10">
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className="font-serif text-[20px] text-[#1C1B18] mb-4 text-center">
+            Trazabilidad, registro de actividad y privacidad
+          </h2>
+          <p className="text-[13px] text-[#6B6760] leading-relaxed text-center max-w-2xl mx-auto mb-4">
+            Este bloque resume el marco operativo descrito en el blueprint <strong className="font-medium text-[#1C1B18]">17.1</strong> (publicación y control de acceso). Los límites jurídicos del análisis en sí están arriba, en <strong className="font-medium text-[#1C1B18]">Límites del análisis</strong>.
+          </p>
+          <ul className="space-y-3 text-[13px] text-[#6B6760] leading-relaxed">
+            <li className="flex gap-2">
+              <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
+              <span>
+                Los accesos registrados y las credenciales se rigen por la política de tu instancia; ALQUIMIA no sustituye los canales oficiales de transparencia o notificación del ayuntamiento.
               </span>
             </li>
             <li className="flex gap-2">
               <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
               <span>
-                No se trata de valoración oficial hasta que una <strong className="font-medium text-[#1C1B18]">autoridad competente</strong> valifique fuentes y conclusiones. Consulta el aviso legal y la política de privacidad de tu instancia cuando estén publicados.
+                Si operas datos personales, aplica la normativa aplicable en tu ámbito y documenta el tratamiento conforme a tus propios lineamientos.
               </span>
             </li>
           </ul>
@@ -82,8 +142,8 @@ export default function LandingPage() {
 
       <section className="border-y border-[#E8E4DC] py-12">
         <div className="max-w-5xl mx-auto px-4">
-          <p className="text-center text-[11px] uppercase tracking-wide text-[#A8A49C] mb-8">
-            Contexto nacional del RSU (referencias ilustrativas)
+          <p className="font-serif text-center text-sm font-normal text-[#1C1B18] mb-6">
+            Órdenes de magnitud ilustrativos
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
@@ -92,10 +152,10 @@ export default function LandingPage() {
               { v: '$80B',    u: 'MXN/año sin capturar', s: 'estimado commodities' },
               { v: '500K',    u: 'empleos potenciales', s: 'formalizables LATAM' },
             ].map(m => (
-              <div key={m.v} className="text-center">
-                <p className="font-mono text-[32px] text-[#3B6D11]">{m.v}</p>
-                <p className="text-[13px] text-[#1C1B18]">{m.u}</p>
-                <p className="text-[10px] text-[#A8A49C] mt-1">{m.s}</p>
+              <div key={m.v} className="text-center text-sm font-normal">
+                <p className="font-mono text-sm text-[#3B6D11]">{m.v}</p>
+                <p className="text-sm text-[#1C1B18] font-normal">{m.u}</p>
+                <p className="text-sm text-[#A8A49C] mt-1 font-normal">{m.s}</p>
               </div>
             ))}
           </div>
@@ -105,39 +165,14 @@ export default function LandingPage() {
       <section className="max-w-5xl mx-auto px-4 py-16">
         <h2 className="font-serif text-[28px] text-center text-[#1C1B18] mb-10">Una sola plataforma</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {[
-            {
-              ruta: '/simulator',
-              icon: '📊',
-              titulo: 'Simulador interactivo',
-              desc: 'Variables en tiempo real: demografía, sensibilidades, huella y lectura documental asociada.',
-            },
-            {
-              ruta: '/ca-studio',
-              icon: '🏭',
-              titulo: 'CA-Studio',
-              desc: 'Diseña centros de acopio en vista isométrica y escala urbana.',
-            },
-            {
-              ruta: '/hub',
-              icon: '📁',
-              titulo: 'Hub de documentos',
-              desc: 'Paquetes ÁGORA: marco legal, modelo financiero, piezas para Cabildo y ciudadanía.',
-            },
-            {
-              ruta: '/aprende',
-              icon: '🌱',
-              titulo: 'Centro educativo',
-              desc: 'Flujos divulgativos sin cuenta; complemento a la demo guiada.',
-            },
-          ].map(m => (
-            <Link key={m.ruta} href={m.ruta}
+          {MODULOS.map(({ ruta, Icon, titulo, desc }) => (
+            <Link key={ruta} href={ruta}
               className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[16px] p-6 hover:border-[#3B6D11]/30 hover:shadow-md transition-all group">
-              <span className="text-[28px] mb-3 block">{m.icon}</span>
+              <Icon className="w-7 h-7 text-[#3B6D11] mb-3 shrink-0" aria-hidden strokeWidth={1.75} />
               <h3 className="text-[15px] font-medium text-[#1C1B18] mb-2 group-hover:text-[#3B6D11] transition-colors">
-                {m.titulo}
+                {titulo}
               </h3>
-              <p className="text-[13px] text-[#6B6760] leading-relaxed">{m.desc}</p>
+              <p className="text-[13px] text-[#6B6760] leading-relaxed">{desc}</p>
             </Link>
           ))}
         </div>
@@ -145,14 +180,14 @@ export default function LandingPage() {
 
       <section className="bg-[#1F3B06] py-16">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="font-serif text-[32px] text-white mb-4">¿Siguiente paso en tu municipio?</h2>
-          <p className="text-[#EAF3DE] text-[14px] mb-8">
-            Prueba la demo guiada con una zona metropolitana de referencia o coordina acceso institucional para un despliegue trazable.
+          <h2 className="font-serif text-[28px] text-white mb-4">Misma propuesta consultiva, siguiente paso a tu ritmo</h2>
+          <p className="text-[#EAF3DE] text-[14px] mb-8 leading-relaxed">
+            Continúa con un escenario de referencia ilustrativo o coordina acceso institucional para integrar trazabilidad y validaciones en tu organización.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link href="/simulator"
               className="bg-[#F6C84B] text-[#1C1B18] font-medium text-[15px] px-8 py-4 rounded-[10px] hover:bg-[#D4881E] hover:text-white transition-colors inline-block text-center">
-              Abrir demo guiada
+              Ver escenario de referencia
             </Link>
             <Link href="/login"
               className="border border-[#EAF3DE] text-[#EAF3DE] font-medium text-[15px] px-8 py-4 rounded-[10px] hover:bg-[#EAF3DE]/10 transition-colors inline-block text-center">
