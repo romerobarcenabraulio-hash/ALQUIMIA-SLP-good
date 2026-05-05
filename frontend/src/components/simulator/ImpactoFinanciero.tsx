@@ -166,23 +166,18 @@ export function ImpactoFinanciero() {
       {/* Tornado */}
       <div className="mb-6">
         <p className="text-[12px] font-medium text-[#6B6760] mb-3">Análisis de sensibilidad ±20% en VPN</p>
-        <div className="mb-2">
+        <div className="mb-5">
           <TornadoChart />
         </div>
         {tornadoRows.length > 0 && (
           <NarrativeBridge
             kicker="S22 · Lectura del Tornado"
             variant="bridge"
-            summary={(() => {
-              const hasSecond = Boolean(tornadoRows[1])
-              const line1 = hasSecond
-                ? 'Choques de ±20% por variable: dos palancas concentran el mayor tirón sobre el VPN; magnitudes y jerarquía en los indicadores.'
-                : 'Choques de ±20% por variable: la palanca líder concentra el mayor tirón sobre el VPN; magnitud en los indicadores.'
-              const line2 = hasSecond
-                ? 'Priorízalas en supuestos y contratos antes de micro-optimizar el resto.'
-                : 'Prioriza acotar esa palanca antes de micro-optimizar el resto.'
-              return `${line1} ${line2}`
-            })()}
+            summary={
+              tornadoRows.length >= 2
+                ? 'El tornado ordena factores por cuánto desplazan el VPN ante variaciones del 20%: suele bastar con vigilar un grupo reducido de palancas antes de afinar el resto. La gráfica y la rejilla de referencia recogen el ranking y las magnitudes; aquí el foco es la lectura ejecutiva del reparto de riesgo.'
+                : 'El tornado muestra qué factor más mueve el VPN bajo choques del 20%; usa la gráfica y la rejilla para ver el orden y la escala del barrido. Prioriza acotar esa incertidumbre antes de ajustes menores en otros supuestos.'
+            }
             evidence={[
               { label: 'Variable 1 · mayor rango', value: tornadoRows[0]?.label ?? '—' },
               { label: 'Rango VPN (1ª)', value: tornadoRows[0] ? fmt.mxnM(tornadoRows[0].range) : '—' },

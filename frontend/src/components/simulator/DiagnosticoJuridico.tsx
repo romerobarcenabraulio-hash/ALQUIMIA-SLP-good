@@ -19,6 +19,7 @@
 import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
@@ -89,36 +90,51 @@ function TarjetaMunicipio({
       isActive && 'ring-2 ring-[#3B6D11]/20',
     )}>
       {/* Header de la tarjeta */}
-      <button className="w-full text-left p-4" onClick={onToggle}>
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3 min-w-0">
-            {/* Score badge */}
-            <div
-              className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-mono text-[13px] font-bold"
-              style={{ backgroundColor: sb.bg, color: sb.color }}
-            >
-              {d.score_legal}
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <p className="text-[13px] font-medium text-[#1C1B18] truncate">{dm.municipio_nombre}</p>
-                {legalValidated
-                  ? <span className="text-[10px] bg-[#EAF3DE] text-[#3B6D11] px-1.5 py-0.5 rounded-full shrink-0">validado juridicamente</span>
-                  : <span className="text-[10px] bg-[#F3EAF5] text-[#7B3FA0] px-1.5 py-0.5 rounded-full shrink-0">pendiente validacion</span>
-                }
+      <div className="flex items-stretch gap-1">
+        <button type="button" className="min-w-0 flex-1 text-left p-4" onClick={onToggle}>
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              {/* Score badge */}
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-mono text-[13px] font-bold"
+                style={{ backgroundColor: sb.bg, color: sb.color }}
+              >
+                {d.score_legal}
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium', meta.bg, meta.color)}>
-                  {s.estrategia} — {meta.label}
-                </span>
-                <span className="text-[10px] text-[#A8A49C]">{s.plazo_meses}m</span>
-                <span className="text-[10px] text-[#A8A49C]">brecha {d.brecha_critica} crítica</span>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="text-[13px] font-medium text-[#1C1B18] truncate">{dm.municipio_nombre}</p>
+                  {legalValidated
+                    ? (
+                      <span className="text-[10px] bg-[#EAF3DE] text-[#3B6D11] px-1.5 py-0.5 rounded-full shrink-0">
+                        validado juridicamente
+                      </span>
+                      )
+                    : (
+                      <span className="text-[10px] bg-[#F3EAF5] text-[#7B3FA0] px-1.5 py-0.5 rounded-full shrink-0">
+                        pendiente validacion
+                      </span>
+                      )}
+                </div>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <span className={cn('text-[10px] px-1.5 py-0.5 rounded-full font-medium', meta.bg, meta.color)}>
+                    {s.estrategia} — {meta.label}
+                  </span>
+                  <span className="text-[10px] text-[#A8A49C]">{s.plazo_meses}m</span>
+                  <span className="text-[10px] text-[#A8A49C]">brecha {d.brecha_critica} crítica</span>
+                </div>
               </div>
             </div>
+            <span className="font-mono text-[12px] text-[#A8A49C] shrink-0">{expandido ? '▲' : '▼'}</span>
           </div>
-          <span className="font-mono text-[12px] text-[#A8A49C] shrink-0">{expandido ? '▲' : '▼'}</span>
+        </button>
+        <div className="flex shrink-0 items-center pr-3" onMouseDown={e => e.preventDefault()}>
+          <FuenteReglamentoIcon
+            municipioId={dm.municipio_id}
+            label={`Fuente primaria del reglamento — ${dm.municipio_nombre}`}
+          />
         </div>
-      </button>
+      </div>
 
       {/* Detalle expandible */}
       {expandido && (
@@ -178,8 +194,16 @@ function TarjetaMunicipio({
             {s.articulos_clave.length > 0 && (
               <div className="flex flex-wrap gap-1 mt-2">
                 {s.articulos_clave.map(n => (
-                  <span key={n} className="font-mono text-[10px] bg-white/70 text-[#6B6760] px-1.5 py-0.5 rounded-full border border-[#E8E4DC]">
-                    {n}
+                  <span
+                    key={n}
+                    className="inline-flex items-center gap-0.5 rounded-full border border-[#E8E4DC] bg-white/70 py-0.5 pl-1.5 pr-0.5"
+                  >
+                    <span className="font-mono text-[10px] text-[#6B6760]">{n}</span>
+                    <FuenteReglamentoIcon
+                      municipioId={dm.municipio_id}
+                      className="rounded-full border-transparent p-0.5 hover:bg-[#EAF3DE]"
+                      label={`Consultar texto oficial relacionado con ${n} (${dm.municipio_nombre})`}
+                    />
                   </span>
                 ))}
               </div>
@@ -187,6 +211,14 @@ function TarjetaMunicipio({
           </div>
 
           {/* Matriz artículos compacta */}
+          <div className="mb-1 flex items-center justify-between gap-2">
+            <span className="text-[10px] text-[#A8A49C]">Matriz compacta por artículo (insumo simulador)</span>
+            <FuenteReglamentoIcon
+              municipioId={dm.municipio_id}
+              label={`Reglamento de referencia — ${dm.municipio_nombre}`}
+              className="rounded-md"
+            />
+          </div>
           <div className="grid grid-cols-6 gap-1">
             {d.articulos.map((a, i) => {
               const c = estadoChip(a.estado)
@@ -218,6 +250,11 @@ function CoordinacionMetro({ p }: { p: PaqueteMetropolitano }) {
 
   return (
     <div className="space-y-4">
+      <p className="text-[11px] text-[#6B6760] rounded-[8px] border border-[#E8E4DC] bg-[#FAF9F7] px-3 py-2">
+        Coordinación territorial y convenios entre municipios. No habilita sanciones ni reglamentos a nombre
+        de la ZM como autoridad ficticia única — cada decisión ejecutable sigue ligada al{' '}
+        <span className="font-mono">municipio_id</span> activo mostrado en Capa&nbsp;1.
+      </p>
       {/* Convenio marco */}
       <div className="flex items-center justify-between">
         <p className="text-[12px] font-medium text-[#1C1B18]">Convenio marco ZM</p>
@@ -362,6 +399,18 @@ export function DiagnosticoJuridico() {
 
   return (
     <div className="space-y-5">
+      <div className="rounded-[12px] border border-[#1A5FA8]/25 bg-[#EBF3FB]/40 p-4">
+        <p className="text-[12px] font-semibold text-[#1C1B18]">Paquete ZM = coordinación; artículos y scores = municipio</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+          El paquete metropolitano resume convenios, datos e infraestructura compartida; los artículos del reglamento,
+          el score legal y las banderas <span className="font-mono">can_enable_sanctions</span> / documento oficial se
+          evalúan por <span className="font-mono">municipio_id</span>. Fuentes no validadas o simulación semilla se
+          muestran según el API; validar con jurídico institucional antes de actos de autoridad.
+        </p>
+        <p className="mt-2 text-[11px] text-[#8A857C]">
+          Sin municipio activo explícito en la simulación no hay alcance para proponer sanciones ejecutables desde esta vista.
+        </p>
+      </div>
 
       {/* ── Resumen ZM ──────────────────────────────────────────────────── */}
       <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
@@ -430,7 +479,7 @@ export function DiagnosticoJuridico() {
               tab === t ? 'bg-white text-[#1C1B18] shadow-sm' : 'text-[#6B6760] hover:text-[#1C1B18]'
             )}
           >
-            {t === 'municipal' ? `Capa 1 — Municipios (${paquete.total_municipios})` : 'Capa 2 — Coordinación ZM'}
+            {t === 'municipal' ? `Capa 1 — Municipal (${paquete.total_municipios})` : 'Capa 2 — Coordinación ZM'}
           </button>
         ))}
       </div>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, ClipboardList, Info, Lock, RefreshCw, Truck } from 'lucide-react'
+import { AlertTriangle, Info, Lock, RefreshCw, Truck } from 'lucide-react'
 import { buildPerOperationsPlan } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { PerOperationsPlan, PerPlanRequest } from '@/types'
@@ -102,11 +102,11 @@ export function OperacionPERBitacora() {
 
       <details className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#1C1B18]">
-          Bitácora PER y sala técnica · escenarios sin carácter de acta municipal
+          Bitácora operativa municipal · ejercicios para capacitación
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Para talleres y mesas de coordinación: muestra cómo el registro exige responsable asignado y constancia mínima en la bitácora antes de cerrar la ruta del mes,
-          sin modificar datos operativos reales del simulador.
+          Para mesas de coordinación: evidencia cómo el registro municipal exige responsable asignado y constancia mínima en la bitácora antes de cerrar la ruta del mes,
+          sin alterar los datos operativos ya capturados en el simulador.
         </p>
         <label className="mt-3 flex items-start gap-2 text-[12px] text-[#6B6760]">
           <input

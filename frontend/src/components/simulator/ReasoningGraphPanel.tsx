@@ -80,13 +80,18 @@ export default function ReasoningGraphPanel() {
             type="button"
             onClick={() => handleBuildGraph()}
             disabled={loading || !state.resultados}
-            className="shrink-0 rounded-full border border-[#3B6D11] bg-[#3B6D11] px-4 py-2 text-[12px] font-medium text-white shadow-[0_1px_0_rgba(28,27,24,0.06)] transition-colors hover:bg-[#2D7A0A] hover:border-[#2D7A0A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B6D11] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FDFCFA] disabled:opacity-50"
+            className="shrink-0 rounded-full border border-[#3B6D11] bg-[#3B6D11] px-4 py-2 text-[12px] font-medium text-white shadow-[0_1px_0_rgba(28,27,24,0.06)] transition-colors hover:bg-[#2D7A0A] hover:border-[#2D7A0A] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#3B6D11] focus-visible:ring-offset-2 focus-visible:ring-offset-[#F8F6F1] disabled:opacity-50"
           >
             {loading ? 'Construyendo…' : graph ? 'Reconstruir grafo' : 'Construir grafo'}
           </button>
+          {loading && state.resultados && (
+            <p className="max-w-[280px] text-right text-[13px] text-[#6B6760]">
+              Construyendo el grafo causal a partir de los resultados actuales…
+            </p>
+          )}
           {!state.resultados && !loading && (
             <p className="max-w-[280px] text-right text-[13px] text-[#6B6760]">
-              Requiere resultados calculados del simulador antes de construir el grafo.
+              Primero necesitas resultados del simulador (línea base y cálculo completos); después podrás construir el grafo.
             </p>
           )}
         </div>

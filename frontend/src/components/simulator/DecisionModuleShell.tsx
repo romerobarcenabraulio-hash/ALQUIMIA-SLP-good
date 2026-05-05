@@ -45,7 +45,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
   return (
     <section className="section" aria-labelledby="decision-shell-title">
       <div className="mb-4">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Fase 10.2 — Navegacion modular</p>
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Tu recorrido · módulos de decisión</p>
         <h2 id="decision-shell-title" className="mt-2 font-serif text-[26px] text-[#1C1B18]">
           Modulos de decision
         </h2>

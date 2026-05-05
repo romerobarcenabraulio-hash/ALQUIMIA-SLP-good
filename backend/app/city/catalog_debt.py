@@ -15,3 +15,9 @@ No sustituir semillas ni contratos de API sin checklist Navigator explicito.
 
 # Version simbolica para trazabilidad en respuestas JSON / bitacora (no sustituye version_mgn real).
 CATALOG_SIMULATION_EPOCH: str = "ALQUIMIA-SEED-JURISDICCION-MUNICIPIO-ZM-v0"
+
+# Mensaje corto coherente con UI y hub legal (Navigator 23.x): semillas hasta CVE/MGN.
+CATALOG_CVE_DEBT_NOTICE: str = (
+    "Los identificadores municipales en esta simulación son semillas ALQUIMIA; el anclaje a CVE INEGI y "
+    "version_mgn de capa oficial está pendiente según blueprint 23 hasta checklist Navigator."
+)

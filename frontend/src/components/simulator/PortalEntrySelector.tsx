@@ -35,7 +35,7 @@ export function PortalEntrySelector() {
 
   return (
     <section className="section" aria-labelledby="portal-entry-title">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Fase 10.1 — Entrada del portal</p>
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Entrada al programa</p>
       <h2 id="portal-entry-title" className="font-serif text-[26px] text-[#1C1B18] mb-4">
         Elige desde donde entra el programa
       </h2>

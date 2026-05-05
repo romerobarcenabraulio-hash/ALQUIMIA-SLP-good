@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { fmt } from '@/lib/utils'
 
 export function ExportarSection() {
@@ -22,6 +23,10 @@ export function ExportarSection() {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S20 — Exportar</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Paquete de exportación para revisión</h2>
+
+      <div className="mb-4 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-4 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+        {EXPORT_SIMULATION_FOOTER_LINE}
+      </div>
 
       {/* Advertencias de datos — Fase 2.5 */}
       {advertenciasBloqueantes.length > 0 && (

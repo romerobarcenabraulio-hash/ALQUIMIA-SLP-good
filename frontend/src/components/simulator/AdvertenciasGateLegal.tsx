@@ -8,6 +8,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import type { LegalGatedActionRequest, LegalGatedActionResponse, LegalGatedActionType } from '@/types'
 import { cn } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 
 const ACTIONS: Array<{ key: LegalGatedActionType; label: string; chip: string; chipClass: string }> = [
   {
@@ -87,14 +88,20 @@ export function AdvertenciasGateLegal() {
 
   return (
     <section className="space-y-5">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Gate legal educativo</p>
-        <h1 className="mt-2 font-serif text-[24px] text-[#1C1B18]">
-          Advertencias, inspección y propuestas · <span className="text-[#6B6760] text-[14px]">simulación propuesta</span>
-        </h1>
-        <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-          Distingue orientación educativa, inspección, propuesta y bloqueo legal municipal. Todo se mantiene como simulación o propuesta hasta validación competente.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Gate legal educativo</p>
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <h1 className="font-serif text-[24px] text-[#1C1B18]">
+              Advertencias, inspección y propuestas ·{' '}
+              <span className="text-[#6B6760] text-[14px]">simulación propuesta</span>
+            </h1>
+            <FuenteReglamentoIcon municipioId={municipio} label="Abrir fuente primaria del reglamento aplicable al municipio activo" />
+          </div>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
+            Distingue orientación educativa, inspección, propuesta y bloqueo legal municipal. Todo se mantiene como simulación o propuesta hasta validación competente.
+          </p>
+        </div>
       </div>
 
       <div className="grid gap-2 md:grid-cols-4">
@@ -120,10 +127,10 @@ export function AdvertenciasGateLegal() {
 
       <details className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#1C1B18]">
-          Opciones que simulan el gate municipal
+          Parámetros de simulación del gate municipal · uso en capacitación
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Para capacitación institucional: ajustan alcance geográfico o estado de validación legal en la petición de evaluación, sin sustituir dictamen competente ni expediente real.
+          Ajustan el alcance geográfico o el estado de validación legal en la evaluación de la compuerta. Son herramientas de estudio: no sustituyen dictamen competente ni expediente real.
         </p>
         <div className="mt-3 space-y-2">
           <label className="flex items-start gap-2 text-[12px] text-[#6B6760]">
@@ -134,7 +141,7 @@ export function AdvertenciasGateLegal() {
               onChange={event => setZmDemo(event.target.checked)}
             />
             <span>
-              Simular caso: solicitud con alcance de zona metropolitana tratada como municipio en la evaluación.
+              Activar caso de estudio: alcance metropolitano tratado como municipio en la evaluación.
             </span>
           </label>
           <label className="flex items-start gap-2 text-[12px] text-[#6B6760]">
@@ -145,7 +152,7 @@ export function AdvertenciasGateLegal() {
               onChange={event => setLegalValidadoDemo(event.target.checked)}
             />
             <span>
-              Simular caso: marco con validación legal externa declarada al revisar sanción propuesta.
+              Activar caso de estudio: marco con validación legal externa declarada al revisar sanción propuesta.
             </span>
           </label>
         </div>
@@ -161,7 +168,7 @@ export function AdvertenciasGateLegal() {
           variant={result.status === 'blocked' ? 'warning' : 'bridge'}
           audience="functionary"
           kicker="Gate legal · narrativa"
-          summary={`Evaluación ${actionType} en municipio ${municipio} (${zmDemo ? 'alcance ZM demo' : 'ámbito municipio'}). Estado: ${result.status}.${result.blockers.length ? ` Bloqueos activos: ${result.blockers.length}.` : ''} ${result.language_help_text || 'Sin texto auxiliar del servicio.'}`}
+          summary={`Evaluación ${actionType} en municipio ${municipio} (${zmDemo ? 'alcance metropolitano sintético' : 'ámbito municipio'}). Estado: ${result.status}.${result.blockers.length ? ` Bloqueos activos: ${result.blockers.length}.` : ''} ${result.language_help_text || 'Sin texto auxiliar del servicio.'}`}
           evidence={[
             { label: 'Validación legal', value: String(result.due_process_gate.legal_validation_status) },
             { label: 'Advertencia educativa', value: result.due_process_gate.can_issue_educational_warning ? 'permitida' : 'no' },

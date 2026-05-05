@@ -235,6 +235,19 @@ class LegalSourceIngestRequest(BaseModel):
     source_authority: Optional[str] = None
 
 
+class LegalVerificarRequest(BaseModel):
+    """Cuerpo opcional para trazabilidad humana al marcar verificado (no reemplaza auditoría en BD)."""
+
+    justification: Optional[str] = Field(
+        default=None,
+        description="Resumen de decisión de jurídico interno o autoridad competente",
+    )
+    evidence_ref: Optional[str] = Field(
+        default=None,
+        description="Enlace, folio expediente o evidencia documental asociada",
+    )
+
+
 class LegalDiagnostic(BaseModel):
     """Output completo del diagnóstico jurídico para un municipio."""
     municipio_id:               str

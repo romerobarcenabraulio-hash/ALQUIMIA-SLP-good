@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { getApiUrl } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import type { ExportResponse } from '@/types'
 
 type ExportSection =
@@ -91,7 +92,10 @@ export function ExportadorReporte() {
   )
 
   return (
-    <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
+    <section
+      id="sim-exportador-reporte"
+      className="scroll-mt-28 space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5"
+    >
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Exportación de reporte ejecutivo · <span className="text-[#6B6860] text-[14px]">propuesta</span>
       </h1>
@@ -164,7 +168,7 @@ export function ExportadorReporte() {
           {loading ? 'Previsualizando exportación...' : 'Exportar'}
         </button>
         <p className="text-[11px] text-[#6B6860]">
-          Esta previsualización es una simulación propuesta. La generación de archivos PDF/Excel oficiales estará disponible en la próxima versión.
+          {EXPORT_SIMULATION_FOOTER_LINE} Previsualización técnica (no PDF/Excel productivo en esta versión).
         </p>
       </div>
 
@@ -238,6 +242,10 @@ export function ExportadorReporte() {
             <p>Fecha: {result.metadata.fecha_generacion}</p>
             <p>Versión: {result.metadata.version}</p>
             <p>Total secciones: {result.metadata.total_secciones}</p>
+          </div>
+
+          <div className="rounded-lg border border-[#E8E4DC] bg-[#FFFDF9] p-3 text-[11px] italic text-[#6B6760]">
+            {EXPORT_SIMULATION_FOOTER_LINE}
           </div>
         </div>
       )}

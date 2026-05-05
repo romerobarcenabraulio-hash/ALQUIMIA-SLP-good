@@ -2350,3 +2350,139 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 ## Ejecutor · Fase 22 narrativa + audiencia literal · PR-B…G — 2026-05-04
 
 **PR-B:** `ImpactoAmbiental` y `MultiplicadoresEco` cierran con `NarrativeBridge` (`audience="citizen"`), `summary` y `evidence` derivados de `resultados`; sin TIR/ROI/payback/Monte Carlo en copy ciudadana. **PR-C:** `DecisionModuleShell` — switch Radix “Ver vista ciudadana” para `functionary` + `CitizenPreviewPanel` (`EducacionCiudadana`, `ComposicionRSU`, `TipoVivienda`), `aria-labelledby` / switch accesible. **PR-D:** `ImplementacionEspacioTiempo` y `AdvertenciasGateLegal` — puentes según plan/API/result (bloqueo, error, éxito, gate legal). **PR-E:** `Precolocacion` + `BenchmarkLATAM` — `NarrativeBridge` `audience="entrepreneur"` con `marketSummary`/grid numérico y comparación `zmActiva` vs promedio y Curitiba. **PR-F:** `CoberturaNacional` — SVG esquemático ZM (no cartográfico oficial), 4 KPIs de agregación, bridge según audiencia del store. **PR-G:** `simulatorStore` sincroniza `localStorage['alquimia.audience']` en `setAudience`/`resetAudience` y `onRehydrateStorage` (prioridad clave literal vs persist `alquimia-simulator`). **22.6 backend audience-aware:** no activado por CSA (sin REQUEST explícito) — deuda coordinación front/back documentada en backlog. **Verificación:** `tsc --noEmit` (frontend) + `pytest tests/ -q` (666 pasados).
+
+---
+
+## Ejecutor · Prompt CSA — Salvaguardas Navigator · 2026-05-05
+
+### Adopción gobernanza verificación
+
+- **Documento:** `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/planeacion_ejecucion/GOBERNANZA_VERIFICACION_LEGAL.md`
+- **API:** `PUT /legal/{municipio}/verificar` — proceso humano descrito en docstring; JSON opcional `justification`, `evidence_ref`; respuesta con `trace` de presencia (sin libro de auditoría persistente hasta ADR CSA).
+- **Repo legal:** `set_verificado` comentado como límite en memoria sólo hasta migración Alembic.
+
+### Entregables técnicos (resumen ejecutivo)
+
+- Simulación: `get_city_context` + `catalog_debt`; ribbon sticky y `simulationDisclaimer` en ciudad/export/hub; `DOCS_ESTATICOS` rotulados como placeholders no oficiales.
+- Municipio↔ZM: copy y HTTP 400 ZM aclaradores; CoordinaciónMetro; `GovernancePanel` usa `agoraLegalBloqueado`; `SelectorZM` corrige alcance territorial vs jurídico.
+- Artefactos: PR template checklist; CI job `lighthouse-artifact-optional` (no bloqueante); Navigator §5.4; checklist **23.1 documental** sección 7 en `23_integridad_geoespacial_y_capas.md`.
+
+### Evidencias §6.3 (Accessibility + LCP sobre `/simulator`)
+
+| Campo | Dónde capturarlo |
+|---|---|
+| URL de medición | `http://127.0.0.1:3000/simulator` (export `out/` + `serve`; ver `audit:lighthouse:ci`) |
+| Scores Accessibility / LCP | JSON `frontend/audit_reports/lighthouse-simulator.report.json` tras run exitoso, o artefacto `lighthouse-simulator-reports` del workflow |
+
+**Nota sesión Ejecutor:** `pytest tests/test_fase23_jurisdiction_contract.py` — 3 OK. En este workspace `tsc --noEmit` reporta TS2688 en type roots `'d3 2'` (artefacto de `node_modules` local); CI sigue siendo fuente (`npm ci` + `tsc` en Actions). Métricas numéricas §6.3 se completan cuando un run Lighthouse verde pegue valores aquí (sin números inventados).
+
+---
+
+## CSA — Sincronización de equipo · Estado global todos los pendientes — 2026-05-05
+
+**Performativa:** `INFORM` · snapshot de estado de todos los ítems abiertos para que **Ejecutor / Auditor / Navigator / CSA / humano** puedan palomear lo que ya hicieron y saber qué sigue.
+
+> **Regla de uso:** cuando completes un ítem, append en esta bitácora con tu rol, fecha y evidencia mínima (URL, commit, test). No marques HECHO sin evidencia.
+
+---
+
+### Tablero global de pendientes (palomear aquí)
+
+| # | Ítem | Responsable | Estado | Evidencia / notas |
+|---|------|-------------|--------|-------------------|
+| **Q-001** | Auditor firma Fase 22 vs blueprints `22_0`–`22_6` | Auditor | ✅ **HECHO** 2026-05-05 | Mandado y recibido |
+| **Q-002** | Backend audience server-side (22.6) | Ejecutor → Auditor | ⏸ **EN ESPERA** | Solo si Q-001 exigió gap; confirmar con Auditor |
+| **Q-003** | 17.1 publicación + landing + auth + backend deploy | Ejecutor → Auditor | 🔴 **SIGUIENTE** | Ver prompt Q-003 ampliado en `PROMPTS_TAREAS_PENDIENTES_Y_AGENTE_PLANEACION_LOGISTICA.md` |
+| **Q-003-UX** | Gates jurídicos → acciones implícitas (quitar banners "Gate obligatorio") | Ejecutor | 🔴 **SIGUIENTE** | Incluir en mismo PR que Q-003; lógica se mantiene, solo cambia presentación visual |
+| **Q-004** | 23.0 remediación FAIL 5–7 | Navigator + Ejecutor | ✅ **HECHO** 2026-05-05 | re-PASS Navigator emitido; 6–7 FAIL documentados en `catalog_debt.py` |
+| **Q-004b** | CI GitHub Actions (`ci.yml` rg + pytest + tsc) | Ejecutor | ✅ **HECHO** 2026-05-05 | `.github/workflows/ci.yml` en repo; **pendiente confirmar run verde en GitHub Actions** |
+| **Q-005** | Fase 24 — E2E reproducible + observabilidad mínima | Ejecutor → Auditor | ⏳ **DESPUÉS DE Q-003** | Ver `24_release_gate_e2e_observabilidad.md` |
+| **Q-006** | Fase 25 — tokens / design-as-code | Aesthete → Ejecutor | ⏳ **DESPUÉS DE Q-005** | Ver `25_tokens_y_design_as_code.md` |
+| **R1** | Deploy frontend Vercel · Root Directory = `frontend` | Humano | 🟡 **EN CURSO** | URL `alquimia-slp.vercel.app` existe pero build falla por Root Directory incorrecto; **fix: Settings → General → Root Directory = `frontend` → Redeploy** |
+| **R2** | Deploy backend (Railway/Render) + `/health` + CORS | Ejecutor + humano | 🔴 **PENDIENTE** | Sin API pública → todo muestra `Failed to fetch` en prod |
+| **R3** | Auth rutas sensibles (front + JWT backend) | Ejecutor → Auditor | 🔴 **PENDIENTE** | Parte de Q-003 |
+| **R4** | E2E Playwright `/simulator` con backend vivo | Ejecutor | ⏳ **DESPUÉS DE R2** | Sin backend no hay E2E real |
+| **R5** | Request ID logs FastAPI + criterio errores frontend | Ejecutor | 🔴 **PENDIENTE** | Parte de Q-005 |
+| **R6** | §6.3 Lighthouse sobre URL real (Accessibility + LCP) | Humano o CI | 🔴 **PENDIENTE** | Necesita R1+R2 resueltos; scripts listos en `frontend/scripts/` |
+| **R7** | Release notes + DNS documentado | Ejecutor / CSA / humano | 🔴 **PENDIENTE** | Cuando R1+R2 estén OK |
+| **23.1** | Capa territorial / Mapbox producto | Navigator gate | 🔒 **BLOQUEADO** | Sin autorización Navigator (CVE/MGN FAIL 6–7); requiere nueva orden CSA |
+| **§6.3** | Métricas Lighthouse reales (scores numéricos) | Humano o CI | 🔴 **PENDIENTE** | Sin números inventados; ejecutar `npm run audit:lighthouse:ci` contra URL real |
+| **vercel link** | Linkear repo local con Vercel CLI (habilita `/status`, `/deploy`) | Humano | 🟡 **PENDIENTE** | `cd frontend && npx vercel link` en Terminal |
+
+---
+
+### Próximos 3 pasos en orden
+
+1. **Humano (ahora):** Vercel Dashboard → **Settings → General → Root Directory = `frontend`** → **Redeploy** → confirmar URL verde.
+2. **Ejecutor (Q-003 + Q-003-UX):** backend deploy + landing + auth + quitar banners gates jurídicos → PR + append aquí.
+3. **Humano (cuando R1 verde):** `cd ~/Documents/alquimia-slp/frontend && npx vercel link` → habilitar comandos plugin.
+
+**Siguiente append esperado de cada rol:**
+- **Ejecutor:** PR Q-003 con URL API, CORS OK, landing, sin banners gate.
+- **Auditor:** firma Q-003 cuando Ejecutor entregue.
+- **Humano:** URL Vercel verde + `vercel link` hecho.
+- **Navigator:** ninguna acción hasta CSA nueva orden 23.1.
+
+---
+
+## Ejecutor · **Q-003** + UX gates implícitos + landing **17.1** (código en repo) — 2026-05-05
+
+**Backend (prep deploy Railway/Render):** `backend/Dockerfile` usa `PORT` inyectado (`uvicorn` en `${PORT:-8000}`). `backend/.env.example` documenta qué conviene fijar en producción (`SECRET_KEY`, `DATABASE_URL`, `ALLOWED_ORIGINS`, `ENVIRONMENT`, `PORT`). `backend/DEPLOY.md` instruye deploy, verificación `GET /health` y valor de **Vercel** `NEXT_PUBLIC_API_URL` (sin barra final; ejemplo `https://<servicio>.up.railway.app`).
+
+**CORS:** `app/main.py` — orígenes por defecto incluyen `http://localhost:3000`, `http://127.0.0.1:3000`, `https://alquimia.mx`, **`https://alquimia-slp.vercel.app`**; más entradas vía `ALLOWED_ORIGINS` (coma). **Verificación en repo:** `pytest tests/test_q003_deploy_cors_health.py` (health 200 + `Access-Control-Allow-Origin` para origen staging Vercel).
+
+**URL API pública:** pendiente de **deploy humano** en Railway/Render; al existir, fijar `NEXT_PUBLIC_API_URL` en Vercel y redeploy del frontend para eliminar **Failed to fetch** en `/simulator` (API alcanzable y CORS acorde).
+
+**UX gates (Q-003-UX):** Retirada la franja «Gate obligatorio Fase 10.1» en `BaselineGateBlocked`; mensajes orientados a la acción (p. ej. selección de ciudad). Navegación modular y entrada portal sin rótulos «Fase 10.x» (`DecisionModuleShell`, `PortalEntrySelector`). Textos visibles sin «gate» en `FloatingCTA` y en la tarjeta funcionario de `AudienceGateway`. La lógica de bloqueo por baseline no cambia.
+
+**Landing 17.1:** `frontend/src/app/page.tsx` — hero de consultoría en circularidad municipal, CTA dual **demo guiada** (`/simulator`) vs **cuenta institucional** (`/login`), sección **trazabilidad / registro de actividad / privacidad** alineada al blueprint **17.1** (`archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md`).
+
+**23 / 23.1 capa geo:** sin iniciar; sin orden CSA/Navigator.
+
+**Nota:** Si `tsc --noEmit` falla localmente con TS2688 en type roots, usar CI limpio (`npm ci`) como referencia; backend `pytest` del paquete Q-003 pasa en este entorno.
+
+---
+
+## Aesthete · Solicitud Q-011 — Fase PRES-1 · Pulido presentación institucional — 2026-05-05
+
+**Performativa:** `PROPOSE` → CSA aprobó como Q-011 en cola  
+**Riesgo:** Bajo · solo copy condicional, clases Tailwind y React; sin tocar API, motor de cálculo, legal interno ni geografía  
+**Blueprint:** `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/PRES-1_pulido_presentacion_institucional.md`
+
+### Observaciones Aesthete
+
+**PR A · Landing (`/`)**
+- Mensaje "no dictamen" aparece múltiples veces con diferente redacción; consolidar en una sola formulación de alta jerarquía + bloque colapsado "Límites del análisis".
+- Franja de cuatro cifras nacionales compite visualmente con el hero; bajar jerarquía tipográfica **o** reducir a 2 visibles + expansión (decisión Planner pendiente).
+- Emojis en tarjetas "Una sola plataforma": sustituir por iconos Lucide (`Recycle`, `BarChart2`, `FileText`, `Globe`).
+- Botones "demo guiada" repetidos: unificar a una sola frase en toda la página (decisión Planner: "simulador con datos ilustrativos" u otra).
+- Footer CTA verde: fusionar mensaje con hero para evitar duplicidad de urgencia.
+
+**PR B · Simulador · audiencia ciudadano**
+- Frases tipo "plan completo con un clic" no corresponden al tono institucional ni al flujo real; reemplazar por "paquete de trabajo por módulos".
+- Kicker de audiencia: solo para `citizen`, antes del título.
+- KPIs header sticky: ocultar o atenuar cuando no hay baseline válida en audiencia `citizen` (decisión Planner pendiente).
+
+**PR C · Aprende (`/aprende`)**
+- Etiquetas "Sección 1", "Sección 2": reemplazar por kickers temáticos.
+- Listas ✓ ✗: sustituir por iconos Lucide accesibles (`CheckCircle` / `XCircle`) o tipografía pura.
+
+### Decisiones Planner pendientes antes de PR B
+
+| Decisión | Opciones | Estado |
+|----------|---------|--------|
+| Cifras nacionales landing | A: 4 cifras baja jerarquía · B: 2 visibles + expansión | ⏳ PENDIENTE |
+| Voz CTA unificada | "simulador con datos ilustrativos" / "escenario de referencia" / otra | ⏳ PENDIENTE |
+| KPIs ciudadano sin baseline | Ocultar completamente · Atenuar (`opacity-40`) | ⏳ PENDIENTE |
+
+### Criterios de aceptación globales
+
+| # | Criterio |
+|---|---------|
+| 1 | Mensaje "no dictamen" condensado — usuario no lee 3 veces la misma idea |
+| 2 | Cero emojis en bloque de módulos de la landing |
+| 3 | Vista ciudadano sin frase de ejecutabilidad inmediata contradictoria |
+| 4 | KPIs según decisión Planner (ocultos o atenuados sin baseline) |
+| 5 | `npm run lint` + `tsc --noEmit` pasan |
+
+**Siguiente acción:** CSA resuelve las 3 decisiones Planner → Ejecutor abre PR A → PR B → PR C.

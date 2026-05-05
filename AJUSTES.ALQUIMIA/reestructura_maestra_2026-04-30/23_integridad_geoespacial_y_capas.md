@@ -69,3 +69,12 @@
 ```text
 Navigator (spec + checklist) → Ejecutor (implementación + tests) → Navigator (re-PASS) → Aesthete (presentación) → Auditor (firma legal si aplica)
 ```
+
+## 7. Checklist previo a código geo 23.1 (documental · gate CSA)
+
+Antes del primer PR con **tiles / Mapbox / GeoJSON operativo** o métricas de distancia/área en mapa:
+
+- [ ] `catalog_simulation_epoch` / deuda CVE documentada en repo y coherente en UI (**no** confundir con `version_mgn` de capa).
+- [ ] Contrato YAML/JSON borrador de **capa** con `srid_storage` (EPSG:4326), `srid_display` (3857 sólo vista); **nunca** 3857 para áreas/distancias en backend (EPSG:6369 en SLP/NL/QRO).
+- [ ] Cada geometría con `jurisdiction_scope` explícito y `municipio_id` donde aplique el validador Navigator §5.3 (modo datos).
+- [ ] Navigator emite PASS explícito o lista FAIL cerrada antes de que Ejecutor integre fuentes en cliente productivo.

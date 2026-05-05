@@ -8,8 +8,8 @@ export function CircularityBaselineCard() {
 
   return (
     <section className="section" aria-labelledby="baseline-title">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Baseline actual antes de metas futuras</p>
-      <h2 id="baseline-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">Circularidad RSU actual</h2>
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Baseline estimada (no oficial) antes de metas futuras</p>
+      <h2 id="baseline-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">Circularidad RSU actual (estimada)</h2>
 
       {circularityBaselineLoading && (
         <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[12px] text-[#6B6760]">
@@ -49,8 +49,8 @@ export function CircularityBaselineCard() {
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <Metric label="RSU municipal estimado" value={`${circularityBaseline.rsu_total_ton_day_est.toLocaleString('es-MX')} t/dia`} />
-            <Metric label="Recuperacion estimada" value={`${circularityBaseline.material_recovery_ton_day_est.toLocaleString('es-MX')} t/dia`} />
+            <Metric label="RSU municipal estimado (no oficial)" value={`${circularityBaseline.rsu_total_ton_day_est.toLocaleString('es-MX')} t/dia`} />
+            <Metric label="Recuperación material estimada" value={`${circularityBaseline.material_recovery_ton_day_est.toLocaleString('es-MX')} t/dia`} />
             <Metric label="Confianza" value={`${Math.round(circularityBaseline.confidence * 100)}%`} />
           </div>
 

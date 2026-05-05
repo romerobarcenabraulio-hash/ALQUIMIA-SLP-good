@@ -34,6 +34,26 @@ from app.agents.dna_loader import load_slp_dna
 
 logger = logging.getLogger(__name__)
 
+# Orígenes CORS por defecto (staging Vercel + producción declarada en blueprint 17.1)
+_DEFAULT_CORS_ORIGINS: tuple[str, ...] = (
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://alquimia.mx",
+    "https://alquimia-slp.vercel.app",
+)
+
+
+def _cors_allow_origins() -> list[str]:
+    origins = list(_DEFAULT_CORS_ORIGINS)
+    extra = os.getenv("ALLOWED_ORIGINS", "").strip()
+    if not extra:
+        return origins
+    for part in extra.split(","):
+        o = part.strip()
+        if o and o not in origins:
+            origins.append(o)
+    return origins
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, limit: int = 100, window_seconds: int = 60):
@@ -92,7 +112,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://alquimia.mx"],
+    allow_origins=_cors_allow_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

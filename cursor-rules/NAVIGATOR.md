@@ -113,6 +113,10 @@ Antes de publicar cualquier capa, el Navigator ejecuta:
 
 Cualquier `FAIL` → no se publica la capa.
 
+### 5.4 Banners de simulación UI vs capa geo MGN
+
+Los avisos de “simulación / no oficial” en el producto (**sin** geometrías servidas) **no equivalen** a la publicación de una capa con `version_mgn` ni a metadatos ISO 19115: son control de **expectativa de usuario**. El Ejecutor puede desplegar copy y `catalog_simulation_epoch`; el Navigator sigue vetando mezclas jurisdiccionales y fuentes en **capas** según §4–§6 de este documento.
+
 ---
 
 ## 6. CALIDAD DE DATOS (ISO 19157)

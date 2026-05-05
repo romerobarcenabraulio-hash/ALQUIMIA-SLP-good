@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useRef } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { Header } from '@/components/layout/Header'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { SectionHero } from '@/components/simulator/SectionHero'
@@ -42,6 +43,28 @@ import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import type { Audience, DecisionModule } from '@/types'
 import { ContainersProvider } from '@/components/simulator/ContainersProvider'
+import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
+
+function SimulatorSimulationRibbon() {
+  const cityContext = useSimulatorStore(s => s.cityContext)
+  const cityContextLoading = useSimulatorStore(s => s.cityContextLoading)
+  if (cityContextLoading || !cityContext) return null
+  return (
+    <div className="sticky top-0 z-30 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-4">
+      <div
+        role="region"
+        aria-label={SIMULATION_BANNER_TITLE}
+        className="rounded-[12px] border border-[#D4881E]/35 bg-[#FEF7E7] px-4 py-3 shadow-[0_2px_8px_rgba(28,27,24,0.06)]"
+      >
+        <p className="text-[12px] font-semibold text-[#1C1B18]">{SIMULATION_BANNER_TITLE}</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-[#6B6760]">{SIMULATION_BANNER_BODY}</p>
+        <p className="mt-2 font-mono text-[10px] text-[#8A857C]" title="Contrato API">
+          Época catálogo (simulación): {cityContext.catalog_simulation_epoch}
+        </p>
+      </div>
+    </div>
+  )
+}
 
 export default function SimulatorPage() {
   const recalcular = useSimulatorStore(s => s.recalcular)
@@ -65,14 +88,7 @@ export default function SimulatorPage() {
 
   const onInteract = () => { interacciones.current++ }
   const isOrganizationJourney = portalEntry === 'organization'
-  const baselineValid = Boolean(
-    circularityBaseline &&
-    circularityBaseline.city_id === zmActiva &&
-    circularityBaseline.official_status === 'estimated_not_official' &&
-    circularityBaseline.provenance.fuente_nombre &&
-    circularityBaseline.provenance.fuente_organismo &&
-    circularityBaseline.confidence > 0
-  )
+  const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
 
   // Fase 22.0 — Gateway obligatorio: sin audiencia no se carga ningún módulo.
   if (!audience) {
@@ -88,6 +104,7 @@ export default function SimulatorPage() {
     <div className="min-h-screen" style={{ background: '#F8F6F1' }} onClickCapture={onInteract}>
       <Header />
       <div className="max-w-7xl mx-auto">
+        <SimulatorSimulationRibbon />
         <main className="px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto">
 
           <CityFirstSelector />
@@ -260,31 +277,30 @@ function ModuleEmpty({ module }: { module: DecisionModule }) {
 
 function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; error: string | null; cityId: string }) {
   const title = loading
-    ? 'Flujo bloqueado mientras se hidrata la baseline'
+    ? 'Cargando la referencia RSU de tu ciudad'
     : error
-      ? 'Flujo bloqueado por error de baseline'
-      : 'Flujo bloqueado: falta baseline RSU actual'
+      ? 'No pudimos obtener los datos de la ciudad'
+      : 'Selecciona una ciudad para continuar'
 
   const nextAction = loading
-    ? 'Espera a que termine la carga de fuente, confianza e incertidumbre.'
+    ? 'En un momento podrás seguir cuando terminen de cargarse fuente, confianza e incertidumbre.'
     : error
-      ? 'Reintenta la seleccion de ciudad o revisa disponibilidad de /city/{city_id}/baseline.'
-      : 'Selecciona una ciudad con baseline RSU estimada y trazable antes de definir metas.'
+      ? 'Prueba otra ciudad o comprueba que el servicio de datos esté disponible.'
+      : 'Elige una ciudad con una estimación RSU trazable; después podrás ver metas, módulos y el resto del simulador.'
 
   return (
     <section className="section" aria-labelledby="baseline-gate-title">
       <div className="rounded-[8px] border border-amber-300 bg-amber-50 p-5">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-amber-800">Gate obligatorio Fase 10.1</p>
-        <h2 id="baseline-gate-title" className="mt-2 font-serif text-[22px] text-[#1C1B18]">{title}</h2>
+        <h2 id="baseline-gate-title" className="font-serif text-[22px] text-[#1C1B18]">{title}</h2>
         <p className="mt-2 text-[13px] leading-relaxed text-amber-900">
-          ALQUIMIA no muestra metas futuras ni secciones dependientes del plan hasta tener una baseline RSU municipal actual para {cityId}.
+          Para <span className="font-medium">{cityId}</span> necesitamos una línea base de residuos sólidos urbana actual y verificable; hasta entonces no mostramos metas futuras ni el resto del recorrido del simulador.
         </p>
         {error && (
           <p className="mt-3 rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-800">
             {error}
           </p>
         )}
-        <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Accion siguiente</p>
+        <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Qué puedes hacer</p>
         <p className="mt-1 text-[12px] text-[#6B6760]">{nextAction}</p>
       </div>
     </section>

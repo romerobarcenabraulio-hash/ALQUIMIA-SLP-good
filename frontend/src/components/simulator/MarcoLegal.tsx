@@ -3,6 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import { ContadorOportunidad } from '@/components/charts/ContadorOportunidad'
 import { DiagnosticoJuridico } from '@/components/simulator/DiagnosticoJuridico'
+import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { cn } from '@/lib/utils'
 
 export type MarcoLegalMode = 'citizen' | 'functionary'
@@ -86,11 +87,17 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
         no emite dictamen legal ni aprueba reformas; cada avance debe validarse por municipio y por
         autoridad competente.
       </p>
-      <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4">
-        <p className="text-[12px] font-medium text-[#1C1B18]">Límite de uso legal</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+      <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4 space-y-2">
+        <p className="text-[12px] font-medium text-[#1C1B18]">Fricción explícita ante datos normativos (función pública)</p>
+        <p className="text-[12px] leading-relaxed text-[#6B6760]">
+          Scores, matrices de artículos y estados “verificado” en pantalla son insumos de simulación o de carga semilla;
+          no sustituyen dictamen, resolución publicada ni la lectura del reglamento municipal vigente.
+          La ZM coordina territorio; no autoriza sanciones como autoridad única ni sustituta del ayuntamiento.
+        </p>
+        <p className="text-[12px] font-medium text-[#1C1B18] pt-1">Seguimiento de gates en la app</p>
+        <p className="text-[12px] leading-relaxed text-[#6B6760]">
           Las casillas siguientes son seguimiento interno declarado por el usuario; no convierten una propuesta
-          en dictamen ni documento oficial. La ZM no sustituye el reglamento municipal.
+          en dictamen ni documento oficial.
         </p>
       </div>
 
@@ -121,8 +128,11 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
                 {checked && <span className="text-white text-[10px]">✓</span>}
                 {!checked && !prev && <span className="text-[#E2DED6] text-[10px]">🔒</span>}
               </span>
-              <span className="text-[13px]">{item}</span>
-              {i === 4 && <span className="ml-auto text-[10px] text-[#D4881E] font-medium">★ GATE CLAVE</span>}
+              <span className="text-[13px] flex-1 min-w-0">{item}</span>
+              <span className="shrink-0" onClick={e => e.stopPropagation()}>
+                <FuenteReglamentoIcon label="Ver reglamento municipal de referencia para esta etapa del programa" />
+              </span>
+              {i === 4 && <span className="text-[10px] text-[#D4881E] font-medium shrink-0">★ GATE CLAVE</span>}
             </button>
           )
         })}

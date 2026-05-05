@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
+from app.city.catalog_debt import CATALOG_CVE_DEBT_NOTICE
 from app.city.schemas import CircularityBaseline, CityContext, CityOption, DecisionModule, MunicipioContext, PortalEntry, UserAudienceMode
 from app.data.schemas import DataProvenance, FuenteTipo, SnapshotDatos
 from app.legal.repository import MUNICIPIO_NOMBRES, ZM_MUNICIPIOS
@@ -65,8 +66,11 @@ def get_city_context(city_id: str) -> Optional[CityContext]:
         estado_principal=zm.estado_principal,
         municipios=_municipios_for(zm.zm_id),
         legal_notice=(
-            "La ciudad/ZM organiza el plan territorial; cualquier obligación, sanción o documento legal "
-            "se evalúa por municipio y nunca por ZM."
+            "Esta ciudad/ZM en ALQUIMIA es una simulación de planificación; no es dictamen, acto administrativo "
+            "ni dato estadístico oficial. "
+            + CATALOG_CVE_DEBT_NOTICE
+            + " Las obligaciones, sanciones y reglamentos vigentes se evalúan municipio por municipio; "
+            "la zona metropolitana coordina territorio e interoperabilidad y no sustituye al ayuntamiento."
         ),
         audience_mode=UserAudienceMode.city_team,
         supported_entries=[PortalEntry.city_plan, PortalEntry.organization],

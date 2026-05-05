@@ -4,6 +4,8 @@ import { useSearchParams } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { cn } from '@/lib/utils'
+import { documentosHub, type HubDocumentoCapitulo } from '@/data/hubDocumentosCapitulo'
+import { descargarBlob, generarPaqueteZipHub } from '@/lib/hubPaqueteZip'
 import {
   getJobStatus,
   getPackageAssets,
@@ -17,15 +19,31 @@ import type { PackageStatus, PackageAsset, PackageManifest } from '@/types'
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
 
-type DocEstado = 'borrador' | 'revision' | 'defendible' | 'bloqueado' | 'aprobado' | 'publicado'
+type DocEstadoHub = 'disponible_web' | 'en_elaboracion'
 
-const ESTADO_CONFIG: Record<DocEstado, { label: string; bg: string; text: string }> = {
-  borrador:   { label: 'Borrador',   bg: 'bg-[#F0EDE5]', text: 'text-[#6B6760]' },
-  revision:   { label: 'Revisión',  bg: 'bg-[#FEF7E7]', text: 'text-[#D4881E]' },
-  defendible: { label: 'Defendible', bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' },
-  bloqueado:  { label: 'Bloqueado',  bg: 'bg-[#FDE8E8]', text: 'text-[#C0392B]' },
-  aprobado:   { label: 'Aprobado',   bg: 'bg-[#EBF3FB]', text: 'text-[#1A5FA8]' },
-  publicado:  { label: 'Publicado',  bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' },
+const ZM_TABS_HUB = ['SLP', 'QRO', 'MTY'] as const
+
+const HUB_ESTADO_CARD: Record<
+  DocEstadoHub,
+  { label: string; bg: string; text: string }
+> = {
+  disponible_web: { label: 'Disponible', bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' },
+  en_elaboracion: { label: 'En elaboración', bg: 'bg-[#FEF7E7]', text: 'text-[#8B5A00]' },
+}
+
+function formatoIcon(f: HubDocumentoCapitulo['formato']): string {
+  switch (f) {
+    case 'PDF':
+      return '📕'
+    case 'XLSX':
+      return '📊'
+    case 'DOCX':
+      return '📝'
+    case 'HTML':
+      return '🌐'
+    default:
+      return '📄'
+  }
 }
 
 function mimeIcon(mime: string, filename: string): string {
@@ -42,45 +60,13 @@ function mimeIcon(mime: string, filename: string): string {
   return '📄'
 }
 
-function formatLabel(filename: string): string {
-  const ext = filename.split('.').pop()?.toUpperCase() ?? ''
-  const stem = filename.replace(/\.[^.]+$/, '').replace(/_/g, ' ')
-  return ext ? `${ext} · ${stem}` : stem
-}
-
 function fmtBytes(n: number): string {
   if (n < 1024) return `${n} B`
   if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`
   return `${(n / (1024 * 1024)).toFixed(2)} MB`
 }
 
-// ─── Datos estáticos de fallback ──────────────────────────────────────────────
-
-const DOCS_ESTATICOS: Record<string, { color: string; docs: { nombre: string; tipo: string; estado: DocEstado; fecha: string }[] }> = {
-  SLP: {
-    color: '#3B6D11',
-    docs: [
-      { nombre: 'Diagnóstico Reglamento Vigente SLP', tipo: 'Marco Legal',      estado: 'publicado', fecha: '2025-01-15' },
-      { nombre: 'Iniciativa de Reforma Reglamentaria', tipo: 'Marco Legal',     estado: 'aprobado',  fecha: '2025-02-01' },
-      { nombre: 'Modelo CFO San Luis Potosí',          tipo: 'Modelo Financiero', estado: 'publicado', fecha: '2025-01-10' },
-      { nombre: 'Plan de Implementación SLP',          tipo: 'Operativo',       estado: 'revision',  fecha: '2025-02-15' },
-      { nombre: 'Benchmark LATAM — SLP',               tipo: 'Estudios',        estado: 'publicado', fecha: '2025-01-20' },
-    ],
-  },
-  QRO: {
-    color: '#1A5FA8',
-    docs: [
-      { nombre: 'Diagnóstico Reglamento QRO',  tipo: 'Marco Legal',       estado: 'borrador', fecha: '2025-03-20' },
-      { nombre: 'Modelo CFO Querétaro',         tipo: 'Modelo Financiero', estado: 'borrador', fecha: '2025-03-20' },
-    ],
-  },
-  MTY: {
-    color: '#D4881E',
-    docs: [
-      { nombre: 'Análisis AGEB Monterrey', tipo: 'Estudios', estado: 'borrador', fecha: '2025-03-15' },
-    ],
-  },
-}
+const JOB_ASSET_CHIP = { bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' } as const
 
 // ─── Componente principal (necesita Suspense para useSearchParams) ────────────
 
@@ -91,6 +77,12 @@ function HubContent() {
 
   const [zmActiva, setZmActiva]         = useState(zmParam)
   const [filtroTipo, setFiltroTipo]     = useState('Todos')
+  const [zipLoading, setZipLoading]         = useState(false)
+  const [zipPaqueteError, setZipPaqueteError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setZmActiva(zmParam)
+  }, [zmParam])
 
   // Estado del paquete desde API
   const [pkgStatus, setPkgStatus]       = useState<PackageStatus | null>(null)
@@ -182,13 +174,26 @@ function HubContent() {
     }
   }
 
-  // Docs a mostrar: si hay assets del paquete, usarlos; si no, estáticos
   const usePackageAssets = !!jobParam && assets !== null
-  const docsEstaticos    = DOCS_ESTATICOS[zmActiva]?.docs ?? []
-  const tiposEstaticos   = ['Todos', ...Array.from(new Set(docsEstaticos.map(d => d.tipo)))]
-  const docsFiltrados    = filtroTipo === 'Todos'
-    ? docsEstaticos
-    : docsEstaticos.filter(d => d.tipo === filtroTipo)
+  const catalogoCapitulo = documentosHub(zmActiva)
+  const tiposCatalogo    = ['Todos', ...Array.from(new Set(catalogoCapitulo.map(d => d.tipo))).sort()]
+  const docsCapituloFiltrados =
+    filtroTipo === 'Todos'
+      ? catalogoCapitulo
+      : catalogoCapitulo.filter(d => d.tipo === filtroTipo)
+
+  const handleDescargarPaqueteCapitulo = async () => {
+    setZipLoading(true)
+    setZipPaqueteError(null)
+    try {
+      const blob = await generarPaqueteZipHub(zmActiva)
+      descargarBlob(blob, `alquimia_paquete_${zmActiva}.zip`)
+    } catch (e) {
+      setZipPaqueteError(e instanceof Error ? e.message : 'No se pudo generar el paquete ZIP')
+    } finally {
+      setZipLoading(false)
+    }
+  }
 
   // Filtrar assets (excluir ZIP del listado principal)
   const assetsDocumentos = (assets ?? []).filter(a => !a.filename.endsWith('.zip'))
@@ -210,6 +215,15 @@ function HubContent() {
               ? 'Paquete documental generado por ÁGORA — descarga, manifest y trazabilidad.'
               : 'Repositorio de documentos generados por ÁGORA.'}
           </p>
+          {!jobParam && (
+            <div className="mt-3 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-4 py-3 text-[12px] text-[#6B6760]">
+              <strong className="text-[#1C1B18]">Simulación · no confundir con oficialidad.</strong>{' '}
+              Inventario programa documental y control de acceso (blueprint&nbsp;17.1 + 26.B) declarado en{' '}
+              <span className="font-mono text-[11px]">hubDocumentosCapitulo.ts</span>. Los estados{' '}
+              <em>Disponible</em> / <em>En elaboración</em> describen entrega técnica en repo público, no publicación
+              en periódico oficial.
+            </div>
+          )}
         </div>
 
         {/* ── Panel de paquete (cuando hay job_id) ── */}
@@ -245,7 +259,7 @@ function HubContent() {
                         ? 'bg-[#FDE8E8] text-[#C0392B]'
                         : 'bg-[#FEF7E7] text-[#D4881E]'
                   )}>
-                    {pkgStatus.status === 'completed' ? 'Documentación lista para revisión y descarga' :
+                    {pkgStatus.status === 'completed' ? 'Documentos listos para descarga revisada' :
                      pkgStatus.status === 'failed'    ? 'Error en generación' :
                      'Generando…'}
                   </span>
@@ -378,7 +392,10 @@ function HubContent() {
             </div>
 
             {downloadError && (
-              <p className="mt-2 text-[11px] text-[#C0392B]">⚠️ {downloadError}</p>
+              <p className="mt-2 flex items-start gap-1.5 text-[11px] text-[#C0392B]" role="alert">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+                <span>{downloadError}</span>
+              </p>
             )}
 
             {/* Manifest expandido */}
@@ -410,9 +427,10 @@ function HubContent() {
                   </div>
                 )}
                 {manifest.warnings_activos?.length > 0 && (
-                  <div className="bg-[#FEF7E7] rounded-[6px] px-2 py-1">
-                    <span className="text-[#D4881E]">
-                      ⚠️ {manifest.warnings_activos.length} advertencia(s):&nbsp;
+                  <div className="flex items-start gap-1.5 bg-[#FEF7E7] rounded-[6px] px-2 py-1.5">
+                    <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[#D4881E] mt-0.5" aria-hidden="true" />
+                    <span className="text-[#D4881E] text-[11px] leading-snug">
+                      {manifest.warnings_activos.length} advertencia(s):{' '}
                       {manifest.warnings_activos.slice(0, 2).join(' · ')}
                     </span>
                   </div>
@@ -425,8 +443,9 @@ function HubContent() {
         {/* ── Selector ZM (cuando no hay paquete activo) ── */}
         {!jobParam && (
           <>
-            <div className="flex gap-2 mb-6 flex-wrap">
-              {Object.keys(DOCS_ESTATICOS).map(m => (
+            <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
+              <div className="flex gap-2 flex-wrap">
+              {ZM_TABS_HUB.map(m => (
                 <button
                   key={m}
                   onClick={() => { setZmActiva(m); setFiltroTipo('Todos') }}
@@ -440,10 +459,27 @@ function HubContent() {
                   {m}
                 </button>
               ))}
+              </div>
+              <button
+                type="button"
+                onClick={() => void handleDescargarPaqueteCapitulo()}
+                disabled={zipLoading}
+                className={cn(
+                  'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] border transition-colors shrink-0',
+                  zipLoading
+                    ? 'border-[#E8E4DC] text-[#A8A49C] cursor-not-allowed'
+                    : 'border-[#3B6D11] bg-[#3B6D11] text-white hover:bg-[#2D5409]',
+                )}
+              >
+                {zipLoading ? 'Generando ZIP…' : '🗜️ Descargar paquete ZIP'}
+              </button>
             </div>
+            {zipPaqueteError && (
+              <p className="mb-4 text-[11px] text-[#C0392B]" role="alert">{zipPaqueteError}</p>
+            )}
 
             <div className="flex gap-2 mb-6 flex-wrap">
-              {tiposEstaticos.map(t => (
+              {tiposCatalogo.map(t => (
                 <button
                   key={t}
                   onClick={() => setFiltroTipo(t)}
@@ -479,7 +515,7 @@ function HubContent() {
               </div>
               <span className={cn(
                 'text-[10px] font-medium px-2 py-1 rounded-full shrink-0',
-                ESTADO_CONFIG.defendible.bg, ESTADO_CONFIG.defendible.text
+                JOB_ASSET_CHIP.bg, JOB_ASSET_CHIP.text
               )}>
                 Generado
               </span>
@@ -514,47 +550,47 @@ function HubContent() {
             </div>
           )}
 
-          {/* Caso B: documentos estáticos (sin job) */}
-          {!usePackageAssets && docsFiltrados.map((doc, i) => {
-            const est = ESTADO_CONFIG[doc.estado] ?? ESTADO_CONFIG.borrador
-            const isPublico = doc.estado === 'publicado'
+          {/* Caso B: catálogo capítulo (sin job) */}
+          {!usePackageAssets && docsCapituloFiltrados.map(doc => {
+            const entregaEstado: DocEstadoHub =
+              doc.estadoEntrega === 'disponible' ? 'disponible_web' : 'en_elaboracion'
+            const est = HUB_ESTADO_CARD[entregaEstado]
+            const puedeAbrir = doc.estadoEntrega === 'disponible' && doc.publicRelPath
             return (
               <div
-                key={i}
-                className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] px-5 py-4 flex items-center gap-4"
+                key={doc.id}
+                className="flex flex-wrap items-start gap-4 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] px-5 py-4"
               >
-                <div className="text-[20px]">
-                  {doc.tipo === 'Marco Legal' ? '⚖️' :
-                   doc.tipo === 'Modelo Financiero' ? '📊' :
-                   doc.tipo === 'Operativo' ? '⚙️' :
-                   doc.tipo === 'Comunicación' ? '📢' : '🔬'}
-                </div>
-                <div className="flex-1">
+                <div className="text-[20px] shrink-0">{formatoIcon(doc.formato)}</div>
+                <div className="min-w-0 flex-1">
                   <p className="text-[13px] font-medium text-[#1C1B18]">{doc.nombre}</p>
-                  <p className="text-[11px] text-[#A8A49C]">{doc.tipo} · {doc.fecha}</p>
+                  <p className="text-[11px] text-[#A8A49C]">
+                    {doc.tipo} · {doc.formato} · ref. ver. {doc.versionFecha}
+                  </p>
+                  <p className="mt-1 text-[11px] leading-snug text-[#6B6760]">{doc.descripcionLinea}</p>
                 </div>
-                <span className={cn('text-[10px] font-medium px-2 py-1 rounded-full shrink-0', est.bg, est.text)}>
+                <span className={cn('text-[10px] font-medium px-2 py-1 rounded-full shrink-0 self-center', est.bg, est.text)}>
                   {est.label}
                 </span>
-                <div className="flex gap-2 shrink-0">
-                  {isPublico && (
+                <div className="flex shrink-0 flex-col items-end gap-1 self-center">
+                  {puedeAbrir ? (
                     <a
-                      href={`/municipio/${zmActiva.toLowerCase()}/public`}
-                      className="text-[11px] text-[#3B6D11] hover:underline"
+                      href={`/${doc.publicRelPath}`}
+                      className="text-[11px] font-medium text-[#3B6D11] hover:underline"
                       target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      URL pública
+                      Abrir archivo
                     </a>
+                  ) : (
+                    <span className="text-[11px] text-[#A8A49C]">Archivo en repo pendiente</span>
                   )}
-                  <button className="text-[11px] text-[#6B6760] hover:underline cursor-not-allowed opacity-50" disabled>
-                    Descargar
-                  </button>
                 </div>
               </div>
             )
           })}
 
-          {!usePackageAssets && docsFiltrados.length === 0 && (
+          {!usePackageAssets && docsCapituloFiltrados.length === 0 && (
             <div className="text-center py-12 text-[#A8A49C]">
               <p>No hay documentos en esta categoría aún.</p>
               <p className="text-[12px] mt-1">Genera el plan de circularidad para producirlos.</p>

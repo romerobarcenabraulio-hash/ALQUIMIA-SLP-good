@@ -105,11 +105,11 @@ export function ImplementacionEspacioTiempo() {
 
       <details className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#1C1B18]">
-          Sala de comando y taller técnico · sin carácter oficial de planeación
+          Sala de comando y mesa técnica · sin carácter oficial de planeación
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Sirve en mesas de trabajo y capacitación: muestra cómo actúa el planificador cuando el conjunto municipal activo no se envía al modelo territorial,
-          sin modificar la selección real ni las fuentes del simulador.
+          Para talleres institucionales: ilustra la respuesta del planificador cuando la solicitud al modelo territorial no incluye municipios del conjunto activo en pantalla,
+          sin alterar la selección ni las fuentes ya cargadas en el simulador.
         </p>
         <label className="mt-3 flex items-start gap-2 text-[12px] text-[#6B6760]">
           <input
@@ -132,7 +132,7 @@ export function ImplementacionEspacioTiempo() {
             variant="warning"
             audience="functionary"
             kicker="Territorial · error de cómputo"
-            summary={`No se obtuvo plan para ${zmActiva} con horizonte ${normalizedHorizon} años, meta de captura objetivo ${targetCapture}% y ${municipiosActivos.length} municipio(s) en el envío${blockedDemo ? ' (modo capacitación sin municipios)' : ''}. El backend respondió: ${error}`}
+            summary={`No se obtuvo plan para ${zmActiva} con horizonte ${normalizedHorizon} años, meta de captura objetivo ${targetCapture}% y ${municipiosActivos.length} municipio(s) en la solicitud${blockedDemo ? ' (ejercicio sin municipios en la solicitud)' : ''}. El servicio respondió: ${error}`}
             evidence={[
               { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
               { label: 'RSU modelo', value: `${payload.rsu_total_ton_day.toFixed(2)} ton/día` },

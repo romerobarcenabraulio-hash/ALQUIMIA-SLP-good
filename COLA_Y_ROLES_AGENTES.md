@@ -32,13 +32,18 @@ _Orden sugerido: de arriba hacia abajo. Un ítem = una PR o un paquete coherente
 
 | ID | Ítem | Rol propietario | Estado | Definición de HECHO |
 |----|------|-----------------|--------|---------------------|
-| Q-001 | Firma Auditor Fase 22 vs blueprints `22_0`–`22_6` | Auditor | REVISIÓN | AUTORIZADO o Prompt quirúrgico en bitácora |
-| Q-002 | (Opcional) 22.6 server-side `audience` si Auditor exige | Ejecutor → Auditor | PENDIENTE | `pytest test_fase22_audience.py` + sin regresión portal |
-| Q-003 | 17.1 publicación y control de acceso | Ejecutor → Auditor | PENDIENTE | Según `17_1_publicacion_y_control_de_acceso.md` |
-| Q-004 | **23.0** remediación FAIL 5–7 (**Ejecutor HECHO**) + **Navigator re-PASS HECHO** (2026-05-05) → **23.1** solo con CSA nuevo | Navigator → Ejecutor | **EN CURSO** (gate 23.1 cerrado Navigator) | re-PASS en bitácora: ítem 5 PASS; 6–7 FAIL persistentes · **sin 23.1** hasta CSA nueva orden o cierre CVE/MGN |
+| Q-001 | Firma Auditor Fase 22 vs blueprints `22_0`–`22_6` | Auditor | **HECHO** 2026-05-05 | Mandado al Auditor; respuesta recibida |
+| Q-002 | (Opcional) 22.6 server-side `audience` si Auditor exige | Ejecutor → Auditor | PENDIENTE | Solo si Auditor lo requirió en Q-001 |
+| Q-003 | 17.1 publicación + landing + auth + backend deploy | Ejecutor → Auditor | **SIGUIENTE** | Backend en host público + NEXT_PUBLIC_API_URL + CORS + auth rutas sensibles; `Failed to fetch` en prod resuelto |
+| Q-004 | **23.0** remediación FAIL 5–7 (**Ejecutor HECHO**) + **Navigator re-PASS HECHO** (2026-05-05) → **23.1** solo con CSA nuevo | Navigator → Ejecutor | **EN CURSO** (gate 23.1 cerrado Navigator) | re-PASS en bitácora: ítem 5 PASS; 6–7 FAIL persistentes · **sin 23.1** hasta CSA nueva orden o cierre CVE/MGN · **2026-05-05** salvaguardas Navigator (disclaimers simulación, Municipio↔ZM copy, gate verificación legal doc, banner hub `DOCS_ESTATICOS`, §6.3 bitácora + job Lighthouse opcional) |
 | Q-004b | CI GitHub Actions (`ci.yml`) rg + pytest + tsc | Ejecutor | **HECHO** | Workflow en `.github/workflows/ci.yml`; verificar run verde en GitHub |
 | Q-005 | 24 release gate E2E + observabilidad | Ejecutor → Auditor | PENDIENTE | E2E reproducible o protocolo firmado |
 | Q-006 | 25 tokens / design-as-code | Aesthete → Ejecutor | PENDIENTE | Tabla tokens versionada + README enlazado |
+| Q-007 | **26** Reglamentos fuente primaria (modal/popup) + docs descargables completos SLP | Ejecutor → Auditor | PENDIENTE | Ver `26_reglamentos_fuente_primaria_y_documentacion.md`; puede correr en paralelo con Q-003 |
+| Q-008 | **PM Consultor Senior** — evaluar proyecto, charter, stakeholders, cronograma, riesgos, modelo de negocio | Agente PM | PENDIENTE | Ver `AGENTE_PM_DIRECTOR_PROYECTOS.md`; abrir chat nuevo con prompt sistema |
+| Q-009 | **27** Selector Estado → Municipio + generación universal escenarios + botón Home ALQUIMIA | Ejecutor → Navigator → Auditor | PENDIENTE | Ver `27_selector_estado_municipio_y_generacion_universal.md`; Navigator valida CVE INEGI |
+| Q-010 | **Agente Jurídico Legal** — revisar disclaimers, normas citadas, privacidad, responsabilidad, términos de uso | Agente Jurídico | PENDIENTE (**ANTES de release público**) | Ver `AGENTE_JURIDICO_LEGAL.md`; activar antes de R1 con usuarios reales |
+| Q-011 | **PRES-1** Pulido presentación institucional — landing (PR A) · simulador ciudadano (PR B) · aprende (PR C) | Aesthete → Ejecutor | PENDIENTE | Ver `PRES-1_pulido_presentacion_institucional.md`; riesgo bajo · solo copy/UI · sin tocar API ni motor de cálculo · iniciar después de Q-003-UX |
 
 **Leyenda estado:** `PENDIENTE` | `EN CURSO` | `REVISIÓN` (Auditor o PR abierta) | `HECHO` | `BLOQUEADO`
 
@@ -127,3 +132,8 @@ Si un cambio **toca mapa + UI**: Ejecutor integra → **Navigator** (geo) y **Ae
 | Fase 24 (release gate) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/24_release_gate_e2e_observabilidad.md` |
 | Fase 25 (tokens) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/25_tokens_y_design_as_code.md` |
 | Prompts COLA + agente planeación/logística | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/planeacion_ejecucion/PROMPTS_TAREAS_PENDIENTES_Y_AGENTE_PLANEACION_LOGISTICA.md` |
+| Fase 26 (reglamentos + docs descargables) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/26_reglamentos_fuente_primaria_y_documentacion.md` |
+| Agente PM / Director de proyectos | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/AGENTE_PM_DIRECTOR_PROYECTOS.md` |
+| Fase 27 (selector Estado→Municipio + universal) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/27_selector_estado_municipio_y_generacion_universal.md` |
+| Agente Jurídico Legal | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/AGENTE_JURIDICO_LEGAL.md` |
+| Fase PRES-1 (pulido institucional) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/PRES-1_pulido_presentacion_institucional.md` |

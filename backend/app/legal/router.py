@@ -19,7 +19,7 @@ GET  /legal/hub                             → List[LegalStatusHub] (todos)
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, HTTPException
 
 from app.legal.diagnostic import build_diagnostic, build_municipal_legal_context
 from app.legal.metropolitan import build_paquete_metropolitano
@@ -36,6 +36,7 @@ from app.legal.source_ingest import (
 )
 from app.legal.schemas import (
     LegalSourceIngestRequest,
+    LegalVerificarRequest,
     LegalDiagnostic, LegalStatusHub, PaqueteMetropolitano,
     MunicipalLegalContext,
     MunicipalLegalInsertionMap,
@@ -144,19 +145,33 @@ async def get_strategy(municipio: str) -> ReformStrategyOutput:
 async def verificar_reglamento(
     municipio: str,
     verificado: bool = True,
+    payload: LegalVerificarRequest | None = Body(default=None),
     user: UserInfo = Depends(get_current_user),
 ) -> dict:
+    """Marca bandera verificado en memoria tras revisión institucional (no auditoría persistente hasta ADR BD).
+
+    Proceso humano esperado: persona con mandato registra revisión del reglamento frente al POE o fuente oficial,
+    con evidencia mínima (URL, checksum, memo). ``justification`` y ``evidence_ref`` sirven sólo como nota manual
+    de trazabilidad en la respuesta hasta existir libro de auditoría persistente enlazado a ``PUT`` y a
+    ``can_enable_sanctions`` en el front.
+    """
     if user.rol != "admin":
         raise HTTPException(status_code=403, detail="Solo admin puede verificar reglamentos")
     ok = get_repo().set_verificado(municipio.lower(), verificado)
     if not ok:
         raise HTTPException(status_code=404, detail=f"Municipio '{municipio}' no encontrado")
-    return {
+    out: dict = {
         "ok": True,
         "municipio": municipio.lower(),
         "verificado": verificado,
         "agora_bloqueado": not verificado,
     }
+    if payload is not None:
+        out["trace"] = {
+            "has_justification": bool(payload.justification and payload.justification.strip()),
+            "has_evidence_ref": bool(payload.evidence_ref and payload.evidence_ref.strip()),
+        }
+    return out
 
 
 @router.post("/{municipio}/reglamento")
@@ -208,8 +223,14 @@ async def get_zm_context(zm: str) -> dict:
         detail={
             "ok": False,
             "zm": zm.upper(),
-            "error": "Una ZM no tiene contexto legal municipal único.",
-            "next_action": "Consultar /legal/{municipio}/context por cada municipio de la ZM.",
+            "error": (
+                "Zona metropolitana sin contexto legal único: la ZM coordina interoperabilidad y convenios; "
+                "el reglamento y la titularidad sancionatoria viven en cada municipio."
+            ),
+            "next_action": (
+                "Usar GET /legal/{municipio}/context una vez por cada municipio_id de la ZM; "
+                "no usar la ZM como autoridad jurídica única."
+            ),
         },
     )
 
@@ -219,7 +240,16 @@ async def get_zm_source_manifest(zm: str) -> dict:
     repo = get_repo()
     if not repo.get_municipios_by_zm(zm.upper()):
         raise HTTPException(status_code=404, detail=f"ZM '{zm}' no encontrada")
-    raise HTTPException(status_code=400, detail=reject_zm_legal_source(zm))
+    zm_detail = reject_zm_legal_source(zm)
+    if isinstance(zm_detail, dict):
+        zm_detail = {
+            **zm_detail,
+            "reason": (
+                "No se ingiere manifiesto legal a nivel único ZM (Navigator): los documentos locales se "
+                "registran municipalmente; este 400 preserva ese alcance."
+            ),
+        }
+    raise HTTPException(status_code=400, detail=zm_detail)
 
 
 @router.get("/zm/{zm}/insertion-map")
@@ -227,4 +257,13 @@ async def get_zm_insertion_map(zm: str) -> dict:
     repo = get_repo()
     if not repo.get_municipios_by_zm(zm.upper()):
         raise HTTPException(status_code=404, detail=f"ZM '{zm}' no encontrada")
-    raise HTTPException(status_code=400, detail=reject_zm_normative_insertion(zm))
+    ins_detail = reject_zm_normative_insertion(zm)
+    if isinstance(ins_detail, dict):
+        ins_detail = {
+            **ins_detail,
+            "reason": (
+                "Inserción normativa sólo puede evaluarse por municipio activo en simulación; la ZM agrega "
+                "coordinación, no texto reglamentario sustitutivo."
+            ),
+        }
+    raise HTTPException(status_code=400, detail=ins_detail)

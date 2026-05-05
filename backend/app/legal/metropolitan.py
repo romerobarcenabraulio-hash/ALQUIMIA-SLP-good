@@ -21,6 +21,9 @@ from app.legal.schemas import (
 
 # ─── Configuración por ZM ─────────────────────────────────────────────────────
 
+# Coordinación únicamente — Navigator §5: ZM ≠ municipio con poder sancionatorio propio.
+_COORD_SCOPE_PREFIX = "Ámbito de coordinación ZM (sin autoridad sancionatoria única ni sustituta del ayuntamiento). "
+
 _ZM_CONFIG: dict[str, dict] = {
     "SLP": {
         "convenio_marco_zm":          "pendiente",
@@ -29,7 +32,8 @@ _ZM_CONFIG: dict[str, dict] = {
         "interoperabilidad_rutas":    "Rutas de SLP y Soledad operan bajo el mismo concesionario (SERV). Sin trazabilidad digital. Pendiente GPS.",
         "infraestructura_compartida": "Relleno sanitario regional compartido con vida útil estimada de 12 años (SEPLAP 2023). Sin planta de compostaje ZM.",
         "nota": (
-            "SLP es el municipio líder obligatorio — tiene el mayor volumen (73% de la ZM) y el único marco jurídico "
+            _COORD_SCOPE_PREFIX
+            + "SLP es el municipio líder obligatorio — tiene el mayor volumen (73% de la ZM) y el único marco jurídico "
             "con posibilidad de reforma en corto plazo. Soledad debe actuar en paralelo dado su crecimiento. "
             "Cerro de San Pedro y Villa de Pozos son micro-municipios; adoptar por decreto de supletoriedad estatal."
         ),
@@ -53,7 +57,8 @@ _ZM_CONFIG: dict[str, dict] = {
         "interoperabilidad_rutas":    "Querétaro y Corregidora comparten zona de transferencia en La Cañada. Sin acuerdo formal de trazabilidad.",
         "infraestructura_compartida": "Relleno sanitario ZM compartido (RSQRO) — vida útil 9 años. Planta de compostaje QRO con capacidad excedente.",
         "nota": (
-            "Querétaro es el municipio líder evidente — reglamento verificado, más capacidad administrativa. "
+            _COORD_SCOPE_PREFIX
+            + "Querétaro es el municipio líder evidente — reglamento verificado, más capacidad administrativa. "
             "Corregidora y El Marqués tienen masa crítica industrial que justifica CAs propios. "
             "Huimilpan debe integrarse vía supletoriedad y mancomunidad de hecho."
         ),
@@ -77,7 +82,8 @@ _ZM_CONFIG: dict[str, dict] = {
         "interoperabilidad_rutas":    "Red SIMEPRODE coordina transferencia entre municipios. Pendiente integración GPS en Apodaca, García y Juárez.",
         "infraestructura_compartida": "Relleno Sanitario Metropolitano SIMEPRODE — vida útil 8 años. Planta de compostaje Monterrey + SPG en operación.",
         "nota": (
-            "MTY ZM tiene el convenio marco más avanzado, pero heterogeneidad interna alta: San Pedro es el más avanzado, "
+            _COORD_SCOPE_PREFIX
+            + "MTY ZM tiene el convenio marco más avanzado, pero heterogeneidad interna alta: San Pedro es el más avanzado, "
             "Juárez y García son los más rezagados. La estrategia de oleadas debe priorizar por impacto de volumen "
             "(Guadalupe 686K y Apodaca 643K) antes que por preparación jurídica."
         ),

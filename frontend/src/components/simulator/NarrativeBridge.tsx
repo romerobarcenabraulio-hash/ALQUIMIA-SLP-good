@@ -6,6 +6,10 @@
  * Componente de "pegamento" entre cálculo y acción siguiente. Su `summary`
  * debe derivarse de datos reales del store o respuesta API; auditoría
  * rechaza copy estático.
+ *
+ * Navigator (datos, no tiles): al referir ZM vs municipio use
+ * `traceabilityMunicipalVersusZmSummary` o copy equivalente derivado de IDs,
+ * nunca implicar sanciones a nombre de la ZM única.
  */
 
 import type { ReactNode } from 'react'
@@ -142,5 +146,15 @@ export function NarrativeBridge({
         </div>
       )}
     </aside>
+  )
+}
+
+/** Resumen derivado: ZM = coordinación agregada; efectos legales por municipio (`municipio_id`) según alcance Navigator en datos. */
+export function traceabilityMunicipalVersusZmSummary(zmLabel: string, municipalIds: readonly string[]): string {
+  const ids = municipalIds.length ? municipalIds.join(', ') : 'sin municipios activos'
+  return (
+    `ZM ${zmLabel}: vista territorial y de coordinación agregada. `
+    + `Artículos, scores jurídicos y vías de sanción en esta simulación aplican por municipio (${ids}); `
+    + 'la zona metropolitana no actúa como autoridad sancionatoria única.'
   )
 }

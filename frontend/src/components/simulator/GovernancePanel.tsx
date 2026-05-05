@@ -9,6 +9,7 @@ const FLOW = ['Inputs del sistema', 'Métricas de calidad', 'Evaluación DoD', '
 
 export function GovernancePanel() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const agoraLegalBloqueado = useSimulatorStore(s => s.agoraLegalBloqueado)
   const municipio = municipiosActivos[0] ?? ''
 
   const [totalTestsPassing, setTotalTestsPassing] = useState(646)
@@ -75,6 +76,27 @@ export function GovernancePanel() {
             {i < arr.length - 1 && <span className="text-[#A8A49C]">→</span>}
           </Fragment>
         ))}
+      </div>
+
+      <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 text-[12px] text-[#1C1B18]">
+        <p className="font-semibold">Gates legales del simulador (estado en vivo)</p>
+        <p className="mt-1 text-[#6B6760]">
+          El módulo S4.6 actualiza este estado según cada{' '}
+          <span className="font-mono">municipio_id</span> activo y las banderas{' '}
+          <span className="font-mono">can_enable_sanctions</span> /{' '}
+          <span className="font-mono">can_generate_official_document</span>{' '}
+          del diagnóstico legal.
+        </p>
+        <p className="mt-2">
+          Estado actual:&nbsp;
+          {agoraLegalBloqueado ? (
+            <span className="font-medium text-[#C0392B]">bloqueado</span>
+          ) : (
+            <span className="font-medium text-[#2D7A0A]">sin bloqueo global en municipios activos</span>
+          )}
+          {' '}
+          (educación y simulación pueden continuar con advertencias).
+        </p>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-2">

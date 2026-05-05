@@ -40,8 +40,8 @@ const CARDS: AudienceCard[] = [
     icon: Landmark,
     kicker: 'Funcionario público · Decisión',
     title: '¿Cómo planeo el cambio?',
-    promise: 'Entra a la sala de mando institucional: gates jurídicos, logística PER, mapas de implementación y comparador de escenarios con trazabilidad municipal vigente.',
-    modules: ['Marco legal y diagnóstico', 'PER, advertencias y gate jurídico', 'Comparador de escenarios y exportables'],
+    promise: 'Entra a la sala de mando institucional: marco legal y cumplimiento, logística PER, mapas de implementación y comparador de escenarios con trazabilidad municipal vigente.',
+    modules: ['Marco legal y diagnóstico', 'PER y advertencias educativas', 'Comparador de escenarios y exportables'],
     cta: 'Continuar como funcionario',
   },
   {

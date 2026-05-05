@@ -24,6 +24,8 @@ def test_city_context_api_exposes_metropolitan_zone_and_catalog_epoch():
     assert payload["jurisdiction_scope"] == "MetropolitanZone"
     assert payload["catalog_simulation_epoch"] == CATALOG_SIMULATION_EPOCH
     assert payload["geography_scope"] == "city_zm"
+    assert "simulación" in payload["legal_notice"].lower()
+    assert "cve" in payload["legal_notice"].lower() or "inegi" in payload["legal_notice"].lower()
     for m in payload["municipios"]:
         assert m["legal_scope"] == "municipio"
         assert m["jurisdiction_scope"] == "Municipality"

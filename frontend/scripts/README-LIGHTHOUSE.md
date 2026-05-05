@@ -56,6 +56,6 @@ LIGHTHOUSE_URL=http://127.0.0.1:3001/simulator npm run audit:lighthouse
 
 - **`start-server-and-test: command not found`:** ejecuta `npm install` en `frontend`. El script `audit:lighthouse:ci` usa `npx start-server-and-test` para resolver el binario local.
 
-## Linux / CI
+## Bitácora y §6.3 (Accessibility + LCP)
 
-Define `CHROME_PATH` al Chromium del sistema (por ejemplo `/usr/bin/google-chrome`) si Chrome no está en la ruta por defecto.
+Los scores finales se **append** en `planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md` con fecha, URL medida y comando o enlace al job CI (ver checklist “Release serio” R6). No inventar números: copiar el resumen que imprime `npm run audit:lighthouse:ci` o el fragmento JSON de Lighthouse.

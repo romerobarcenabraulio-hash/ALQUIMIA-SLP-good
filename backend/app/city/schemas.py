@@ -61,8 +61,11 @@ class CityOption(BaseModel):
 class CityContext(CityOption):
     geography_scope: Literal["city_zm"] = "city_zm"
     jurisdiction_scope: Literal["MetropolitanZone"] = "MetropolitanZone"
-    catalog_simulation_epoch: str = CATALOG_SIMULATION_EPOCH
-    legal_notice: str
+    catalog_simulation_epoch: str = Field(
+        default=CATALOG_SIMULATION_EPOCH,
+        description="Época simbólica del catálogo semilla hasta anclaje CVE/MGN oficial (Navigator 23.x)",
+    )
+    legal_notice: str = Field(..., description="Aviso de simulación y alcance municipal vs metropolitano")
     audience_mode: UserAudienceMode
     supported_entries: List[PortalEntry]
 

@@ -571,6 +571,12 @@ class ReglamentoRepository:
         self._reglamentos[reg.municipio_id.lower()] = reg
 
     def set_verificado(self, municipio_id: str, verificado: bool) -> bool:
+        """Actualiza banderas en memoria; no escribe libro de auditoría persistente ni prueba per se.
+
+        Límite actual (2026-Q2): ningún ROW en BD registra quién marcó ``verificado`` ni vínculos a evidencia.
+        Hasta migración Alembic + ADR acordados, cualquier uso de PUT /legal/.../verificar debe ir acompañado de
+        evidencia institucional externa correlacionada con ``can_enable_sanctions`` y gates del simulador.
+        """
         reg = self._reglamentos.get(municipio_id.lower())
         if not reg:
             return False

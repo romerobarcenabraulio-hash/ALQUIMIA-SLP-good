@@ -134,10 +134,10 @@ export function EducacionCiudadana() {
 
       <details className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#1C1B18]">
-          Opciones para capacitación · no sustituyen evidencia municipal
+          Opciones sintéticas para capacitación · no sustituyen evidencia municipal
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Úsalas solo en talleres o inductores: muestran cómo el modelo exige datos completos y qué responde el sistema cuando faltan,
+          Úsalas solo en inductores o talleres: muestran cómo el modelo exige datos completos y qué responde el sistema ante entradas incompletas,
           sin reemplazar registro ciudadano ni medición en campo.
         </p>
         <label className="mt-3 flex items-start gap-2 text-[12px] text-[#6B6760]">

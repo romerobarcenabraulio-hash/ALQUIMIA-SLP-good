@@ -11,8 +11,11 @@ export function SelectorZM() {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4 — Zona Metropolitana</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Selecciona tu ciudad</h2>
-
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Zona metropolitana · territorio coordinado</h2>
+      <p className="text-[12px] text-[#6B6760] mb-6 max-w-2xl leading-relaxed">
+        Aquí eliges la vista territorial de trabajo (ZM). Las cifras de población y generación son agregadas para la simulación;
+        obligaciones legales, reglamentos y vías de sanción siguen siendo municipales — la ZM no es autoridad jurídica única ni sustituta del ayuntamiento.
+      </p>
       {/* Selector ZMs */}
       <div className="flex flex-wrap gap-2 mb-6">
         {ZMS.map(z => (
