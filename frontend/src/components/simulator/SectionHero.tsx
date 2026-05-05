@@ -6,6 +6,7 @@ import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import type { FuenteTipo } from '@/types'
 
 export function SectionHero() {
+  const audience = useSimulatorStore(s => s.audience)
   const { resultados, zmActiva, snapshotDatos } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)
 
@@ -15,9 +16,15 @@ export function SectionHero() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
-        S1 — Plataforma de circularidad municipal
-      </p>
+      {audience === 'citizen' ? (
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
+          Vista ciudadana · análisis orientativo
+        </p>
+      ) : (
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
+          S1 — Plataforma de circularidad municipal
+        </p>
+      )}
       <h1 className="font-serif text-[38px] leading-[1.05] tracking-[-0.02em] text-[#1C1B18] mb-4 max-w-2xl">
         Transforma los residuos de{' '}
         <span className="text-[#3B6D11]">{zm?.nombre ?? 'tu ciudad'}</span>{' '}
@@ -25,8 +32,9 @@ export function SectionHero() {
       </h1>
       <p className="text-[15px] text-[#6B6760] max-w-2xl mb-8 leading-relaxed">
         El simulador ALQUIMIA calcula en tiempo real el impacto financiero, ambiental y social
-        de un programa de valorización de RSU. Configura tu escenario, observa los números cambiar,
-        y genera un plan de circularidad completo con un clic.
+        de un programa de valorización de RSU. Configura tu escenario, observa los números cambiar
+        y avanza módulo a módulo en un paquete de trabajo consultivo: la profundidad de la entrega
+        depende de los módulos y validaciones que completes.
       </p>
 
       {/* Métricas globales */}

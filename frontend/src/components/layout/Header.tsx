@@ -1,5 +1,6 @@
 'use client'
 
+import * as Tooltip from '@radix-ui/react-tooltip'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { useEffect, useRef, useState } from 'react'
@@ -104,13 +105,55 @@ export function Header() {
   const r = resultados
   const citizenKpiSoft = audience === 'citizen'
 
+  const kpiStrip = (
+    <div className="flex items-center gap-6">
+      <KpiChip
+        label="RSU"
+        value={r ? fmt.kgd(r.rsuTotalTonDia) : '—'}
+        variant={citizenKpiSoft ? 'citizen' : 'institutional'}
+      />
+      <KpiChip
+        label="Ingreso/año"
+        value={r ? fmt.mxnK(r.ingresosBrutos / (horizonte || 3)) : '—'}
+        color="text-[#3B6D11]"
+        variant={citizenKpiSoft ? 'citizen' : 'institutional'}
+      />
+      <KpiChip
+        label="CO₂e/año"
+        value={r ? fmt.co2(r.co2eEvitadasAnualTon) : '—'}
+        color="text-[#1A5FA8]"
+        variant={citizenKpiSoft ? 'citizen' : 'institutional'}
+      />
+      <KpiChip
+        label="Empleos"
+        value={r ? fmt.num0(r.empleosTotalesDirectos) : '—'}
+        variant={citizenKpiSoft ? 'citizen' : 'institutional'}
+      />
+    </div>
+  )
+
   const kpiRow =
     citizenKpiSoft && !baselineReady ? (
       <div className="hidden lg:flex flex-1 justify-center min-w-0 px-3">
-        <p className="text-[11px] leading-snug text-[#8C8880] text-center max-w-xl">
-          Resumen ciudadano: los indicadores del encabezado cobran sentido cuando la línea base municipal
-          está confirmada más abajo.
-        </p>
+        <Tooltip.Root delayDuration={200}>
+          <Tooltip.Trigger asChild>
+            <div
+              className="inline-flex cursor-help rounded-md border border-transparent py-0.5 outline-none focus-visible:ring-2 focus-visible:ring-[#3B6D11]/35"
+              aria-label="Indicadores atenuados hasta captura de baseline"
+            >
+              <div className="opacity-40 pointer-events-none select-none">{kpiStrip}</div>
+            </div>
+          </Tooltip.Trigger>
+          <Tooltip.Portal>
+            <Tooltip.Content
+              className="z-[100] max-w-xs rounded-md bg-[#1C1B18] px-3 py-2 text-center text-[11px] leading-snug text-white shadow-md"
+              sideOffset={6}
+            >
+              Disponibles tras captura de baseline
+              <Tooltip.Arrow className="fill-[#1C1B18]" />
+            </Tooltip.Content>
+          </Tooltip.Portal>
+        </Tooltip.Root>
       </div>
     ) : citizenKpiSoft && baselineReady && scrolled ? (
       <div className="hidden lg:flex flex-1 justify-center min-w-0 px-3">
@@ -119,34 +162,12 @@ export function Header() {
         </p>
       </div>
     ) : (
-      <div className="hidden lg:flex items-center gap-6 flex-1 justify-center min-w-0">
-        <KpiChip
-          label="RSU"
-          value={r ? fmt.kgd(r.rsuTotalTonDia) : '—'}
-          variant={citizenKpiSoft ? 'citizen' : 'institutional'}
-        />
-        <KpiChip
-          label="Ingreso/año"
-          value={r ? fmt.mxnK(r.ingresosBrutos / (horizonte || 3)) : '—'}
-          color="text-[#3B6D11]"
-          variant={citizenKpiSoft ? 'citizen' : 'institutional'}
-        />
-        <KpiChip
-          label="CO₂e/año"
-          value={r ? fmt.co2(r.co2eEvitadasAnualTon) : '—'}
-          color="text-[#1A5FA8]"
-          variant={citizenKpiSoft ? 'citizen' : 'institutional'}
-        />
-        <KpiChip
-          label="Empleos"
-          value={r ? fmt.num0(r.empleosTotalesDirectos) : '—'}
-          variant={citizenKpiSoft ? 'citizen' : 'institutional'}
-        />
-      </div>
+      <div className="hidden lg:flex flex-1 justify-center min-w-0">{kpiStrip}</div>
     )
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FDFCFA]/95 backdrop-blur-sm border-b border-[#E8E4DC] shadow-sm">
+    <Tooltip.Provider delayDuration={200}>
+      <header className="sticky top-0 z-50 bg-[#FDFCFA]/95 backdrop-blur-sm border-b border-[#E8E4DC] shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-14 py-1.5 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3 shrink-0 min-w-0 max-w-full">
           <div className="flex items-center gap-3 shrink-0">
@@ -217,6 +238,7 @@ export function Header() {
         </div>
       </div>
     </header>
+    </Tooltip.Provider>
   )
 }
 
