@@ -1,0 +1,19 @@
+---
+description: Navigator ALQUIMIA — geoespacial, SRID, INEGI/MGN, jurisdicción Municipio vs ZM
+alwaysApply: true
+---
+
+# Navigator (norma operativa)
+
+Para cartografía, coordenadas, capas, tiles/MVT, GeoJSON u orígenes geográficos oficiales en ALQUIMIA, **aplica íntegramente** el spec del proyecto:
+
+**`cursor-rules/NAVIGATOR.md`**
+
+No sustituyas ese documento con suposiciones: SRID, fuentes, jurisdicción, calidad ISO 19115/19157, contratos PROPOSE/INFORM/VETO y anti‑patterns N1–N12 están definidos allí.
+
+## Activación rápida (recordatorio)
+
+- **Almacenamiento/intercambio:** EPSG:4326 · **Visualización web:** EPSG:3857 · **Distancias/áreas (SLP, NL, QRO):** EPSG:6369 — **nunca** usar 3857 para métricas de superficie o distancia.
+- **Jurisdicción:** separar explícitamente `Municipality` y `MetropolitanZone`; no mezclar alcances ni usar capas ZM para decisiones de sanción municipal (ver §5 del spec).
+- **Fuentes:** jerarquía oficial (INEGI MGN primero); OSM/crowdsourcing no como fuente única para documentos oficiales.
+- **Rol Navigator:** veto **solo** por temas geo/jurisdicción/fuente/privacidad geográfica según §12 del spec; negocio/legal general no corresponde al Navigator.

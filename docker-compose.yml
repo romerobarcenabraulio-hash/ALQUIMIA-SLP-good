@@ -1,0 +1,76 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    command: npm run dev -- --hostname 0.0.0.0 --port 3000
+    ports:
+      - "3000:3000"
+    environment:
+      # Client-side fetches run in the user's browser, not inside Docker.
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN:-}
+      # Docker Desktop / macOS sometimes misses native fs events from external editors.
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      - backend
+    volumes:
+      # Bind mount: external agents editing the host files are reflected live.
+      - ./frontend:/app:cached
+      - /app/node_modules
+      - /app/.next
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+      - --reload
+      - --reload-dir
+      - /app
+    environment:
+      - DATABASE_URL=postgresql://alquimia:alquimia@db:5432/alquimia
+      - SECRET_KEY=${SECRET_KEY:-alquimia-secret-change-in-prod}
+      - SERPER_API_KEY=${SERPER_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_SERVICE_ACCOUNT_FILE=${GOOGLE_SERVICE_ACCOUNT_FILE:-}
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      # More reliable hot reload when host edits come from external agents.
+      - WATCHFILES_FORCE_POLLING=true
+    depends_on:
+      - db
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    volumes:
+      # Bind mount: external agents editing the host files are reflected live.
+      - ./backend:/app:cached
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: alquimia
+      POSTGRES_PASSWORD: alquimia
+      POSTGRES_DB: alquimia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:

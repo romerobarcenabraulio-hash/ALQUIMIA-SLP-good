@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+
+# Node — nunca subir dependencias (Vercel hace npm install en build)
+node_modules/
+frontend/node_modules/
+
+# Python entornos locales
+.venv/
+backend/.venv/
+venv/
+
+# Lighthouse / auditoría local (mantener solo .gitkeep)
+frontend/audit_reports/*
+!frontend/audit_reports/.gitkeep

@@ -1,0 +1,198 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --ivory-base:    #F8F6F1;
+  --ivory-card:    #FDFCFA;
+  --ivory-border:  #E8E4DC;
+  --ivory-hover:   #F0EDE5;
+  --gray-200:      #E2DED6;
+  --gray-400:      #A8A49C;
+  --gray-600:      #6B6760;
+  --gray-900:      #1C1B18;
+  --green-50:      #EAF3DE;
+  --green-500:     #3B6D11;
+  --green-600:     #2D5409;
+  --green-700:     #1F3B06;
+  --amber-50:      #FEF7E7;
+  --amber-300:     #F6C84B;
+  --amber-500:     #D4881E;
+  --amber-700:     #8A4F08;
+  --blue-50:       #EBF3FB;
+  --blue-600:      #1A5FA8;
+  --blue-900:      #051D45;
+  --red-50:        #FBEAEA;
+  --red-500:       #C0392B;
+  --earth-100:     #F0E8DC;
+  --earth-500:     #8B6B4A;
+  --mat-organico:  #639922;
+  --mat-papel:     #D4881E;
+  --mat-plastico:  #1A5FA8;
+  --mat-vidrio:    #1D9E75;
+  --mat-aluminio:  #8B6B4A;
+  --mat-otros:     #A8A49C;
+
+  --sp-1: 4px;   --sp-2: 8px;   --sp-3: 12px; --sp-4: 16px;
+  --sp-6: 24px;  --sp-8: 32px;  --sp-12: 48px; --sp-16: 64px;
+  --r-sm: 6px;   --r-md: 10px;  --r-lg: 14px;  --r-xl: 20px;
+  --shadow-sm: 0 1px 3px rgba(28,27,24,.07);
+  --shadow-md: 0 4px 12px rgba(28,27,24,.08);
+  --shadow-lg: 0 8px 24px rgba(28,27,24,.10);
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background-color: var(--ivory-base);
+  color: var(--gray-900);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Utility classes */
+.font-mono-data { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+.font-display   { font-family: Georgia, "Times New Roman", serif; }
+
+/* Scrollbar slim */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--ivory-base); }
+::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--gray-400); }
+
+/* Card base */
+.card {
+  background: var(--ivory-card);
+  border: 1px solid var(--ivory-border);
+  border-radius: var(--r-lg);
+  padding: 20px 24px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 200ms ease, border-color 200ms ease;
+}
+.card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--gray-200);
+}
+
+/* Card óptimo ★ */
+.card-optimo {
+  border-color: var(--amber-300);
+  background: var(--amber-50);
+}
+
+/* Overlay bloqueado */
+.overlay-blocked {
+  opacity: 0.35;
+  pointer-events: none;
+  position: relative;
+}
+.overlay-blocked::after {
+  content: 'Requiere Fase 1 — Reforma reglamentaria aprobada';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(192, 57, 43, 0.08);
+  color: var(--red-500);
+  font-size: 12px;
+  font-weight: 500;
+  border: 2px solid var(--red-500);
+  border-radius: var(--r-lg);
+  pointer-events: auto;
+  opacity: 1;
+  z-index: 10;
+}
+
+/* Badge live API */
+.badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 8px;
+  background: var(--green-50);
+  color: var(--green-500);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+.badge-live .dot {
+  width: 5px;
+  height: 5px;
+  background: var(--green-500);
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.badge-fallback {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  background: var(--amber-50);
+  color: var(--amber-500);
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+/* Btn primario */
+.btn-primary {
+  background: var(--green-500);
+  color: #fff;
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background 150ms ease-out, transform 150ms ease-out;
+}
+.btn-primary:hover {
+  background: var(--green-600);
+  transform: translateY(-1px);
+}
+.btn-primary:active { transform: translateY(0); }
+
+/* Btn secundario */
+.btn-secondary {
+  background: transparent;
+  color: var(--green-500);
+  padding: 10px 22px;
+  border-radius: var(--r-sm);
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--green-500);
+  cursor: pointer;
+  transition: background 150ms ease-out;
+}
+.btn-secondary:hover { background: var(--green-50); }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .35; }
+}
+
+@keyframes count-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-count-up { animation: count-up 0.3s ease-out; }
+
+/* Section divider */
+.section { padding: 64px 0; }
+.section + .section { border-top: 1px solid var(--ivory-border); }
+
+/* Recharts overrides */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: var(--ivory-border);
+  stroke-dasharray: 4 4;
+}
+.recharts-text { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 10px; fill: var(--gray-400); }

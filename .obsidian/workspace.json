@@ -1,0 +1,207 @@
+{
+  "main": {
+    "id": "9cdbd5b8881c067b",
+    "type": "split",
+    "children": [
+      {
+        "id": "b73cbb7cded7452f",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b8b1f6e3f4f50bd2",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Vista gráfica"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "9185bcf48d6de222",
+    "type": "split",
+    "children": [
+      {
+        "id": "cefe23a9d5618de3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "27cc9873ea01a969",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Explorador de archivos"
+            }
+          },
+          {
+            "id": "1d82c17a440ce4f2",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Buscar"
+            }
+          },
+          {
+            "id": "819de66469c69404",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Marcadores"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300
+  },
+  "right": {
+    "id": "0426f69e3a3fa558",
+    "type": "split",
+    "children": [
+      {
+        "id": "b5e74134e6c6af62",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "eaac53b03a1b96df",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "frontend/node_modules/eslint-plugin-react/README.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Enlaces entrantes de README"
+            }
+          },
+          {
+            "id": "983deee31e2560e5",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "frontend/node_modules/eslint-plugin-react/README.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Enlaces salientes de README"
+            }
+          },
+          {
+            "id": "06e5a95b076d158c",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Etiquetas"
+            }
+          },
+          {
+            "id": "aec604765e178346",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "Todas las propiedades"
+            }
+          },
+          {
+            "id": "bebb30a146961cad",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "frontend/node_modules/eslint-plugin-react/README.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Esquema de README"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Abrir selector rápido": false,
+      "graph:Abrir vista gráfica": false,
+      "canvas:Crear nuevo lienzo": false,
+      "daily-notes:Abrir la nota de hoy": false,
+      "templates:Insertar plantilla": false,
+      "command-palette:Abrir paleta de comandos": false,
+      "bases:Crear nueva base": false
+    }
+  },
+  "active": "b8b1f6e3f4f50bd2",
+  "lastOpenFiles": [
+    "backend/app/national",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/05_FASE_6_MACROGENERADORES.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/04_FASE_5_MARKETPLACE_PRECOLOCACION.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/03_FASE_4_EXPORTACION_PROFESIONAL.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/02_FASE_3C_PERSISTENCIA_DESCARGA.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/02B_FASE_3D_UI_DESCARGA_HUB.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30/01_FASE_3B_CERRAR_AGORA_RUNTIME.md",
+    "AJUSTES.ALQUIMIA/_historico_pre_expansion/fases_ejecutadas_hasta_6_2026-04-30",
+    "frontend/src/components/simulator/ReasoningGraphPanel.tsx",
+    "backend/app/reasoning/__pycache__/schemas.cpython-314.pyc",
+    "backend/app/reasoning/__pycache__/router.cpython-314.pyc",
+    "backend/app/reasoning/__pycache__/graph_builder.cpython-314.pyc",
+    "backend/app/reasoning/__pycache__/explanations.cpython-314.pyc",
+    "backend/app/reasoning/__pycache__/__init__.cpython-314.pyc",
+    "backend/app/reasoning/__pycache__",
+    "backend/tests/__pycache__/test_fase7_reasoning_graph.cpython-314-pytest-9.0.3.pyc",
+    "backend/tests/test_fase7_reasoning_graph.py",
+    "AJUSTES.ALQUIMIA/documentos de expancion/10_FASE_11_EDUCACION_CONTENEDORES_EXPANSION_SECTORIAL.md",
+    "frontend/node_modules/eslint-plugin-react/README.md",
+    "Sin título.canvas",
+    "frontend/node_modules/eslint-plugin-import/docs/rules/extensions.md",
+    "ddd.md"
+  ]
+}

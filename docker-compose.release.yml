@@ -1,0 +1,59 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: dev
+    command: npm run dev -- --hostname 0.0.0.0 --port 3000
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+      - NEXT_PUBLIC_MAPBOX_TOKEN=${NEXT_PUBLIC_MAPBOX_TOKEN:-}
+      - WATCHPACK_POLLING=true
+      - CHOKIDAR_USEPOLLING=true
+      - NEXT_TELEMETRY_DISABLED=1
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8000"
+    environment:
+      - DATABASE_URL=postgresql://alquimia:alquimia@db:5432/alquimia
+      - SECRET_KEY=${SECRET_KEY:-alquimia-secret-change-in-prod}
+      - SERPER_API_KEY=${SERPER_API_KEY:-}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - GOOGLE_SERVICE_ACCOUNT_FILE=${GOOGLE_SERVICE_ACCOUNT_FILE:-}
+      - PYTHONDONTWRITEBYTECODE=1
+      - PYTHONUNBUFFERED=1
+      - ALQUIMIA_PACKAGES_DIR=/tmp/alquimia_packages
+    depends_on:
+      - db
+    volumes:
+      - alquimia_packages:/tmp/alquimia_packages
+
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: alquimia
+      POSTGRES_PASSWORD: alquimia
+      POSTGRES_DB: alquimia
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  alquimia_packages:
+  pgdata:

@@ -1,0 +1,42 @@
+# Fase 22.x — reglas paramétricas (carga al boot según EJECUTOR §12)
+# G22-01: fuente verificable para Auditoría condicional → PASS
+
+phase: "22.x"
+title: "Gateway de audiencia, NarrativeBridge dinámico, purga visual demo/hub, Reasoning Graph editorial"
+
+mandatory_checks:
+  - id: G22-01-NB-TORNADO
+    rule: "ImpactoFinanciero: NarrativeBridge del Tornado debe derivar del análisis (tornadoAnalysis), no de copy estático."
+    severity: Blocker
+    auto_check: "rg 'tornadoAnalysis' frontend/src/components/simulator/ImpactoFinanciero.tsx && rg 'tornadoRows' frontend/src/components/simulator/ImpactoFinanciero.tsx"
+
+  - id: G22-01-DEMO-MODULES
+    rule: "Módulos S12.x (cuatro archivos): <details> sin subtítulo literal 'demo'; summaries institucionales acordes a Aesthete §purga."
+    severity: High
+    auto_check: "rg -q 'Opciones para capacitación · no sustituyen evidencia municipal' frontend/src/components/simulator/EducacionCiudadana.tsx && rg -q 'Sala de comando y taller técnico · sin carácter oficial de planeación' frontend/src/components/simulator/ImplementacionEspacioTiempo.tsx && rg -q 'Bitácora PER y sala técnica · escenarios sin carácter de acta municipal' frontend/src/components/simulator/OperacionPERBitacora.tsx && rg -q 'Opciones que simulan el gate municipal' frontend/src/components/simulator/AdvertenciasGateLegal.tsx && ! rg -F 'Modo demo' frontend/src/components/simulator/EducacionCiudadana.tsx frontend/src/components/simulator/ImplementacionEspacioTiempo.tsx frontend/src/components/simulator/OperacionPERBitacora.tsx frontend/src/components/simulator/AdvertenciasGateLegal.tsx"
+
+  - id: G22-01-RG-CTA
+    rule: "ReasoningGraphPanel: CTA primario usa acento institucional #3B6D11 y hover #2D7A0A."
+    severity: High
+    auto_check: "rg '#3B6D11' frontend/src/components/simulator/ReasoningGraphPanel.tsx && rg '#2D7A0A' frontend/src/components/simulator/ReasoningGraphPanel.tsx"
+
+  - id: G22-01-RG-ERROR-COPY
+    rule: "ReasoningGraphPanel: no usar fallback genérico tipo 'Error generando explicación causal' en catch; copy institucional Fase 18."
+    severity: Blocker
+    auto_check: "! rg 'Error generando explicación causal' frontend/src/components/simulator/ReasoningGraphPanel.tsx"
+
+  - id: G22-01-HUB-PACKAGE
+    rule: "Hub (jobParam): estado completado usa copy institucional de documentación lista (no 'Paquete listo' ni formula técnica vacía)."
+    severity: High
+    auto_check: "rg -n 'Documentación lista para revisión y descarga' frontend/src/app/hub/page.tsx && ! rg -n 'Paquete listo' frontend/src/app/hub/page.tsx"
+
+  - id: G22-01-PHASE-RULES
+    rule: "Existencia de reglas cargables: phase-rules/22.x.yaml en raíz del repo."
+    severity: Blocker
+    auto_check: "test -f phase-rules/22.x.yaml"
+
+forbidden_in_production:
+  - pattern: "Error generando explicación causal"
+    rationale: "Copy de prototipo; reemplazar por mensaje institucional en ReasoningGraphPanel."
+  - pattern: "Evidencia:"
+    note: "String purgado 22.5 en UI visible (salvo contexto de API/evidencia estructurada); revisar grep en PR."

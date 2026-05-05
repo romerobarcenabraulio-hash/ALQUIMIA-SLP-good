@@ -1,0 +1,96 @@
+from __future__ import annotations
+
+from enum import Enum
+from typing import List, Literal, Optional
+
+from pydantic import BaseModel, Field, model_validator
+
+from app.city.catalog_debt import CATALOG_SIMULATION_EPOCH
+from app.data.schemas import DataProvenance
+
+# NAVIGATOR §5 — vocabulario canonico de alcance jurisdiccional (ingles, producto).
+# `legal_scope="municipio"` (espanol, dominio legal) equivale a Municipality en filas municipales.
+JurisdictionScope = Literal["Municipality", "MetropolitanZone"]
+
+
+class PortalEntry(str, Enum):
+    city_plan = "city_plan"
+    organization = "organization"
+
+
+class UserAudienceMode(str, Enum):
+    citizen = "citizen"
+    city_team = "city_team"
+    organization = "organization"
+
+
+class DecisionModuleStatus(str, Enum):
+    ready = "ready"
+    blocked = "blocked"
+
+
+class DecisionModule(BaseModel):
+    module_id: str
+    label: str
+    audience_mode: UserAudienceMode
+    decision: str
+    evidence: str
+    status: DecisionModuleStatus = DecisionModuleStatus.ready
+    blocker: Optional[str] = None
+    next_action: str
+
+
+JourneyStep = DecisionModule
+
+
+class MunicipioContext(BaseModel):
+    municipio_id: str
+    nombre: str
+    estado: str
+    legal_scope: Literal["municipio"] = "municipio"
+    jurisdiction_scope: Literal["Municipality"] = "Municipality"
+
+
+class CityOption(BaseModel):
+    city_id: str
+    nombre: str
+    estado_principal: str
+    municipios: List[MunicipioContext]
+
+
+class CityContext(CityOption):
+    geography_scope: Literal["city_zm"] = "city_zm"
+    jurisdiction_scope: Literal["MetropolitanZone"] = "MetropolitanZone"
+    catalog_simulation_epoch: str = CATALOG_SIMULATION_EPOCH
+    legal_notice: str
+    audience_mode: UserAudienceMode
+    supported_entries: List[PortalEntry]
+
+
+class CircularityBaseline(BaseModel):
+    city_id: str
+    city_name: str
+    rsu_scope: Literal["rsu_municipal"] = "rsu_municipal"
+    current_circularity_pct: float = Field(..., ge=0, le=100)
+    material_recovery_ton_day_est: float = Field(..., ge=0)
+    rsu_total_ton_day_est: float = Field(..., ge=0)
+    official_status: Literal["estimated_not_official"] = "estimated_not_official"
+    confidence: float = Field(..., ge=0, le=1)
+    uncertainty_pct_points: float = Field(..., ge=0)
+    provenance: DataProvenance
+    warnings: List[str]
+    interpretation: str
+
+    @model_validator(mode="after")
+    def _estimated_baseline_must_warn(self):
+        if self.official_status != "estimated_not_official":
+            raise ValueError("CircularityBaseline 10.1 solo permite baseline estimada no oficial")
+        if not self.warnings:
+            raise ValueError("CircularityBaseline estimada requiere warnings visibles")
+        if not self.provenance.fuente_nombre.strip() or not self.provenance.fuente_organismo.strip():
+            raise ValueError("CircularityBaseline requiere fuente y organismo verificables")
+        if self.confidence <= 0 or self.provenance.confianza <= 0:
+            raise ValueError("CircularityBaseline requiere confianza mayor a cero")
+        if self.provenance.tipo.value == "oficial":
+            raise ValueError("Baseline estimada no puede usar provenance tipo oficial")
+        return self
