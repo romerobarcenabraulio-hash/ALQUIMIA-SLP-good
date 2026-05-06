@@ -1,0 +1,55 @@
+import { getZmRecord, resolveSimulationGeography } from '@/lib/zmPopulationScale'
+import type { ResultadosCalculados, SimulatorState, SnapshotDatos } from '@/types'
+import { SIMULATOR_STATE_DEFAULT } from '@/store/simulatorStore'
+
+/** Cuerpo alineado a `backend/app/agora/schemas.py` PlanRequest. */
+export type EscenarioPlan = 'conservador' | 'moderado' | 'acelerado'
+
+export interface AgoraPlanGenerateBody {
+  municipio: string
+  estado: string
+  poblacion: number
+  generacion_rsu_dia: number
+  ingreso_estimado_anual_mxn: number
+  escenario: EscenarioPlan
+  sector_pack_id: string
+}
+
+export function mapPresetToEscenario(preset: string): EscenarioPlan {
+  if (preset === 'Conservador') return 'conservador'
+  if (preset === 'Agresivo' || preset === 'Acelerado') return 'acelerado'
+  return 'moderado'
+}
+
+/**
+ * Une simulador (ZM, trayectoria, snapshot) + resultados del motor para solicitar ZIP ÁGORA.
+ */
+export function buildAgoraPlanPayload(
+  zmActiva: string,
+  municipiosActivos: string[],
+  horizonte: number,
+  presetTrayectoria: string,
+  snapshotDatos: SnapshotDatos | null,
+  resultados: ResultadosCalculados,
+): AgoraPlanGenerateBody {
+  const zm = getZmRecord(zmActiva)
+  const state: SimulatorState & { snapshotDatos?: SnapshotDatos | null } = {
+    ...SIMULATOR_STATE_DEFAULT,
+    zmActiva,
+    municipiosActivos,
+    horizonte,
+    presetTrayectoria,
+    snapshotDatos: snapshotDatos ?? undefined,
+  }
+  const geo = resolveSimulationGeography(state)
+  const ingresoAnual = resultados.ingresosBrutos / Math.max(1, horizonte)
+  return {
+    municipio: zm.nombre.replace(/^ZM\s+/i, '').trim(),
+    estado: zm.estado,
+    poblacion: Math.round(geo.popActiva),
+    generacion_rsu_dia: resultados.rsuTotalTonDia,
+    ingreso_estimado_anual_mxn: ingresoAnual,
+    escenario: mapPresetToEscenario(presetTrayectoria),
+    sector_pack_id: 'politica_publica_rsu_mx_v1',
+  }
+}

@@ -29,7 +29,11 @@ from app.dashboard.router import router as dashboard_router
 from app.scenarios.router import router as scenarios_router
 from app.alerts.router import router as alerts_router
 from app.governance.router import router as governance_router
+from app.predios.router import router as predios_router
 from app.launch.router import router as launch_router
+from app.empresa.router import router as empresa_router
+from app.city.api_v1 import router as cities_v1_router
+from app.agora.router import router as agora_router
 from app.agents.dna_loader import load_slp_dna
 
 logger = logging.getLogger(__name__)
@@ -155,6 +159,10 @@ app.include_router(scenarios_router, prefix="/scenarios", tags=["scenarios"])
 app.include_router(alerts_router, prefix="/alerts", tags=["alerts"])
 app.include_router(governance_router, prefix="/governance", tags=["governance"])
 app.include_router(launch_router, prefix="/launch", tags=["launch"])
+app.include_router(predios_router, tags=["predios"])
+app.include_router(empresa_router)
+app.include_router(agora_router, prefix="/api/v1/agora", tags=["agora"])
+app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
 
 @app.get("/health")
 async def health():

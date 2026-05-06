@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     SERPER_API_KEY:   Optional[str] = None
     MAPBOX_TOKEN:     Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    # ID vigente en la API Messages (Haiku rápido; el slug antiguo claude-3-5-haiku-20241022 puede dar 404).
+    ANTHROPIC_MODEL: str = "claude-haiku-4-5-20251001"
 
     # Google Drive
     DRIVE_ROOT_ID:     str = "1mVC_ay_qvmT08QZReoKp2X8jTHZiPoMW"
