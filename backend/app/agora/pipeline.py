@@ -11,8 +11,12 @@ import zipfile
 from datetime import date
 from typing import Awaitable, Callable
 
-from anthropic import APIError as AnthropicAPIError
 from anthropic import AsyncAnthropic
+
+try:
+    from anthropic import APIError as AnthropicAPIError
+except ImportError:
+    from anthropic import APIStatusError as AnthropicAPIError  # type: ignore[assignment]
 
 from app.config import settings
 
