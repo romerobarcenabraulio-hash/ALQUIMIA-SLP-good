@@ -4,7 +4,7 @@ import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotD
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS } from '@/lib/constants'
 import { calcular } from '@/lib/calculator'
-import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney } from '@/lib/api'
+import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
 
 /** Contrato blueprint 22_0: `localStorage['alquimia.audience']` es la clave literal de audiencia; `alquimia-simulator` sigue siendo el persist Zustand. En conflicto tras reload, gana esta clave y luego se rehidrata el journey. */
 const AUDIENCE_LITERAL_KEY = 'alquimia.audience' as const
@@ -406,7 +406,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
            */
           try {
             const apiUrl = getApiUrl()
-            const res = await fetch(`${apiUrl}/data/${zm}/snapshot`)
+            const res = await apiFetch(`${apiUrl}/data/${zm}/snapshot`)
             if (!res.ok) return
             const snapshot: SnapshotDatos = await res.json()
             set({ snapshotDatos: snapshot })

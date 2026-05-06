@@ -8,6 +8,12 @@ export function SelectorZM() {
   const { zmActiva, setZM, municipiosActivos, toggleMunicipio } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)!
 
+  // Población y viviendas reactivas: suman solo los municipios activos
+  const muniActivos = zm.municipios.filter(m => municipiosActivos.includes(m.id))
+  const allActive = muniActivos.length === zm.municipios.length
+  const popActiva = allActive ? zm.totalPop : (muniActivos.reduce((s, m) => s + m.pop, 0) || zm.totalPop)
+  const vivActivas = allActive ? zm.totalViv : (muniActivos.reduce((s, m) => s + m.viv, 0) || zm.totalViv)
+
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4 — Zona Metropolitana</p>
@@ -37,17 +43,18 @@ export function SelectorZM() {
         </button>
       </div>
 
-      {/* Info ZM activa */}
+      {/* Info ZM activa — valores reactivos según municipios seleccionados */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
-          { l: 'Población',    v: fmt.num0(zm.totalPop) + ' hab' },
-          { l: 'Viviendas',    v: fmt.num0(zm.totalViv) },
-          { l: 'Gen/cápita',   v: `${zm.genKgDia} kg/hab/día` },
-          { l: 'Crecimiento',  v: `${zm.crecPct}% anual` },
+          { l: 'Población activa', v: fmt.num0(popActiva) + ' hab', dim: !allActive },
+          { l: 'Viviendas activas', v: fmt.num0(vivActivas), dim: !allActive },
+          { l: 'Gen/cápita',        v: `${zm.genKgDia} kg/hab/día`, dim: false },
+          { l: 'Crecimiento',       v: `${zm.crecPct}% anual`, dim: false },
         ].map(item => (
-          <div key={item.l} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-3">
+          <div key={item.l} className={cn('bg-[#FDFCFA] border rounded-[10px] p-3 transition-colors', item.dim ? 'border-amber-300' : 'border-[#E8E4DC]')}>
             <p className="text-[10px] uppercase text-[#A8A49C] tracking-wide">{item.l}</p>
-            <p className="font-mono text-[15px] text-[#1C1B18] mt-1">{item.v}</p>
+            <p className={cn('font-mono text-[15px] mt-1', item.dim ? 'text-amber-800' : 'text-[#1C1B18]')}>{item.v}</p>
+            {item.dim && <p className="text-[9px] text-amber-600 mt-0.5">parcial · {muniActivos.length}/{zm.municipios.length} mun.</p>}
           </div>
         ))}
       </div>

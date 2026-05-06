@@ -11,6 +11,7 @@ import type {
   ReasoningGraph,
   DecisionExplanation,
   MunicipioProfile,
+  RsuFootprintMapResponse,
   CoverageStatus,
   OperationsSummary,
   CityOption,
@@ -44,6 +45,38 @@ export function getApiUrl() {
   return 'http://localhost:8000'
 }
 
+/**
+ * fetchWithRetry — maneja el cold-start de Render free tier (~30 s de wake-up).
+ * Reintenta hasta 2 veces con timeout de 35 s por intento.
+ * En el 2.º intento añade un jitter de 2 s para no saturar.
+ */
+async function fetchWithRetry(
+  input: RequestInfo,
+  init?: RequestInit,
+  maxRetries = 2,
+): Promise<Response> {
+  let lastError: Error = new Error('Fetch failed')
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 35_000)
+    try {
+      const response = await fetch(input, { ...init, signal: controller.signal })
+      clearTimeout(timeoutId)
+      return response
+    } catch (err) {
+      clearTimeout(timeoutId)
+      lastError = err instanceof Error ? err : new Error(String(err))
+      if (attempt < maxRetries - 1) {
+        // Jitter antes de reintentar — da tiempo al servidor de despertar
+        await new Promise(r => setTimeout(r, 3_000 + attempt * 2_000))
+      }
+    }
+  }
+  throw new Error(`La API no responde tras ${maxRetries} intentos. ${lastError.message}. Si es la primera visita del día, espera 30 segundos y recarga.`)
+}
+
+export { fetchWithRetry as apiFetch }
+
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
   return localStorage.getItem('alquimia_token')
@@ -57,7 +90,7 @@ function authHeaders(): HeadersInit {
 // ─── Fase 10.1: entrada del portal y baseline por ciudad ────────────────────
 
 export async function getCityOptions(): Promise<CityOption[]> {
-  const res = await fetch(`${getApiUrl()}/city/options`, {
+  const res = await fetchWithRetry(`${getApiUrl()}/city/options`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Ciudades no disponibles: ${res.status}`)
@@ -65,7 +98,7 @@ export async function getCityOptions(): Promise<CityOption[]> {
 }
 
 export async function getCityContext(cityId: string): Promise<CityContext> {
-  const res = await fetch(`${getApiUrl()}/city/${cityId}/context`, {
+  const res = await fetchWithRetry(`${getApiUrl()}/city/${cityId}/context`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Contexto de ciudad no disponible: ${res.status}`)
@@ -73,7 +106,7 @@ export async function getCityContext(cityId: string): Promise<CityContext> {
 }
 
 export async function getCircularityBaseline(cityId: string): Promise<CircularityBaseline> {
-  const res = await fetch(`${getApiUrl()}/city/${cityId}/baseline`, {
+  const res = await fetchWithRetry(`${getApiUrl()}/city/${cityId}/baseline`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Baseline de circularidad no disponible: ${res.status}`)
@@ -86,7 +119,7 @@ export async function getCircularityBaseline(cityId: string): Promise<Circularit
 
 export async function getPortalJourney(entry: PortalEntry): Promise<DecisionModule[]> {
   const params = new URLSearchParams({ entry })
-  const res = await fetch(`${getApiUrl()}/city/journey/steps?${params.toString()}`, {
+  const res = await fetchWithRetry(`${getApiUrl()}/city/journey/steps?${params.toString()}`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Journey no disponible: ${res.status}`)
@@ -541,6 +574,14 @@ export async function getNationalCoverage(zm: string): Promise<CoverageStatus[]>
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Coverage nacional no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getRsuFootprintMap(): Promise<RsuFootprintMapResponse> {
+  const res = await fetch(`${getApiUrl()}/national/map/rsu-footprint`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Mapa RSU no disponible: ${res.status}`)
   return res.json()
 }
 

@@ -128,7 +128,7 @@ export function ImpactoFinanciero() {
               { label: 'WACC', value: `${wacc}%` },
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
             ]}
-            source={{ fuente: 'Modelo financiero ALQUIMIA', unidad: 'MXN', incertidumbre: 'Sensible a precios commodities y volumen capturado.' }}
+            source={{ fuente: 'Ingresos = precio_mat × vol_capturado × (1−merma%); EBITDA = ingreso − OPEX_CA − OPEX_ruta; VPN y TIR descontados al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios commodities y volumen capturado.' }}
             nextStep={{ label: 'Lee la sensibilidad (Tornado)' }}
           />
         )}
@@ -157,7 +157,7 @@ export function ImpactoFinanciero() {
               { label: 'TIR mediana', value: `${mcPercentiles.p50.toFixed(1)}%` },
               { label: 'TIR P90', value: `${mcPercentiles.p90.toFixed(1)}%` },
             ]}
-            source={{ fuente: 'Monte Carlo ALQUIMIA', incertidumbre: 'Perturbación ± en precios commodity y trayectoria de captura.' }}
+            source={{ fuente: '2,000 corridas: precios y captura% perturbados con distribución normal ±σ; se reportan percentiles 10/50/90 del TIR resultante', incertidumbre: 'Perturbación ± en precios commodity y trayectoria de captura.' }}
             nextStep={{ label: 'Compara con Tornado de sensibilidad' }}
           />
         )}
@@ -184,7 +184,7 @@ export function ImpactoFinanciero() {
               { label: 'Variable 2', value: tornadoRows[1]?.label ?? '—' },
               { label: 'Rango VPN (2ª)', value: tornadoRows[1] ? fmt.mxnM(tornadoRows[1].range) : '—' },
             ]}
-            source={{ fuente: 'Sensibilidad ALQUIMIA', unidad: 'MXN', incertidumbre: '±20% por variable manteniendo el resto constante.' }}
+            source={{ fuente: 'Cada variable varía ±20% independientemente; el VPN resultante menos el VPN base mide el desplazamiento; las variables se ordenan por magnitud de rango', unidad: 'MXN', incertidumbre: '±20% por variable manteniendo el resto constante.' }}
             nextStep={{ label: 'Revisa el cashflow proyectado' }}
           />
         )}
@@ -205,7 +205,7 @@ export function ImpactoFinanciero() {
               { label: 'CAPEX', value: fmt.mxnK(r.capexTotal) },
               { label: 'EBITDA acum.', value: fmt.mxnK(r.ebitda) },
             ]}
-            source={{ fuente: 'Serie anual ALQUIMIA', unidad: 'MXN nominal', incertidumbre: 'Supuestos de trayectoria de captura y precios.' }}
+            source={{ fuente: 'Flujo por año = ingresos_año − OPEX_año − CAPEX_año_0; acumulado = suma corrida año a año al tipo de cambio y precios del escenario activo', unidad: 'MXN nominal', incertidumbre: 'Supuestos de trayectoria de captura y precios.' }}
             nextStep={{ label: 'Explora el stress adversarial' }}
           />
         )}
@@ -226,7 +226,7 @@ export function ImpactoFinanciero() {
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
               { label: 'DSCR', value: `${r.dscr.toFixed(2)}×` },
             ]}
-            source={{ fuente: 'Stress grid ALQUIMIA', incertidumbre: 'Combinaciones discretas; no sustituye simulación completa.' }}
+            source={{ fuente: 'Rejilla de combinaciones discretas: volumen de captura × precio promedio ponderado; cada celda recalcula VPN completo con el resto de parámetros fijos', incertidumbre: 'Combinaciones discretas; no sustituye simulación completa.' }}
           />
         )}
       </div>
