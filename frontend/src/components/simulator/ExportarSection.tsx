@@ -1,16 +1,53 @@
 'use client'
 import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { fmt } from '@/lib/utils'
+import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
+import { fetchAgoraPlanZip, triggerBrowserDownload } from '@/lib/api'
 
 export function ExportarSection() {
-  const { resultados, zmActiva, snapshotDatos, setGeneratingPlan } = useSimulatorStore()
-  const [showModal, setShowModal] = useState(false)
+  const resultados = useSimulatorStore(s => s.resultados)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const snapshotDatos = useSimulatorStore(s => s.snapshotDatos)
+  const openAgoraPlanConfirm = useSimulatorStore(s => s.openAgoraPlanConfirm)
+
+  const [agoraZipLoading, setAgoraZipLoading] = useState(false)
+  const [agoraZipError, setAgoraZipError] = useState<string | null>(null)
 
   const handleGenerar = () => {
-    setShowModal(true)
-    useSimulatorStore.getState().setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
+    openAgoraPlanConfirm(() => {
+      useSimulatorStore.getState().setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
+    })
+  }
+
+  const handleAgoraZip = () => {
+    const r = useSimulatorStore.getState().resultados
+    if (!r) return
+    openAgoraPlanConfirm(() => {
+      void (async () => {
+        setAgoraZipError(null)
+        setAgoraZipLoading(true)
+        try {
+          const st = useSimulatorStore.getState()
+          const body = buildAgoraPlanPayload(
+            st.zmActiva,
+            st.municipiosActivos,
+            st.horizonte,
+            st.presetTrayectoria,
+            st.snapshotDatos,
+            r,
+          )
+          const { blob, filename } = await fetchAgoraPlanZip(body)
+          triggerBrowserDownload(blob, filename)
+        } catch (e) {
+          setAgoraZipError(e instanceof Error ? e.message : 'No se pudo generar el ZIP')
+        } finally {
+          setAgoraZipLoading(false)
+        }
+      })()
+    })
   }
 
   // Fase 2.5: advertencias de datos que afectan confianza del documento
@@ -109,6 +146,24 @@ export function ExportarSection() {
         >
           [ Genera mi plan de circularidad ]
         </button>
+        <button
+          type="button"
+          disabled={!resultados || agoraZipLoading}
+          onClick={handleAgoraZip}
+          className="mt-4 inline-flex items-center justify-center gap-2 border border-[#EAF3DE]/40 bg-[#274d0c] px-6 py-3 text-[14px] text-[#F6FAD8] hover:bg-[#1f3b06] disabled:opacity-45 rounded-[10px]"
+        >
+          {agoraZipLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+              Generando documentos…
+            </>
+          ) : (
+            'Genera mi plan completo (ÁGORA)'
+          )}
+        </button>
+        {agoraZipError && (
+          <p className="mt-2 max-w-md text-[11px] text-red-200">{agoraZipError}</p>
+        )}
         {resultados && (
           <p className="text-[#A8A49C] text-[11px] mt-3">
             {zmActiva} · TIR {resultados.tir.toFixed(1)}% · {fmt.mxnK(resultados.ingresosBrutos)} total

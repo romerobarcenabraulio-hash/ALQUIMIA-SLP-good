@@ -24,6 +24,7 @@ import { ImpactoAmbiental } from '@/components/simulator/ImpactoAmbiental'
 import { MultiplicadoresEco } from '@/components/simulator/MultiplicadoresEco'
 import { BenchmarkLATAM } from '@/components/simulator/BenchmarkLATAM'
 import Macrogeneradores from '@/components/simulator/Macrogeneradores'
+import { DeclaracionWizard } from '@/components/simulator/DeclaracionWizard'
 import Precolocacion from '@/components/simulator/Precolocacion'
 import ReasoningGraphPanel from '@/components/simulator/ReasoningGraphPanel'
 import CoberturaNacional from '@/components/simulator/CoberturaNacional'
@@ -31,15 +32,18 @@ import { OperacionPERBitacora } from '@/components/simulator/OperacionPERBitacor
 import { AdvertenciasGateLegal } from '@/components/simulator/AdvertenciasGateLegal'
 import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { FlujosResiduos } from '@/components/simulator/FlujosResiduos'
+import { SankeyFlujoResiduos } from '@/components/simulator/SankeyFlujoResiduos'
 import { HojaRuta } from '@/components/simulator/HojaRuta'
 import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
 import { DashboardKPIs } from '@/components/simulator/DashboardKPIs'
 import { ComparadorEscenarios } from '@/components/simulator/ComparadorEscenarios'
 import { AlertasPanel } from '@/components/simulator/AlertasPanel'
 import { GovernancePanel } from '@/components/simulator/GovernancePanel'
+import { InspeccionForm } from '@/components/simulator/InspeccionForm'
 import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
+import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import type { Audience, DecisionModule } from '@/types'
 import { ContainersProvider } from '@/components/simulator/ContainersProvider'
@@ -129,6 +133,7 @@ export default function SimulatorPage() {
         </main>
       </div>
 
+      <GeneraPlanConfirmModal />
       <GenerarPlanModal />
       <FloatingCTA interaccionesRef={interacciones} />
     </div>
@@ -146,6 +151,7 @@ function renderDecisionModule(
       case 'organization_profile':
         return (
           <>
+            <DeclaracionWizard />
             <FuentesDatos />
             <Macrogeneradores />
           </>
@@ -160,6 +166,7 @@ function renderDecisionModule(
             <BenchmarkLATAM />
             <ReasoningGraphPanel />
             <ImpactoFinanciero />
+            <SankeyFlujoResiduos />
           </>
         )
       case 'organization_report':
@@ -246,9 +253,12 @@ function renderDecisionModule(
           <AdvertenciasGateLegal />
           <PortalEmpresarial />
           <FlujosResiduos />
+          <SankeyFlujoResiduos />
           <HojaRuta />
         </>
       )
+    case 'inspeccion_predios':
+      return <InspeccionForm />
     case 'scenarios_export':
       return (
         <>

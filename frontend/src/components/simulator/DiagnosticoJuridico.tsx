@@ -21,6 +21,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
+import { SIMULATION_CONTEXT_TEASER } from '@/lib/simulationDisclaimer'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
   PaqueteMetropolitano, DiagnosticoMunicipal, ReformEstrategia,
@@ -64,6 +65,19 @@ const CONVENIO_BADGE: Record<string, { label: string; color: string }> = {
   borrador:   { label: '⟳ Borrador', color: 'text-[#D4881E]' },
   pendiente:  { label: '◎ Pendiente', color: '#6B6760' },
   no_existe:  { label: '✗ No existe', color: 'text-[#C0392B]' },
+}
+
+function diagnosticoTituloTeaser() {
+  return (
+    <div className="mb-4">
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
+        S4.6 — Diagnóstico jurídico municipal
+      </p>
+      <p className="mt-1 border-l-2 border-[#D4881E] pl-2.5 text-[11px] leading-snug text-[#6B6760]">
+        {SIMULATION_CONTEXT_TEASER}
+      </p>
+    </div>
+  )
 }
 
 // ─── Tarjeta por municipio ────────────────────────────────────────────────────
@@ -366,15 +380,20 @@ export function DiagnosticoJuridico() {
 
   if (loading) {
     return (
-      <div className="animate-pulse space-y-3">
-        {[1, 2, 3].map(i => <div key={i} className="h-16 bg-[#E2DED6] rounded-[10px]" />)}
+      <div>
+        {diagnosticoTituloTeaser()}
+        <div className="animate-pulse space-y-3">
+          {[1, 2, 3].map(i => <div key={i} className="h-16 bg-[#E2DED6] rounded-[10px]" />)}
+        </div>
       </div>
     )
   }
 
   if (!paquete) {
     return (
-      <div className={cn(
+      <div>
+        {diagnosticoTituloTeaser()}
+        <div className={cn(
         'rounded-[10px] border p-4',
         error ? 'border-red-200 bg-red-50' : 'border-[#E8E4DC] bg-[#FDFCFA]'
       )}>
@@ -388,6 +407,7 @@ export function DiagnosticoJuridico() {
           Acción siguiente: consultar /legal/{'<municipio>'}/context o revisar disponibilidad de /legal/zm/{'<zm>'}/paquete.
         </p>
       </div>
+      </div>
     )
   }
 
@@ -399,6 +419,7 @@ export function DiagnosticoJuridico() {
 
   return (
     <div className="space-y-5">
+      {diagnosticoTituloTeaser()}
       <div className="rounded-[12px] border border-[#1A5FA8]/25 bg-[#EBF3FB]/40 p-4">
         <p className="text-[12px] font-semibold text-[#1C1B18]">Paquete ZM = coordinación; artículos y scores = municipio</p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">

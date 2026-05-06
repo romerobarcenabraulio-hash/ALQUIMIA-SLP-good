@@ -6,10 +6,12 @@ import { useMemo } from 'react'
 
 export function MonteCarloCChart() {
   const state  = useSimulatorStore()
-  const { wacc } = state
+  const wacc = state.wacc
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- mismo patrón que TornadoChart (ámbito municipal Q-024)
   const results = useMemo(() => monteCarlo(state, 2000), [
-    state.precios, state.pctCapturaPorAño, state.mermaLogPct, state.horizonte
+    state.precios, state.pctCapturaPorAño, state.mermaLogPct, state.horizonte,
+    state.zmActiva, state.municipiosActivos,
   ])
 
   const min  = Math.min(...results)

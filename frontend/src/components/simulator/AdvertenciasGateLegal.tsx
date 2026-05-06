@@ -9,6 +9,7 @@ import type { LegalGatedActionRequest, LegalGatedActionResponse, LegalGatedActio
 import { cn } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
+import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 
 const ACTIONS: Array<{ key: LegalGatedActionType; label: string; chip: string; chipClass: string }> = [
   {
@@ -101,6 +102,7 @@ export function AdvertenciasGateLegal() {
           <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
             Distingue orientación educativa, inspección, propuesta y bloqueo legal municipal. Todo se mantiene como simulación o propuesta hasta validación competente.
           </p>
+          <AvisoMunicipioAncla ids={municipiosActivos} />
         </div>
       </div>
 

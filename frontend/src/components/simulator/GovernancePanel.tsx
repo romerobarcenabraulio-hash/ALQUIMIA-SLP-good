@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { evaluateGovernance } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import type { GovernanceResponse, RiesgoIdentificado } from '@/types'
 
 const FLOW = ['Inputs del sistema', 'Métricas de calidad', 'Evaluación DoD', 'Score de gobernanza']
@@ -66,8 +67,10 @@ export function GovernancePanel() {
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Panel de gobernanza y calidad · <span className="text-[14px] text-[#6B6860]">interno</span>
+        Panel de gobernanza y calidad · <span className="text-[14px] text-[#6B6760]">interno</span>
       </h1>
+
+      <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {FLOW.map((node, i, arr) => (

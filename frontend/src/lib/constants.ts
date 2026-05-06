@@ -191,16 +191,36 @@ export const ZMS: ZonaMetropolitana[] = [
   {
     id: 'QRO', nombre: 'ZM Querétaro', estado: 'Querétaro',
     municipios: [
-      { id: 'qro', nombre: 'Querétaro', estado: 'QRO', pop: 1049000, viv: 200000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
-      { id: 'cor', nombre: 'Corregidora', estado: 'QRO', pop: 167000, viv: 32000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
-      { id: 'mar', nombre: 'El Marqués', estado: 'QRO', pop: 154000, viv: 24000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
+      { id: 'qro', nombre: 'Querétaro', estado: 'QRO', pop: 1_049_777, viv: 200000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
+      { id: 'cor', nombre: 'Corregidora', estado: 'QRO', pop: 193_000, viv: 32000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
+      { id: 'mar', nombre: 'El Marqués', estado: 'QRO', pop: 168_000, viv: 24000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1 },
       { id: 'hui', nombre: 'Huimilpan', estado: 'QRO', pop: 34306, viv: 4000, ocu: 3.4, genKgDia: 0.90, crecPct: 2.1 },
     ],
-    totalPop: 1404306, totalViv: 260000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1,
+    totalPop: 1444083, totalViv: 260000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1,
     mixVivienda: { vertical: 0.65, casa: 0.20, residencial: 0.15 },
     costoTerrenoM2: 2800, pepenadoresActivos: 680,
   },
+  {
+    id: 'GDL', nombre: 'ZM Guadalajara', estado: 'Jalisco',
+    municipios: [
+      { id: 'gdl', nombre: 'Guadalajara', estado: 'JAL', pop: 1_385_600, viv: 280_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5 },
+      { id: 'zap', nombre: 'Zapopan', estado: 'JAL', pop: 1_062_000, viv: 215_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5 },
+      { id: 'tla', nombre: 'San Pedro Tlaquepaque', estado: 'JAL', pop: 650_000, viv: 132_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5 },
+    ],
+    totalPop: 3_097_600, totalViv: 627_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5,
+    mixVivienda: { vertical: 0.58, casa: 0.25, residencial: 0.17 },
+    costoTerrenoM2: 3600, rellenoVidaUtil: 10, pepenadoresActivos: 2100,
+  },
 ]
+
+/** INEGI Censo 2020 — población municipal de referencia (Q-024). `mxq` no está en el conjunto ZM simulado `vip`. */
+export const POBLACION_INEGI2020_SLPM: Record<string, number> = {
+  slp: 912871,
+  sol: 323409,
+  csp: 4278,
+  vip: 3422,
+  mxq: 5644,
+}
 
 // ─── KPIs operativos por fase (§3.3) ─────────────────────────────────────────
 export const KPIS_POR_FASE = [

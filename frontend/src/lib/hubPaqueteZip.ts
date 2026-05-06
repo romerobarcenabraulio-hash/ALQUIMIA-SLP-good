@@ -24,6 +24,9 @@ export function readmePaqueteMarkdown(
   REGLAMENTOS_FUENTE.forEach(r => {
     md += `- **${r.municipio_id}** (${r.estado_verificacion}): ${r.nombre}`
     md += r.url_fuente ? ` — ${r.url_fuente}` : ' — *URL pendiente*'
+    if (r.archivo_local?.length) {
+      md += ` · espejos: ${r.archivo_local.join(', ')}`
+    }
     md += '\n'
   })
   md += `\n## Supuestos consolidados\n\n`

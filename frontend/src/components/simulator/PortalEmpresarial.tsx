@@ -135,6 +135,20 @@ export function PortalEmpresarial() {
             </Fragment>
           ))}
         </div>
+        <aside className="mt-4 rounded-[12px] border border-[#C9DDB1] bg-[#F7FAF3] px-3 py-3 text-[12px] leading-relaxed text-[#3F4D38]">
+          <p className="font-medium text-[#23470A]">Reforma en modelo ALQUIMIA (predios y empresas)</p>
+          <ul className="mt-2 list-disc space-y-1 pl-4 marker:text-[#3B6D11]">
+            <li>
+              <strong>Predios:</strong> acopio de RSU o microrvertedero sin permiso municipal equivaldría a operación
+              tipo Centro de Acopio clandestino; la propuesta normativa prevé orden de saneamiento y sanciones al titular.
+            </li>
+            <li>
+              <strong>Empresas y grandes generadores:</strong> declaración o registro anual de corrientes y volúmenes,
+              alineado al mismo tipo de información que exige el permiso de Centro de Acopio — este portal ayuda a
+              dimensionar flujos; el trámite oficial sigue siendo competencia del municipio.
+            </li>
+          </ul>
+        </aside>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-2">

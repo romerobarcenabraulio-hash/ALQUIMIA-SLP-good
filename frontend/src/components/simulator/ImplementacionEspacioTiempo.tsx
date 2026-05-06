@@ -1,8 +1,15 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CalendarDays, Calculator, Info, Lock, RefreshCw } from 'lucide-react'
+import { useEffect, useMemo, useState, startTransition } from 'react'
+import { AlertTriangle, CalendarDays, Calculator, Info, KeyRound, Leaf, Lock, RefreshCw } from 'lucide-react'
 import { buildTerritorialPlan } from '@/lib/api'
+import {
+  HITOS_TIMELINE_SLP,
+  HORIZONTE_DIAS_MESES_36,
+  kpisAcumulados,
+  type Hito,
+} from '@/data/hitosTimeline'
+import { hitoPosition, pertExpectedDays } from '@/lib/pertUtils'
 import { CA_CONFIG } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { TerritorialImplementationPlan, TerritorialPlanRequest } from '@/types'
@@ -56,8 +63,10 @@ export function ImplementacionEspacioTiempo() {
 
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    setError(null)
+    startTransition(() => {
+      setLoading(true)
+      setError(null)
+    })
     buildTerritorialPlan(payload)
       .then(data => {
         if (!cancelled) setPlan(data)
@@ -169,6 +178,7 @@ export function ImplementacionEspacioTiempo() {
       {!loading && !error && plan && plan.status !== 'blocked' && (
         <>
           <PlanState plan={plan} />
+          <TimelineHitosEspacioTiempo empleoBase={resultados?.empleosTotalesDirectos ?? 0} />
           <NarrativeBridge
             variant="result"
             audience="functionary"
@@ -194,6 +204,181 @@ export function ImplementacionEspacioTiempo() {
         </>
       )}
     </section>
+  )
+}
+
+const TIMELINE_FRAC_MARKS = [0, 1 / 4, 1 / 2, 3 / 4, 1] as const
+
+function TimelineHitosEspacioTiempo({ empleoBase }: { empleoBase: number }) {
+  const maxD = HORIZONTE_DIAS_MESES_36
+  const [diaActual, setDiaActual] = useState(maxD / 2)
+  const [selectedId, setSelectedId] = useState<string | null>(HITOS_TIMELINE_SLP[0]?.id ?? null)
+
+  const kpis = useMemo(
+    () => kpisAcumulados(Math.round(diaActual), empleoBase),
+    [diaActual, empleoBase],
+  )
+
+  const selected = useMemo(
+    () => HITOS_TIMELINE_SLP.find(h => h.id === selectedId) ?? null,
+    [selectedId],
+  )
+
+  const mesLabel = (frac: number) => {
+    const m = Math.round(36 * frac)
+    return m <= 0 ? 'Día 0' : `Mes ${m}`
+  }
+
+  const diaRounded = Math.round(diaActual)
+
+  return (
+    <div className="rounded-[8px] border border-[#E0D9CE] bg-[#FDFCF9] p-4 shadow-sm">
+      <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Q-020 · Línea tiempo programa (referencia)</p>
+      <h3 className="mt-1 font-serif text-[17px] text-[#1C1B18]">Hitos PERT y avance acumulado</h3>
+      <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+        Eje Día 0 → Mes 36 (equiv. {maxD} días de referencia). Los hitos muestran fecha esperada; la banda pesimista/optimista queda implicita en el catalogo PERT.
+      </p>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr,minmax(260px,32%)]">
+        <div className="min-w-0 space-y-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <KpiChip label="Empleos acum." value={`${Math.round(kpis.empleos)}`} mono />
+            <KpiChip label="Pepenadores" value={`${Math.round(kpis.pepenadores)}`} mono />
+            <KpiChip label="Captura Δ pts" value={`${kpis.captura_pct.toFixed(1)}%`} mono />
+            <KpiChip label="CO₂e evitado" value={`${kpis.co2e_evitado_ton.toFixed(1)} t`} mono />
+          </div>
+
+          <label className="block text-[12px] font-medium text-[#1C1B18]" htmlFor="timeline-dia-slider">
+            Día en el programa: <span className="font-mono text-[#23470A]">{Math.round(diaActual)}</span>
+            {' '}
+            <span className="font-normal text-[#8A857C]">/ {maxD}</span>
+          </label>
+          <input
+            id="timeline-dia-slider"
+            type="range"
+            min={0}
+            max={maxD}
+            step={1}
+            value={diaActual}
+            onChange={e => setDiaActual(Number(e.target.value))}
+            className="h-2 w-full cursor-pointer accent-[#3B6D11]"
+            aria-valuemin={0}
+            aria-valuemax={maxD}
+            aria-valuenow={Math.round(diaActual)}
+          />
+          <div className="relative mt-2 min-h-[120px] pb-7 pt-1">
+            <div className="absolute left-0 right-0 top-[52px] h-[2px] rounded-full bg-[#D4CEC4]" />
+            {TIMELINE_FRAC_MARKS.map((frac, idx) => {
+              const leftPct = frac * 100
+              return (
+                <span
+                  key={`tick-${idx}`}
+                  className="absolute top-[44px] w-px -translate-x-1/2 bg-[#9A948A]"
+                  style={{ left: `${leftPct}%`, height: 16 }}
+                  aria-hidden
+                />
+              )
+            })}
+            <div className="absolute left-0 right-0 top-[68px] h-4">
+              {TIMELINE_FRAC_MARKS.map((frac, idx) => (
+                <span
+                  key={`lbl-${idx}`}
+                  className="absolute -translate-x-1/2 whitespace-nowrap text-[10px] text-[#8A857C]"
+                  style={{ left: `${frac * 100}%` }}
+                >
+                  {mesLabel(frac)}
+                </span>
+              ))}
+            </div>
+
+            {HITOS_TIMELINE_SLP.map((hito, i) => {
+              const x = hitoPosition(hito, maxD) * 100
+              const row = i % 2
+              const top = 8 + row * 30
+              const isSel = selectedId === hito.id
+              const tExpected = pertExpectedDays(hito)
+              const alcanzadoEnModelo = tExpected <= diaRounded
+              return (
+                <button
+                  key={hito.id}
+                  type="button"
+                  onClick={() => setSelectedId(hito.id)}
+                  className={cn(
+                    'absolute flex max-w-[min(180px,34vw)] -translate-x-1/2 items-center gap-1 rounded-full border px-2 py-0.5 text-left text-[10px] font-medium leading-tight shadow-sm transition-colors',
+                    hito.es_pico_estacional
+                      ? 'border-emerald-400/80 bg-emerald-50/95 text-emerald-950 hover:bg-emerald-100'
+                      : 'border-[#C8C2B8] bg-white text-[#1C1B18] hover:border-[#3B6D11]/50',
+                    hito.es_gate_clave && !hito.es_pico_estacional && 'ring-1 ring-amber-400/70',
+                    isSel && 'ring-2 ring-[#3B6D11]',
+                  )}
+                  style={{ left: `${x}%`, top }}
+                  aria-pressed={isSel}
+                  title={`PERT ~${tExpected.toFixed(0)} d · ${alcanzadoEnModelo ? 'incluido en KPI acumulado' : 'pendiente en el modelo'}`}
+                >
+                  {hito.es_gate_clave && (
+                    <KeyRound className="h-3 w-3 shrink-0 text-amber-700" aria-hidden />
+                  )}
+                  {hito.es_pico_estacional && (
+                    <Leaf className="h-3 w-3 shrink-0 text-emerald-700" aria-hidden />
+                  )}
+                  <span className="truncate">{hito.nombre_corto}</span>
+                  <span
+                    className={cn(
+                      'shrink-0 rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wide',
+                      alcanzadoEnModelo ? 'bg-[#EAF3DE] text-[#23470A]' : 'bg-[#F4F1EB] text-[#8A857C]',
+                    )}
+                  >
+                    {alcanzadoEnModelo ? 'Modelo' : 'Pte.'}
+                  </span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+
+        <aside className="rounded-[8px] border border-[#E8E4DC] bg-white p-3 text-[12px] text-[#6B6760]">
+          {selected ? (
+            <>
+              <p className="text-[11px] font-semibold uppercase tracking-wide text-[#A8A49C]">Hito seleccionado</p>
+              <p className="mt-2 font-serif text-[15px] text-[#1C1B18]">{selected.nombre_corto}</p>
+              <p className="mt-2 leading-relaxed">{selected.descripcion_ciudadano}</p>
+              <p className="mt-3 text-[11px] font-semibold text-[#1C1B18]">KPIs asociados (delta del hito)</p>
+              <ul className="mt-2 space-y-1 font-mono text-[11px]">
+                <li>Empleos: {selected.kpis.empleos_delta >= 0 ? '+' : ''}{selected.kpis.empleos_delta}</li>
+                <li>Pepenadores: {selected.kpis.pepenadores_delta >= 0 ? '+' : ''}{selected.kpis.pepenadores_delta}</li>
+                <li>Captura: {selected.kpis.captura_pct_pts >= 0 ? '+' : ''}{selected.kpis.captura_pct_pts} pts</li>
+                <li>CO₂e: {selected.kpis.co2e_evitado_ton_delta >= 0 ? '+' : ''}{selected.kpis.co2e_evitado_ton_delta} t</li>
+              </ul>
+            </>
+          ) : (
+            <p className="text-[12px] text-[#8A857C]">Selecciona un hito en la línea de tiempo.</p>
+          )}
+        </aside>
+      </div>
+
+      <div className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-2.5">
+        <p className="text-[11px] leading-relaxed text-[#6B6760]">
+          <Info className="mr-1 inline h-3.5 w-3.5 shrink-0 align-text-bottom text-[#7B7366]" aria-hidden />
+          Esta línea de tiempo es una{' '}
+          <span className="font-medium text-[#403E3A]">ilustración orientativa</span>
+          {' '}del simulador: fechas PERT y KPI acumulados son{' '}
+          <span className="font-medium text-[#403E3A]">proyecciones del modelo</span>
+          , no calendario oficial, programa de cabildo ni acto de autoridad. Los entregables municipales requieren validación local.
+        </p>
+        <p className="mt-1.5 text-[10px] leading-relaxed text-[#8A857C]">
+          Etiqueta «Modelo» en cada hito: el día del deslizador alcanzó o superó la esperanza PERT; es coherente con lo sumado en los KPI de arriba. «Pte.»: aún no entra en ese acumulado.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function KpiChip({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
+  return (
+    <div className="rounded-[6px] border border-[#E8E4DC] bg-white px-2 py-1.5">
+      <p className="text-[10px] uppercase tracking-wide text-[#A8A49C]">{label}</p>
+      <p className={cn('mt-0.5 text-[13px] font-semibold text-[#23470A]', mono && 'font-mono')}>{value}</p>
+    </div>
   )
 }
 

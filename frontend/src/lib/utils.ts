@@ -57,3 +57,33 @@ export const MATERIAL_LABELS: Record<string, string> = {
   aluminio:  'Aluminio',
   otros:     'Otros',
 }
+
+/** Lee `detail` de respuestas RFC 7807 / FastAPI (`string` | `object[]` | …) para mostrar al usuario. */
+export function formatFastApiDetail(body: unknown, fallback: string): string {
+  if (!body || typeof body !== 'object') return fallback
+  const raw = (body as { detail?: unknown }).detail
+  if (raw == null) return fallback
+  if (typeof raw === 'string') return raw
+  if (Array.isArray(raw)) {
+    const parts = raw.map((item) => {
+      if (item && typeof item === 'object') {
+        const o = item as Record<string, unknown>
+        if (typeof o.msg === 'string') return o.msg
+      }
+      try {
+        return JSON.stringify(item)
+      } catch {
+        return String(item)
+      }
+    })
+    return parts.filter(Boolean).join(' · ') || fallback
+  }
+  if (typeof raw === 'object') {
+    try {
+      return JSON.stringify(raw)
+    } catch {
+      return fallback
+    }
+  }
+  return String(raw)
+}

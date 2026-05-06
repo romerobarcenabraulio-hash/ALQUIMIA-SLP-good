@@ -17,6 +17,16 @@ const ROADMAP_ITEMS = [
   'Publicación en Periódico Oficial del Estado',
 ]
 
+/** Artículos / notas por etapa del roadmap — se muestran en el modal de fuente primaria (Q-007). */
+const ROADMAP_FUENTE_ARTICULOS: string[][] = [
+  ['Matriz diagnóstico — objeto y ámbito del reglamento', 'Definiciones aplicables a RSU / limpia'],
+  ['Brechas vs. LGPGIR / programa municipal (referencia art. 87 LGPGIR)', 'Separación en origen y recolección'],
+  ['Anteproyecto — bloque de reformas y disposiciones transitorias'],
+  ['Orden del día y antecedentes para sesión de Cabildo'],
+  ['Acuerdo de aprobación de reforma reglamentaria'],
+  ['Lineamiento de publicación en Periódico Oficial del Estado o Gaceta municipal'],
+]
+
 interface MarcoLegalProps {
   /** Vista ciudadana: solo educación; sin roadmap ni motor jurídico interactivo. */
   mode?: MarcoLegalMode
@@ -36,7 +46,16 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
           sustituye al ayuntamiento.
         </p>
         <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4">
-          <p className="text-[12px] font-medium text-[#1C1B18]">Solo para aprender</p>
+          <div className="flex items-start justify-between gap-2">
+            <p className="text-[12px] font-medium text-[#1C1B18]">Solo para aprender</p>
+            <FuenteReglamentoIcon
+              articulosEtapa={[
+                'Marco local de limpia y residuos — consulta el reglamento publicado de tu municipio',
+                'Competencia municipal vs. metropolitana (ZM)',
+              ]}
+              label="Ver fuente primaria del reglamento municipal de referencia"
+            />
+          </div>
           <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
             Esta pantalla es informativa. No reemplaza al reglamento publicado, ni a orientación del ayuntamiento,
             ni a asesoría legal. Si necesitas trámites o multas, acude a las ventanillas y fuentes oficiales de tu municipio.
@@ -87,18 +106,17 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
         no emite dictamen legal ni aprueba reformas; cada avance debe validarse por municipio y por
         autoridad competente.
       </p>
-      <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4 space-y-2">
-        <p className="text-[12px] font-medium text-[#1C1B18]">Fricción explícita ante datos normativos (función pública)</p>
-        <p className="text-[12px] leading-relaxed text-[#6B6760]">
-          Scores, matrices de artículos y estados “verificado” en pantalla son insumos de simulación o de carga semilla;
-          no sustituyen dictamen, resolución publicada ni la lectura del reglamento municipal vigente.
-          La ZM coordina territorio; no autoriza sanciones como autoridad única ni sustituta del ayuntamiento.
-        </p>
-        <p className="text-[12px] font-medium text-[#1C1B18] pt-1">Seguimiento de gates en la app</p>
-        <p className="text-[12px] leading-relaxed text-[#6B6760]">
-          Las casillas siguientes son seguimiento interno declarado por el usuario; no convierten una propuesta
-          en dictamen ni documento oficial.
-        </p>
+      <div className="mb-6 rounded-[10px] border border-[#E8E4DC] bg-[#F8F6F1] p-4">
+        <div className="flex items-start justify-between gap-2">
+          <p className="text-[13px] leading-relaxed text-[#6B6760] flex-1">
+          Aquí se ve el desarrollo de los nuevos adendos que se proponen. No son los oficiales,
+          pero ayudan a contrastar cómo está actualmente la ley y cómo la cambiaremos.
+          </p>
+          <FuenteReglamentoIcon
+            articulosEtapa={['Instrumento vigente — reformas propuestas vs. texto publicado', 'Disposiciones transitorias']}
+            label="Abrir fuente primaria del reglamento municipal vigente (referencia)"
+          />
+        </div>
       </div>
 
       {/* Roadmap interactivo */}
@@ -130,7 +148,10 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
               </span>
               <span className="text-[13px] flex-1 min-w-0">{item}</span>
               <span className="shrink-0" onClick={e => e.stopPropagation()}>
-                <FuenteReglamentoIcon label="Ver reglamento municipal de referencia para esta etapa del programa" />
+                <FuenteReglamentoIcon
+                  articulosEtapa={ROADMAP_FUENTE_ARTICULOS[i]}
+                  label={`Ver fuente primaria y artículos de referencia — etapa: ${item}`}
+                />
               </span>
               {i === 4 && <span className="text-[10px] text-[#D4881E] font-medium shrink-0">★ GATE CLAVE</span>}
             </button>

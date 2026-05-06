@@ -1,8 +1,8 @@
 'use client'
 
 import { Fragment, useEffect, useMemo, useState } from 'react'
-import type { MacroGenerator, MacroImpactSummary, MacroTipo } from '@/types'
-import { computeMacroImpact, createMacroGenerator, getMacroGenerators, updateMacroGenerator } from '@/lib/api'
+import type { MacroGenerator, MacroImpactSummary, MacroTipo, DeclaracionGeneracionRSU } from '@/types'
+import { computeMacroImpact, createMacroGenerator, getMacroGenerators, getDeclaracionesVoluntarias, updateMacroGenerator } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 
 const TIPO_LABEL: Record<string, string> = {
@@ -67,6 +67,10 @@ export default function Macrogeneradores() {
   const [showForm, setShowForm] = useState(true)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [draft, setDraft] = useState<MacroGenerator | null>(null)
+  const [voluntarias, setVoluntarias] = useState<DeclaracionGeneracionRSU[]>([])
+  const [voluntariasLoading, setVoluntariasLoading] = useState(false)
+  const [voluntariasErr, setVoluntariasErr] = useState<string | null>(null)
+  const [voluntariasTick, setVoluntariasTick] = useState(0)
   const municipioActivo = municipiosActivos[0] ?? null
   const blocked = !municipioActivo
 
@@ -89,6 +93,46 @@ export default function Macrogeneradores() {
       })
     return () => { alive = false }
   }, [zmActiva, setMacroImpactSummary])
+
+  useEffect(() => {
+    const mid = municipiosActivos[0]
+    if (!mid) {
+      queueMicrotask(() => {
+        setVoluntarias([])
+        setVoluntariasLoading(false)
+        setVoluntariasErr(null)
+      })
+      return undefined
+    }
+    let alive = true
+    queueMicrotask(() => {
+      if (!alive) return
+      setVoluntariasLoading(true)
+      setVoluntariasErr(null)
+    })
+    getDeclaracionesVoluntarias(mid)
+      .then(rows => {
+        if (alive) setVoluntarias(rows)
+      })
+      .catch(() => {
+        if (alive) {
+          setVoluntariasErr('No se pudieron cargar las estimaciones voluntarias.')
+          setVoluntarias([])
+        }
+      })
+      .finally(() => {
+        if (alive) setVoluntariasLoading(false)
+      })
+    return () => {
+      alive = false
+    }
+  }, [municipiosActivos, voluntariasTick])
+
+  useEffect(() => {
+    const onRefresh = () => setVoluntariasTick(t => t + 1)
+    window.addEventListener('alq-refresh-voluntarias', onRefresh)
+    return () => window.removeEventListener('alq-refresh-voluntarias', onRefresh)
+  }, [])
 
   const activeGenerators = useMemo(
     () => generators.filter(g => !disabledIds.has(g.generator_id)),
@@ -467,6 +511,48 @@ export default function Macrogeneradores() {
           </p>
         </div>
       )}
+
+      <section className="rounded-lg border border-[#E8E4DC] bg-white p-4 space-y-3">
+        <h4 className="text-[13px] font-semibold text-[#1C1B18]">Generadores declarados voluntariamente</h4>
+        {voluntariasErr && (
+          <p className="text-[12px] text-amber-800">{voluntariasErr}</p>
+        )}
+        {voluntariasLoading && <p className="text-[12px] text-[#6B6760]">Cargando…</p>}
+        {!voluntariasLoading && !voluntariasErr && voluntarias.length === 0 && (
+          <p className="text-[12px] text-[#A8A49C]">Sin declaraciones voluntarias registradas en este municipio.</p>
+        )}
+        {!voluntariasLoading && voluntarias.length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-[13px]">
+              <thead>
+                <tr className="text-left text-[11px] text-[#8A857C] border-b border-[#F0EDE5]">
+                  <th className="py-2 pr-2">Empresa</th>
+                  <th className="py-2 pr-2">Giro</th>
+                  <th className="py-2 pr-2 text-right">Total ton/año</th>
+                  <th className="py-2">Estado</th>
+                </tr>
+              </thead>
+              <tbody>
+                {voluntarias.map(d => (
+                  <tr key={d.declaracion_id} className="border-b border-[#F0EDE5]">
+                    <td className="py-2 pr-2 font-medium text-[#1C1B18]">{d.empresa_nombre}</td>
+                    <td className="py-2 pr-2 text-[#6B6760]">
+                      <span className="font-mono text-[11px] text-[#3B6D11]">{d.giro_scian}</span>{' '}
+                      {d.descripcion_giro ?? ''}
+                    </td>
+                    <td className="py-2 pr-2 text-right font-mono">{d.generacion_total_ton_anio.toFixed(3)}</td>
+                    <td className="py-2">
+                      <span className="inline-block text-xs px-2 py-0.5 rounded font-medium bg-orange-100 text-orange-800">
+                        declaración voluntaria
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
 
       {macroImpactSummary && (
         <div className="space-y-3">

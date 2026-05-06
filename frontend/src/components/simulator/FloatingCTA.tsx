@@ -4,8 +4,9 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 
 export function FloatingCTA({ interaccionesRef }: { interaccionesRef: RefObject<number> }) {
   const [visible, setVisible] = useState(false)
-  const setGeneratingPlan    = useSimulatorStore(s => s.setGeneratingPlan)
-  const agoraLegalBloqueado  = useSimulatorStore(s => s.agoraLegalBloqueado)
+  const setGeneratingPlan       = useSimulatorStore(s => s.setGeneratingPlan)
+  const openAgoraPlanConfirm    = useSimulatorStore(s => s.openAgoraPlanConfirm)
+  const agoraLegalBloqueado     = useSimulatorStore(s => s.agoraLegalBloqueado)
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -34,7 +35,9 @@ export function FloatingCTA({ interaccionesRef }: { interaccionesRef: RefObject<
       <button
         onClick={() => {
           if (!agoraLegalBloqueado) {
-            setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
+            openAgoraPlanConfirm(() => {
+              setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
+            })
           }
         }}
         disabled={agoraLegalBloqueado}

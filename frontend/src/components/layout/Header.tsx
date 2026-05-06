@@ -35,6 +35,8 @@ function exportPdfTitle(pathname: string, audience: Audience | null, baselineRea
 export function Header() {
   const pathname = usePathname()
   const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
+  const clearMunicipioSeleccion = useSimulatorStore(s => s.clearMunicipioSeleccion)
   const horizonte = useSimulatorStore(s => s.horizonte)
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
   const { resultados, guardarEscenario } = useSimulatorStore()
@@ -173,8 +175,25 @@ export function Header() {
           <div className="flex items-center gap-3 shrink-0">
             <span className="font-serif text-[20px] text-[#3B6D11] font-semibold tracking-tight">ALQUIMIA</span>
             <span className="hidden sm:block text-[#E8E4DC]">|</span>
-            <span className="hidden sm:block text-[12px] text-[#A8A49C] uppercase tracking-wide truncate">{zmActiva}</span>
+            {pathname === '/simulator' && seleccion ? (
+              <span className="hidden sm:inline text-[11px] text-[#6B6760] max-w-[min(100%,20rem)] truncate" title={`CVE ${seleccion.claveInegi}`}>
+                Municipio: <span className="font-medium text-[#1C1B18]">{seleccion.nombre}</span>
+                {' · '}
+                Estado: <span className="font-medium text-[#1C1B18]">{seleccion.estadoNombre}</span>
+              </span>
+            ) : (
+              <span className="hidden sm:block text-[12px] text-[#A8A49C] uppercase tracking-wide truncate">{zmActiva}</span>
+            )}
           </div>
+          {pathname === '/simulator' && seleccion && (
+            <button
+              type="button"
+              onClick={() => clearMunicipioSeleccion()}
+              className="text-left sm:text-center text-[11px] font-medium text-[#3B6D11] hover:underline shrink-0"
+            >
+              Cambiar municipio
+            </button>
+          )}
           {showEthicalPulse && (
             <p
               className="text-[10px] sm:text-[11px] leading-snug text-[#8C8880] max-w-[min(100%,22rem)]"

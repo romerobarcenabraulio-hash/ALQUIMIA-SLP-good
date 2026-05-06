@@ -37,7 +37,13 @@ import type {
   AlertasResponse,
   GovernanceResponse,
   LaunchChecklistResponse,
+  GiroScian,
+  DeclaracionGeneracionRSU,
+  DeclaracionGeneracionRSUCreate,
+  EstadoMxOption,
+  MunicipioMxApi,
 } from '@/types'
+import type { AgoraPlanGenerateBody } from '@/lib/agoraPlanPayload'
 
 export function getApiUrl() {
   const configured = process.env.NEXT_PUBLIC_API_URL
@@ -75,7 +81,53 @@ async function fetchWithRetry(
   throw new Error(`La API no responde tras ${maxRetries} intentos. ${lastError.message}. Si es la primera visita del día, espera 30 segundos y recarga.`)
 }
 
-export { fetchWithRetry as apiFetch }
+export async function fetchAgoraPlanZip(body: AgoraPlanGenerateBody): Promise<{ blob: Blob; filename: string }> {
+  const res = await fetchWithRetry(`${getApiUrl()}/api/v1/agora/generate-plan`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    let msg = `Error ${res.status}`
+    try {
+      const t = await res.text()
+      if (t) {
+        msg = t.slice(0, 800)
+        try {
+          const j = JSON.parse(t) as { detail?: unknown }
+          if (typeof j.detail === 'string') msg = j.detail
+        } catch {
+          /* cuerpo no JSON */
+        }
+      }
+    } catch {
+      /* empty */
+    }
+    throw new Error(msg)
+  }
+  const blob = await res.blob()
+  const cd = res.headers.get('Content-Disposition')
+  const m = cd?.match(/filename="([^"]+)"/i)
+  const filename = m?.[1] ?? 'alquimia_plan.zip'
+  return { blob, filename }
+}
+
+export function triggerBrowserDownload(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  try {
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.rel = 'noopener'
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
+export { fetchWithRetry, fetchWithRetry as apiFetch }
 
 function getToken(): string | null {
   if (typeof window === 'undefined') return null
@@ -94,6 +146,25 @@ export async function getCityOptions(): Promise<CityOption[]> {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Ciudades no disponibles: ${res.status}`)
+  return res.json()
+}
+
+/** Q-009 — entidades presentes en el catálogo semilla (CVE 2 dígitos). */
+export async function getEstadosMx(): Promise<EstadoMxOption[]> {
+  const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/estados`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Estados no disponibles: ${res.status}`)
+  return res.json()
+}
+
+/** Q-009 — municipios; `estado_id` opcional (CVE entidad INEGI). */
+export async function getMunicipiosMx(estadoId?: string): Promise<MunicipioMxApi[]> {
+  const qs = estadoId ? `?estado_id=${encodeURIComponent(estadoId)}` : ''
+  const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities${qs}`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Catálogo municipal no disponible: ${res.status}`)
   return res.json()
 }
 
@@ -532,6 +603,54 @@ export async function updateMacroGenerator(
   })
   if (!res.ok) throw new Error(`Edición de macrogenerador fallida: ${res.status}`)
   return res.json()
+}
+
+// ─── Q-017 — Perfil de Generación Estimada RSU ───────────────────────────────
+
+export async function getScianFactors(): Promise<GiroScian[]> {
+  const res = await fetchWithRetry(`${getApiUrl()}/empresa/scian-factors`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Catálogo de giros no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function createDeclaracionGeneracion(
+  body: DeclaracionGeneracionRSUCreate,
+): Promise<DeclaracionGeneracionRSU> {
+  const res = await fetchWithRetry(`${getApiUrl()}/empresa/declaraciones`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) throw new Error(`No se pudo registrar el perfil: ${res.status}`)
+  return res.json()
+}
+
+export async function confirmarDeclaracionGeneracion(
+  declaracionId: string,
+): Promise<DeclaracionGeneracionRSU> {
+  const res = await fetchWithRetry(
+    `${getApiUrl()}/empresa/declaraciones/${declaracionId}/confirmar`,
+    { method: 'PATCH', headers: { 'Content-Type': 'application/json' } },
+  )
+  if (!res.ok) throw new Error(`No se pudo confirmar el perfil: ${res.status}`)
+  return res.json()
+}
+
+export async function getDeclaracionesVoluntarias(
+  municipioId: string,
+): Promise<DeclaracionGeneracionRSU[]> {
+  const params = new URLSearchParams({ municipio_id: municipioId })
+  const res = await fetchWithRetry(`${getApiUrl()}/empresa/declaraciones?${params}`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Declaraciones voluntarias no disponibles: ${res.status}`)
+  return res.json()
+}
+
+export function perfilGeneracionPdfUrl(declaracionId: string): string {
+  return `${getApiUrl()}/empresa/declaraciones/${declaracionId}/pdf`
 }
 
 // ─── Fase 7: ReasoningGraph ─────────────────────────────────────────────────

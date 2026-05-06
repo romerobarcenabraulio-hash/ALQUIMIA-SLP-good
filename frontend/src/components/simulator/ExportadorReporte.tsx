@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { getApiUrl } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
+import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import type { ExportResponse } from '@/types'
 
 type ExportSection =
@@ -99,6 +100,8 @@ export function ExportadorReporte() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Exportación de reporte ejecutivo · <span className="text-[#6B6860] text-[14px]">propuesta</span>
       </h1>
+
+      <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {CAUSAL.map((step, i, arr) => (

@@ -1,10 +1,20 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import type { CoverageStatus, MunicipioProfile } from '@/types'
 import { getNationalCoverage, getNationalMunicipios } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+
+const MexicoRsuFootprintMap = dynamic(() => import('@/components/simulator/MexicoRsuFootprintMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-6 text-[13px] text-[#6B6760]">
+      Preparando vista mapa RSU…
+    </div>
+  ),
+})
 
 const STATUS_COLOR: Record<string, string> = {
   verificado: 'bg-green-100 text-green-800',
@@ -130,6 +140,8 @@ export default function CoberturaNacional() {
         </button>
       </div>
 
+      <MexicoRsuFootprintMap />
+
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">
           {error}
@@ -197,6 +209,9 @@ export default function CoberturaNacional() {
             <thead className="bg-[#FAF8F4] text-xs text-[#8A857C]">
               <tr>
                 <th className="text-left py-2 px-3 font-medium">Municipio</th>
+                <th className="text-right py-2 px-3 font-medium whitespace-nowrap">Población ~</th>
+                <th className="text-right py-2 px-3 font-medium whitespace-nowrap">RSU t/día ~</th>
+                <th className="text-right py-2 px-3 font-medium whitespace-nowrap">CO₂e t/día ~</th>
                 <th className="text-left py-2 px-3 font-medium">Legal</th>
                 <th className="text-left py-2 px-3 font-medium">Presupuesto</th>
                 <th className="text-left py-2 px-3 font-medium">Documentos</th>
@@ -211,6 +226,19 @@ export default function CoberturaNacional() {
                     <td className="py-3 px-3">
                       <div className="font-medium text-[#1C1B18]">{profile?.nombre ?? c.municipio_id}</div>
                       <div className="text-xs text-[#8A857C]">{profile?.clave_inegi ?? 'INEGI N/D'} · {c.coverage_status}</div>
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono text-xs text-[#1C1B18]">
+                      {profile?.poblacion != null ? profile.poblacion.toLocaleString('es-MX') : '—'}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono text-xs text-[#1C1B18]">
+                      {profile?.rsu_ton_dia != null
+                        ? profile.rsu_ton_dia.toLocaleString('es-MX', { maximumFractionDigits: 1 })
+                        : '—'}
+                    </td>
+                    <td className="py-3 px-3 text-right font-mono text-xs text-[#1C1B18]">
+                      {profile?.co2e_disposal_ton_dia != null
+                        ? profile.co2e_disposal_ton_dia.toFixed(3)
+                        : '—'}
                     </td>
                     <td className="py-3 px-3">
                       <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[c.legal] ?? STATUS_COLOR.no_disponible}`}>

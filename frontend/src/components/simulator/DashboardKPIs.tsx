@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from 'react'
 import { getDashboardSummary } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import type { DashboardResponse, KPIIndicador } from '@/types'
 
 const STEPS = ['Datos de entrada', 'Cálculo de score', 'KPIs por área', 'Alertas y próximas acciones']
@@ -65,6 +66,8 @@ export function DashboardKPIs() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Panel de indicadores municipales · <span className="text-[#6B6860] text-[14px]">propuesta</span>
       </h1>
+
+      <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {STEPS.map((step, i, arr) => (

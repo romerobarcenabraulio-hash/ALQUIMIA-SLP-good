@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotDatos, MarketSummary, MacroImpactSummary, ReasoningGraph, MunicipioProfile, CoverageStatus, OperationsSummary, PortalEntry, CityContext, CircularityBaseline, DecisionModule, Audience } from '@/types'
+import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotDatos, MarketSummary, MacroImpactSummary, ReasoningGraph, MunicipioProfile, CoverageStatus, OperationsSummary, PortalEntry, CityContext, CircularityBaseline, DecisionModule, Audience, MunicipioMxApi, SeleccionMunicipioCatalog } from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS } from '@/lib/constants'
 import { calcular } from '@/lib/calculator'
@@ -37,6 +37,23 @@ function writeAudienceLiteralKey(audience: Audience | null) {
   }
 }
 
+/** Callback pendiente para H-02 — no se serializa en persist. */
+let agoraPlanConfirmCallback: (() => void) | null = null
+
+function catalogRowToSeleccion(row: MunicipioMxApi): SeleccionMunicipioCatalog {
+  return {
+    claveInegi: row.clave_inegi,
+    nombre: row.nombre,
+    estadoNombre: row.estado,
+    estadoId: row.estado_id,
+    poblacion: row.poblacion,
+    generacionRsuDia: row.generacion_rsu_dia,
+    zmSimulatorId: row.zm_simulator_id,
+    municipioSimulatorId: row.municipio_simulator_id,
+    datosEstimados: row.datos_estimados,
+  }
+}
+
 interface SimulatorStore extends SimulatorState {
   resultados: ResultadosCalculados | null
   escenarios: EscenarioGuardado[]
@@ -44,6 +61,8 @@ interface SimulatorStore extends SimulatorState {
   generatingPlan: boolean
   generationProgress: number
   generationStep: string
+  /** Q-010 H-02 — modal de confirmación antes de ÁGORA */
+  agoraPlanConfirmOpen: boolean
   // Gate jurídico — seteado por DiagnosticoJuridico al cargar
   agoraLegalBloqueado: boolean
   // Fase 2.5: snapshot de trazabilidad de datos — se actualiza al cambiar ZM
@@ -75,7 +94,10 @@ interface SimulatorStore extends SimulatorState {
   resetAudience:       () => void
   fetchCityPortalData: (cityId: string) => Promise<void>
   setZM:               (id: string) => void
+  applyMunicipioCatalog: (row: MunicipioMxApi) => void
+  clearMunicipioSeleccion: () => void
   toggleMunicipio:     (id: string) => void
+  setMunicipiosPrograma: (municipioIds: string[]) => void
   toggleTipoVivienda:  (tipo: 'vertical' | 'casa' | 'residencial') => void
   setHorizonte:        (n: number) => void
   setPreset:           (nombre: string) => void
@@ -97,6 +119,9 @@ interface SimulatorStore extends SimulatorState {
   guardarEscenario:    (nombre: string) => void
   cargarEscenario:     (id: string) => void
   setGeneratingPlan:      (v: boolean, progress?: number, step?: string) => void
+  openAgoraPlanConfirm:   (onConfirm: () => void) => void
+  confirmAgoraPlan:       () => void
+  dismissAgoraPlanConfirm: () => void
   setAgoraLegalBloqueado: (v: boolean) => void
   setSnapshotDatos:       (s: SnapshotDatos | null) => void
   fetchSnapshotDatos:     (zm: string) => Promise<void>
@@ -141,7 +166,11 @@ const defaultState: SimulatorState = {
     poblacion: 'fallback', precios: 'fallback',
     tipoCambio: 'fallback', temperatura: 'fallback', recicladoras: 'fallback',
   },
+  seleccionMunicipioCatalog: null,
 }
+
+/** Plantilla de estado inicial (tests Q-024 y fixtures). */
+export const SIMULATOR_STATE_DEFAULT: SimulatorState = defaultState
 
 export const useSimulatorStore = create<SimulatorStore>()(
   devtools(
@@ -154,6 +183,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         generatingPlan: false,
         generationProgress: 0,
         generationStep: '',
+        agoraPlanConfirmOpen: false,
         agoraLegalBloqueado: true,  // default bloqueado hasta que DiagnosticoJuridico confirme
         snapshotDatos: null,
         marketSummary: null,        // Fase 5: null hasta ejecutar precolocación
@@ -274,6 +304,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             cityContextLoading:  true,
             circularityBaselineLoading: true,
             portalError:         null,
+            seleccionMunicipioCatalog: null,
           })
           get().recalcular()
           // Fase 2.5: fetch async del snapshot — hidrata genPercapita y tipoCambio
@@ -282,10 +313,62 @@ export const useSimulatorStore = create<SimulatorStore>()(
           get().fetchCityPortalData(id)
         },
 
+        applyMunicipioCatalog: (row) => {
+          const zmId = row.zm_simulator_id
+          const mid = row.municipio_simulator_id
+          const genKg =
+            row.poblacion > 0 ? (row.generacion_rsu_dia * 1000) / row.poblacion : 0.688
+          const sel = catalogRowToSeleccion(row)
+          if (get().zmActiva !== zmId) {
+            get().setZM(zmId)
+          }
+          set({
+            municipiosActivos: [mid],
+            genPercapita: genKg,
+            seleccionMunicipioCatalog: sel,
+          })
+          get().recalcular()
+        },
+
+        clearMunicipioSeleccion: () => {
+          const zm = ZMS.find(z => z.id === get().zmActiva)
+          if (!zm) {
+            set({ seleccionMunicipioCatalog: null })
+            return
+          }
+          set({
+            seleccionMunicipioCatalog: null,
+            municipiosActivos: zm.municipios.map(m => m.id),
+            genPercapita: zm.genKgDia,
+          })
+          get().recalcular()
+        },
+
         toggleMunicipio: (id) => {
           const cur = get().municipiosActivos
           const next = cur.includes(id) ? cur.filter(m => m !== id) : [...cur, id]
           set({ municipiosActivos: next.length ? next : cur })
+          get().recalcular()
+        },
+
+        setMunicipiosPrograma: (municipioIds) => {
+          const zm = ZMS.find(z => z.id === get().zmActiva)
+          if (!zm) return
+          const allowed = new Set(zm.municipios.map(m => m.id))
+          const filtered = municipioIds.filter(mid => allowed.has(mid))
+          const next = filtered.length ? filtered : zm.municipios.map(m => m.id)
+          const sel = get().seleccionMunicipioCatalog
+          const keepSel = Boolean(
+            sel && next.length === 1 && next[0] === sel.municipioSimulatorId,
+          )
+          const clearingCatalog = Boolean(sel) && !keepSel
+          set({
+            municipiosActivos: next,
+            ...(keepSel
+              ? {}
+              : { seleccionMunicipioCatalog: null }),
+            ...(clearingCatalog ? { genPercapita: zm.genKgDia } : {}),
+          })
           get().recalcular()
         },
 
@@ -385,6 +468,21 @@ export const useSimulatorStore = create<SimulatorStore>()(
           set({ generatingPlan: v, generationProgress: progress ?? 0, generationStep: step ?? '' })
         },
 
+        openAgoraPlanConfirm: (onConfirm) => {
+          agoraPlanConfirmCallback = onConfirm
+          set({ agoraPlanConfirmOpen: true })
+        },
+        confirmAgoraPlan: () => {
+          const cb = agoraPlanConfirmCallback
+          agoraPlanConfirmCallback = null
+          set({ agoraPlanConfirmOpen: false })
+          cb?.()
+        },
+        dismissAgoraPlanConfirm: () => {
+          agoraPlanConfirmCallback = null
+          set({ agoraPlanConfirmOpen: false })
+        },
+
         setAgoraLegalBloqueado: (v) => { set({ agoraLegalBloqueado: v }) },
 
         setSnapshotDatos: (s) => { set({ snapshotDatos: s }) },
@@ -402,7 +500,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
            * Si Banxico responde con tipo=oficial → actualiza tipoCambio en el store.
            * Si SEMARNAT responde con certificado → actualiza genPercapita si no fue
            * modificado manualmente por el usuario.
-           * Nunca lanza — errores se registran en consola.
+           * Nunca lanza — si el snapshot falla se mantienen valores por defecto.
            */
           try {
             const apiUrl = getApiUrl()
@@ -432,9 +530,8 @@ export const useSimulatorStore = create<SimulatorStore>()(
             }
 
             get().recalcular()
-          } catch (err) {
-            // Error de red o backend no disponible — continúa con valores por defecto
-            console.warn('[fetchSnapshotDatos] No disponible para', zm, err)
+          } catch {
+            // Red o backend no disponible — continúa con valores por defecto
           }
         },
       }),

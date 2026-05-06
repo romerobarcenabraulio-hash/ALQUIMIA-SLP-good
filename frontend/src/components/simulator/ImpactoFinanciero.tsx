@@ -1,6 +1,5 @@
 'use client'
 import { useMemo } from 'react'
-import { shallow } from 'zustand/shallow'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { monteCarlo, tornadoAnalysis } from '@/lib/calculator'
 import { fmt } from '@/lib/utils'
@@ -15,24 +14,22 @@ import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 export function ImpactoFinanciero() {
   const { resultados, wacc, setWacc, tipoCambio, setTipoCambio,
           precioCarbonoEsc, setPrecioCarbonoEsc, precios, setPrecio, horizonte,
-          pctCapturaPorAño, mermaLogPct } = useSimulatorStore()
+          pctCapturaPorAño, mermaLogPct, zmActiva, municipiosActivos } = useSimulatorStore()
   const r = resultados
   const blocked = !useSimulatorStore.getState().gatesAprobados[0]
 
-  const mcInputs = useSimulatorStore(
-    s => ({
-      precios: s.precios,
-      pctCapturaPorAño: s.pctCapturaPorAño,
-      mermaLogPct: s.mermaLogPct,
-      horizonte: s.horizonte,
-    }),
-    shallow,
-  )
-
+  /* Linter: getState() no aparece en el grafo de deps; la lista fuerza recálculo al variar precios, trayectoria o ámbito municipal (Q-024). */
+  /* eslint-disable react-hooks/exhaustive-deps */
   const tirDistribution = useMemo(
     () => monteCarlo(useSimulatorStore.getState(), 2000),
-    [mcInputs],
+    [precios, pctCapturaPorAño, mermaLogPct, horizonte, zmActiva, municipiosActivos],
   )
+
+  const tornadoRows = useMemo(
+    () => tornadoAnalysis(useSimulatorStore.getState()),
+    [wacc, precios, pctCapturaPorAño, mermaLogPct, zmActiva, municipiosActivos],
+  )
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const mcPercentiles = useMemo(() => {
     const len = tirDistribution.length
@@ -40,11 +37,6 @@ export function ImpactoFinanciero() {
     const q = (p: number) => tirDistribution[Math.min(len - 1, Math.floor(len * p))]
     return { p10: q(0.1), p50: q(0.5), p90: q(0.9) }
   }, [tirDistribution])
-
-  const tornadoRows = useMemo(
-    () => tornadoAnalysis(useSimulatorStore.getState()),
-    [wacc, precios, pctCapturaPorAño, mermaLogPct],
-  )
 
   return (
     <div className={blocked ? 'overlay-blocked' : ''}>

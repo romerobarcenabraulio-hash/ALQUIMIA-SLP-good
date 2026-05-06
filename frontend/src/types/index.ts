@@ -556,6 +556,38 @@ export interface SimulatorState {
     temperatura:  'api' | 'fallback'
     recicladoras: 'api' | 'fallback'
   }
+
+  /** Selección explícita vía catálogo Estado→Municipio (Q-009); null si solo se usó ZM o chips legacy. */
+  seleccionMunicipioCatalog: SeleccionMunicipioCatalog | null
+}
+
+export interface SeleccionMunicipioCatalog {
+  claveInegi: string
+  nombre: string
+  estadoNombre: string
+  estadoId: string
+  poblacion: number
+  generacionRsuDia: number
+  zmSimulatorId: string
+  municipioSimulatorId: string
+  datosEstimados: boolean
+}
+
+export interface MunicipioMxApi {
+  clave_inegi: string
+  nombre: string
+  estado: string
+  estado_id: string
+  poblacion: number
+  generacion_rsu_dia: number
+  zm_simulator_id: string
+  municipio_simulator_id: string
+  datos_estimados: boolean
+}
+
+export interface EstadoMxOption {
+  estado_id: string
+  nombre: string
 }
 
 // ─── Resultados calculados ───────────────────────────────────────────────────
@@ -1175,6 +1207,58 @@ export interface MacroImpactSummary {
   generators?: MacroGenerator[]
 }
 
+// ─── Q-017 — Perfil de Generación Estimada RSU (estimación voluntaria) ─────
+
+export interface GiroScian {
+  giro_codigo: string
+  sector: string
+  subsector: string
+  descripcion: string
+  factor_generacion_kg_por_unidad: number
+  unidad_produccion: string
+  composicion_tipica: Record<string, number>
+  fuente: string
+}
+
+export type FrecuenciaRecoleccionDecl = 'diaria' | '2x_semana' | 'semanal' | 'quincenal'
+
+export interface DeclaracionGeneracionRSU {
+  declaracion_id: string
+  empresa_nombre: string
+  rfc: string | null
+  municipio_id: string
+  zm: string
+  giro_scian: string
+  produccion_anual: number
+  unidad_produccion: string
+  generacion_estimada: Record<string, number>
+  generacion_total_ton_anio: number
+  frecuencia_recoleccion_req: FrecuenciaRecoleccionDecl
+  tiene_plan_manejo: boolean
+  es_posible_gran_generador: boolean
+  advertencia_gran_generador: string
+  fuente_tipo: 'declaracion_voluntaria'
+  disclaimer_voluntaria: string
+  notas: string | null
+  fecha_declaracion: string
+  status: 'borrador' | 'confirmada'
+  sector_catalogo?: string
+  descripcion_giro?: string
+}
+
+export interface DeclaracionGeneracionRSUCreate {
+  empresa_nombre: string
+  rfc?: string | null
+  municipio_id: string
+  zm: string
+  giro_scian: string
+  produccion_anual: number
+  composicion_materiales?: Record<string, number> | null
+  frecuencia_recoleccion_req?: FrecuenciaRecoleccionDecl | null
+  tiene_plan_manejo?: boolean
+  notas?: string | null
+}
+
 // ─── Fase 13.3: portal empresarial e institucional ───────────────────────────
 
 export type OrganizationActivityType =
@@ -1561,6 +1645,32 @@ export interface MunicipioProfile {
   concesion_status: NationalSourceStatus
   coverage_status: CoverageStage
   data_provenance: Record<string, unknown>
+  /** Centroide WGS84 aproximado para visualización (no límite oficial). */
+  lat?: number | null
+  lng?: number | null
+  /** t CO2e/día orden de magnitud (gestión/disposición simplificada). */
+  co2e_disposal_ton_dia?: number | null
+}
+
+export interface RsuFootprintMapFeature {
+  municipio_id: string
+  nombre: string
+  estado: string
+  zm_id: string
+  poblacion: number
+  gen_per_capita_kg_dia: number
+  rsu_ton_dia: number
+  co2e_disposal_ton_dia: number
+  lat: number
+  lng: number
+}
+
+export interface RsuFootprintMapResponse {
+  catalog_simulation_epoch: string
+  feature_count: number
+  features: RsuFootprintMapFeature[]
+  methodology_summary: string
+  disclaimer: string
 }
 
 export interface CoverageStatus {
@@ -1592,4 +1702,26 @@ export interface OperationsSummary {
   incentivos: number
   reincidencias: Record<string, number>
   warnings: string[]
+}
+
+// ─── Q-013 — Adendos reglamentarios (multi-ciudad) ──────────────────────────
+
+export type TecnicaNormativa = 'Adicionar' | 'Reformar' | 'Nuevo'
+
+export interface AdendoCiudadData {
+  nombreReglamento: string
+  anio: number
+  numeroArticulo: string
+  textoVigente: string
+  pdfCargado: boolean
+}
+
+export interface AdendoData {
+  id: number
+  titulo: string
+  tecnica: TecnicaNormativa
+  ciudades: Record<string, AdendoCiudadData>
+  adendoPropuesto: string
+  efectoOperativo: string
+  estadoBorrador: true
 }

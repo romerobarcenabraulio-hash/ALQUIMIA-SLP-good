@@ -30,7 +30,7 @@ const MODULOS: Array<{
     ruta: '/aprende',
     Icon: Globe,
     titulo: 'Centro educativo',
-    desc: 'Flujos divulgativos sin cuenta; complemento a la demo guiada.',
+    desc: 'Flujos divulgativos sin cuenta; complemento al escenario de referencia.',
   },
 ]
 
@@ -65,7 +65,8 @@ export default function LandingPage() {
           ALQUIMIA integra baseline, sensibilidades, documentos y narrativa institucional en un solo flujo orientado a decisiones locales.
         </p>
         <p className="text-[15px] font-medium text-[#1C1B18] mb-8 max-w-2xl mx-auto leading-snug">
-          No constituye dictamen ni documento oficial: las salidas son propuestas de consultoría hasta validación por la autoridad competente.
+          ALQUIMIA genera escenarios técnicos para análisis de factibilidad.{' '}
+          No sustituye una consultoría especializada ni constituye un dictamen oficial.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center items-stretch sm:items-center">
           <Link
@@ -84,7 +85,7 @@ export default function LandingPage() {
         <details className="mt-8 max-w-2xl mx-auto text-left border border-[#E8E4DC] rounded-[12px] bg-[#FDFCFA]/90 px-4 py-3">
           <summary className="font-serif text-[15px] text-[#1C1B18] cursor-pointer list-none flex items-center gap-2 [&::-webkit-details-marker]:hidden">
             <span className="text-[#3B6D11] select-none" aria-hidden>▸</span>
-            Límites del análisis
+            Alcances y limitaciones
           </summary>
           <ul className="mt-4 space-y-3 text-[13px] text-[#6B6760] leading-relaxed list-none pl-0">
             <li className="flex gap-2">
@@ -102,28 +103,6 @@ export default function LandingPage() {
             <li className="flex gap-2">
               <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
               <span>
-                Consulta el aviso legal y la política de privacidad de tu instancia cuando estén publicados.
-              </span>
-            </li>
-          </ul>
-        </details>
-        <p className="mt-6 text-[11px] text-[#A8A49C] max-w-xl mx-auto leading-relaxed">
-          El escenario de referencia usa datos ilustrativos y supuestos configurables; el acceso institucional prepara sesiones trazables según la política de tu organización.
-        </p>
-      </section>
-
-      <section className="border-y border-[#E8E4DC] bg-[#FDFCFA]/80 py-10">
-        <div className="max-w-3xl mx-auto px-4">
-          <h2 className="font-serif text-[20px] text-[#1C1B18] mb-4 text-center">
-            Trazabilidad, registro de actividad y privacidad
-          </h2>
-          <p className="text-[13px] text-[#6B6760] leading-relaxed text-center max-w-2xl mx-auto mb-4">
-            Este bloque resume el marco operativo descrito en el blueprint <strong className="font-medium text-[#1C1B18]">17.1</strong> (publicación y control de acceso). Los límites jurídicos del análisis en sí están arriba, en <strong className="font-medium text-[#1C1B18]">Límites del análisis</strong>.
-          </p>
-          <ul className="space-y-3 text-[13px] text-[#6B6760] leading-relaxed">
-            <li className="flex gap-2">
-              <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
-              <span>
                 Los accesos registrados y las credenciales se rigen por la política de tu instancia; ALQUIMIA no sustituye los canales oficiales de transparencia o notificación del ayuntamiento.
               </span>
             </li>
@@ -133,17 +112,26 @@ export default function LandingPage() {
                 Si operas datos personales, aplica la normativa aplicable en tu ámbito y documenta el tratamiento conforme a tus propios lineamientos.
               </span>
             </li>
+            <li className="flex gap-2">
+              <span className="shrink-0 font-mono text-[#3B6D11]" aria-hidden>●</span>
+              <span>
+                Consulta el aviso legal y la política de privacidad de tu instancia cuando estén publicados.
+              </span>
+            </li>
           </ul>
-          <p className="mt-6 text-center text-[11px] uppercase tracking-[0.08em] text-[#A8A49C]">
+          <p className="mt-4 text-[11px] uppercase tracking-[0.08em] text-[#A8A49C]">
             Alineado con blueprint 17.1 · publicación y control de acceso
           </p>
-        </div>
+        </details>
+        <p className="mt-6 text-[11px] text-[#A8A49C] max-w-xl mx-auto leading-relaxed">
+          El escenario de referencia usa datos ilustrativos y supuestos configurables; el acceso institucional prepara sesiones trazables según la política de tu organización.
+        </p>
       </section>
 
       <section className="border-y border-[#E8E4DC] py-12">
         <div className="max-w-5xl mx-auto px-4">
-          <p className="font-serif text-center text-sm font-normal text-[#1C1B18] mb-6">
-            Órdenes de magnitud ilustrativos
+          <p className="text-xs uppercase tracking-widest text-[#A8A49C] mb-2 text-center">
+            Referencias de contexto nacional · órdenes de magnitud
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {[

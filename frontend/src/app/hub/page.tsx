@@ -16,12 +16,23 @@ import {
   getRenderReport,
 } from '@/lib/api'
 import type { PackageStatus, PackageAsset, PackageManifest } from '@/types'
+import { AdendoViewer } from '@/components/hub/AdendoViewer'
+import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
 
 type DocEstadoHub = 'disponible_web' | 'en_elaboracion'
+type AudienciaHub = 'ciudadano' | 'funcionario' | 'empresa'
 
 const ZM_TABS_HUB = ['SLP', 'QRO', 'MTY'] as const
+const HUB_SECTIONS = ['Documentos', 'Adendos reglamentarios'] as const
+type HubSection = (typeof HUB_SECTIONS)[number]
+
+const AUDIENCIA_LABELS: Record<AudienciaHub, string> = {
+  ciudadano:  'Ciudadano',
+  funcionario: 'Funcionario municipal',
+  empresa:    'Empresa / operador',
+}
 
 const HUB_ESTADO_CARD: Record<
   DocEstadoHub,
@@ -79,6 +90,8 @@ function HubContent() {
   const [filtroTipo, setFiltroTipo]     = useState('Todos')
   const [zipLoading, setZipLoading]         = useState(false)
   const [zipPaqueteError, setZipPaqueteError] = useState<string | null>(null)
+  const [seccionActiva, setSeccionActiva] = useState<HubSection>('Documentos')
+  const [audiencia, setAudiencia] = useState<AudienciaHub>('funcionario')
 
   useEffect(() => {
     setZmActiva(zmParam)
@@ -226,9 +239,69 @@ function HubContent() {
           )}
         </div>
 
+        {/* ── Selector de sección + audiencia ── */}
+        {!jobParam && (
+          <div className="mb-5 flex flex-wrap items-center gap-3 justify-between">
+            <div className="flex gap-1.5">
+              {HUB_SECTIONS.map(s => (
+                <button
+                  key={s}
+                  onClick={() => setSeccionActiva(s)}
+                  className={cn(
+                    'px-4 py-2 rounded-[8px] text-[13px] font-medium border transition-colors',
+                    seccionActiva === s
+                      ? 'bg-[#1C1B18] text-white border-[#1C1B18]'
+                      : 'bg-[#FDFCFA] text-[#6B6760] border-[#E8E4DC] hover:bg-[#F0EDE5]'
+                  )}
+                >
+                  {s}
+                </button>
+              ))}
+            </div>
+            {/* Selector de audiencia para demostración */}
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-[#A8A49C]">Vista:</span>
+              <select
+                value={audiencia}
+                onChange={e => setAudiencia(e.target.value as AudienciaHub)}
+                className="text-[11px] border border-[#E8E4DC] rounded-[6px] px-2 py-1 bg-white text-[#6B6760] focus:outline-none"
+              >
+                {(Object.keys(AUDIENCIA_LABELS) as AudienciaHub[]).map(k => (
+                  <option key={k} value={k}>{AUDIENCIA_LABELS[k]}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* ── Sección: Adendos reglamentarios ── */}
+        {!jobParam && seccionActiva === 'Adendos reglamentarios' && (
+          audiencia === 'ciudadano' ? (
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-8 text-center">
+              <p className="text-[13px] text-[#6B6760]">
+                Esta sección está disponible únicamente para funcionarios municipales y operadores autorizados.
+              </p>
+            </div>
+          ) : (
+            <AdendoViewer ciudadId={zmActiva.toLowerCase()} adendoId={1} />
+          )
+        )}
+
         {/* ── Panel de paquete (cuando hay job_id) ── */}
         {jobParam && (
           <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[16px] p-5 mb-6">
+            <div
+              className="mb-4 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]"
+              role="region"
+              aria-label="Aviso legal — paquete ÁGORA"
+            >
+              <p className="font-semibold text-[#1C1B18] flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-[#D4881E]" aria-hidden />
+                Portada legal (toda exportación)
+              </p>
+              <p className="mt-2 whitespace-pre-line">{AGORA_EXPORT_COVER_DISCLAIMER}</p>
+              <p className="mt-3 border-t border-[#E8E4DC] pt-3 text-[10px] leading-snug">{EXPORT_LIABILITY_WAIVER}</p>
+            </div>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
                 <p className="text-[11px] uppercase tracking-wider text-[#A8A49C] mb-1">Paquete documental</p>
@@ -440,8 +513,8 @@ function HubContent() {
           </div>
         )}
 
-        {/* ── Selector ZM (cuando no hay paquete activo) ── */}
-        {!jobParam && (
+        {/* ── Selector ZM (cuando no hay paquete activo y sección Documentos) ── */}
+        {!jobParam && seccionActiva === 'Documentos' && (
           <>
             <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
@@ -497,8 +570,8 @@ function HubContent() {
           </>
         )}
 
-        {/* ── Lista de documentos ── */}
-        <div className="flex flex-col gap-2">
+        {/* ── Lista de documentos (sección Documentos o vista de paquete) ── */}
+        {(jobParam != null || seccionActiva === 'Documentos') && <div className="flex flex-col gap-2">
 
           {/* Caso A: assets reales del paquete */}
           {usePackageAssets && assetsDocumentos.length > 0 && assetsDocumentos.map((asset, i) => (
@@ -596,7 +669,7 @@ function HubContent() {
               <p className="text-[12px] mt-1">Genera el plan de circularidad para producirlos.</p>
             </div>
           )}
-        </div>
+        </div>}
 
         {/* Indicador de Drive (opcional, no como única fuente) */}
         {usePackageAssets && pkgStatus?.status === 'completed' && (

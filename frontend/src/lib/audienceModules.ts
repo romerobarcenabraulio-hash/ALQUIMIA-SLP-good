@@ -25,6 +25,7 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
     'municipal_context',
     'future_goals',
     'infrastructure_operations',
+    'inspeccion_predios',
     'scenarios_export',
   ],
   // Empresario — perfil organización + trazabilidad + reporte.

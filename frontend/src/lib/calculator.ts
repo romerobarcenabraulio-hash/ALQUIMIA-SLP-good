@@ -4,6 +4,7 @@ import {
   MULTIPLICADORES, FACTORES_EMISION, CA_CONFIG, ESTACIONALIDAD,
   ZMS,
 } from './constants'
+import { resolveSimulationGeography } from './zmPopulationScale'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -14,25 +15,16 @@ function getZM(zmId: string) {
   return ZMS.find(z => z.id === zmId) ?? ZMS[0]
 }
 
-function snapshotNumber(snapshot: SnapshotDatos | null | undefined, kpiId: string): number | null {
-  const kpi = snapshot?.kpis.find(k => k.kpi_id === kpiId)
-  if (!kpi || kpi.provenance.tipo === 'no_disponible') return null
-  return typeof kpi.valor === 'number' ? kpi.valor : null
-}
-
 // ─── Motor principal ─────────────────────────────────────────────────────────
 
 export function calcular(state: SimulatorState): ResultadosCalculados {
   const zm = getZM(state.zmActiva)
   const snapshot = (state as SimulatorState & { snapshotDatos?: SnapshotDatos | null }).snapshotDatos
 
-  // Población/viviendas activas según filtros
-  const muniActivos = zm.municipios.filter(m => state.municipiosActivos.includes(m.id))
-  const allMunicipiosActivos = muniActivos.length === zm.municipios.length
-  const snapshotPop = allMunicipiosActivos ? snapshotNumber(snapshot, 'poblacion_total') : null
-  const snapshotViv = allMunicipiosActivos ? snapshotNumber(snapshot, 'viviendas_totales') : null
-  const popActiva = snapshotPop ?? (muniActivos.reduce((s, m) => s + m.pop, 0) || zm.totalPop)
-  const vivActivas = snapshotViv ?? (muniActivos.reduce((s, m) => s + m.viv, 0) || zm.totalViv)
+  const { popActiva, vivActivas } = resolveSimulationGeography({
+    ...state,
+    snapshotDatos: snapshot,
+  })
 
   const genKgDia = state.genPercapita || zm.genKgDia
 
@@ -174,7 +166,8 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   const caP = state.mixCAs.P ?? 0; const caM = state.mixCAs.M ?? 0; const caG = state.mixCAs.G ?? 0
   const empleosDirectosCAs = caP * CA_CONFIG.P.empleos + caM * CA_CONFIG.M.empleos + caG * CA_CONFIG.G.empleos
   const empleosIndirectos  = empleosDirectosCAs * 2.5
-  const pepenadoresForm    = (zm.pepenadoresActivos ?? 0) * 0.35
+  const pepenadoresForm =
+    (zm.pepenadoresActivos ?? 0) * 0.35 * (popActiva / Math.max(zm.totalPop, 1))
 
   // Ambiental
   const volTotalDia  = últimoAño

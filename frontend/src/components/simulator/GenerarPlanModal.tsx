@@ -1,8 +1,10 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { AlertTriangle } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
 import { getApiUrl, getJobStatus, getPackageManifest, downloadPackageZip } from '@/lib/api'
 import type { PackageStatus, PackageManifest } from '@/types'
 
@@ -216,6 +218,19 @@ export function GenerarPlanModal() {
               </div>
               <h3 className="font-serif text-[24px] text-[#1C1B18] mb-1">¡Plan completo!</h3>
               <p className="text-[13px] text-[#6B6760]">Paquete documental generado y persistido</p>
+            </div>
+
+            <div
+              className="mb-4 max-h-[40vh] overflow-y-auto rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]"
+              role="region"
+              aria-label="Aviso legal sobre documentos generados"
+            >
+              <p className="font-semibold text-[#1C1B18] flex items-center gap-1.5">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-[#D4881E]" aria-hidden />
+                Documentos de simulación — no oficiales
+              </p>
+              <p className="mt-2 whitespace-pre-line">{AGORA_EXPORT_COVER_DISCLAIMER}</p>
+              <p className="mt-3 border-t border-[#E8E4DC] pt-3 text-[10px] leading-snug">{EXPORT_LIABILITY_WAIVER}</p>
             </div>
 
             {/* ── Metadata del paquete ── */}

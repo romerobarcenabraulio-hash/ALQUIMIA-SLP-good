@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { CitizenPreviewPanel } from '@/components/simulator/CitizenPreviewPanel'
+import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
 import type { DecisionModule, PortalEntry } from '@/types'
 
 interface DecisionModuleShellProps {
@@ -170,6 +171,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
           </nav>
 
           <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+            <NarrativaIntroBridge className="mb-3 mt-0" />
             <DecisionHeader module={activeModule} />
             {activeModule.status === 'blocked' ? (
               <div className="mt-4 rounded-[8px] border border-amber-300 bg-amber-50 p-4">

@@ -1,5 +1,5 @@
 'use client'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { tornadoAnalysis } from '@/lib/calculator'
 import { useMemo } from 'react'
@@ -7,8 +7,10 @@ import { fmt } from '@/lib/utils'
 
 export function TornadoChart() {
   const state = useSimulatorStore()
-  const data  = useMemo(() => tornadoAnalysis(state), [
-    state.precios, state.wacc, state.pctCapturaPorAño, state.mermaLogPct
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- entradas listadas; `state` completo cambia de identidad cada render
+  const data = useMemo(() => tornadoAnalysis(state), [
+    state.precios, state.wacc, state.pctCapturaPorAño, state.mermaLogPct,
+    state.zmActiva, state.municipiosActivos,
   ])
 
   return (
