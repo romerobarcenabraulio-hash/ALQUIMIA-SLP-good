@@ -58,6 +58,28 @@ class CityOption(BaseModel):
     municipios: List[MunicipioContext]
 
 
+class MunicipioMxApi(BaseModel):
+    """Municipio para selector Estado → Municipio (Q-009)."""
+
+    clave_inegi: str = Field(..., description="CVE INEGI 5 caracteres (entidad+municipio)")
+    nombre: str
+    estado: str = Field(..., description="Nombre de la entidad federativa")
+    estado_id: str = Field(..., description="CVE entidad INEGI (2 dígitos)")
+    poblacion: int = Field(..., ge=0)
+    generacion_rsu_dia: float = Field(..., ge=0, description="Toneladas RSU/día modelo")
+    zm_simulator_id: str = Field(..., description="ID de ZM en simulador ALQUIMIA")
+    municipio_simulator_id: str = Field(..., min_length=2, max_length=8)
+    datos_estimados: bool = Field(
+        default=True,
+        description="True si población/RSU son estimaciones; Navigator valida CVE y cifras.",
+    )
+
+
+class EstadoMxOption(BaseModel):
+    estado_id: str
+    nombre: str
+
+
 class CityContext(CityOption):
     geography_scope: Literal["city_zm"] = "city_zm"
     jurisdiction_scope: Literal["MetropolitanZone"] = "MetropolitanZone"

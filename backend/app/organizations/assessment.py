@@ -174,6 +174,12 @@ def evaluate_organizational_circularity(
     tipo = request.tipo_actividad
     calculo = _calc_for_type(request)
 
+    _declaracion_reforma_sim = (
+        "Reforma modelo ALQUIMIA (simulación): grandes generadores sujetos a declaración o registro municipal "
+        "anual de corrientes de residuos y volúmenes, con esquema de información homólogo al trámite de permiso "
+        "de Centro de Acopio; confirmar umbrales y formato con jurídico municipal antes de publicar."
+    )
+
     rsu_base = (calculo.incertidumbre_rango[0] + calculo.incertidumbre_rango[1]) / 2.0
     waste_streams = [
         WasteStreamProfile(
@@ -221,16 +227,27 @@ def evaluate_organizational_circularity(
         )
         warnings.append(advertencia_no_rsu)
 
+    if not blockers and tipo in (
+        OrganizationActivityType.empresa,
+        OrganizationActivityType.industria_ligera,
+        OrganizationActivityType.hospital,
+        OrganizationActivityType.centro_comercial,
+        OrganizationActivityType.hotel,
+    ):
+        warnings.append(_declaracion_reforma_sim)
+
     status = "blocked" if blockers else ("warning" if warnings else "ready")
-    next_action = (
-        "Completar municipio y datos mínimos para desbloquear evaluación."
-        if blockers
-        else (
-            "Coordinar proveedor autorizado y separar no-RSU del flujo RSU."
-            if warnings
-            else "Ejecutar acciones 30/60/90 y validar con operación municipal."
+    if blockers:
+        next_action = "Completar municipio y datos mínimos para desbloquear evaluación."
+    elif advertencia_no_rsu:
+        next_action = "Coordinar proveedor autorizado y separar no-RSU del flujo RSU."
+    elif warnings:
+        next_action = (
+            "Consultar con jurídico municipal la declaración o registro anual de residuos "
+            "(esquema homólogo a permiso de Centro de Acopio) y ejecutar acciones 30/60/90."
         )
-    )
+    else:
+        next_action = "Ejecutar acciones 30/60/90 y validar con operación municipal."
 
     return OrganizationalCircularityResponse(
         status=status,  # type: ignore[arg-type]

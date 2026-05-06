@@ -14,18 +14,21 @@ _ESTADOS: Dict[str, str] = {
     "SLP": "San Luis Potosi",
     "QRO": "Queretaro",
     "NL": "Nuevo Leon",
+    "JAL": "Jalisco",
 }
 
 _BASELINE_ESTIMATES: Dict[str, Dict[str, float]] = {
     "SLP": {"pct": 4.0, "uncertainty": 3.0, "confidence": 0.46},
     "QRO": {"pct": 5.5, "uncertainty": 3.5, "confidence": 0.48},
     "MTY": {"pct": 7.0, "uncertainty": 4.0, "confidence": 0.50},
+    "GDL": {"pct": 5.5, "uncertainty": 4.0, "confidence": 0.44},
 }
 
 _FALLBACK_RSU_TON_DAY = {
     "SLP": 1119.6,
     "QRO": 1334.1,
     "MTY": 5608.2,
+    "GDL": 2180.0,
 }
 
 
@@ -173,6 +176,14 @@ def journey_for(entry: PortalEntry) -> list[DecisionModule]:
             next_action="Resolver warnings de mercado antes de exportar",
         ),
         DecisionModule(
+            module_id="inspeccion_predios",
+            label="Inspección de predios",
+            audience_mode=UserAudienceMode.city_team,
+            decision="Documentar hallazgo sin mapa catastral y elaborar expediente técnico borrador",
+            evidence="Dirección textual, coordenadas opcionales y escalera orientativa SLP (CLC pendiente)",
+            next_action="Registrar inspección y generar PDF de expediente para trámite ante autoridad competente",
+        ),
+        DecisionModule(
             module_id="scenarios_export",
             label="Escenarios y salida",
             audience_mode=UserAudienceMode.city_team,
@@ -223,17 +234,20 @@ def baseline_for(city_id: str, snapshot: SnapshotDatos) -> Optional[CircularityB
             fecha_consulta=datetime.now(timezone.utc).isoformat(),
             confianza=estimate["confidence"],
             advertencia=(
-                "Baseline estimada para orientar la simulación inicial. No es dato oficial, dictamen ni documento aprobado; "
-                "debe validarse con medición municipal, operador o fuente competente antes de usarse como cifra oficial."
+                "Cifra generada por el modelo ALQUIMIA con datos de referencia: no es inventario de campo, "
+                "no es registro de cabildo ni dictamen. Antes de usarla en un acto público o presupuesto, "
+                "debe confirmarse con medición municipal, operador o fuente competente."
             ),
             requiere_clave_api=False,
         ),
         warnings=[
-            "Baseline RSU municipal estimada, no oficial.",
-            "No incluye residuos peligrosos, especiales ni regulados de manejo separado.",
-            "El marco legal y cualquier obligación se evalúan por municipio, no por ZM.",
+            "Esta referencia es estimada no oficial del modelo ALQUIMIA: no viene de un censo o inventario público municipal de residuos.",
+            "Aquí sólo contemplamos RSU habitual; no están residuos peligrosos, especiales ni de manejo separado obligatorio.",
+            "Las obligaciones legales y la competencia aplican municipio por municipio, no a toda la ZM junta.",
         ],
         interpretation=(
-            "Esta línea base representa circularidad actual estimada de RSU municipal antes de definir metas futuras."
+            "El porcentaje resume, en esta simulación, cuánto del RSU municipal que modelamos aparece canalizado "
+            "a rutas de aprovechamiento frente al total municipal estimado; el resto se asume en disposición u otras "
+            "rutas sin recuperación en esta línea base, antes de que fijes metas o programas nuevos."
         ),
     )

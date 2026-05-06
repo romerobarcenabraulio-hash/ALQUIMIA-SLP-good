@@ -6,7 +6,14 @@ from fastapi import APIRouter, HTTPException
 from app.national.catalog import get_profile, get_zm, list_estados, list_zm_municipios
 from app.national.coverage import coverage_for_municipio, coverage_for_zm, legal_source_for_municipio
 from app.national.legal_ingest import upsert_municipio_profile
-from app.national.schemas import CoverageStatus, EstadoCatalog, LegalSource, MunicipioProfile
+from app.national.rsu_footprint_map import build_rsu_footprint_map_response
+from app.national.schemas import (
+    CoverageStatus,
+    EstadoCatalog,
+    LegalSource,
+    MunicipioProfile,
+    RsuFootprintMapResponse,
+)
 
 
 router = APIRouter()
@@ -64,4 +71,10 @@ def zm_legal_coverage(zm_id: str):
     if get_zm(zm_id) is None:
         raise HTTPException(status_code=404, detail=f"ZM no encontrada: {zm_id}")
     return coverage_for_zm(zm_id)
+
+
+@router.get("/map/rsu-footprint", response_model=RsuFootprintMapResponse)
+def rsu_footprint_map():
+    """GeoJSON-friendly payload para mapa RSU (piloto catálogo ALQUIMIA)."""
+    return build_rsu_footprint_map_response()
 

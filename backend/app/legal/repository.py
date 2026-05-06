@@ -46,14 +46,27 @@ _TEXTOS_PROPUESTOS = {
     "Art. 1":  "El presente reglamento regula la separación, recolección, transferencia, tratamiento y disposición final de los RSU generados en el municipio.",
     "Art. 2":  "Los generadores domiciliarios clasificarán sus residuos en orgánicos y materiales valorizables conforme a NOM-161-SEMARNAT-2011.",
     "Art. 3":  "El servicio de recolección operará con rutas diferenciadas por fracción en días y horarios del programa operativo anual.",
-    "Art. 4":  "El Ayuntamiento podrá establecer, concesionar u otorgar permisos a CAs, que reportarán volúmenes mensualmente.",
+    "Art. 4":  (
+        "El Ayuntamiento establecerá el registro y permisos de Centros de Acopio y puntos de recepción autorizados; "
+        "queda prohibido concentrar RSU en predios sin autorización municipal. Los predios donde se acumulen RSU "
+        "sin permiso se presumirán acopio no autorizado o microrvertedero; la autoridad ordenará saneamiento, "
+        "retiro de residuos y aplicará multas y medidas administrativas conforme al tarifario. "
+        "Las personas morales y grandes generadores deberán presentar declaración anual de corrientes de residuos "
+        "y volúmenes estimados, en plazos y formatos homologados al trámite de registro de Centro de Acopio."
+    ),
     "Art. 5":  "La fracción orgánica se destinará prioritariamente a compostaje o biogás. Se prohíbe su disposición en relleno cuando exista capacidad instalada.",
     "Art. 6":  "Se reconoce al reciclador de base como prestador de servicio ambiental. El municipio promoverá su incorporación a cooperativas formales.",
     "Art. 7":  "La Tesorería establecerá tarifas diferenciadas por estrato, volumen y nivel de separación. Ingresos al Fondo Municipal de Circularidad.",
     "Art. 8":  "El Presupuesto Municipal contemplará partida para inversión RSU. Se autorizan mecanismos de APP para CAs.",
     "Art. 9":  "El Comité Ciudadano de Residuos co-supervisará el programa y emitirá recomendaciones trimestrales al Cabildo.",
     "Art. 10": "El municipio publicará semestralmente: toneladas captadas, tasa desvío, ingresos y empleos. Datos interoperables con ALQUIMIA.",
-    "Art. 11": "Incumplimiento de separación en generadores comerciales/industriales: multa 5-50 UMAs. Reincidencia: suspensión licencia.",
+    "Art. 11": (
+        "Incumplimiento de separación en generadores comerciales e industriales: multa de 5 a 50 UMAs; "
+        "reincidencia: suspensión de licencias de funcionamiento. "
+        "Titulares de predios que mantengan basura o RSU acumulados sin autorización, o que operen equiparablemente "
+        "a Centro de Acopio sin permiso, serán sancionados con multa, orden de limpieza y costos de retiro; "
+        "en caso de daño ambiental manifiesto se aplicarán medidas adicionales previstas en la normativa municipal aplicable."
+    ),
     "Art. 12": "El municipio podrá suscribir convenios de coordinación intermunicipal para infraestructura compartida de tratamiento RSU.",
 }
 
@@ -496,12 +509,47 @@ def _build_jua() -> tuple[Reglamento, list[ArticuloMatriz]]:
     return reg, _todos_ausentes()
 
 
+def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
+    """Guadalajara — reglamento semilla no exhaustivo (Q-009). Navigator: CVE + texto vigente."""
+    reg = Reglamento(
+        municipio_id="gdl", zm="GDL",
+        nombre="Marco municipal de referencia RSU — Guadalajara (semilla ALQUIMIA)",
+        version="semilla", fecha_publicacion="—",
+        fuente="placeholder_alquimia", url=None,
+        verificado=False, requiere_revision_juridica=True,
+    )
+    return reg, _todos_ausentes()
+
+
+def _build_zap() -> tuple[Reglamento, list[ArticuloMatriz]]:
+    reg = Reglamento(
+        municipio_id="zap", zm="GDL",
+        nombre="Marco municipal de referencia RSU — Zapopan (semilla ALQUIMIA)",
+        version="semilla", fecha_publicacion="—",
+        fuente="placeholder_alquimia", url=None,
+        verificado=False, requiere_revision_juridica=True,
+    )
+    return reg, _todos_ausentes()
+
+
+def _build_tla() -> tuple[Reglamento, list[ArticuloMatriz]]:
+    reg = Reglamento(
+        municipio_id="tla", zm="GDL",
+        nombre="Marco municipal de referencia RSU — Tlaquepaque (semilla ALQUIMIA)",
+        version="semilla", fecha_publicacion="—",
+        fuente="placeholder_alquimia", url=None,
+        verificado=False, requiere_revision_juridica=True,
+    )
+    return reg, _todos_ausentes()
+
+
 # ─── Mapa ZM → municipios ─────────────────────────────────────────────────────
 
 ZM_MUNICIPIOS: dict[str, list[str]] = {
     "SLP": ["slp", "sol", "csp", "vip"],
     "QRO": ["qro", "cor", "mar", "hui"],
     "MTY": ["mty", "spg", "snl", "gua", "apo", "sca", "gar", "esc", "jua"],
+    "GDL": ["gdl", "zap", "tla"],
 }
 
 MUNICIPIO_NOMBRES: dict[str, str] = {
@@ -525,6 +573,10 @@ MUNICIPIO_NOMBRES: dict[str, str] = {
     "gar": "García",
     "esc": "General Escobedo",
     "jua": "Juárez",
+    # GDL (ZM GUADALAJARA)
+    "gdl": "Guadalajara",
+    "zap": "Zapopan",
+    "tla": "San Pedro Tlaquepaque",
 }
 
 
@@ -542,6 +594,7 @@ class ReglamentoRepository:
             _build_qro, _build_cor, _build_mar, _build_hui,   # ZM QRO
             _build_mty, _build_spg, _build_snl, _build_gua,   # ZM MTY (1/2)
             _build_apo, _build_sca, _build_gar, _build_esc, _build_jua,  # MTY (2/2)
+            _build_gdl, _build_zap, _build_tla,  # GDL
         ]
         for builder in builders:
             reg, arts = builder()

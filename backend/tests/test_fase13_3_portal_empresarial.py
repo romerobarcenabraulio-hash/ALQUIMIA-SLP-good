@@ -33,7 +33,8 @@ def test_hotel_genera_plan_contenedores_y_acciones():
 
     assert len(result.container_plan) >= 3
     assert len(result.acciones_30_60_90) == 3
-    assert result.status == "ready"
+    assert result.status == "warning"
+    assert any("Centro de Acopio" in w for w in result.warnings)
 
 
 def test_hospital_activa_advertencia_residuos_no_rsu():

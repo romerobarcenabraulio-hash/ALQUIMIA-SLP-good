@@ -15,6 +15,8 @@ import logging
 from datetime import date
 from typing import Optional
 
+from app.legal.agora_export_disclaimers import AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER
+
 logger = logging.getLogger(__name__)
 
 
@@ -84,6 +86,25 @@ def render_executive_pdf(
         alignment=TA_CENTER)
 
     story = []
+
+    # ── Q-010: portada legal (antes del título institucional) ─────────────────
+    story.append(Paragraph(
+        "Aviso legal — lectura obligatoria",
+        ParagraphStyle(
+            "LegalCoverLabel",
+            fontName="Helvetica-Bold",
+            fontSize=11,
+            textColor=ORANGE,
+            spaceAfter=6,
+            alignment=TA_CENTER,
+        ),
+    ))
+    for block in AGORA_EXPORT_COVER_DISCLAIMER.replace("\r\n", "\n").split("\n\n"):
+        b = block.strip()
+        if b:
+            story.append(Paragraph(b.replace("\n", "<br/>"), warn_style))
+    story.append(Spacer(1, 0.6 * cm))
+    story.append(HRFlowable(width="100%", thickness=0.75, color=ORANGE, spaceAfter=12))
 
     # ── Portada ───────────────────────────────────────────────────────────────
     story.append(Spacer(1, 1.5 * cm))
@@ -195,8 +216,10 @@ def render_executive_pdf(
         body_style
     ))
 
-    # ── Nota de trazabilidad ──────────────────────────────────────────────────
+    # ── Nota de trazabilidad + limitación de responsabilidad (Q-010) ─────────
     story.append(HRFlowable(width="100%", thickness=0.5, color=GREY, spaceBefore=14))
+    story.append(Paragraph(EXPORT_LIABILITY_WAIVER.replace("\n", "<br/>"), footer_style))
+    story.append(Spacer(1, 0.25 * cm))
     pkg_short = package_id[:16] + "…" if len(package_id) > 16 else package_id
     story.append(Paragraph(
         f"Generado por ÁGORA GOV — ALQUIMIA  ·  Package ID: {pkg_short}  ·  "

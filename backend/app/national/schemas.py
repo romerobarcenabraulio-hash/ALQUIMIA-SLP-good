@@ -53,12 +53,44 @@ class MunicipioProfile(BaseModel):
     poblacion: Optional[int] = None
     viviendas: Optional[int] = None
     rsu_ton_dia: Optional[float] = None
-    gen_per_capita: Optional[float] = None
+    gen_per_capita: Optional[float] = Field(
+        default=None,
+        description="kg RSU por persona-día (aprox.)",
+    )
     presupuesto_mxn: Optional[float] = None
     dependencia_responsable: Optional[str] = None
     concesion_status: SourceStatus = SourceStatus.no_disponible
     coverage_status: CoverageStage = CoverageStage.no_iniciado
     data_provenance: Dict[str, Any] = Field(default_factory=dict)
+    lat: Optional[float] = Field(default=None, description="Centroide aproximado WGS84 para visualización")
+    lng: Optional[float] = Field(default=None, description="Centroide aproximado WGS84 para visualización")
+    co2e_disposal_ton_dia: Optional[float] = Field(
+        default=None,
+        description="Orden de magnitud t CO2e/día asociado a gestión/disposición del volumen RSU estimado",
+    )
+
+
+class RsuFootprintMapFeature(BaseModel):
+    """Punto para mapa RSU — catálogo piloto ALQUIMIA (ampliable a México completo)."""
+
+    municipio_id: str
+    nombre: str
+    estado: str
+    zm_id: str
+    poblacion: int
+    gen_per_capita_kg_dia: float
+    rsu_ton_dia: float
+    co2e_disposal_ton_dia: float
+    lat: float
+    lng: float
+
+
+class RsuFootprintMapResponse(BaseModel):
+    catalog_simulation_epoch: str
+    feature_count: int
+    features: List[RsuFootprintMapFeature]
+    methodology_summary: str
+    disclaimer: str
 
 
 class LegalSource(BaseModel):

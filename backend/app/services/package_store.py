@@ -40,6 +40,7 @@ from app.agents.schemas import (
     ExportBundle,
     PackageRecord,
 )
+from app.legal.agora_export_disclaimers import wrap_agora_markdown
 
 logger = logging.getLogger(__name__)
 
@@ -89,7 +90,8 @@ def _render_content(doc, draft_bundle) -> bytes:
     if draft_bundle:
         draft_doc = draft_bundle.documento_por_id(doc.document_id)
         if draft_doc and draft_doc.secciones:
-            return render_draft_document_as_markdown(draft_doc).encode()
+            raw = render_draft_document_as_markdown(draft_doc)
+            return wrap_agora_markdown(raw).encode("utf-8")
 
     # Stub de trazabilidad: deja claro que el doc requiere contenido real
     lines = [
@@ -103,11 +105,8 @@ def _render_content(doc, draft_bundle) -> bytes:
         "> Documento registrado en ExportBundle — pendiente de redacción completa.",
         "",
     ]
-    if doc.warnings:
-        lines.append("## Advertencias activas")
-        for w in doc.warnings:
-            lines.append(f"- {w}")
-    return "\n".join(lines).encode()
+    text = "\n".join(lines)
+    return wrap_agora_markdown(text).encode("utf-8")
 
 
 # ─── API pública ──────────────────────────────────────────────────────────────
