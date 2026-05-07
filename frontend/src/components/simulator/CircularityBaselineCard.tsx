@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { AlertTriangle, BookOpenCheck, Database, HelpCircle } from 'lucide-react'
+import { BookOpenCheck, Database, HelpCircle } from 'lucide-react'
 import { getProgramPopulationShare } from '@/lib/zmPopulationScale'
 import { useSimulatorStore } from '@/store/simulatorStore'
 
@@ -72,7 +72,7 @@ export function CircularityBaselineCard() {
             </p>
           )}
           <div className="flex flex-wrap items-start justify-between gap-4">
-            <div>
+            <div className="min-w-0 max-w-[min(100%,40rem)] flex-1">
               <p className="text-[12px] text-[#6B6760]">{circularityBaseline.city_name}</p>
               <p
                 className="mt-1 font-mono text-[34px] leading-none text-[#1C1B18]"
@@ -84,51 +84,20 @@ export function CircularityBaselineCard() {
                 <span className="font-semibold text-[#1C1B18]">Cómo leer este número: </span>
                 {circularityBaseline.interpretation}
               </p>
-            </div>
-
-            <aside
-              className="max-w-[min(100%,20rem)] rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-3 text-[12px] leading-snug text-amber-950"
-              aria-labelledby="baseline-leyenda-alertas"
-            >
-              <p id="baseline-leyenda-alertas" className="sr-only">
-                Leyenda del recuadro amarillo: significado estimado, no oficial e incertidumbre del modelo.
-              </p>
-              <div className="inline-flex items-center gap-1 font-semibold text-amber-900">
-                <AlertTriangle size={14} aria-hidden="true" />
-                Guía rápida (recuadro amarillo)
+              <div
+                className="mt-4 flex flex-wrap items-start gap-2 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-2.5 text-[12px] leading-relaxed text-[#6B6760] [overflow-wrap:anywhere]"
+                title="Margen declarado sobre el mismo indicador 0–100%"
+              >
+                <HelpCircle size={14} className="mt-0.5 shrink-0 text-[#3B6D11]" aria-hidden="true" />
+                <p>
+                  <span className="font-medium text-[#1C1B18]">Incertidumbre del modelo: </span>
+                  ±{circularityBaseline.uncertainty_pct_points.toFixed(1)} puntos porcentuales sobre este indicador.
+                  Intervalo ilustrativo entre <strong>{rangeMin?.toFixed(1)}% y {rangeMax?.toFixed(1)}%</strong>
+                  {' '}
+                  (no garantiza ese rango en campo; marca incertidumbre metodológica declarada aquí).
+                </p>
               </div>
-              <dl className="mt-3 space-y-2">
-                <div>
-                  <dt className="inline font-semibold">Estimado: </dt>
-                  <dd className="inline">
-                    viene del modelo ALQUIMIA con datos públicos suplementarios, no es medición oficial de brigada ni padrón municipal de residuos.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="inline font-semibold">No oficial: </dt>
-                  <dd className="inline">
-                    ningún ayuntamiento o autoridad federativa lo ha certificado desde esta pantalla; úsalo para preparar talleres,
-                    ordenar prioridades internas y después sustituir con tu propia fuente.
-                  </dd>
-                </div>
-                <div>
-                  <dt className="flex items-start gap-1 font-semibold">
-                    <HelpCircle size={13} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    Incertidumbre ±{circularityBaseline.uncertainty_pct_points.toFixed(1)} puntos (%):
-                  </dt>
-                  <dd className="mt-1 pl-0">
-                    “pp” son puntos porcentuales: el margen vale para el mismo indicador entre 0% y 100%.
-                    Con un valor central de {circularityBaseline.current_circularity_pct.toFixed(1)}% y ±
-                    {circularityBaseline.uncertainty_pct_points.toFixed(1)}
-                    pp el intervalo modelo razonable queda entre{' '}
-                    <strong>
-                      {rangeMin?.toFixed(1)}% y {rangeMax?.toFixed(1)}%
-                    </strong>
-                    — no garantiza ese rango estadístico en terreno real, marca incertidumbre del método usado aquí.
-                  </dd>
-                </div>
-              </dl>
-            </aside>
+            </div>
           </div>
 
           <div className="mt-5 grid gap-3 md:grid-cols-3">
@@ -166,16 +135,26 @@ export function CircularityBaselineCard() {
               {Math.round(circularityBaseline.provenance.confianza * 100)}%.
             </p>
             {circularityBaseline.provenance.advertencia && (
-              <p className="mt-2 text-[11px] text-amber-900">{circularityBaseline.provenance.advertencia}</p>
+              <p className="mt-2 text-[11px] leading-relaxed text-[#6B6760] [overflow-wrap:anywhere]">
+                {circularityBaseline.provenance.advertencia}
+              </p>
             )}
           </div>
 
-          <div className="mt-3 grid gap-2">
-            {circularityBaseline.warnings.map(warning => (
-              <p key={warning} className="rounded-[6px] bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
-                {warning}
-              </p>
-            ))}
+          <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#A8A49C]">
+              Alcance jurídico y del residuo modelado
+            </p>
+            <ul className="mt-2 list-none space-y-2.5 text-[12px] leading-relaxed text-[#6B6760] [overflow-wrap:anywhere]">
+              {circularityBaseline.warnings.map(warning => (
+                <li
+                  key={warning}
+                  className="relative pl-[0.875rem] before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-[#3B6D11] before:content-['']"
+                >
+                  {warning}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}
