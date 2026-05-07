@@ -3,7 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import { ContadorOportunidad } from '@/components/charts/ContadorOportunidad'
 import { DiagnosticoJuridico } from '@/components/simulator/DiagnosticoJuridico'
-import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
+import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
 import { cn } from '@/lib/utils'
 
 export type MarcoLegalMode = 'citizen' | 'functionary'
@@ -17,23 +17,15 @@ const ROADMAP_ITEMS = [
   'Publicación en Periódico Oficial del Estado',
 ]
 
-/** Artículos / notas por etapa del roadmap — se muestran en el modal de fuente primaria (Q-007). */
-const ROADMAP_FUENTE_ARTICULOS: string[][] = [
-  ['Matriz diagnóstico — objeto y ámbito del reglamento', 'Definiciones aplicables a RSU / limpia'],
-  ['Brechas vs. LGPGIR / programa municipal (referencia art. 87 LGPGIR)', 'Separación en origen y recolección'],
-  ['Anteproyecto — bloque de reformas y disposiciones transitorias'],
-  ['Orden del día y antecedentes para sesión de Cabildo'],
-  ['Acuerdo de aprobación de reforma reglamentaria'],
-  ['Lineamiento de publicación en Periódico Oficial del Estado o Gaceta municipal'],
-]
-
 interface MarcoLegalProps {
   /** Vista ciudadana: solo educación; sin roadmap ni motor jurídico interactivo. */
   mode?: MarcoLegalMode
 }
 
 export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
-  const { gatesAprobados, setGate } = useSimulatorStore()
+  const { gatesAprobados, setGate, zmActiva } = useSimulatorStore()
+  const { openReglamento } = useReglamentoFuente()
+  const munId = zmActiva?.toLowerCase() ?? 'mty'
 
   if (mode === 'citizen') {
     return (
@@ -46,16 +38,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
           sustituye al ayuntamiento.
         </p>
         <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4">
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-[12px] font-medium text-[#1C1B18]">Solo para aprender</p>
-            <FuenteReglamentoIcon
-              articulosEtapa={[
-                'Marco local de limpia y residuos — consulta el reglamento publicado de tu municipio',
-                'Competencia municipal vs. metropolitana (ZM)',
-              ]}
-              label="Ver fuente primaria del reglamento municipal de referencia"
-            />
-          </div>
+          <p className="text-[12px] font-medium text-[#1C1B18] mb-1">Solo para aprender</p>
           <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
             Esta pantalla es informativa. No reemplaza al reglamento publicado, ni a orientación del ayuntamiento,
             ni a asesoría legal. Si necesitas trámites o multas, acude a las ventanillas y fuentes oficiales de tu municipio.
@@ -106,17 +89,21 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
         no emite dictamen legal ni aprueba reformas; cada avance debe validarse por municipio y por
         autoridad competente.
       </p>
-      <div className="mb-6 rounded-[10px] border border-[#E8E4DC] bg-[#F8F6F1] p-4">
-        <div className="flex items-start justify-between gap-2">
-          <p className="text-[13px] leading-relaxed text-[#6B6760] flex-1">
+      <div className="mb-6 rounded-[10px] border border-[#E8E4DC] bg-[#F8F6F1] p-4 flex items-start justify-between gap-4">
+        <p className="text-[13px] leading-relaxed text-[#6B6760] flex-1">
           Aquí se ve el desarrollo de los nuevos adendos que se proponen. No son los oficiales,
           pero ayudan a contrastar cómo está actualmente la ley y cómo la cambiaremos.
-          </p>
-          <FuenteReglamentoIcon
-            articulosEtapa={['Instrumento vigente — reformas propuestas vs. texto publicado', 'Disposiciones transitorias']}
-            label="Abrir fuente primaria del reglamento municipal vigente (referencia)"
-          />
-        </div>
+        </p>
+        <button
+          type="button"
+          onClick={() => openReglamento(munId)}
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-[8px] bg-[#3B6D11] px-3 py-2 text-[12px] font-medium text-white hover:bg-[#2D5409] transition-colors"
+        >
+          Ver adendos propuestos
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+        </button>
       </div>
 
       {/* Roadmap interactivo */}
@@ -147,12 +134,6 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
                 {!checked && !prev && <span className="text-[#E2DED6] text-[10px]">🔒</span>}
               </span>
               <span className="text-[13px] flex-1 min-w-0">{item}</span>
-              <span className="shrink-0" onClick={e => e.stopPropagation()}>
-                <FuenteReglamentoIcon
-                  articulosEtapa={ROADMAP_FUENTE_ARTICULOS[i]}
-                  label={`Ver fuente primaria y artículos de referencia — etapa: ${item}`}
-                />
-              </span>
               {i === 4 && <span className="text-[10px] text-[#D4881E] font-medium shrink-0">★ GATE CLAVE</span>}
             </button>
           )

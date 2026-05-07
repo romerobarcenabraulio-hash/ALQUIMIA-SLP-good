@@ -92,7 +92,6 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2021,
     url_fuente:
       'https://www.monterrey.gob.mx/pdf/reglamentos/1/Reglamento_de_Limpia_Municipal_de_Monterrey.pdf',
-    archivo_local: ['/reglamentos/MTY_mty_monterrey_reglamento_limpia_municipal.pdf'],
     articulos_clave: ['Definiciones', 'Obligaciones', 'Disposiciones transitorias'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',

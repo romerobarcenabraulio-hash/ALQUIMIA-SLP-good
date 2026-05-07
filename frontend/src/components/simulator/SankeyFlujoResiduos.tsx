@@ -1,9 +1,8 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import type { TooltipProps } from 'recharts'
 import { Rectangle, ResponsiveContainer, Sankey, Tooltip } from 'recharts'
-import { Slider } from '@/components/ui/Slider'
 import {
   computeSankeyKpis,
   interpolateSankeyLinks,
@@ -134,12 +133,13 @@ function FlujoLinkTooltip({
   return null
 }
 
-export function SankeyFlujoResiduos() {
-  const [progresoAnios, setProgresoAnios] = useState(0)
+// Muestra el escenario propuesto (año 3 = separación en 5 fracciones activa)
+const ANIO_PROPUESTO = 3
 
+export function SankeyFlujoResiduos() {
   const specLinks = useMemo(
-    () => interpolateSankeyLinks(progresoAnios),
-    [progresoAnios],
+    () => interpolateSankeyLinks(ANIO_PROPUESTO),
+    [],
   )
 
   const kpis = useMemo(() => computeSankeyKpis(specLinks), [specLinks])
@@ -219,22 +219,9 @@ export function SankeyFlujoResiduos() {
         ))}
       </div>
 
-      <p className="text-[11px] text-[#A8A49C] mb-3">
-        Proyecciones estimadas — no constituyen datos oficiales
+      <p className="text-[11px] text-[#A8A49C] mb-4">
+        Escenario propuesto · año 3 · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales
       </p>
-
-      <div className="bg-white border border-[#E8E4DC] rounded-[12px] p-4 mb-4">
-        <Slider
-          label="Horizonte del programa (años)"
-          value={progresoAnios}
-          min={0}
-          max={5}
-          step={0.05}
-          onChange={setProgresoAnios}
-          formatValue={v => `${v.toFixed(2)} año(s)`}
-          source="Interpolación lineal entre escenarios 0 · 1 · 3 · 5"
-        />
-      </div>
 
       <div className="flex flex-wrap gap-4 justify-center text-[10px] text-[#6B6760] mb-2">
         <span className="flex items-center gap-1.5">
