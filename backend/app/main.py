@@ -44,6 +44,9 @@ _DEFAULT_CORS_ORIGINS: tuple[str, ...] = (
     "http://127.0.0.1:3000",
     "https://alquimia.mx",
     "https://alquimia-slp.vercel.app",
+    # dominio de producción definitivo
+    "https://alquimiaplatform.com",
+    "https://www.alquimiaplatform.com",
 )
 
 
