@@ -164,6 +164,68 @@ function AuthModule() {
   )
 }
 
+function FlujoCicloSVG() {
+  return (
+    <svg
+      viewBox="0 0 720 140"
+      className="w-full max-w-[680px] mx-auto mb-8"
+      role="img"
+      aria-label="Flujo: residuo doméstico → separación en 5 fracciones → centro de acopio → ingreso municipal"
+    >
+      {/* Nodo 1: Casa / Residuo */}
+      <g transform="translate(60,70)">
+        <circle r="38" fill="#F0EDE5" stroke="#E8E4DC" strokeWidth="1.5" />
+        <text y="-10" textAnchor="middle" fontSize="26">🏠</text>
+        <text y="24" textAnchor="middle" fontSize="9" fill="#6B6760" fontFamily="system-ui">Residuo</text>
+        <text y="35" textAnchor="middle" fontSize="9" fill="#6B6760" fontFamily="system-ui">doméstico</text>
+      </g>
+      {/* Flecha 1→2 */}
+      <path d="M100,70 L168,70" stroke="#3B6D11" strokeWidth="2" markerEnd="url(#arrow)" />
+
+      {/* Nodo 2: Separación 5 fracciones */}
+      <g transform="translate(220,70)">
+        <circle r="44" fill="#EAF3DE" stroke="#3B6D11" strokeWidth="1.5" />
+        <text y="-12" textAnchor="middle" fontSize="24">♻️</text>
+        <text y="18" textAnchor="middle" fontSize="9" fill="#3B6D11" fontFamily="system-ui" fontWeight="600">5 fracciones</text>
+        <text y="30" textAnchor="middle" fontSize="8" fill="#6B6760" fontFamily="system-ui">orgánico · PET</text>
+        <text y="40" textAnchor="middle" fontSize="8" fill="#6B6760" fontFamily="system-ui">vidrio · papel · Al</text>
+      </g>
+      {/* Flecha 2→3 */}
+      <path d="M266,70 L340,70" stroke="#3B6D11" strokeWidth="2" markerEnd="url(#arrow)" />
+
+      {/* Nodo 3: Centro de acopio */}
+      <g transform="translate(392,70)">
+        <circle r="44" fill="#FEF7E7" stroke="#D4881E" strokeWidth="1.5" />
+        <text y="-12" textAnchor="middle" fontSize="24">🏭</text>
+        <text y="18" textAnchor="middle" fontSize="9" fill="#8B5A00" fontFamily="system-ui" fontWeight="600">Centro de</text>
+        <text y="30" textAnchor="middle" fontSize="9" fill="#8B5A00" fontFamily="system-ui" fontWeight="600">acopio</text>
+      </g>
+      {/* Flecha 3→4 */}
+      <path d="M438,70 L512,70" stroke="#D4881E" strokeWidth="2" markerEnd="url(#arrow-orange)" />
+
+      {/* Nodo 4: Ingreso municipal */}
+      <g transform="translate(564,70)">
+        <circle r="44" fill="#1C1B18" stroke="#1C1B18" strokeWidth="1.5" />
+        <text y="-12" textAnchor="middle" fontSize="24">💰</text>
+        <text y="18" textAnchor="middle" fontSize="9" fill="white" fontFamily="system-ui" fontWeight="600">Ingreso</text>
+        <text y="30" textAnchor="middle" fontSize="9" fill="white" fontFamily="system-ui" fontWeight="600">municipal</text>
+      </g>
+
+      {/* Defs flechas */}
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+          markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#3B6D11" />
+        </marker>
+        <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5"
+          markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M 0 0 L 10 5 L 0 10 z" fill="#D4881E" />
+        </marker>
+      </defs>
+    </svg>
+  )
+}
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
@@ -189,57 +251,9 @@ export default function LandingPage() {
       <div className="max-w-6xl mx-auto px-4 py-14 sm:py-20 grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-12 lg:gap-16 items-start">
 
         {/* Columna izquierda: flujo visual + artículo */}
-        <div className="max-w-2xl">
-          <div className="mb-10 w-full overflow-x-auto">
-            <svg
-              role="img"
-              aria-label="Flujo del programa: residuo doméstico, separación en cinco fracciones, centro de acopio, ingreso municipal"
-              viewBox="0 0 640 112"
-              className="h-auto w-full min-w-[320px] max-w-2xl"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <title>Flujo: hogar, cinco fracciones, centro de acopio, ingreso municipal</title>
-              <defs>
-                <marker id="fl-arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
-                  <path d="M0,0 L8,4 L0,8 Z" fill="#1C1B18" />
-                </marker>
-              </defs>
-              <rect x="0" y="0" width="640" height="112" rx="12" fill="#FDFCFA" stroke="#E8E4DC" strokeWidth="2" />
-              {/* 1 — hogar / residuo */}
-              <g transform="translate(24,24)">
-                <rect width="72" height="64" rx="8" fill="#E8E4DC" stroke="#1C1B18" strokeWidth="1.5" />
-                <path d="M12 28 L36 12 L60 28 Z" fill="none" stroke="#3B6D11" strokeWidth="2" strokeLinejoin="round" />
-                <rect x="22" y="30" width="28" height="26" rx="2" fill="#3B6D11" opacity="0.2" stroke="#3B6D11" strokeWidth="1.5" />
-              </g>
-              <line x1="104" y1="56" x2="132" y2="56" stroke="#1C1B18" strokeWidth="2" markerEnd="url(#fl-arr)" />
-              {/* 2 — reciclaje / 5 fracciones */}
-              <g transform="translate(140,20)">
-                <rect width="120" height="72" rx="8" fill="#FEF7E7" stroke="#D4881E" strokeWidth="1.5" />
-                <path d="M60 18 A14 14 0 1 1 45 32" fill="none" stroke="#3B6D11" strokeWidth="2" strokeLinecap="round" />
-                <path d="M45 32 A14 14 0 1 1 60 46" fill="none" stroke="#3B6D11" strokeWidth="2" strokeLinecap="round" />
-                <path d="M60 46 A14 14 0 1 1 75 32" fill="none" stroke="#3B6D11" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="38" cy="58" r="4" fill="#D4881E" />
-                <circle cx="52" cy="58" r="4" fill="#D4881E" opacity="0.75" />
-                <circle cx="66" cy="58" r="4" fill="#D4881E" opacity="0.55" />
-                <circle cx="80" cy="58" r="4" fill="#D4881E" opacity="0.4" />
-                <circle cx="94" cy="58" r="4" fill="#D4881E" opacity="0.25" />
-              </g>
-              <line x1="268" y1="56" x2="296" y2="56" stroke="#1C1B18" strokeWidth="2" markerEnd="url(#fl-arr)" />
-              {/* 3 — centro de acopio */}
-              <g transform="translate(304,22)">
-                <rect width="96" height="68" rx="8" fill="#E8E4DC" stroke="#1C1B18" strokeWidth="1.5" />
-                <rect x="12" y="16" width="72" height="40" rx="4" fill="#FDFCFA" stroke="#3B6D11" strokeWidth="1.5" />
-                <rect x="40" y="36" width="16" height="20" rx="1" fill="#D4881E" opacity="0.35" stroke="#D4881E" strokeWidth="1" />
-                <path d="M12 16 L48 8 L84 16" fill="none" stroke="#1C1B18" strokeWidth="1.5" strokeLinejoin="round" />
-              </g>
-              <line x1="404" y1="56" x2="432" y2="56" stroke="#1C1B18" strokeWidth="2" markerEnd="url(#fl-arr)" />
-              {/* 4 — ingreso municipal */}
-              <g transform="translate(440,28)">
-                <circle cx="36" cy="28" r="26" fill="#EAF3DE" stroke="#3B6D11" strokeWidth="2" />
-                <circle cx="36" cy="28" r="14" fill="none" stroke="#D4881E" strokeWidth="2" />
-                <path d="M36 20 L36 38 M28 28 L44 28" stroke="#1C1B18" strokeWidth="2" strokeLinecap="round" />
-              </g>
-            </svg>
+        <div className="max-w-2xl flex flex-col">
+          <div className="w-full overflow-x-auto">
+            <FlujoCicloSVG />
           </div>
 
         <article>
@@ -248,15 +262,15 @@ export default function LandingPage() {
           </p>
 
           <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] tracking-[-0.025em] text-[#1C1B18] mb-7">
-            La ZM de San Luis Potosí mueve más de 700 toneladas de RSU al día —casi todo hoy va a relleno sanitario.
+            Cada zona metropolitana mueve miles de toneladas de RSU al día —y buena parte sigue yendo a relleno porque el flujo mezclado no tiene precio hasta que el reglamento y la ruta lo fijan.
           </h1>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-5">
-            Ese flujo cuesta: tarifa por tonelada, transporte, operación del sitio y el valor de los materiales que no se valorizan. El ordenamiento pide separación y trazabilidad —el contrato vigente, en la práctica, suele incentivar enterrar más, no capturar antes del relleno.
+            Ese flujo cuesta: tarifa por tonelada, transporte, operación del sitio y el valor de los materiales que no se valorizan. El ordenamiento pide separación y trazabilidad —en la práctica, el esquema contractual vigente suele incentivar enterrar más, no capturar antes del relleno.
           </p>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-6">
-            Un programa de cinco fracciones con plena cobertura y centros de acopio acotables puede formalizar entre 80 y 120 empleos en la zona de servicio y recuperar del orden de <span className="font-mono text-[#3B6D11]">$263M</span> MXN anuales en valorización de materiales —cifras del modelo ALQUIMIA para la ZM SLP, no promesa de gabinete.
+            Cuántas toneladas, cuántos empleos formales y cuánta derrama anual cabe esperar no lo declara esta página —lo calcula el simulador con tu ZM, los municipios activos, la trayectoria de captura, los precios de materiales y el WACC que elijas. Misma lógica para el escenario que exportes a Cabildo.
           </p>
 
           <h2 className="font-serif text-[22px] text-[#1C1B18] mb-3 mt-10">El sistema</h2>
@@ -289,27 +303,27 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Stats con contexto */}
+          {/* Indicadores —sin cifras fijas: el motor vive en el simulador */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 py-7 border-y border-[#E8E4DC] mb-8">
             <div>
-              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">80–120</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">empleos formales —escenario ZM SLP</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Empleo</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Directo e indirecto</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                Cobranza de ruta, operación de centro y valorización —contratos en lugar de informalidad en la misma tonelada.
+                El tablero muestra totales según ocupación de centros y rutas del escenario que corras —no hay cifra fija en marketing.
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">35–40%</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">menos volumen al relleno</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Relleno</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Volumen evitado</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                Captura previa con cinco fracciones —lo que hoy se mezcla mañana se vende o compostea con cadena trazable.
+                La curva de captura por año define cuánto deja de mezclarse —revísala al mover trayectoria y municipios activos.
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">$263M</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">MXN/año —derrama por valorización</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Derrama</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Valorización de fracciones</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                Modelo ALQUIMIA para la ZM —materiales que el mercado ya paga y hoy terminan mezclados en el camión al relleno.
+                TIR, VPN y derrama salen del modelo con tus precios de commodity, merma y horizonte —cada corrida actualiza el resultado.
               </p>
             </div>
           </div>
@@ -319,7 +333,7 @@ export default function LandingPage() {
           </p>
 
           <p className="text-[13px] text-[#A8A49C] leading-relaxed border-t border-[#E8E4DC] pt-5 mt-6">
-            Lo anterior es borrador técnico —no dictamen municipal ni acto de autoridad. Quien resuelve sigue siendo tu cabildo y tus ventanillas.
+            Lo anterior es marco narrativo —no dictamen municipal ni acto de autoridad. Las cifras operativas son las del simulador en cada corrida. Quien resuelve sigue siendo tu cabildo y tus ventanillas.
           </p>
         </article>
         </div>
