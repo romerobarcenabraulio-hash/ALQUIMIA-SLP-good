@@ -41,15 +41,15 @@ export function ImpactoFinanciero() {
   return (
     <div className={blocked ? 'overlay-blocked' : ''}>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S14 — Impacto financiero</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Retorno e inversión</h2>
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Retorno, derrama y cobertura financiera</h2>
 
       {/* KPIs financieros */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
-          { l: 'TIR proyecto',   v: r ? `${r.tir.toFixed(1)}%`        : '—', c: 'text-[#3B6D11]' },
-          { l: 'VPN (WACC)',     v: r ? fmt.mxnK(r.vpn)              : '—', c: 'text-[#3B6D11]' },
-          { l: 'EBITDA/año',     v: r ? fmt.mxnK(r.ebitda / Math.max(1, useSimulatorStore.getState().horizonte)) : '—', c: '' },
-          { l: 'Payback',        v: r ? `${r.paybackMeses.toFixed(0)} meses` : '—', c: '' },
+          { l: 'TIR del proyecto',   v: r ? `${r.tir.toFixed(1)}%`        : '—', c: 'text-[#3B6D11]' },
+          { l: 'VPN — valor presente neto',     v: r ? fmt.mxnK(r.vpn)              : '—', c: 'text-[#3B6D11]' },
+          { l: 'EBITDA promedio anual',     v: r ? fmt.mxnK(r.ebitda / Math.max(1, useSimulatorStore.getState().horizonte)) : '—', c: '' },
+          { l: 'Recuperación — meses',        v: r ? `${r.paybackMeses.toFixed(0)} meses` : '—', c: '' },
         ].map(item => (
           <div key={item.l} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
             <p className="text-[10px] uppercase text-[#A8A49C] tracking-wide mb-1">{item.l}</p>
@@ -60,7 +60,7 @@ export function ImpactoFinanciero() {
 
       {/* Controles financieros */}
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-4">Parámetros financieros</p>
+        <p className="text-[12px] font-medium text-[#6B6760] mb-4">Supuestos del modelo financiero</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Slider label="WACC (%)" value={wacc} min={12} max={30} step={1} onChange={setWacc}
             formatValue={v => `${v}%`} source="Modelo CFO certificado" />
@@ -105,7 +105,7 @@ export function ImpactoFinanciero() {
 
       {/* Gráfica Waterfall */}
       <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Desglose de valor (Waterfall)</p>
+        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Valor acumulado — waterfall de derrama</p>
         <WaterfallChart />
         {r && (
           <NarrativeBridge
@@ -120,7 +120,7 @@ export function ImpactoFinanciero() {
               { label: 'WACC', value: `${wacc}%` },
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
             ]}
-            source={{ fuente: 'Ingresos = precio_mat × vol_capturado × (1−merma%); EBITDA = ingreso − OPEX_CA − OPEX_ruta; VPN y TIR descontados al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios commodities y volumen capturado.' }}
+            source={{ fuente: 'Derrama = precio_material × volumen_capturado × (1−merma); EBITDA = derrama − OPEX centros − OPEX ruta; VPN y TIR al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios de commodity y a la curva de captura.' }}
             nextStep={{ label: 'Lee la sensibilidad (Tornado)' }}
           />
         )}
@@ -190,14 +190,14 @@ export function ImpactoFinanciero() {
           <NarrativeBridge
             kicker="S22 · Lectura del cashflow"
             variant="bridge"
-            summary={`En el horizonte de ${horizonte} años el modelo acumula ingresos brutos de ${fmt.mxnK(r.ingresosBrutos)}, CAPEX ${fmt.mxnK(r.capexTotal)} y EBITDA total ${fmt.mxnK(r.ebitda)}. La forma del cashflow indica si el proyecto necesita refinanciamiento temprano o amortización lineal.`}
+            summary={`En ${horizonte} años el modelo acumula derrama bruta ${fmt.mxnK(r.ingresosBrutos)} —CAPEX ${fmt.mxnK(r.capexTotal)} y EBITDA acumulado ${fmt.mxnK(r.ebitda)}. La forma del flujo dice si hace falta refinanciamiento temprano o si la captura sostiene la deuda.`}
             evidence={[
               { label: 'Horizonte', value: `${horizonte} años` },
-              { label: 'Ingresos brutos', value: fmt.mxnK(r.ingresosBrutos) },
+              { label: 'Derrama económica estimada por venta de materiales', value: fmt.mxnK(r.ingresosBrutos) },
               { label: 'CAPEX', value: fmt.mxnK(r.capexTotal) },
-              { label: 'EBITDA acum.', value: fmt.mxnK(r.ebitda) },
+              { label: 'EBITDA acumulado', value: fmt.mxnK(r.ebitda) },
             ]}
-            source={{ fuente: 'Flujo por año = ingresos_año − OPEX_año − CAPEX_año_0; acumulado = suma corrida año a año al tipo de cambio y precios del escenario activo', unidad: 'MXN nominal', incertidumbre: 'Supuestos de trayectoria de captura y precios.' }}
+            source={{ fuente: 'Flujo anual = derrama_año − OPEX_año − CAPEX en año cero; acumulado corrido con tipo de cambio y precios del escenario', unidad: 'MXN nominal', incertidumbre: 'Trayectoria de captura y plena cobertura de rutas.' }}
             nextStep={{ label: 'Explora el stress adversarial' }}
           />
         )}

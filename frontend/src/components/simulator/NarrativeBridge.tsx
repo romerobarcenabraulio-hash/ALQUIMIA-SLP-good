@@ -19,6 +19,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { ZMS } from '@/lib/constants'
 import { getNarrativaIntro } from '@/lib/narrativaIntro'
 
+import type { SeleccionMunicipioCatalog } from '@/types'
+
 export type NarrativeBridgeVariant = 'result' | 'warning' | 'bridge'
 
 export interface NarrativeBridgeEvidence {
@@ -98,7 +100,21 @@ export function NarrativeBridge({
       {title && (
         <h3 className="mt-2 font-serif text-[20px] leading-tight text-[#1C1B18]">{title}</h3>
       )}
-      <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{summary}</p>
+      {(() => {
+        const parts = summary.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+        if (parts.length <= 1) {
+          return <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{summary}</p>
+        }
+        return (
+          <div className="mt-2 space-y-3">
+            {parts.map((part, i) => (
+              <p key={i} className="text-[13px] leading-relaxed text-[#1C1B18]">
+                {part}
+              </p>
+            ))}
+          </div>
+        )
+      })()}
 
       {evidence && evidence.length > 0 && (
         <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
@@ -152,57 +168,98 @@ export function NarrativeBridge({
   )
 }
 
+const INTRO_CITIZEN_P2 =
+  'Separar en origen arrima empleo formal —recolección diferenciada y operación de centros— y baja la factura municipal por tonelada enterrada. Menos residuo al relleno significa menos exposición sanitaria en colonias colindantes y menos subsidio encubierto al destino final.'
+
+const INTRO_FUNCTIONARY_P1 =
+  'Este recorrido entrega números defendibles: captura por fracción, derrama por valorización, VPN y TIR bajo supuestos explícitos. El diagnóstico jurídico —S4.6— aísla qué puede hacer hoy tu reglamento de limpia y qué exige reforma antes de multar o contratar.'
+const INTRO_FUNCTIONARY_P2 =
+  'Verás el roadmap reglamentario hasta Periódico Oficial, el plan de implementación por oleadas y los entregables tipo Cabildo. Nada se presenta como dictamen cerrado: cada cifra lleva trazabilidad para que Jurídico y Obras la defiendan en sesión.'
+
+const INTRO_ENTREPRENEUR_P1 =
+  'Aquí ordenas tu posición frente al RSU municipal: volúmenes esperables, precios de commodity que el modelo usa y el benchmark de tu giro frente a LATAM. El tablero cuantifica pasivo ambiental implícito —lo que deja de ir a relleno pasa a reporte de circularidad.'
+const INTRO_ENTREPRENEUR_P2 =
+  'La salida no es un PDF genérico: es argumentario para mesa con municipio o cabildo, con sensibilidad a captura y a plena cobertura. Si inviertes en infraestructura de acopio, ves cómo la concesión se paga y dónde revienta el escenario adverso.'
+
+/** Catálogo INEGI y simulador alineados — Q-024. */
+function municipioCatalogoListo(
+  sel: SeleccionMunicipioCatalog | null,
+  zmActiva: string,
+  municipiosActivos: string[],
+): sel is SeleccionMunicipioCatalog {
+  if (!sel) return false
+  const municipioId = sel.municipioSimulatorId
+  if (sel.zmSimulatorId !== zmActiva) return false
+  const zm = ZMS.find(z => z.id === zmActiva)
+  if (!zm?.municipios.some(m => m.id === municipioId)) return false
+  if (!municipiosActivos.includes(municipioId)) return false
+  return sel.poblacion > 0 && sel.generacionRsuDia > 0
+}
+
 /**
- * Q-018 — Narrativa introductoria ciudadana personalizada.
- *
- * Prioridad de datos (Auditor Q-018 / Q-024):
- *   Solo `seleccionMunicipioCatalog` (INEGI — municipio individual): población y RSU/día del catálogo.
- *   Sin selección municipal explícita no hay bloque (evita confundir agregado ZM con un municipio).
+ * Intro al simulador por audiencia — tono técnico-político, dos párrafos.
+ * Ciudadano: si hay `seleccionMunicipioCatalog` coherente, el primer párrafo usa datos INEGI vía getNarrativaIntro.
  */
 export function NarrativaIntroBridge({ className }: { className?: string }) {
+  const audience          = useSimulatorStore(s => s.audience)
   const selMunicipio      = useSimulatorStore(s => s.seleccionMunicipioCatalog)
   const escenario         = useSimulatorStore(s => s.presetTrayectoria)
   const zmActiva          = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
 
-  // Solo mostrar cuando hay municipio INEGI seleccionado explícitamente
-  if (!selMunicipio) return null
+  if (!audience) return null
 
-  const municipioId     = selMunicipio.municipioSimulatorId
-  const municipioNombre = selMunicipio.nombre
-  const poblacion       = selMunicipio.poblacion
-  // Solo RSU del catálogo INEGI municipal — no mezclar con agregados ZM de `resultados`
-  const rsuDia = selMunicipio.generacionRsuDia
+  if (audience === 'citizen') {
+    let p1: string
+    if (selMunicipio && municipioCatalogoListo(selMunicipio, zmActiva, municipiosActivos)) {
+      const t = getNarrativaIntro(
+        selMunicipio.municipioSimulatorId,
+        selMunicipio.nombre,
+        selMunicipio.poblacion,
+        selMunicipio.generacionRsuDia,
+        escenario,
+        selMunicipio.datosEstimados,
+      )
+      p1 = t || 'El programa municipal no avanza por falta de voluntad única —falta evidencia pública de que la separación paga y que el reglamento la respalda.'
+    } else {
+      p1 = 'El problema no es solo recolectar más toneladas. Es decidir, con números, qué fracción del flujo se valoriza antes del relleno y quién en la cadena captura ese valor.'
+    }
+    return (
+      <NarrativeBridge
+        kicker="Lectura ciudadana"
+        summary={`${p1}\n\n${INTRO_CITIZEN_P2}`}
+        variant="bridge"
+        audience="citizen"
+        className={className}
+      />
+    )
+  }
 
-  // Evitar mostrar si los datos base son cero
-  if (poblacion <= 0 || rsuDia <= 0) return null
+  if (audience === 'functionary') {
+    return (
+      <NarrativeBridge
+        kicker="Lectura institucional"
+        summary={`${INTRO_FUNCTIONARY_P1}\n\n${INTRO_FUNCTIONARY_P2}`}
+        variant="bridge"
+        audience="functionary"
+        className={className}
+      />
+    )
+  }
 
-  // Coherencia Q-024: fila catálogo debe corresponder a la ZM activa y al subconjunto municipal del simulador
-  if (selMunicipio.zmSimulatorId !== zmActiva) return null
-  const zm = ZMS.find(z => z.id === zmActiva)
-  const municipioEnZm = zm?.municipios.some(m => m.id === municipioId) ?? false
-  if (!municipioEnZm) return null
-  if (!municipiosActivos.includes(municipioId)) return null
+  if (audience === 'entrepreneur') {
+    return (
+      <NarrativeBridge
+        kicker="Lectura empresarial"
+        summary={`${INTRO_ENTREPRENEUR_P1}\n\n${INTRO_ENTREPRENEUR_P2}`}
+        variant="bridge"
+        audience="entrepreneur"
+        className={className}
+      />
+    )
+  }
 
-  const texto = getNarrativaIntro(
-    municipioId,
-    municipioNombre,
-    poblacion,
-    rsuDia,
-    escenario,
-    selMunicipio.datosEstimados,
-  )
-  if (!texto) return null
-
-  return (
-    <NarrativeBridge
-      kicker="Contexto de tu municipio"
-      summary={texto}
-      variant="bridge"
-      audience="citizen"
-      className={className}
-    />
-  )
+  return null
 }
 
 /** Resumen derivado: ZM = coordinación agregada; efectos legales por municipio (`municipio_id`) según alcance Navigator en datos. */

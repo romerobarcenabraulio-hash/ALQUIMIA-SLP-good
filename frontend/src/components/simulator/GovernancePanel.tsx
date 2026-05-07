@@ -6,7 +6,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import type { GovernanceResponse, RiesgoIdentificado } from '@/types'
 
-const FLOW = ['Inputs del sistema', 'Métricas de calidad', 'Evaluación DoD', 'Score de gobernanza']
+const FLOW = ['Entradas del modelo', 'Métricas de calidad', 'Revisión DoD', 'Score de gobernanza']
 
 export function GovernancePanel() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -67,7 +67,7 @@ export function GovernancePanel() {
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Panel de gobernanza y calidad · <span className="text-[14px] text-[#6B6760]">interno</span>
+        Gobernanza del código — <span className="text-[14px] text-[#6B6760]">uso interno</span>
       </h1>
 
       <AvisoMunicipioAncla ids={municipiosActivos} />
@@ -82,23 +82,20 @@ export function GovernancePanel() {
       </div>
 
       <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 text-[12px] text-[#1C1B18]">
-        <p className="font-semibold">Gates legales del simulador (estado en vivo)</p>
+        <p className="font-semibold">Gates jurídicos del simulador —estado en vivo</p>
         <p className="mt-1 text-[#6B6760]">
-          El módulo S4.6 actualiza este estado según cada{' '}
-          <span className="font-mono">municipio_id</span> activo y las banderas{' '}
-          <span className="font-mono">can_enable_sanctions</span> /{' '}
-          <span className="font-mono">can_generate_official_document</span>{' '}
-          del diagnóstico legal.
+          S4.6 marca, por cada <span className="font-mono">municipio_id</span> activo, si el reglamento permite multar o emitir documentos oficiales —banderas{' '}
+          <span className="font-mono">can_enable_sanctions</span> y{' '}
+          <span className="font-mono">can_generate_official_document</span>.
         </p>
         <p className="mt-2">
-          Estado actual:&nbsp;
+          Hoy el simulador está{' '}
           {agoraLegalBloqueado ? (
-            <span className="font-medium text-[#C0392B]">bloqueado</span>
+            <span className="font-medium text-[#C0392B]">bloqueado para sanciones y documentos con sello</span>
           ) : (
-            <span className="font-medium text-[#2D7A0A]">sin bloqueo global en municipios activos</span>
+            <span className="font-medium text-[#2D7A0A]">sin bloqueo en los municipios activos</span>
           )}
-          {' '}
-          (educación y simulación pueden continuar con advertencias).
+          —la educación y el modelo numérico siguen abiertos, con advertencias donde falte validación.
         </p>
       </div>
 
@@ -118,7 +115,7 @@ export function GovernancePanel() {
         disabled={loading}
         className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
       >
-        {loading ? 'Evaluando gobernanza...' : 'Evaluar gobernanza'}
+        {loading ? 'En evaluación…' : 'Correr evaluación'}
       </button>
 
       {loading && (
@@ -135,7 +132,7 @@ export function GovernancePanel() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Ingresa los parámetros del sistema para evaluar la gobernanza.
+          Captura parámetros del pipeline —corre la evaluación y revisa el score.
         </div>
       )}
 

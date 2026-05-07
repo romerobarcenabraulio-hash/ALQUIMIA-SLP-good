@@ -8,13 +8,31 @@ import { cn } from '@/lib/utils'
 
 export type MarcoLegalMode = 'citizen' | 'functionary'
 
-const ROADMAP_ITEMS = [
-  'Diagnóstico del reglamento de limpia vigente',
-  'Identificación de brechas normativas',
-  'Redacción de iniciativa de reforma',
-  'Presentación ante Cabildo',
-  'Aprobación de reforma reglamentaria',
-  'Publicación en Periódico Oficial del Estado',
+const ROADMAP_ITEMS: { titulo: string; detalle: string }[] = [
+  {
+    titulo: 'Diagnóstico del reglamento de limpia vigente',
+    detalle: 'Se contrasta el texto publicado con las obligaciones de separación y sanción que el programa necesita.',
+  },
+  {
+    titulo: 'Identificación de brechas normativas',
+    detalle: 'Se listan artículos ausentes u obsoletos que impiden cobrar o contratar con claridad.',
+  },
+  {
+    titulo: 'Redacción de iniciativa de reforma',
+    detalle: 'Se prepara la minuta para comisiones —no sustituye el dictamen interno del municipio.',
+  },
+  {
+    titulo: 'Presentación ante Cabildo',
+    detalle: 'Se anexan números de captura y derrama para defender la reforma en sesión.',
+  },
+  {
+    titulo: 'Aprobación de reforma reglamentaria',
+    detalle: 'El cabildo vota; aquí se marca el hito que destraba multas y concesiones.',
+  },
+  {
+    titulo: 'Publicación en Periódico Oficial del Estado',
+    detalle: 'La reforma entra en vigor para terceros —condición para actos ejecutables.',
+  },
 ]
 
 interface MarcoLegalProps {
@@ -33,23 +51,21 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
         <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.5 — Marco legal (vista ciudadana)</p>
         <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Leyes locales y programa de limpia</h2>
         <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl leading-relaxed">
-          En cada municipio aplican reglamentos y programas distintos. Aquí ves, en lenguaje sencillo, cómo suele
-          encajar la limpieza y los residuos en el marco local y por qué la zona metropolitana coordina pero no
-          sustituye al ayuntamiento.
+          Cada municipio opera su propio reglamento de limpia. La zona metropolitana coordina —no sustituye al ayuntamiento.
+          Lo que lees aquí resume el marco local en lenguaje claro.
         </p>
         <div className="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4">
-          <p className="text-[12px] font-medium text-[#1C1B18] mb-1">Solo para aprender</p>
+          <p className="text-[12px] font-medium text-[#1C1B18] mb-1">Vista educativa</p>
           <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
-            Esta pantalla es informativa. No reemplaza al reglamento publicado, ni a orientación del ayuntamiento,
-            ni a asesoría legal. Si necesitas trámites o multas, acude a las ventanillas y fuentes oficiales de tu municipio.
+            Esta pantalla orienta —no reemplaza el Periódico Oficial, la ventanilla municipal ni un parecer jurídico.
+            Trámites y sanciones siguen el reglamento publicado de tu territorio.
           </p>
         </div>
 
         <div className="mb-6">
           <p className="text-[11px] font-medium text-[#6B6760] mb-3">Etapas habituales de un programa municipal</p>
           <p className="mb-3 text-[12px] text-[#6B6760] leading-relaxed">
-            Los equipos locales suelen avanzar por fases parecidas a estas; son una guía conceptual, no una lista
-            que debas marcar en la app.
+            Los equipos avanzan por fases parecidas a estas. La lista es guía conceptual —no un checklist legal.
           </p>
           <div className="flex flex-col gap-2">
             {FASES_INSTITUCIONALES.map(f => (
@@ -85,14 +101,12 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.5 — Marco legal y reforma reglamentaria</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Reforma reglamentaria</h2>
       <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl">
-        ALQUIMIA distingue simulación, propuesta expositiva, dictamen y documento oficial. La plataforma
-        no emite dictamen legal ni aprueba reformas; cada avance debe validarse por municipio y por
-        autoridad competente.
+        ALQUIMIA separa tres cosas: la simulación numérica, el expediente que armamos para Cabildo y el acto de autoridad que solo emite el municipio.
+        Nada de esto sustituye al síndico, a Jurídico ni al Periódico Oficial.
       </p>
       <div className="mb-6 rounded-[10px] border border-[#E8E4DC] bg-[#F8F6F1] p-4 flex items-start justify-between gap-4">
         <p className="text-[13px] leading-relaxed text-[#6B6760] flex-1">
-          Aquí se ve el desarrollo de los nuevos adendos que se proponen. No son los oficiales,
-          pero ayudan a contrastar cómo está actualmente la ley y cómo la cambiaremos.
+          Aquí se contrastan los adendos propuestos con el reglamento vigente. No son ley —son borrador técnico para que el cabildo discuta con números en la mesa.
         </p>
         <button
           type="button"
@@ -118,7 +132,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
               onClick={() => prev && setGate(i, !checked)}
               disabled={!prev}
               className={cn(
-                'flex items-center gap-3 text-left px-4 py-3 rounded-[10px] border transition-all',
+                'flex items-start gap-3 text-left px-4 py-3 rounded-[10px] border transition-all',
                 checked
                   ? 'bg-[#EAF3DE] border-[#3B6D11]/30 text-[#3B6D11]'
                   : prev
@@ -127,14 +141,17 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
               )}
             >
               <span className={cn(
-                'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0',
+                'w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5',
                 checked ? 'bg-[#3B6D11] border-[#3B6D11]' : 'border-[#E2DED6]'
               )}>
                 {checked && <span className="text-white text-[10px]">✓</span>}
                 {!checked && !prev && <span className="text-[#E2DED6] text-[10px]">🔒</span>}
               </span>
-              <span className="text-[13px] flex-1 min-w-0">{item}</span>
-              {i === 4 && <span className="text-[10px] text-[#D4881E] font-medium shrink-0">★ GATE CLAVE</span>}
+              <span className="flex-1 min-w-0">
+                <span className="block text-[13px] text-[#1C1B18]">{item.titulo}</span>
+                <span className="mt-1 block text-[12px] leading-snug text-[#6B6760]">{item.detalle}</span>
+              </span>
+              {i === 4 && <span className="text-[10px] text-[#D4881E] font-medium shrink-0 self-center">★ GATE CLAVE</span>}
             </button>
           )
         })}
