@@ -253,10 +253,14 @@ class TestFase111LegalMunicipal:
     def test_endpoint_zm_context_rechaza_contexto_legal_unico(self):
         from fastapi import FastAPI
         from fastapi.testclient import TestClient
-        from app.legal.router import router
+        from app.legal.zm_context import execute_zm_context
 
         app = FastAPI()
-        app.include_router(router, prefix="/legal")
+
+        @app.get("/legal/zm/{zm}/context")
+        def route_zm_context(zm: str) -> None:
+            execute_zm_context(zm)
+
         res = TestClient(app).get("/legal/zm/SLP/context")
 
         assert res.status_code == 400

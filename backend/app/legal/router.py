@@ -29,6 +29,7 @@ from app.legal.regulatory_structure import (
     reject_zm_normative_insertion,
 )
 from app.legal.repository import get_repo
+from app.legal.zm_context import execute_zm_context
 from app.legal.source_ingest import (
     ingest_municipal_legal_source,
     locate_municipal_legal_source,
@@ -214,25 +215,8 @@ async def get_paquete_zm(zm: str) -> PaqueteMetropolitano:
 
 
 @router.get("/zm/{zm}/context")
-async def get_zm_context(zm: str) -> dict:
-    repo = get_repo()
-    if not repo.get_municipios_by_zm(zm.upper()):
-        raise HTTPException(status_code=404, detail=f"ZM '{zm}' no encontrada")
-    raise HTTPException(
-        status_code=400,
-        detail={
-            "ok": False,
-            "zm": zm.upper(),
-            "error": (
-                "Zona metropolitana sin contexto legal único: la ZM coordina interoperabilidad y convenios; "
-                "el reglamento y la titularidad sancionatoria viven en cada municipio."
-            ),
-            "next_action": (
-                "Usar GET /legal/{municipio}/context una vez por cada municipio_id de la ZM; "
-                "no usar la ZM como autoridad jurídica única."
-            ),
-        },
-    )
+def get_zm_context(zm: str) -> None:
+    execute_zm_context(zm)
 
 
 @router.get("/zm/{zm}/source-manifest")
