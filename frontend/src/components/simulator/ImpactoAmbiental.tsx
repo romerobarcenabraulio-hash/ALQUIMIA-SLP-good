@@ -3,6 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { GaugeCO2 } from '@/components/charts/GaugeCO2'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { ContextoModulo } from '@/components/ui/ContextoModulo'
 
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -17,6 +18,21 @@ export function ImpactoAmbiental() {
     <div className={blocked ? 'overlay-blocked' : ''}>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S15 — Impacto ambiental</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Planeta y salud pública</h2>
+
+      <ContextoModulo
+        variante="ambiental"
+        titulo="¿Cómo se calculan las toneladas de CO₂e evitadas?"
+        cuerpo="Los residuos tienen dos tipos de impacto climático: (1) el metano que generan los orgánicos al descomponerse en el relleno sanitario sin gestión, y (2) las emisiones que se evitan cuando reciclamos en lugar de producir material virgen. Ambos se suman para obtener el total de CO₂e evitadas."
+        puntos={[
+          'CO₂e orgánicos: vol. orgánico × factor CH₄ 0.234 m³/kg × densidad CH₄ × GWP₂₇ (IPCC AR6 2021).',
+          'CO₂e reciclables: cada tonelada de PET reciclado evita 2.5 tCO₂e de producción virgen; aluminio evita 9.0 tCO₂e/ton.',
+          'PM2.5: se estima sobre el volumen que se deja de quemar a cielo abierto (0.0043 kg PM2.5/kg quemado).',
+          'Casos IRA evitados: PM2.5 evitado × factor epidemiológico 847 casos/ton (OMS LATAM).',
+          'Créditos de carbono voluntarios: al precio VCS 2024 ($5 USD/tCO₂e) o SCE México ($10–20 USD).',
+        ]}
+        fuente="Factor CH₄: SEMARNAT. GWP₁₀₀ = 27: IPCC AR6 2021. Factores virgen: EPA/IPCC por material. PM2.5: OMS-OPS. Créditos: VCS Market 2024 · SEMARNAT SCE."
+        advertencia="Las cifras de salud (IRA, dengue, AVAD) son estimados epidemiológicos a escala poblacional, no pronósticos individuales. No sustituyen evaluaciones de impacto ambiental oficiales."
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {/* Gauge CO2e */}

@@ -2,6 +2,7 @@
 import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
+import { ContextoModulo } from '@/components/ui/ContextoModulo'
 
 const MATERIALS = [
   { key: 'organico',  pct: 45, extra: '30% biodigestor · 70% composta',  color: MATERIAL_COLORS.organico },
@@ -20,10 +21,20 @@ export function ComposicionRSU() {
         <h2 className="font-serif text-[24px] text-[#1C1B18]">Fracción de residuos</h2>
         <Badge variant="info">Dato certificado SEMARNAT</Badge>
       </div>
-      <p className="text-[13px] text-[#6B6760] mb-6">
-        Composición fija basada en Modelo_BASED.xlsx validado. No se modifica por APIs;
-        refleja el promedio nacional para ciudades medias de México.
-      </p>
+      <ContextoModulo
+        variante="info"
+        titulo="¿Qué es la composición RSU y por qué es fija?"
+        cuerpo="Esta tabla muestra en qué fracción se divide cada tonelada de basura que llega al relleno. Los porcentajes son fijos en el modelo porque provienen de mediciones directas validadas contra el promedio nacional para ciudades medias. No los sobreescribe ninguna API. Cambiarlos implicaría supuestos sin respaldo."
+        puntos={[
+          'Orgánico 45%: la fracción más grande, y la que más contamina si no se gestiona (metano en relleno).',
+          'Papel/cartón 20%: IPSL en SLP absorbe todo el flujo disponible de papel reciclado.',
+          'Plásticos 15%: la mitad es PET (botella), la mitad HDPE y otros polímeros de mayor valor.',
+          'Vidrio 5% y metales 5%: baja proporción pero alto valor, especialmente el aluminio ($15/kg).',
+          'Otros 10%: rechazo de impurezas — material que no puede valorizarse y va al relleno de todas formas.',
+        ]}
+        fuente="Composición: Bootstrap ALQUIMIA §2.1 · Modelo_BASED.xlsx · SEMARNAT DBGIR 2022."
+        advertencia="Si tu municipio tiene un estudio de composición propio más reciente, contacta a ALQUIMIA para incorporarlo. La composición genérica puede subestimar o sobreestimar algunas fracciones según la dieta local."
+      />
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         {MATERIALS.map(m => (

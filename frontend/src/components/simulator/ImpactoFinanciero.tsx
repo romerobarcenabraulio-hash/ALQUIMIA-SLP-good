@@ -10,6 +10,7 @@ import { CashflowChart } from '@/components/charts/CashflowChart'
 import { StressTest } from '@/components/charts/StressTest'
 import { Slider } from '@/components/ui/Slider'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { ContextoModulo } from '@/components/ui/ContextoModulo'
 
 export function ImpactoFinanciero() {
   const { resultados, wacc, setWacc, tipoCambio, setTipoCambio,
@@ -40,6 +41,20 @@ export function ImpactoFinanciero() {
 
   return (
     <div className={blocked ? 'overlay-blocked' : ''}>
+      <ContextoModulo
+        variante="financiero"
+        titulo="¿Cómo está construido el modelo financiero?"
+        cuerpo="El modelo calcula los flujos de caja del programa desde tres fuentes de ingreso: venta de materiales reciclados (precio × volumen capturable × días operativos 300), ahorro en disposición final (vol. desviado × $320/ton) e ingresos por crédito de carbono (CO₂e × precio escenario). Contra eso se proyectan CAPEX (infraestructura CA + basureros) y OPEX (operación, logística, comunicación, capacitación). El resultado es el EBITDA, VPN, TIR y payback."
+        puntos={[
+          'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
+          'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y OPEX.',
+          'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, OPEX +20%).',
+          'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
+          'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende del CAPEX de basureros y comunicación.',
+        ]}
+        fuente="Modelo financiero: Bootstrap §2.3 / Modelo_BASED.xlsx. WACC: Bootstrap §0. Precios: Serper API + Bootstrap §2.2. Crédito carbono: VCS Market 2024 / SEMARNAT SCE."
+        advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
+      />
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S14 — Impacto financiero</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Retorno, derrama y cobertura financiera</h2>
 

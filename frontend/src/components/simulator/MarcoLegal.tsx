@@ -178,6 +178,63 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
         </div>
       </div>
 
+      {/* ── Vía 2: Certificación de Circularidad ─────────────────────── */}
+      <div className="border-t border-[#E8E4DC] pt-6 mt-6 mb-6">
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#1A5FA8] mb-3">Vía paralela — Certificación de Circularidad</p>
+        <h3 className="font-serif text-[18px] text-[#1C1B18] mb-2">Cédula de Idoneidad: operar antes de que la reforma sea ley</h3>
+        <p className="text-[13px] text-[#6B6760] mb-4 max-w-2xl leading-relaxed">
+          No es necesario esperar la aprobación del Cabildo para iniciar. Los edificios,
+          condominios y privadas pueden adoptar la separación de forma voluntaria y obtener
+          la <strong className="text-[#1C1B18]">Cédula de Idoneidad ALQUIMIA</strong> —el
+          certificado técnico que acredita que el inmueble cumple con infraestructura,
+          capacitación y operación para separación en cinco fracciones.
+          Cuando la reforma llega, la mayoría ya está operando; la curva de adopción no parte de cero.
+        </p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {[
+            {
+              tipo: 'Cédula — Edificios y condominios',
+              color: '#1A5FA8',
+              bg: '#EBF3FB',
+              items: [
+                'Auditoría de contenedores, chutes y zonas de acopio',
+                'Revisión del programa de separación por piso',
+                'Evaluación de capacitación a residentes y conserjes',
+                'Verificación de convenio activo con recicladora o CA',
+              ],
+            },
+            {
+              tipo: 'Cédula — Residencial y privadas',
+              color: '#1D9E75',
+              bg: '#E5F5EF',
+              items: [
+                'Auditoría de infraestructura en áreas comunes',
+                'Revisión del programa de recolección interna',
+                'Evaluación de adopción por hogar (muestra representativa)',
+                'Verificación de contrato de recolección diferenciada vigente',
+              ],
+            },
+          ].map(cert => (
+            <div key={cert.tipo} className="rounded-[12px] border px-4 py-4" style={{ borderColor: cert.color + '30', background: cert.bg + '30' }}>
+              <p className="text-[12px] font-medium mb-2" style={{ color: cert.color }}>{cert.tipo}</p>
+              <ul className="space-y-1.5">
+                {cert.items.map(it => (
+                  <li key={it} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
+                    <span className="shrink-0 mt-0.5" style={{ color: cert.color }}>·</span>
+                    {it}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-[#A8A49C] mt-3 leading-relaxed">
+          La Cédula es un instrumento técnico de ALQUIMIA. No es acto de autoridad hasta que
+          el municipio la reconozca vía el Art. 27 Bis propuesto. En fase piloto, acredita
+          cumplimiento operativo y sirve como antecedente para la reforma reglamentaria.
+        </p>
+      </div>
+
       {/* ── Motor Jurídico Municipal ─────────────────────────────────── */}
       <div className="border-t border-[#E8E4DC] pt-6 mt-6">
         <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.6 — Diagnóstico jurídico del reglamento</p>

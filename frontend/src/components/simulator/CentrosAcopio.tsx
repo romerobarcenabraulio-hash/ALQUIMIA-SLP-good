@@ -7,6 +7,7 @@ import { VolumenBarChart } from '@/components/charts/VolumenBarChart'
 import { getInfrastructurePlan } from '@/lib/api'
 import type { InfrastructurePlanResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { ContextoModulo } from '@/components/ui/ContextoModulo'
 
 const CAUSAL_INFRA = [
   'RSU capturable',
@@ -73,12 +74,20 @@ export function CentrosAcopio() {
       <h1 className="font-serif text-[24px] text-[#1C1B18] mb-3">
         Plan de infraestructura con trazabilidad municipal · simulación propuesta
       </h1>
-      <p className="text-[13px] text-[#6B6760] mb-4">
-        Brecha operativa capturable por zona — validación competente pendiente de municipio.
-      </p>
-      <p className="text-[13px] text-[#6B6760] mb-4">
-        Usa el mix P/M/G como propuesta: cada centro debe declarar municipio, zona, fase y estado. La brecha compara capacidad instalada contra flujo capturable (no RSU total).
-      </p>
+      <ContextoModulo
+        variante="operativo"
+        titulo="¿Qué es un Centro de Acopio y por qué es la pieza central del programa?"
+        cuerpo="Un Centro de Acopio (CA) es la infraestructura física donde llegan los materiales ya separados desde casas, edificios y empresas. Ahí se pesan, clasifican, compactan en pacas y se despachan a las recicladoras que pagan por ellos. Sin CA, la separación en casa no tiene destino físico y el material termina mezclado de nuevo. El simulador propone el mix óptimo de centros Pequeño (5 t/día), Mediano (15 t/día) y Grande (50 t/día) según el volumen capturable de tu municipio."
+        puntos={[
+          'CA Pequeño: 250 m², 5 empleos, TIR 109.5%, payback ~6 meses (Año 3).',
+          'CA Mediano: 750 m², 14 empleos, TIR 155.6%, payback ~5 meses.',
+          'CA Grande: 2,000 m², 34 empleos, TIR 212%, payback ~7 meses.',
+          'El mix se calcula automáticamente por fase; puedes ajustarlo manualmente con los botones +/-.',
+          'La brecha es RSU capturable vs. capacidad instalada — no RSU total generado.',
+        ]}
+        fuente="CAPEX/OPEX/TIR por escala: Bootstrap §2.3 · Modelo_BASED.xlsx. Mix por fase: Bootstrap §2.4."
+        advertencia="La ubicación física de cada CA debe validarse con el municipio (uso de suelo, conectividad vial). ALQUIMIA modela la viabilidad financiera; el predio es decisión municipal."
+      />
 
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
         <InfoTile
