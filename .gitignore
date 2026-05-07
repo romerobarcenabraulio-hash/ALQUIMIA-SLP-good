@@ -34,3 +34,6 @@ backend/.env.*.local
 frontend/.next/
 frontend/out/
 frontend/.turbo/
+
+# TypeScript incremental (local; cambia en cada tsc y ensucia diffs/PRs)
+frontend/tsconfig.tsbuildinfo
