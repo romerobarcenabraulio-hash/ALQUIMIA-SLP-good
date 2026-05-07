@@ -21,7 +21,6 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
-import { SIMULATION_CONTEXT_TEASER } from '@/lib/simulationDisclaimer'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
   PaqueteMetropolitano, DiagnosticoMunicipal, ReformEstrategia,
@@ -72,9 +71,6 @@ function diagnosticoTituloTeaser() {
     <div className="mb-4">
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
         S4.6 — Diagnóstico jurídico municipal
-      </p>
-      <p className="mt-1 border-l-2 border-[#D4881E] pl-2.5 text-[11px] leading-snug text-[#6B6760]">
-        {SIMULATION_CONTEXT_TEASER}
       </p>
     </div>
   )

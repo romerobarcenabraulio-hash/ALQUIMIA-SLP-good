@@ -190,9 +190,6 @@ export function ReglamentoModal({
                 <span className="inline-flex rounded-full bg-[#EAF3DE] border border-[#3B6D11]/30 px-2 py-0.5 text-[10px] font-medium text-[#3B6D11]">
                   {adendo?.tecnica}
                 </span>
-                <span className="text-[9px] font-medium text-[#D97706] uppercase tracking-wide ml-auto">
-                  [BORRADOR — revisión legal]
-                </span>
               </div>
             </div>
 
@@ -216,8 +213,7 @@ export function ReglamentoModal({
         {/* ── Pie ──────────────────────────────────────────────────── */}
         <div className="shrink-0 border-t border-[#E8E4DC] bg-[#FAF8F5] px-5 py-2">
           <p className="text-[10px] text-[#A8A49C]">
-            trace: CLC-ADENDOS-Q013 · [BORRADOR PARA REVISIÓN LEGAL — no produce efectos jurídicos] ·
-            Verificar vigencia en fuente oficial (POE, DOF o Gaceta municipal).
+            [BORRADOR PARA REVISIÓN LEGAL — no produce efectos jurídicos] · Verificar vigencia en fuente oficial.
           </p>
         </div>
       </DialogContent>

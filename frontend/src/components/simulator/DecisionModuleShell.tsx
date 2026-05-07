@@ -5,6 +5,7 @@ import * as Switch from '@radix-ui/react-switch'
 import { AlertTriangle, CheckCircle2, ChevronRight, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
+import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { CitizenPreviewPanel } from '@/components/simulator/CitizenPreviewPanel'
 import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
@@ -163,7 +164,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
                         Disponible
                       </>
                     )}
-                    <span className="text-[#A8A49C]">· {module.audience_mode}</span>
+                    <span className="text-[#A8A49C]">· {audienceModeLabel(module.audience_mode)}</span>
                   </span>
                 </button>
               )

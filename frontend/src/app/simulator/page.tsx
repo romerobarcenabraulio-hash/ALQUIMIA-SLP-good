@@ -52,7 +52,6 @@ import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 function SimulatorSimulationRibbon() {
   const cityContext = useSimulatorStore(s => s.cityContext)
   const cityContextLoading = useSimulatorStore(s => s.cityContextLoading)
-  if (cityContextLoading || !cityContext) return null
   return (
     <div className="sticky top-0 z-30 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-4">
       <div
@@ -62,9 +61,14 @@ function SimulatorSimulationRibbon() {
       >
         <p className="text-[12px] font-semibold text-[#1C1B18]">{SIMULATION_BANNER_TITLE}</p>
         <p className="mt-1 text-[11px] leading-relaxed text-[#6B6760]">{SIMULATION_BANNER_BODY}</p>
-        <p className="mt-2 font-mono text-[10px] text-[#8A857C]" title="Contrato API">
-          Época catálogo (simulación): {cityContext.catalog_simulation_epoch}
-        </p>
+        {cityContextLoading && (
+          <p className="mt-2 font-mono text-[10px] text-[#8A857C]">Época catálogo (simulación): sincronizando…</p>
+        )}
+        {!cityContextLoading && cityContext && (
+          <p className="mt-2 font-mono text-[10px] text-[#8A857C]" title="Contrato API">
+            Época catálogo (simulación): {cityContext.catalog_simulation_epoch}
+          </p>
+        )}
       </div>
     </div>
   )

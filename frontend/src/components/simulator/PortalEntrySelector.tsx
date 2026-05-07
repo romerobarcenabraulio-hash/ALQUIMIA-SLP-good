@@ -3,6 +3,7 @@
 import { AlertTriangle, Building2, CheckCircle2, Landmark } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import type { PortalEntry } from '@/types'
 
 const entries: Array<{
@@ -92,7 +93,7 @@ export function PortalEntrySelector() {
               <p className="text-[13px] font-semibold text-[#1C1B18]">{module.label}</p>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="rounded-[6px] bg-[#F0EDE5] px-2 py-1 text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">
-                  {module.audience_mode}
+                  {audienceModeLabel(module.audience_mode)}
                 </span>
                 <span
                   className={cn(

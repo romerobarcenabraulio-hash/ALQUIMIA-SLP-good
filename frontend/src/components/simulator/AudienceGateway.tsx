@@ -141,7 +141,7 @@ export function AudienceGateway() {
       </div>
 
       <footer className="mt-8 max-w-3xl text-[12px] text-[#A8A49C]">
-        Tu selección se guarda localmente y se puede cambiar más adelante desde el header del simulador. ALQUIMIA produce simulaciones y propuestas; los documentos oficiales requieren validación competente.
+        Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador.
       </footer>
     </section>
   )

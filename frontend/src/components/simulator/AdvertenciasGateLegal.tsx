@@ -132,7 +132,7 @@ export function AdvertenciasGateLegal() {
           Parámetros de simulación del gate municipal · uso en capacitación
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Ajustan el alcance geográfico o el estado de validación legal en la evaluación de la compuerta. Son herramientas de estudio: no sustituyen dictamen competente ni expediente real.
+          Ajustan el alcance geográfico o el estado de validación legal en la evaluación de la compuerta. Son herramientas de estudio para capacitación; no reemplazan criterio de autoridad competente ni un expediente real.
         </p>
         <div className="mt-3 space-y-2">
           <label className="flex items-start gap-2 text-[12px] text-[#6B6760]">
