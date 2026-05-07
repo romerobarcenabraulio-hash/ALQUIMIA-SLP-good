@@ -101,8 +101,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.5 — Marco legal y reforma reglamentaria</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Reforma reglamentaria</h2>
       <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl">
-        ALQUIMIA separa tres cosas: la simulación numérica, el expediente que armamos para Cabildo y el acto de autoridad que solo emite el municipio.
-        Nada de esto sustituye al síndico, a Jurídico ni al Periódico Oficial.
+        ALQUIMIA no emite dictamen legal ni aprueba reformas. Lo que genera es el expediente técnico de respaldo — el mismo que un equipo jurídico municipal necesita para redactar la iniciativa y presentarla ante Cabildo.
       </p>
       <div className="mb-6 rounded-[10px] border border-[#E8E4DC] bg-[#F8F6F1] p-4 flex items-start justify-between gap-4">
         <p className="text-[13px] leading-relaxed text-[#6B6760] flex-1">

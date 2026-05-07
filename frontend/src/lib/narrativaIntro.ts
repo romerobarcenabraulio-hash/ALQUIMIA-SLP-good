@@ -89,9 +89,11 @@ export function getNarrativaIntro(
   }
 
   // Realista / Agresivo (default)
+  const kgPercapita = (rsuDia * 1000 / poblacion).toFixed(2)
   return (
-    `${municipioNombre} genera ${rsuRedondeado} t de residuos cada día${disclaimer}. ` +
-    `El simulador contrasta escenarios de separación para esos mismos datos de entrada; ` +
-    `lo demás son proyecciones del modelo, no hechos externos.${cierreIlustrativo}`
+    `Tu municipio genera ${kgPercapita} kilogramos de basura por persona cada día${disclaimer}. ` +
+    `De ese total, más del 40% tiene valor económico si se separa correctamente. ` +
+    `Esta plataforma te muestra cómo funciona el programa y qué esperar ` +
+    `cuando lleguen los nuevos contenedores a tu colonia.`
   )
 }

@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//Users/braulioromerobarcena/Downloads/SLP /alquimia/backend/**)",
+      "Bash(python -m venv .venv)",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(python3 -m venv .venv)",
+      "Bash(npm install *)",
+      "Read(//usr/local/bin/**)",
+      "Read(//Users/braulioromerobarcena/.nvm/versions/**)",
+      "Read(//Users/braulioromerobarcena/Library/**)",
+      "Read(//opt/homebrew/**)",
+      "Bash(npx --version)",
+      "Bash(.venv/bin/python -m pytest tests/ -v --tb=short)",
+      "Bash(command -v node)",
+      "Bash(/usr/local/bin/node --version)",
+      "Bash(/opt/homebrew/bin/node --version)",
+      "Bash(nvm use *)",
+      "Bash(brew list *)",
+      "Bash(brew install *)",
+      "Bash(/opt/homebrew/bin/brew install *)",
+      "Bash(curl -fsSL https://nodejs.org/dist/v20.17.0/node-v20.17.0-darwin-arm64.tar.gz -o /tmp/node.tar.gz)",
+      "Bash(export PATH=\"/tmp/node-v20.17.0-darwin-arm64/bin:$PATH\")",
+      "Bash(npm --version)",
+      "Bash(npm run *)",
+      "Read(//Users/braulioromerobarcena/Documents/alquimia-slp/**)",
+      "Read(//Users/braulioromerobarcena/Downloads/SLP /**)",
+      "Bash(rm -rf \"/Users/braulioromerobarcena/Documents/alquimia-slp/backend/.venv\")",
+      "Bash(python3 -m venv \"/Users/braulioromerobarcena/Documents/alquimia-slp/backend/.venv\")",
+      "Bash(\"/Users/braulioromerobarcena/Documents/alquimia-slp/backend/.venv/bin/pip3\" install *)",
+      "Bash(.venv/bin/python3 -m pytest tests/ -v)",
+      "Bash(.venv/bin/python3 -)",
+      "Bash(docker compose *)",
+      "Bash(.venv/bin/pytest tests/ -v)",
+      "Bash(.venv/bin/pytest tests/test_data_provenance.py -v)"
+    ]
+  }
+}

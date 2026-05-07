@@ -262,78 +262,70 @@ export default function LandingPage() {
           </p>
 
           <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] tracking-[-0.025em] text-[#1C1B18] mb-7">
-            Cada zona metropolitana mueve miles de toneladas de RSU al día —y buena parte sigue yendo a relleno porque el flujo mezclado no tiene precio hasta que el reglamento y la ruta lo fijan.
+            La Zona Metropolitana de San Luis Potosí genera 1,850 toneladas diarias de residuos sólidos urbanos. Hoy, la totalidad se destina a relleno sanitario.
           </h1>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-5">
-            Ese flujo cuesta: tarifa por tonelada, transporte, operación del sitio y el valor de los materiales que no se valorizan. El ordenamiento pide separación y trazabilidad —en la práctica, el esquema contractual vigente suele incentivar enterrar más, no capturar antes del relleno.
+            Eso representa entre $446 y $494 millones de pesos en valor económico recuperable que se entierra cada año. ALQUIMIA es el instrumento técnico que permite a cualquier municipio diseñar, simular y presentar ante Cabildo un programa de separación obligatoria en cinco fracciones: orgánicos, papel, plásticos, vidrio y aluminio. No es un software genérico: cada escenario está anclado al reglamento vigente del municipio, a precios reales de recicladora y a la estructura operativa de su concesionario actual.
           </p>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-6">
-            Cuántas toneladas, cuántos empleos formales y cuánta derrama anual cabe esperar no lo declara esta página —lo calcula el simulador con tu ZM, los municipios activos, la trayectoria de captura, los precios de materiales y el WACC que elijas. Misma lógica para el escenario que exportes a Cabildo.
+            Un programa bien ejecutado en la ZM SLP genera 168 empleos formales directos desde la Fase 1, evita 533,178 toneladas de CO₂ equivalente al año y transforma a los recolectores de base en trabajadores con contrato y nómina. El modelo financiero calcula TIR, VPN y payback por tamaño de centro de acopio.
           </p>
 
-          <h2 className="font-serif text-[22px] text-[#1C1B18] mb-3 mt-10">El sistema</h2>
-          <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-4">
-            <strong className="text-[#1C1B18]">Problema</strong> — residuo mezclado y sin precio. <strong className="text-[#1C1B18]">Propuesta</strong> — reglamento que obliga separación en origen. <strong className="text-[#1C1B18]">Impacto</strong> — menos tonelada enterrada y derrama por venta de fracciones limpias. <strong className="text-[#1C1B18]">Acción</strong> — reforma en cabildo, licitación o concesión de acopio, y ruta verificable.
-          </p>
-          <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-8">
-            Primero aterriza el reglamento: qué fracción es obligatoria, quién sanciona y cómo se miden rutas. Luego llega la separación en hogar y comercio. Los centros de acopio concentran, pesan y venden. Al final el municipio cobra o ahorra —menos subsidio al relleno, más ingreso por material con ticket.
-          </p>
-
-          <h2 className="font-serif text-[22px] text-[#1C1B18] mb-4 mt-10">¿Quién usa ALQUIMIA?</h2>
+          <h2 className="font-serif text-[22px] text-[#1C1B18] mb-3 mt-10">Tres puertas de entrada</h2>
           <div className="space-y-5 mb-10">
             <div>
-              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">Funcionario municipal</h3>
+              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">El funcionario público</h3>
               <p className="text-[15px] text-[#6B6760] leading-[1.7]">
-                Trae el diagnóstico jurídico, la minuta de reforma, los números de captura y el calendario de implementación. Sales de la sesión con un paquete que Jurídico puede defender y Obras puede cotizar.
+                Diseña el programa y genera el paquete para Cabildo: diagnóstico jurídico, minuta de reforma, números de captura y calendario de implementación.
               </p>
             </div>
             <div>
-              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">Empresario u operador</h3>
+              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">El empresario</h3>
               <p className="text-[15px] text-[#6B6760] leading-[1.7]">
-                Ve el volumen municipal, el benchmark de su giro y el pasivo ambiental que baja si gana la concesión o el contrato de servicio. La mesa con el alcalde deja de ser discurso —es tabla de VPN y sensibilidad.
+                Evalúa la viabilidad de operar un centro de acopio o negociar su concesión. La mesa con el alcalde deja de ser discurso —es tabla de VPN y sensibilidad.
               </p>
             </div>
             <div>
-              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">Ciudadanía y comités</h3>
+              <h3 className="text-[14px] font-semibold text-[#1C1B18] mb-1">El ciudadano</h3>
               <p className="text-[15px] text-[#6B6760] leading-[1.7]">
-                Entienden por qué la bolsa se cobra distinto cuando se separa bien y qué gana el barrio en salud y empleo local. La educación no sustituye el reglamento —lo hace legible.
+                Entiende por qué separar conviene y qué le toca hacer. La educación no sustituye el reglamento —lo hace legible y exigible.
               </p>
             </div>
           </div>
 
-          {/* Indicadores —sin cifras fijas: el motor vive en el simulador */}
+          {/* Indicadores anclados a ZM SLP —fuente: Capítulo SLP */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 py-7 border-y border-[#E8E4DC] mb-8">
             <div>
-              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Empleo</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Directo e indirecto</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">168</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Empleos formales directos</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                El tablero muestra totales según ocupación de centros y rutas del escenario que corras —no hay cifra fija en marketing.
+                Generados desde la Fase 1 del programa en la ZM SLP. Recolectores de base con contrato y nómina.
               </p>
             </div>
             <div>
-              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Relleno</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Volumen evitado</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">533 mil t</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">CO₂ eq. evitadas/año</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                La curva de captura por año define cuánto deja de mezclarse —revísala al mover trayectoria y municipios activos.
+                Estimado del modelo para la ZM SLP con separación en cinco fracciones en régimen maduro.
               </p>
             </div>
             <div>
-              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">Derrama</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Valorización de fracciones</p>
+              <p className="font-serif text-[20px] text-[#3B6D11] leading-tight mb-2">$446–494 M</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">Valor recuperable al año</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                TIR, VPN y derrama salen del modelo con tus precios de commodity, merma y horizonte —cada corrida actualiza el resultado.
+                En materiales que hoy se entierran. El simulador desagrega por fracción, precio y municipio activo.
               </p>
             </div>
           </div>
 
           <p className="text-[17px] font-serif text-[#1C1B18] leading-[1.55] mb-6 border-l-4 border-[#D4881E] pl-5">
-            El siguiente paso es la aprobación en Cabildo. Sin votación y sin publicación, el programa corre en papel —no en la calle.
+            El siguiente paso es la aprobación en Cabildo. ALQUIMIA prepara todo lo que necesitas para llegar a esa sesión con un expediente defendible.
           </p>
 
           <p className="text-[13px] text-[#A8A49C] leading-relaxed border-t border-[#E8E4DC] pt-5 mt-6">
-            Lo anterior es marco narrativo —no dictamen municipal ni acto de autoridad. Las cifras operativas son las del simulador en cada corrida. Quien resuelve sigue siendo tu cabildo y tus ventanillas.
+            Las cifras de empleo, CO₂ y valor económico corresponden al escenario de referencia ZM SLP del modelo —no son dictamen municipal ni acto de autoridad. Cada corrida del simulador actualiza los resultados con los supuestos que elijas.
           </p>
         </article>
         </div>
