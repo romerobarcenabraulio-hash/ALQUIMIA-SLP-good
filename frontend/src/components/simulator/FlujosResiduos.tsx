@@ -14,8 +14,8 @@ const STEPS = [
   'RSU generado',
   'Corrientes por tipo',
   'Destino actual',
-  'Brecha de recuperación',
-  'Oportunidad circular',
+  'Captura RSU',
+  'Circularidad real',
 ]
 
 function mixDesdePlanGlobal(): Record<string, number> {
@@ -170,23 +170,27 @@ export function FlujosResiduos() {
       {result && result.status !== 'blocked' && (
         <div className="space-y-4">
           <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-            <Chip title="Tasa actual" value={`${result.tasa_circularidad_actual_pct.toFixed(2)}%`} />
-            <Chip title="Tasa potencial" value={`${result.tasa_circularidad_potencial_pct.toFixed(2)}%`} />
+            <Chip title="% Circularidad real actual" value={`${result.tasa_circularidad_actual_pct.toFixed(2)}%`} />
+            <Chip title="% Circularidad real potencial" value={`${result.tasa_circularidad_potencial_pct.toFixed(2)}%`} />
             <Chip
               title="Oportunidad MXN/año"
               value={`$${result.brecha.oportunidad_ingreso_estimado_mxn.toLocaleString('es-MX')}`}
             />
           </div>
+          <p className="text-[11px] text-[#6B6760]">
+            Definiciones: <strong className="text-[#1C1B18]">% RSU capturado</strong> = RSU capturado valorizable / RSU generado total.{' '}
+            <strong className="text-[#1C1B18]">% Circularidad real</strong> = RSU valorizado real / RSU generado total.
+          </p>
 
           <FlujosSankey title="Diagnóstico de flujos · Sankey" nodes={buildDiagnosticoNodes(result)} links={buildDiagnosticoLinks(result)} />
 
           <NarrativeBridge
             kicker="S22 · Lectura del diagnóstico"
             variant={result.brecha.porcentaje_recuperable_no_capturado > 30 ? 'warning' : 'result'}
-            summary={`Tu municipio captura hoy ${result.tasa_circularidad_actual_pct.toFixed(1)}% y podría llegar a ${result.tasa_circularidad_potencial_pct.toFixed(1)}%. Las pérdidas suman ${result.brecha.toneladas_recuperables_perdidas.toFixed(1)} t/día y representan una oportunidad anual de $${result.brecha.oportunidad_ingreso_estimado_mxn.toLocaleString('es-MX')} MXN.`}
+            summary={`La circularidad real estimada hoy es ${result.tasa_circularidad_actual_pct.toFixed(1)}% y el potencial técnico llega a ${result.tasa_circularidad_potencial_pct.toFixed(1)}%. Las pérdidas recuperables suman ${result.brecha.toneladas_recuperables_perdidas.toFixed(1)} t/día y representan una oportunidad anual de $${result.brecha.oportunidad_ingreso_estimado_mxn.toLocaleString('es-MX')} MXN.`}
             evidence={[
-              { label: 'Tasa actual', value: `${result.tasa_circularidad_actual_pct.toFixed(1)}%` },
-              { label: 'Tasa potencial', value: `${result.tasa_circularidad_potencial_pct.toFixed(1)}%` },
+              { label: 'Circularidad real actual', value: `${result.tasa_circularidad_actual_pct.toFixed(1)}%` },
+              { label: 'Circularidad real potencial', value: `${result.tasa_circularidad_potencial_pct.toFixed(1)}%` },
               { label: 'Recuperable perdido', value: `${result.brecha.toneladas_recuperables_perdidas.toFixed(1)} t/día` },
               { label: 'Oportunidad', value: `$${(result.brecha.oportunidad_ingreso_estimado_mxn / 1_000_000).toFixed(1)} M MXN/año` },
             ]}

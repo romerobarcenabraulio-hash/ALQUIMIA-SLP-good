@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState, startTransition } from 'react'
 import { AlertTriangle, CalendarDays, Calculator, Info, KeyRound, Leaf, Lock, RefreshCw } from 'lucide-react'
 import { buildTerritorialPlan } from '@/lib/api'
 import {
-  HITOS_TIMELINE_SLP,
+  getHitosForZm,
   HORIZONTE_DIAS_MESES_36,
   kpisAcumulados,
   type Hito,
@@ -178,7 +178,10 @@ export function ImplementacionEspacioTiempo() {
       {!loading && !error && plan && plan.status !== 'blocked' && (
         <>
           <PlanState plan={plan} />
-          <TimelineHitosEspacioTiempo empleoBase={resultados?.empleosTotalesDirectos ?? 0} />
+          <TimelineHitosEspacioTiempo
+            empleoBase={resultados?.empleosTotalesDirectos ?? 0}
+            zmId={zmActiva}
+          />
           <NarrativeBridge
             variant="result"
             audience="functionary"
@@ -209,19 +212,24 @@ export function ImplementacionEspacioTiempo() {
 
 const TIMELINE_FRAC_MARKS = [0, 1 / 4, 1 / 2, 3 / 4, 1] as const
 
-function TimelineHitosEspacioTiempo({ empleoBase }: { empleoBase: number }) {
+function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; zmId: string }) {
   const maxD = HORIZONTE_DIAS_MESES_36
   const [diaActual, setDiaActual] = useState(maxD / 2)
-  const [selectedId, setSelectedId] = useState<string | null>(HITOS_TIMELINE_SLP[0]?.id ?? null)
+  const { hitos } = useMemo(() => getHitosForZm(zmId), [zmId])
+  const [selectedId, setSelectedId] = useState<string | null>(hitos[0]?.id ?? null)
+
+  useEffect(() => {
+    setSelectedId(hitos[0]?.id ?? null)
+  }, [hitos])
 
   const kpis = useMemo(
-    () => kpisAcumulados(Math.round(diaActual), empleoBase),
-    [diaActual, empleoBase],
+    () => kpisAcumulados(Math.round(diaActual), empleoBase, zmId),
+    [diaActual, empleoBase, zmId],
   )
 
   const selected = useMemo(
-    () => HITOS_TIMELINE_SLP.find(h => h.id === selectedId) ?? null,
-    [selectedId],
+    () => hitos.find(h => h.id === selectedId) ?? null,
+    [hitos, selectedId],
   )
 
   const mesLabel = (frac: number) => {
@@ -291,7 +299,7 @@ function TimelineHitosEspacioTiempo({ empleoBase }: { empleoBase: number }) {
               ))}
             </div>
 
-            {HITOS_TIMELINE_SLP.map((hito, i) => {
+            {hitos.map((hito, i) => {
               const x = hitoPosition(hito, maxD) * 100
               const row = i % 2
               const top = 8 + row * 30

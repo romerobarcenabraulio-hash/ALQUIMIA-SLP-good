@@ -201,14 +201,14 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     zm_id: 'QRO',
     municipio_id: 'qro',
     nombre:
-      'Querétaro capital · Reglamento Municipal de Gestión Integral de Residuos Sólidos Urbanos (GIRS) — espejo PDF pendiente',
+      'Querétaro capital · Reglamento de Limpia y Aseo Público / gestión de residuos — espejo PDF pendiente en repo',
     anio_version: 2021,
     url_fuente: 'https://municipiodequeretaro.gob.mx/reglamento/',
     articulos_clave: [],
     estado_verificacion: 'no_localizado',
     fecha_verificacion: '2026-05-05',
     hint_ancla_adendo:
-      `${ANCLA_STD} Auditoría ALQUIMIA (2026-05-05): el espejo previo cargaba la LOMEQ estatal (competencia orgánica municipal), no el reglamento GIRS; PDF archivado en ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/. Pendiente cargar el PDF oficial del reglamento municipal GIRS vigente como ADENDOS: LEGAL/pdfs/reglamentos/QRO_qro_reglamento_municipal_GIRS.pdf y symlink en frontend/public/reglamentos/.`,
+      `${ANCLA_STD} CLC (2026-05-07): existe **marco municipal propio** de obligaciones y sanciones; la brecha es de instrumentación (5 fracciones condominio, tabulador acotado). Corregir espejo: el archivo LOMEQ estatal está en _espejo_catalogo_erroneo/; cargar PDF oficial municipal (Limpia/Aseo o GIRS vigente) como ADENDOS: LEGAL/pdfs/reglamentos/QRO_qro_reglamento_municipal.pdf + symlink en frontend/public/reglamentos/.`,
   },
   {
     zm_id: 'QRO',

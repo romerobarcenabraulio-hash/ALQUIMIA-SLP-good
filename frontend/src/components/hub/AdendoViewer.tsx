@@ -15,7 +15,7 @@ const TECNICA_BADGE: Record<string, { label: string; bg: string; text: string }>
   Nuevo:     { label: 'Artículo nuevo', bg: 'bg-[#FEF7E7]', text: 'text-[#8B5A00]' },
 }
 
-const CIUDADES_CON_DATOS = ['slp', 'mty', 'qro']
+const CIUDADES_CON_DATOS = ['slp', 'mty', 'qro', 'spg', 'cor', 'mar'] as const
 
 export function AdendoViewer({ ciudadId = 'slp', adendoId = 1 }: AdendoViewerProps) {
   const [ciudadActiva, setCiudadActiva] = useState(ciudadId)
@@ -28,6 +28,8 @@ export function AdendoViewer({ ciudadId = 'slp', adendoId = 1 }: AdendoViewerPro
   const textoEsNoExiste =
     ciudadData?.textoVigente?.startsWith('[NO EXISTE]') ||
     ciudadData?.textoVigente?.startsWith('[NO DISPONIBLE')
+
+  const textoPropuesto = ciudadData?.adendoPropuesto ?? adendo?.adendoPropuesto ?? ''
 
   return (
     <div className="flex flex-col rounded-[16px] border border-[#E8E4DC] bg-[#FDFCFA] overflow-hidden">
@@ -66,17 +68,14 @@ export function AdendoViewer({ ciudadId = 'slp', adendoId = 1 }: AdendoViewerPro
                 {CIUDADES_DISPONIBLES[c] ?? c.toUpperCase()}
               </button>
             ))}
-            {/* Ciudades sin PDF disponible aún */}
-            {(['san_pedro', 'corregidora', 'el_marques'] as const).map(c => (
-              <button
-                key={c}
-                disabled
-                title="PDF pendiente de carga"
-                className="px-3 py-1 text-[11px] rounded-[6px] border border-[#E8E4DC] text-[#C8C4BC] bg-[#F8F6F1] cursor-not-allowed"
-              >
-                {CIUDADES_DISPONIBLES[c]}
-              </button>
-            ))}
+            <button
+              type="button"
+              disabled
+              title="Sin paquete de adendos en esta versión del hub"
+              className="px-3 py-1 text-[11px] rounded-[6px] border border-[#E8E4DC] text-[#C8C4BC] bg-[#F8F6F1] cursor-not-allowed"
+            >
+              Soledad (pendiente)
+            </button>
           </div>
         </div>
 
@@ -187,7 +186,7 @@ export function AdendoViewer({ ciudadId = 'slp', adendoId = 1 }: AdendoViewerPro
                 style={{ maxHeight: '380px' }}
               >
                 <pre className="text-[11px] text-[#1C1B18] leading-relaxed whitespace-pre-wrap font-sans">
-                  {adendo.adendoPropuesto}
+                  {textoPropuesto}
                 </pre>
               </div>
 
@@ -209,7 +208,7 @@ export function AdendoViewer({ ciudadId = 'slp', adendoId = 1 }: AdendoViewerPro
       {/* Footer */}
       <div className="px-4 py-2 border-t border-[#E8E4DC] bg-[#FAF8F5]">
         <p className="text-[10px] text-[#A8A49C]">
-          trace: CLC-ADENDOS-Q013 · Fuente: ADENDOS: LEGAL/*.md · sprint 1 ·{' '}
+          Fuente: ADENDOS LEGAL (Markdown) ·{' '}
           <span className="font-medium text-[#8B5A00]">[BORRADOR PARA REVISIÓN LEGAL]</span>
         </p>
       </div>

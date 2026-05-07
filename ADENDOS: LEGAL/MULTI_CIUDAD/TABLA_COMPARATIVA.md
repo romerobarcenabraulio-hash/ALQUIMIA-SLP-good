@@ -31,7 +31,7 @@
 | Ciudad | Reglamento | Año | Estado actual sanciones RSU | PDF cargado | Nota de verificación |
 |---|---|---|---|---|---|
 | **San Luis Potosí** | Reglamento de Aseo Público | 2018 | Remite al Bando — sin escalera específica | ⏳ Pendiente | ⚠️ El PDF equivocado (Ley de Ingresos 2023) está archivado en `ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/`. Cargar el reglamento correcto como `…/SLP_slp_reglamento_aseo_publico.pdf` + symlink en `frontend/public/reglamentos/`. |
-| **Querétaro** | Reglamento Municipal de GIRS | 2021 | Parcialmente desarrollado | ⏳ Pendiente | ⚠️ El PDF equivocado (LOMEQ estatal) está archivado en `_espejo_catalogo_erroneo/`. Cargar el GIRS municipal como `…/QRO_qro_reglamento_municipal_GIRS.pdf` + symlink. |
+| **Querétaro (capital)** | Reglamento de Limpia y Aseo Público del Municipio de Querétaro (denominación de trabajo; verificar rubro en POE) | 2021 | Marco propio de obligaciones, prohibiciones e infracciones — brecha principal en instrumentación 5 fracciones condominio | ⏳ PDF en repo pendiente | ⚠️ **No afirmar ausencia normativa total.** Corregir etiqueta histórica “solo GIRS” si el instrumento oficial es de Limpia y Aseo. Cargar PDF íntegro y mapear Arts. 2, 15–18, 8–11 (cotejo literal). |
 | **Monterrey** | Reglamento de Limpia Municipal | 2020 (ref. 2023) | Art. 54-55 con Tabulador de Multas en cuotas UMA — procedimiento completo | ✅ Cargado | PDF verificado: `MTY_mty_monterrey_reglamento_limpia_municipal.pdf` · 41 páginas · Gobierno 2021-2024. Arts. mapeados: definiciones (Art. 3), recolección (Art. 7), obligaciones (Art. 20), sanciones (Art. 54-55). Sin artículo específico de condominios. |
 | **San Pedro G.G.** | Reglamento Ambiental y Desarrollo Sustentable | 2009 (Gaceta 118) | Art. de sanciones en reglamento ambiental | ⏳ Pendiente PDF RSU | PDF disponible: `MTY_spg_san_pedro_reglamento_ambiental_gaceta118_2009.pdf` — contiene Reglamento Ambiental (2009), no el de RSU/Limpia específico. Verificar artículos RSU. |
 | **Soledad de G.S.** | Sin reglamento propio | — | Sin base normativa | — No aplica | Requiere reglamento nuevo completo (trabajo adicional CLC). |
@@ -67,3 +67,36 @@ Con esos 5 datos por ciudad, se completan todos los `📄 VERIFICAR` de la tabla
 ---
 
 > **NOTA DE NO VINCULANCIA:** borrador consultivo CLC-ALQUIMIA. No produce efectos jurídicos.
+
+---
+
+## Matriz legal final (CLC · consistencia municipal)
+
+| Municipio (id simulador) | Base normativa existente (síntesis) | Brecha jurídica | Brecha operativa | Prioridad de reforma |
+|---|---|---|---|---|
+| **SLP** `slp` | Reglamento de Aseo Público (2018 ref.) + Bando para sanciones | Encaje de definiciones 5 fracciones, modelos A/B, prueba y tabulador acotado a condominio | PDF vigente no espejado en repo; riesgo de citas imprecisas | **Alta** — cargar PDF + dictamen jurídico local |
+| **MTY** `mty` | Reglamento de Limpia Municipal: Arts. 3, 7–8, 20, 54–55 Tabulador UMA | Falta supuesto explícito condominio 5 fracciones + encaje sin romper Tabulador | Diseño de inciso en Art. 55 + CM protección debido proceso | **Alta** — reforma puntual Cabildo |
+| **QRO** `qro` | Reglamento Limpia y Aseo: obligaciones, condominio, prohibiciones, sanciones | **No** vacío legal; falta **precisión** de circuito 5 fracciones y graduación compatible con bloque sancionador | Rutas A/B, evidencia, CRM expediente, armonía con inspectores | **Media–Alta** — adiciones/reformas acotadas |
+| **SPGG** `spg` | RSU / Aseo SPGG + normas ambientales (validar instrumento único aplicable) | Numeración y titularidad inspectiva [VERIFICAR]; evitar mezclar reglamentos | Mismo paquete 6 adendos con mapeo PDF | **Alta** — verificación fuente primaria |
+| **Corregidora** `cor` | Servicios públicos / normativa ambiental municipal (titulación [VERIFICAR]) | Riesgo de copy-paste desde capital; numeración propia obligatoria | Cargar PDF + validar competencias vs capital | **Alta** |
+| **El Marqués** `mar` | Reglamento de limpia (ref. 2015 — [VERIFICAR]) | Sin mapeo en repo | Toda la cadena de adendos pendiente | **Alta** — bloqueado hasta PDF |
+| **Soledad** `sol` | Sin reglamento RSU propio en seed — paquete `adendosExtendedCiudades` | Instrumento propio o armonía ZM | Localización CLC 2026-05-07 | **Media–Alta** |
+
+---
+
+## Extensión CLC — 14 municipios (auditoría P0/P1 · 2026-05-07)
+
+Los `adendoPropuesto` para los ids `sol`, `csp`, `vip`, `snl`, `gua`, `apo`, `sca`, `gar`, `esc`, `jua`, `hui`, `gdl`, `zap`, `tla` viven en `frontend/src/data/adendosExtendedCiudades.ts` y se fusionan en `adendos.ts`.
+
+| Adendo | **sol** | **csp** | **vip** | **hui** | **jua** | **gdl** | **zap** | **tla** | **snl** | **gua** | **apo** | **sca** | **gar** | **esc** |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **1 Definiciones** | `[NO EXISTE]` proyecto nuevo | idem | idem | proyecto + Ley QRO supletoria | proyecto + Ley NL | **ALQUIMIA no tiene reglamento RSU verificado para este municipio. Se requiere descarga manual del Periódico Oficial del Estado de Jalisco antes de la redacción del adendo.** | idem Jalisco | idem Jalisco | `[📄 VERIFICAR]` tras PDF POE | `[📄 VERIFICAR]` | `[📄 VERIFICAR]` | `[📄 VERIFICAR]` | `[📄 VERIFICAR]` | `[📄 VERIFICAR]` |
+| **2 Modelos A/B** | Art. [●] Bis (nuevo) | idem | idem | idem | idem | idem | idem | idem | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis |
+| **3 Oblig. habitantes** | Art. [●] (nuevo) | idem | idem | idem | idem | idem | idem | idem | `[📄]` | `[📄]` | `[📄]` | `[📄]` | `[📄]` | `[📄]` |
+| **4 Oblig. administración** | Art. [●] Bis (nuevo) | idem | idem | idem | idem | idem | idem | idem | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis | `[📄]` Bis |
+| **5 Sanciones** | escalera UMA + `[REDACCIÓN PENDIENTE — Bando]` | idem | idem | idem | idem | idem | idem | idem | reforma tabulador `[📄 VERIFICAR]` | idem | idem | idem | idem | idem |
+| **6 Transitorios** | decreto expedición | idem | idem | idem | idem | idem | idem | idem | transitorios reforma | idem | idem | idem | idem | idem |
+
+**Querétaro capital (`qro`):** se mantiene la nota CLC — no afirmar ausencia normativa total; el marco ya prevé obligaciones y sanciones; la brecha es de instrumentación condominio 5 fracciones.
+
+**ZM Guadalajara (`gdl`, `zap`, `tla`):** como arriba — sin PDF RSU verificado en repo ALQUIMIA; descarga manual POE Jalisco obligatoria antes de fijar numeración.

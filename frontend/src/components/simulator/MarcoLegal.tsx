@@ -14,8 +14,9 @@ interface MarcoLegalProps {
 
 export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
   const { zmActiva, agoraLegalBloqueado } = useSimulatorStore()
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const { openReglamento } = useReglamentoFuente()
-  const munId = zmActiva?.toLowerCase() ?? 'mty'
+  const munId = municipiosActivos[0] ?? zmActiva?.toLowerCase() ?? 'mty'
 
   if (mode === 'citizen') {
     return (

@@ -1,10 +1,13 @@
 'use client'
+import { useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ZMS } from '@/lib/constants'
+import { ZMS, alquimiaHideGdlFromUi, GDL_ZM_SELECTOR_FOOTNOTE } from '@/lib/constants'
 import { fmt } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 export function SelectorZM() {
+  const [gdlBlockedOpen, setGdlBlockedOpen] = useState(false)
   const { zmActiva, setZM, municipiosActivos, toggleMunicipio } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)!
 
@@ -27,7 +30,13 @@ export function SelectorZM() {
         {ZMS.map(z => (
           <button
             key={z.id}
-            onClick={() => setZM(z.id)}
+            onClick={() => {
+              if (z.id === 'GDL' && !alquimiaHideGdlFromUi()) {
+                setGdlBlockedOpen(true)
+                return
+              }
+              setZM(z.id)
+            }}
             className={cn(
               'px-4 py-2 rounded-[8px] text-[13px] font-medium transition-colors border',
               zmActiva === z.id
@@ -83,6 +92,21 @@ export function SelectorZM() {
           })}
         </div>
       </div>
+
+      {alquimiaHideGdlFromUi() && (
+        <p className="mt-4 text-[11px] leading-relaxed text-[#A8A49C] max-w-2xl">{GDL_ZM_SELECTOR_FOOTNOTE}</p>
+      )}
+
+      <Dialog open={gdlBlockedOpen} onOpenChange={setGdlBlockedOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>ZM Guadalajara</DialogTitle>
+            <DialogDescription>
+              Reglamentos municipales no cargados — ZM bloqueada para demo hasta anclar fuentes oficiales.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

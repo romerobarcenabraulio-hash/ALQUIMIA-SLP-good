@@ -6,15 +6,28 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import type { DashboardResponse, KPIIndicador } from '@/types'
+import type { CircularityBaseline, DashboardResponse, KPIIndicador } from '@/types'
+import { COMPOSICION_RSU } from '@/lib/constants'
 
 const STEPS = ['Datos de entrada', 'Cálculo de score', 'KPIs por área', 'Alertas y próximas acciones']
+
+function deriveCorrientesCriticas(baseline: CircularityBaseline | null | undefined): string[] | null {
+  if (!baseline || baseline.rsu_total_ton_day_est <= 0) return null
+  const t = baseline.rsu_total_ton_day_est
+  let best: { k: string; mass: number } | null = null
+  for (const [k, frac] of Object.entries(COMPOSICION_RSU)) {
+    const mass = t * frac
+    if (!best || mass > best.mass) best = { k, mass }
+  }
+  return best ? [best.k] : null
+}
 
 export function DashboardKPIs() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const municipio = municipiosActivos[0] ?? ''
   const resultados = useSimulatorStore(s => s.resultados)
-  const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
+  const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
+  const baselinePct = circularityBaseline?.current_circularity_pct
   const genCount = useSimulatorStore(s => s.macroImpactSummary?.generators_count ?? 0)
   const mixCAs = useSimulatorStore(s => s.mixCAs)
   const gatesAprobados = useSimulatorStore(s => s.gatesAprobados)
@@ -38,9 +51,9 @@ export function DashboardKPIs() {
       num_macrogeneradores: genCount,
       num_centros_acopio: numCentros,
       estado_legal: estadoLegal,
-      corrientes_criticas: ['organico'],
+      corrientes_criticas: deriveCorrientesCriticas(circularityBaseline) ?? ['organico'],
     }
-  }, [municipio, resultados, baselinePct, genCount, mixCAs, gatesAprobados])
+  }, [municipio, resultados, baselinePct, genCount, mixCAs, gatesAprobados, circularityBaseline])
 
   const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
 
@@ -158,7 +171,7 @@ export function DashboardKPIs() {
       {result && result.status !== 'blocked' && (
         <div className="space-y-4">
           <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-5 text-center">
-            <p className="text-[12px] text-[#6B6760]">Score de circularidad municipal</p>
+            <p className="text-[12px] text-[#6B6760]">Score compuesto de circularidad municipal</p>
             <p className={`font-serif text-[48px] leading-none ${scoreColor}`}>
               {result.resumen.score_circularidad.toFixed(0)}
             </p>
@@ -166,11 +179,14 @@ export function DashboardKPIs() {
 
           <div className="flex flex-wrap gap-2">
             <Chip label="Residuos" value={`${result.resumen.total_residuos_ton_dia} t/día`} />
-            <Chip label="Tasa circularidad" value={`${result.resumen.tasa_circularidad_pct}%`} />
+            <Chip label="Circularidad real est." value={`${result.resumen.tasa_circularidad_pct}%`} />
             <Chip label="Brecha infra" value={`${result.resumen.brecha_infraestructura_ton_dia} t/día`} />
             <Chip label="Macrogeneradores" value={`${result.resumen.num_macrogeneradores}`} />
             <Chip label="Centros acopio" value={`${result.resumen.num_centros_acopio}`} />
           </div>
+          <p className="text-[11px] text-[#6B6760]">
+            Términos: % RSU capturado y % circularidad real no son equivalentes; este panel muestra la circularidad real estimada por el servicio municipal.
+          </p>
 
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
             {result.kpis.map(kpi => (

@@ -6,9 +6,11 @@ import { getProgramPopulationShare } from '@/lib/zmPopulationScale'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
-/** Texto institucional fijo — encaja con modelo 10.1 y con el enfoque LGPGIR de valorización y gestión integral (no es definición jurídica única). */
-const CIRCULARIDAD_DEFINITION =
-  'En ALQUIMIA, circularidad municipal del RSU es un número del 0% al 100% que sintetiza, de forma práctica para el simulador, cuánto del residuo sólido urbano modelado puede irse a rutas de aprovechamiento (por ejemplo separación en origen, reciclaje, compostaje), frente a lo que suele llegar sin recuperación apreciable. Marco general legal en México (LGPGIR): valorización y gestión integral como horizontes; este indicador no sustituye un inventario de campo oficial ni todas las métricas que puede exigir la norma aplicable municipio por municipio.'
+/** Definiciones separadas para evitar mezclar captura con circularidad real. */
+const DEFINICION_CAPTURA =
+  '% RSU capturado = (RSU capturado valorizable / RSU generado total) × 100. Mide cuánto del total generado se recupera y entra a ruta útil.'
+const DEFINICION_CIRCULARIDAD =
+  '% Circularidad real = (RSU valorizado real / RSU generado total) × 100. Mide cuánto regresa efectivamente a reciclaje, composta, biodigestión o reúso.'
 
 export function CircularityBaselineCard() {
   const {
@@ -28,6 +30,10 @@ export function CircularityBaselineCard() {
   const uncertaintyPp = circularityBaseline?.uncertainty_pct_points
   const rangeMin = pct !== undefined && uncertaintyPp !== undefined ? Math.max(0, pct - uncertaintyPp) : null
   const rangeMax = pct !== undefined && uncertaintyPp !== undefined ? Math.min(100, pct + uncertaintyPp) : null
+  const pctCaptura =
+    circularityBaseline && circularityBaseline.rsu_total_ton_day_est > 0
+      ? (circularityBaseline.material_recovery_ton_day_est / circularityBaseline.rsu_total_ton_day_est) * 100
+      : null
 
   return (
     <section className="section" aria-labelledby="baseline-title">
@@ -35,16 +41,17 @@ export function CircularityBaselineCard() {
         Punto de partida antes de tus metas
       </p>
       <h2 id="baseline-title" className="font-serif text-[24px] text-[#1C1B18] mb-2">
-        Circularidad municipal del RSU (referencia inicial)
+        Indicadores base del municipio: captura RSU y circularidad real
       </h2>
       <ScopeAnclaKicker className="mb-3" />
 
       <div className="mb-4 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-4 py-3">
         <p className="inline-flex items-start gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
           <BookOpenCheck size={14} className="mt-0.5 shrink-0 text-[#3B6D11]" aria-hidden="true" />
-          Qué entendemos por circularidad aquí
+          Definiciones operativas del tablero
         </p>
-        <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{CIRCULARIDAD_DEFINITION}</p>
+        <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{DEFINICION_CAPTURA}</p>
+        <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{DEFINICION_CIRCULARIDAD}</p>
       </div>
 
       {circularityBaselineLoading && (
@@ -76,12 +83,23 @@ export function CircularityBaselineCard() {
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="min-w-0 max-w-[min(100%,40rem)] flex-1">
               <p className="text-[12px] text-[#6B6760]">{circularityBaseline.city_name}</p>
-              <p
-                className="mt-1 font-mono text-[34px] leading-none text-[#1C1B18]"
-                aria-label={`Porcentaje de circularidad del modelo ${circularityBaseline.current_circularity_pct.toFixed(1)} por ciento`}
-              >
-                {circularityBaseline.current_circularity_pct.toFixed(1)}%
-              </p>
+              <div className="mt-1 flex flex-wrap items-end gap-5">
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Circularidad real estimada</p>
+                  <p
+                    className="font-mono text-[34px] leading-none text-[#1C1B18]"
+                    aria-label={`Porcentaje de circularidad del modelo ${circularityBaseline.current_circularity_pct.toFixed(1)} por ciento`}
+                  >
+                    {circularityBaseline.current_circularity_pct.toFixed(1)}%
+                  </p>
+                </div>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">% RSU capturado (referencia)</p>
+                  <p className="font-mono text-[26px] leading-none text-[#23470A]">
+                    {pctCaptura != null ? `${pctCaptura.toFixed(1)}%` : '—'}
+                  </p>
+                </div>
+              </div>
               <p className="mt-3 text-[13px] leading-relaxed text-[#1C1B18]">
                 <span className="font-semibold text-[#1C1B18]">Cómo leer este número: </span>
                 {circularityBaseline.interpretation}

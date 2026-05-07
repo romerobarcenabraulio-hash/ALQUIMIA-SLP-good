@@ -48,10 +48,10 @@ ZM_CATALOG: Dict[str, ZonaMetropolitanaCatalog] = {
     ),
     "GDL": ZonaMetropolitanaCatalog(
         zm_id="GDL",
-        nombre="Zona Metropolitana de Guadalajara (semilla Q-009)",
+        nombre="Zona Metropolitana de Guadalajara",
         estado_principal="JAL",
         municipios=ZM_MUNICIPIOS["GDL"],
-        fuente="Catalogo semilla ALQUIMIA — CVE y población: validar con Navigator",
+        fuente="Catalogo interno incremental; validar con fuentes oficiales y Navigator",
         status=SourceStatus.estimado,
     ),
 }

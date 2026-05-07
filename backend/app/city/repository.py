@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from datetime import datetime, timezone
 from typing import Dict, Optional
 
@@ -31,6 +32,17 @@ _FALLBACK_RSU_TON_DAY = {
     "GDL": 2180.0,
 }
 
+_ZM_STATE_AUTHORITY: Dict[str, str] = {
+    "SLP": "Secretaría de Medio Ambiente y Recursos Naturales del Estado de San Luis Potosí",
+    "QRO": "Secretaría de Desarrollo Sustentable del Estado de Querétaro",
+    "MTY": "Secretaría de Medio Ambiente del Estado de Nuevo León",
+    "GDL": "Secretaría de Medio Ambiente y Desarrollo Territorial del Estado de Jalisco",
+}
+
+
+def _hide_gdl_options() -> bool:
+    return os.getenv("ALQUIMIA_HIDE_GDL", "").strip() == "1"
+
 
 def _municipios_for(zm_id: str) -> list[MunicipioContext]:
     zm_key = zm_id.upper()
@@ -47,6 +59,8 @@ def _municipios_for(zm_id: str) -> list[MunicipioContext]:
 def list_city_options() -> list[CityOption]:
     options: list[CityOption] = []
     for zm_id in sorted(ZM_MUNICIPIOS.keys()):
+        if _hide_gdl_options() and zm_id.upper() == "GDL":
+            continue
         zm = get_zm(zm_id)
         if not zm:
             continue
@@ -216,6 +230,16 @@ def baseline_for(city_id: str, snapshot: SnapshotDatos) -> Optional[CircularityB
     rsu_total = (pop * gen / 1000) if pop > 0 and gen > 0 else _FALLBACK_RSU_TON_DAY.get(city_key, 0)
     current_pct = estimate["pct"]
     recovered = rsu_total * (current_pct / 100)
+    best_pct = max(v["pct"] for v in _BASELINE_ESTIMATES.values())
+    gap_vs_best = max(0.0, round(best_pct - current_pct, 1))
+    state_auth = _ZM_STATE_AUTHORITY.get(city_key, "Secretaría estatal de medio ambiente competente")
+
+    interpretation = (
+        f"{context.nombre} canaliza ~{recovered:.1f} t/día "
+        f"a aprovechamiento de un total de ~{rsu_total:.1f} t/día "
+        f"(~{current_pct:.1f}%). "
+        f"Brecha frente a la mejor ZM del catálogo: {gap_vs_best:.1f} pp."
+    )
 
     return CircularityBaseline(
         city_id=context.city_id,
@@ -241,12 +265,15 @@ def baseline_for(city_id: str, snapshot: SnapshotDatos) -> Optional[CircularityB
             requiere_clave_api=False,
         ),
         warnings=[
-            "Alcance de residuo (estimación no oficial): sólo contemplamos RSU habitual; exclusos peligrosos, especiales y manejo separado obligatorio salvo donde el instrumento aplique otro alcance.",
-            "Competencia: obligaciones jurídicas y trámites aplican municipio por municipio; la zona metropolitana coordina territorio pero no reemplaza al ayuntamiento en sanciones o expedientes locales.",
+            (
+                f"Alcance RSU en {context.nombre}: estimación no oficial del simulador; exclusos peligrosos "
+                f"y especiales salvo que el instrumento local disponga otro alcance."
+            ),
+            (
+                f"Competencia en {context.nombre}: obligaciones y trámites aplican municipio por municipio; "
+                f"la zona metropolitana coordina territorio e interoperabilidad. "
+                f"Para lineamientos estatales: {state_auth}."
+            ),
         ],
-        interpretation=(
-            "El porcentaje resume, en esta simulación, cuánto del RSU municipal que modelamos aparece canalizado "
-            "a rutas de aprovechamiento frente al total municipal estimado; el resto se asume en disposición u otras "
-            "rutas sin recuperación en esta línea base, antes de que fijes metas o programas nuevos."
-        ),
+        interpretation=interpretation,
     )

@@ -15,8 +15,8 @@ def test_rsu_footprint_map_returns_seeded_municipios():
     res = client.get("/national/map/rsu-footprint")
     assert res.status_code == 200
     body = res.json()
-    assert body["feature_count"] == 17
-    assert len(body["features"]) == 17
+    assert body["feature_count"] == 20
+    assert len(body["features"]) == 20
     assert "methodology_summary" in body
     assert "ALQUIMIA-SEED" in body["catalog_simulation_epoch"]
     slp = next(f for f in body["features"] if f["municipio_id"] == "slp")

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
 import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotDatos, MarketSummary, MacroImpactSummary, ReasoningGraph, MunicipioProfile, CoverageStatus, OperationsSummary, PortalEntry, CityContext, CircularityBaseline, DecisionModule, Audience, MunicipioMxApi, SeleccionMunicipioCatalog } from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
-import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS } from '@/lib/constants'
+import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } from '@/lib/constants'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
@@ -284,6 +284,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
         },
 
         setZM: (id) => {
+          if (alquimiaHideGdlFromUi() && id === 'GDL') {
+            return
+          }
           const zm = ZMS.find(z => z.id === id)
           // Bug 0 fix: reset COMPLETO de todos los parámetros dependientes de ZM
           // en una sola transacción antes de recalcular — evita renders con datos parciales

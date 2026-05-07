@@ -50,6 +50,8 @@ class LegalSourceIngestStatus(str, Enum):
     no_disponible = "no_disponible"
     localizado = "localizado"
     descargado = "descargado"
+    # Ingesta verificada (checksum / registro interno) — requisito P1-7 para sanciones.
+    verified = "verified"
 
 
 class LegalSourceValidationStatus(str, Enum):

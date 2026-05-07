@@ -3,13 +3,15 @@
 import { useEffect, useMemo, useState } from 'react'
 import { MapPin } from 'lucide-react'
 import { getCityOptions, getEstadosMx, getMunicipiosMx } from '@/lib/api'
-import { ZMS } from '@/lib/constants'
+import { ZMS, alquimiaHideGdlFromUi, GDL_ZM_SELECTOR_FOOTNOTE } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import type { CityOption, EstadoMxOption, MunicipioContext, MunicipioMxApi } from '@/types'
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
 export function CityFirstSelector() {
+  const [gdlBlockedOpen, setGdlBlockedOpen] = useState(false)
   const {
     zmActiva,
     setZM,
@@ -170,7 +172,13 @@ export function CityFirstSelector() {
               <button
                 key={option.city_id}
                 type="button"
-                onClick={() => setZM(option.city_id)}
+                onClick={() => {
+                  if (option.city_id === 'GDL' && !alquimiaHideGdlFromUi()) {
+                    setGdlBlockedOpen(true)
+                    return
+                  }
+                  setZM(option.city_id)
+                }}
                 className={cn(
                   'inline-flex items-center gap-2 rounded-[8px] border px-4 py-2 text-[13px] font-medium transition-colors',
                   zmActiva === option.city_id
@@ -250,6 +258,21 @@ export function CityFirstSelector() {
           {portalError}
         </div>
       )}
+
+      {alquimiaHideGdlFromUi() && (
+        <p className="mt-4 text-[11px] leading-relaxed text-[#A8A49C]">{GDL_ZM_SELECTOR_FOOTNOTE}</p>
+      )}
+
+      <Dialog open={gdlBlockedOpen} onOpenChange={setGdlBlockedOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>ZM Guadalajara</DialogTitle>
+            <DialogDescription>
+              Reglamentos municipales no cargados — ZM bloqueada para demo hasta anclar fuentes oficiales.
+            </DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
     </section>
   )
 }

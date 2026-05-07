@@ -10,7 +10,7 @@ from app.national.schemas import RsuFootprintMapFeature, RsuFootprintMapResponse
 
 def build_rsu_footprint_map_response() -> RsuFootprintMapResponse:
     features: list[RsuFootprintMapFeature] = []
-    for zm_id in ("SLP", "QRO", "MTY"):
+    for zm_id in ("SLP", "QRO", "MTY", "GDL"):
         for municipio_id in list_zm_municipios(zm_id):
             p = get_profile(municipio_id)
             if (
@@ -50,7 +50,7 @@ def build_rsu_footprint_map_response() -> RsuFootprintMapResponse:
         "t CO2e por t RSU (valor ilustrativo; no inventario GEI oficial)."
     )
     disclaimer = (
-        "Vista piloto: solo municipios cargados en el catálogo ALQUIMIA (ZM SLP, QRO y Monterrey). "
+        "Vista piloto: municipios cargados en el catálogo ALQUIMIA (ZM SLP, QRO, Monterrey y Guadalajara). "
         "No representa todo México ni límites INEGI/MGN. Coordenadas y población son aproximaciones "
         "para educación y simulación — no para multas, obligaciones regulatorias ni reporting oficial."
     )

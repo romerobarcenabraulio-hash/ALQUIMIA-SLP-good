@@ -158,7 +158,7 @@ export const MULTIPLICADORES = {
 } as const
 
 // ─── ZMs (Fase A — en memoria, §4.1) ─────────────────────────────────────────
-export const ZMS: ZonaMetropolitana[] = [
+export const ZMS_ALL: ZonaMetropolitana[] = [
   {
     id: 'SLP', nombre: 'ZM San Luis Potosí', estado: 'San Luis Potosí',
     municipios: [
@@ -212,6 +212,18 @@ export const ZMS: ZonaMetropolitana[] = [
     costoTerrenoM2: 3600, rellenoVidaUtil: 10, pepenadoresActivos: 2100,
   },
 ]
+
+export function alquimiaHideGdlFromUi(): boolean {
+  return process.env.NEXT_PUBLIC_ALQUIMIA_HIDE_GDL === '1'
+}
+
+/** Nota de selector cuando GDL se oculta vía `NEXT_PUBLIC_ALQUIMIA_HIDE_GDL`. */
+export const GDL_ZM_SELECTOR_FOOTNOTE =
+  'ZM Guadalajara estará disponible cuando se carguen los reglamentos municipales.'
+
+export const ZMS: ZonaMetropolitana[] = alquimiaHideGdlFromUi()
+  ? ZMS_ALL.filter(z => z.id !== 'GDL')
+  : ZMS_ALL
 
 /** INEGI Censo 2020 — población municipal de referencia (Q-024). `mxq` no está en el conjunto ZM simulado `vip`. */
 export const POBLACION_INEGI2020_SLPM: Record<string, number> = {

@@ -4,7 +4,7 @@ Tests del Motor Jurídico Municipal — Fase 1.5
 Principio verificado: Una ZM no es un municipio.
 
 Cubre:
-  - 17 municipios individuales (SLP×4, QRO×4, MTY×9)
+  - 20 municipios individuales (SLP×4, QRO×4, MTY×9, GDL×3)
   - build_diagnostic: campos, rangos, coherencia
   - select_strategy: reglas A/B/C/D
   - gates ÁGORA por municipio
@@ -37,9 +37,9 @@ def reset_repo():
 class TestRepositorioInventario:
 
     def test_total_municipios(self):
-        """Debe haber exactamente 17 municipios seedeados."""
+        """Debe haber exactamente 20 municipios seedeados (incl. ZM Guadalajara)."""
         repo = get_repo()
-        assert len(repo.all_municipios()) == 17
+        assert len(repo.all_municipios()) == 20
 
     def test_zm_slp_tiene_4_municipios(self):
         assert len(ZM_MUNICIPIOS["SLP"]) == 4
@@ -56,6 +56,11 @@ class TestRepositorioInventario:
         for m in ["mty", "spg", "snl", "gua", "apo", "sca", "gar", "esc", "jua"]:
             assert m in ZM_MUNICIPIOS["MTY"]
 
+    def test_zm_gdl_tiene_3_municipios(self):
+        assert len(ZM_MUNICIPIOS["GDL"]) == 3
+        for m in ["gdl", "zap", "tla"]:
+            assert m in ZM_MUNICIPIOS["GDL"]
+
     def test_todos_municipios_tienen_nombre(self):
         for m_id in get_repo().all_municipios():
             assert m_id in MUNICIPIO_NOMBRES, f"{m_id} sin nombre"
@@ -65,6 +70,7 @@ class TestRepositorioInventario:
         assert set(repo.get_municipios_by_zm("SLP")) == {"slp", "sol", "csp", "vip"}
         assert set(repo.get_municipios_by_zm("QRO")) == {"qro", "cor", "mar", "hui"}
         assert len(repo.get_municipios_by_zm("MTY")) == 9
+        assert set(repo.get_municipios_by_zm("GDL")) == {"gdl", "zap", "tla"}
 
     def test_zm_desconocida_retorna_lista_vacia(self):
         repo = get_repo()
@@ -75,14 +81,32 @@ class TestRepositorioInventario:
         assert repo.get_zm_for_municipio("slp") == "SLP"
         assert repo.get_zm_for_municipio("spg") == "MTY"
         assert repo.get_zm_for_municipio("hui") == "QRO"
+        assert repo.get_zm_for_municipio("gdl") == "GDL"
         assert repo.get_zm_for_municipio("xxx") is None
 
 
 # ─── Diagnóstico — todos los municipios ──────────────────────────────────────
 
 ALL_MUNICIPIOS = (
-    ZM_MUNICIPIOS["SLP"] + ZM_MUNICIPIOS["QRO"] + ZM_MUNICIPIOS["MTY"]
+    ZM_MUNICIPIOS["SLP"] + ZM_MUNICIPIOS["QRO"] + ZM_MUNICIPIOS["MTY"] + ZM_MUNICIPIOS["GDL"]
 )
+
+
+class TestCLCExpositorMunicipal:
+
+    def test_disclaimers_y_next_actions_unicos_longitud(self):
+        disc: set[str] = set()
+        acts: set[str] = set()
+        for m_id in sorted(get_repo().all_municipios()):
+            d = build_diagnostic(m_id)
+            assert d is not None
+            assert len(d.legal_disclaimer) <= 220, (m_id, d.legal_disclaimer)
+            assert "brecha" in d.legal_disclaimer.lower()
+            assert "dictamen" in d.legal_disclaimer.lower() and "alquimia" in d.legal_disclaimer.lower()
+            disc.add(d.legal_disclaimer)
+            acts.add(d.next_action)
+        assert len(disc) == 20
+        assert len(acts) == 20
 
 
 class TestDiagnosticoTodos:
@@ -181,7 +205,7 @@ class TestFase111LegalMunicipal:
         assert d.source_manifest.zm == "SLP"
         assert d.legal_validation_status == "pendiente_validacion_juridica"
         assert d.officiality == "fuente_localizada_no_validada"
-        assert "no emite dictamen legal" in d.legal_disclaimer
+        assert "dictamen" in d.legal_disclaimer.lower() and "alquimia" in d.legal_disclaimer.lower()
 
     def test_municipio_sin_fuente_queda_pendiente_y_bloquea_sanciones_no_simulacion(self):
         d = build_diagnostic("sol")
@@ -200,7 +224,7 @@ class TestFase111LegalMunicipal:
         assert d.legal_validation_status == "pendiente_validacion_juridica"
         assert d.can_enable_sanctions is False
         assert d.can_generate_official_document is False
-        assert "validada externamente" in d.sanctions_blocked_reason
+        assert "externa" in d.sanctions_blocked_reason.lower()
 
     def test_contexto_municipal_tiene_obligaciones_limites_bloqueos_y_accion(self):
         c = build_municipal_legal_context("qro")

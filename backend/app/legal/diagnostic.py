@@ -11,10 +11,12 @@ from __future__ import annotations
 from datetime import date
 
 from app.legal.schemas import (
-    ArticuloMatriz, CategoriaArticulo, EstadoArticulo,
-    Criticidad, LegalDiagnostic, LegalSourceValidationStatus,
+    ArticuloMatriz, EstadoArticulo,
+    Criticidad, LegalDiagnostic, LegalSourceIngestStatus,
+    LegalSourceValidationStatus,
     MunicipalLegalContext,
 )
+from app.legal.municipal_legal_copy import build_legal_disclaimer, build_next_action
 from app.legal.repository import get_repo
 from app.legal.reform_strategy import select_strategy
 from app.legal.source_ingest import locate_municipal_legal_source
@@ -46,6 +48,35 @@ _PUNTOS_MAX_TOTAL = (
 # Baja: Art 12 = 1 × 3 = 3
 # Total = 117  → normalizamos a 100
 _PUNTOS_MAX_TOTAL = 8 * 12 + 3 * 6 + 1 * 3  # = 117
+
+
+def _sanctions_blocked_reason(
+    *,
+    can_enable: bool,
+    score_legal: int,
+    tiene_sancion_ejecutable: bool,
+    ingest_verified: bool,
+    validation_status: LegalSourceValidationStatus,
+) -> str | None:
+    if can_enable:
+        return None
+    parts: list[str] = []
+    if not ingest_verified:
+        if score_legal >= 50 and tiene_sancion_ejecutable:
+            parts.append(
+                "Bloqueado por manifest no verificado; no por contenido normativo."
+            )
+        else:
+            parts.append(
+                "Manifiesto de fuente sin estado de ingesta `verified`."
+            )
+    if validation_status != LegalSourceValidationStatus.validado_externamente:
+        parts.append(
+            "Sanciones bloqueadas: se requiere fuente municipal validada externamente."
+        )
+    if score_legal < 50:
+        parts.append("Score legal inferior a 50 puntos en esta política.")
+    return " ".join(parts) if parts else "Sanciones deshabilitadas por política ALQUIMIA."
 
 
 def _puntos_articulo(art: ArticuloMatriz) -> float:
@@ -80,12 +111,6 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
     score_legal      = min(100, round(puntos_obtenidos / _PUNTOS_MAX_TOTAL * 100))
 
     # ── Booleanos clave ───────────────────────────────────────────────────────
-    def _adecuado(cat: CategoriaArticulo) -> bool:
-        return any(
-            a.categoria == cat and a.estado == EstadoArticulo.presente_adecuado
-            for a in articulos
-        )
-
     tiene_separacion_origen   = any(
         a.numero in ("Art. 1", "Art. 2") and a.estado == EstadoArticulo.presente_adecuado
         for a in articulos
@@ -112,25 +137,9 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
     has_validated_source = (
         source_manifest.validation_status == LegalSourceValidationStatus.validado_externamente
     )
-    can_enable_sanctions = bool(
-        has_validated_source and tiene_sancion_ejecutable
-    )
-    can_generate_official_document = has_validated_source
-    sanctions_blocked_reason = None if can_enable_sanctions else (
-        "Sanciones bloqueadas: requieren fuente legal municipal validada externamente "
-        "y base sancionatoria ejecutable por municipio."
-    )
-    official_document_blocked_reason = None if can_generate_official_document else (
-        "Documento oficial bloqueado: ALQUIMIA solo puede producir insumos expositivos "
-        "hasta validación competente y aprobación de autoridad facultada."
-    )
-    next_action = (
-        "Validar fuente legal municipal con jurista/autoridad competente."
-        if not has_validated_source
-        else "Revisar artículos y límites municipales antes de cualquier acción sancionatoria."
-    )
+    ingest_verified = source_manifest.ingest_status == LegalSourceIngestStatus.verified
 
-    return LegalDiagnostic(
+    diag_tmp = LegalDiagnostic(
         municipio_id=municipio_id.lower(),
         zm=reg.zm,
         reglamento_nombre=reg.nombre,
@@ -152,15 +161,53 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
         officiality=source_manifest.officiality,
         can_enable_education=source_manifest.can_enable_education,
         can_enable_simulation=source_manifest.can_enable_simulation,
-        can_enable_sanctions=can_enable_sanctions,
-        can_generate_official_document=can_generate_official_document,
-        sanctions_blocked_reason=sanctions_blocked_reason,
-        official_document_blocked_reason=official_document_blocked_reason,
-        next_action=next_action,
-        legal_disclaimer=(
-            "ALQUIMIA no emite dictamen legal ni documento oficial. Este diagnóstico es "
-            "un insumo técnico-expositivo municipal sujeto a validación competente."
-        ),
+        can_enable_sanctions=False,
+        can_generate_official_document=False,
+        sanctions_blocked_reason=None,
+        official_document_blocked_reason=None,
+        next_action="",
+        legal_disclaimer="",
+    )
+    strat = select_strategy(diag_tmp)
+
+    can_enable_sanctions = bool(
+        ingest_verified
+        and source_manifest.validation_status == LegalSourceValidationStatus.validado_externamente
+        and score_legal >= 50
+    )
+    can_generate_official_document = has_validated_source
+
+    sanctions_blocked_reason = _sanctions_blocked_reason(
+        can_enable=can_enable_sanctions,
+        score_legal=score_legal,
+        tiene_sancion_ejecutable=tiene_sancion_ejecutable,
+        ingest_verified=ingest_verified,
+        validation_status=source_manifest.validation_status,
+    )
+    official_document_blocked_reason = None if can_generate_official_document else (
+        "Documento oficial bloqueado: ALQUIMIA solo puede producir insumos expositivos "
+        "hasta validación competente y aprobación de autoridad facultada."
+    )
+    next_action = build_next_action(
+        municipio_id=municipio_id.lower(),
+        has_validated_source=has_validated_source,
+        strategy=strat,
+    )
+    legal_disclaimer = build_legal_disclaimer(
+        municipio_id=municipio_id.lower(),
+        reglamento_nombre=reg.nombre,
+        brecha_critica=brecha_critica,
+    )
+
+    return diag_tmp.model_copy(
+        update={
+            "can_enable_sanctions": can_enable_sanctions,
+            "can_generate_official_document": can_generate_official_document,
+            "sanctions_blocked_reason": sanctions_blocked_reason,
+            "official_document_blocked_reason": official_document_blocked_reason,
+            "next_action": next_action,
+            "legal_disclaimer": legal_disclaimer,
+        }
     )
 
 

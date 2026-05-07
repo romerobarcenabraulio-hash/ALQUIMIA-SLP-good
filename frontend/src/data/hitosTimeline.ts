@@ -240,7 +240,150 @@ export const HITOS_TIMELINE_SLP: Hito[] = [
   },
 ]
 
-/** KPI acumulados en el día D usando el catálogo SLP por defecto. */
-export function kpisAcumulados(dia_actual: number, empleo_base: number): KpisAcumulados {
-  return kpisAcumuladosCore(HITOS_TIMELINE_SLP, dia_actual, empleo_base)
+/** Placeholders P1-4 — misma forma PERT; calendario por ZM sujeto a CLC / cabildo. */
+export const HITOS_TIMELINE_MTY: Hito[] = [
+  {
+    id: 'mty-h01',
+    nombre_corto: 'Convenio marco y fracciones',
+    descripcion_ciudadano:
+      'Alinear operación municipal con SIMEPRODE y el mínimo de fracciones acordado en la ZM; sin mezclar competencias locales.',
+    pert: pert(25, 55, 95),
+    kpis: kpi({ captura_pct_pts: 1, co2e_evitado_ton_delta: 80 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'mty-h02',
+    nombre_corto: 'Línea base metropolitana',
+    descripcion_ciudadano:
+      'Cifras orientativas de generación y captura por municipio; lectura ejecutiva antes de fijar metas o inversión.',
+    pert: pert(30, 60, 110),
+    kpis: kpi({ empleos_delta: 3, captura_pct_pts: 1 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'mty-h03',
+    nombre_corto: 'Rutas y transferencias',
+    descripcion_ciudadano:
+      'Coordinación de rutas y puntos de transferencia bajo reglas metropolitanas; trazabilidad básica entre municipios.',
+    pert: pert(80, 140, 220),
+    kpis: kpi({ pepenadores_delta: 20, captura_pct_pts: 2 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'mty-h04',
+    nombre_corto: 'Auditoría oleada 1',
+    descripcion_ciudadano:
+      'Revisión de lo operado en territorio piloto: participación ciudadana, impurezas y cuellos de botella logísticos.',
+    pert: pert(180, 260, 340),
+    kpis: kpi({ captura_pct_pts: 2 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+]
+
+export const HITOS_TIMELINE_QRO: Hito[] = [
+  {
+    id: 'qro-h01',
+    nombre_corto: 'Mesa técnica estatal-municipal',
+    descripcion_ciudadano:
+      'Alineación con lineamientos estatales y tableros existentes; sin sustituir reglamentos municipales.',
+    pert: pert(18, 40, 85),
+    kpis: kpi({ empleos_delta: 2 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'qro-h02',
+    nombre_corto: 'Homologación de fracciones',
+    descripcion_ciudadano:
+      'Extender el esquema de separación acordado en capital a municipios satélite con matices industriales.',
+    pert: pert(45, 90, 160),
+    kpis: kpi({ captura_pct_pts: 2, co2e_evitado_ton_delta: 150 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'qro-h03',
+    nombre_corto: 'Centros de acopio escalonados',
+    descripcion_ciudadano:
+      'Despliegue progresivo de CAs con reglas claras de pureza y horarios; comunicación vecinal previa.',
+    pert: pert(90, 150, 240),
+    kpis: kpi({ empleos_delta: 10, pepenadores_delta: 18, captura_pct_pts: 3 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'qro-h04',
+    nombre_corto: 'Corte de mitad de plan',
+    descripcion_ciudadano:
+      'Evaluación de captura y costos; decisión de segunda oleada con evidencia, no solo proyección.',
+    pert: pert(200, 280, 380),
+    kpis: kpi({ captura_pct_pts: 2 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+]
+
+export const HITOS_TIMELINE_GDL: Hito[] = [
+  {
+    id: 'gdl-h01',
+    nombre_corto: 'Ancla reglamentaria municipal',
+    descripcion_ciudadano:
+      'Confirmar instrumentos de limpia/RSU por municipio antes de fijar metropoli; Jalisco como marco general.',
+    pert: pert(40, 85, 150),
+    kpis: kpi({ captura_pct_pts: 1 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'gdl-h02',
+    nombre_corto: 'Comunicación ciudadana',
+    descripcion_ciudadano:
+      'Campaña clara de qué va en cada fracción; evitar mensajes que contradigan el reglamento local.',
+    pert: pert(35, 75, 130),
+    kpis: kpi({ pepenadores_delta: 12, captura_pct_pts: 2 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'gdl-h03',
+    nombre_corto: 'Infraestructura piloto',
+    descripcion_ciudadano:
+      'Primeros puntos de entrega segregada con reglas de operación visibles y personal capacitado.',
+    pert: pert(100, 170, 260),
+    kpis: kpi({ empleos_delta: 8, captura_pct_pts: 3, co2e_evitado_ton_delta: 320 }),
+    es_gate_clave: false,
+    es_pico_estacional: false,
+  },
+  {
+    id: 'gdl-h04',
+    nombre_corto: 'Coordinación ZM',
+    descripcion_ciudadano:
+      'Acuerdos mínimos entre municipios colindantes para no desplazar residuos sin reglas ni registro.',
+    pert: pert(220, 300, 420),
+    kpis: kpi({ captura_pct_pts: 2 }),
+    es_gate_clave: true,
+    es_pico_estacional: false,
+  },
+]
+
+export function getHitosForZm(zmId: string): { hitos: Hito[]; catalogLabel: string | null } {
+  const z = zmId.toUpperCase()
+  if (z === 'MTY') return { hitos: HITOS_TIMELINE_MTY, catalogLabel: null }
+  if (z === 'QRO') return { hitos: HITOS_TIMELINE_QRO, catalogLabel: null }
+  if (z === 'GDL') return { hitos: HITOS_TIMELINE_GDL, catalogLabel: null }
+  if (z === 'SLP') return { hitos: HITOS_TIMELINE_SLP, catalogLabel: null }
+  return {
+    hitos: HITOS_TIMELINE_SLP,
+    catalogLabel: `Catálogo Q-020 SLP · escalado para ZM ${z}`,
+  }
+}
+
+/** KPI acumulados en el día D según timeline de la ZM (fallback SLP si no hay catálogo propio). */
+export function kpisAcumulados(dia_actual: number, empleo_base: number, zmId = 'SLP'): KpisAcumulados {
+  const { hitos } = getHitosForZm(zmId)
+  return kpisAcumuladosCore(hitos, dia_actual, empleo_base)
 }

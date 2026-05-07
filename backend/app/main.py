@@ -172,5 +172,5 @@ async def health():
     return {
         "status": "ok",
         "version": "1.0.0",
-        "environment": os.getenv("ENVIRONMENT", "development"),
+        "environment": os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")),
     }

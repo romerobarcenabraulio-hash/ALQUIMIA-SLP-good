@@ -17,6 +17,7 @@ import {
   buildHitosResumenRows,
   buildMunicipalPlanTimeSeries,
 } from '@/lib/municipalPlanTimeSeries'
+import { getHitosForZm } from '@/data/hitosTimeline'
 import { mesEquivalenteBaselineEnPlan } from '@/lib/municipioMadurezContexto'
 import { fmt } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
@@ -61,12 +62,21 @@ function TraceRibbon({
 
 const CORTE_UI = '2026-05-05'
 
+function hitosTraceFuente(zmId: string, catalogLabel: string | null): string {
+  if (catalogLabel) {
+    return `ALQUIMIA · ${catalogLabel}`
+  }
+  return `ALQUIMIA · hitos ZM ${zmId} (catálogo Q-020 / placeholder territorial).`
+}
+
 export function ProgresionPlanMunicipalTiempo() {
   const state = useSimulatorStore(s => ({
     horizonte: s.horizonte,
     presetTrayectoria: s.presetTrayectoria,
     genPercapita: s.genPercapita,
   }))
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const hitosBundle = useMemo(() => getHitosForZm(zmActiva), [zmActiva])
   const resultados = useSimulatorStore(s => s.resultados)
   const resultadosSinPrograma = useSimulatorStore(s => s.resultadosSinPrograma)
   const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
@@ -79,11 +89,11 @@ export function ProgresionPlanMunicipalTiempo() {
       resultadosSinPrograma,
       { baselineCircularityPct: baselinePct },
     )
-  }, [resultados, resultadosSinPrograma, baselinePct])
+  }, [resultados, resultadosSinPrograma, baselinePct, zmActiva])
 
   const filasHitos = useMemo(
-    () => buildHitosResumenRows(state.horizonte),
-    [state.horizonte],
+    () => buildHitosResumenRows(state.horizonte, hitosBundle.hitos),
+    [state.horizonte, hitosBundle.hitos],
   )
 
   const chartData = useMemo(
@@ -254,8 +264,8 @@ export function ProgresionPlanMunicipalTiempo() {
         </div>
         <TraceRibbon
           hecho="Catálogo de despliegue CA (Bootstrap 2.4) y población/RSU activa según selección municipal."
-          supuesto="Pepenadores: hitos Q-020 escalados al horizonte y alineados al tope del motor municipal."
-          fuente="ALQUIMIA · `FASES_CA` + `buildDespliegueOperativoSeries` + `HITOS_TIMELINE_SLP`."
+          supuesto="Pepenadores: hitos escalados al horizonte y alineados al tope del motor municipal."
+          fuente={`ALQUIMIA · FASES_CA + buildDespliegueOperativoSeries + ${hitosTraceFuente(zmActiva, hitosBundle.catalogLabel)}`}
           formula="Por mes m: mix visible = f(horizonte, Realista); pep_acum = min(pep_modelo, Σ hitos≤día(m)) con día ∝ m."
           corte={CORTE_UI}
           confianza="medio"
@@ -326,7 +336,8 @@ export function ProgresionPlanMunicipalTiempo() {
         <p className="text-[11px] font-semibold text-[#1C1B18]">Impacto público y síntesis</p>
         <p className="text-[11px] text-[#6B6760]">
           CO₂e evitadas (acumulado por mes); ahorro en salud acumulado; cumplimiento normativo estimado e indicador compuesto de
-          circularidad. El deslizador superior fija el mes de consulta sobre el mismo eje que el resto del plan.
+          circularidad. También se muestra % RSU capturado como métrica separada para no mezclar términos. El deslizador superior fija
+          el mes de consulta sobre el mismo eje que el resto del plan.
         </p>
         <div className="h-[220px] w-full">
           <ResponsiveContainer width="100%" height="100%">
@@ -399,6 +410,7 @@ export function ProgresionPlanMunicipalTiempo() {
                 label={{ value: 'Consulta', position: 'insideTopRight', fill: '#1C1B18', fontSize: 9 }}
               />
               <Line type="monotone" dataKey="cumplimientoNormativoPct" name="Cumplimiento normativo est." stroke="#0369a1" dot={false} strokeWidth={2} />
+              <Line type="monotone" dataKey="rsuCapturadoPct" name="% RSU capturado" stroke="#b45309" dot={false} strokeWidth={2} />
               <Line type="monotone" dataKey="circularidadCompuestaPct" name="Circularidad compuesta" stroke="#3B6D11" dot={false} strokeWidth={2} />
             </LineChart>
           </ResponsiveContainer>
@@ -407,7 +419,7 @@ export function ProgresionPlanMunicipalTiempo() {
           hecho="CO₂e mensual proviene de `serieAnual[].co2e` del motor municipal; salud de `ahorroSalud` al cierre."
           supuesto="Acumulación lineal de salud en el tiempo; cumplimiento y circularidad compuesta son heurísticas de tablero (no acto administrativo)."
           fuente="`calculator.ts` + baseline de circularidad API (city context)."
-          formula="CO₂e_acum += co2e(u)/12; salud_acum = (m/M)×ahorroSalud; compuesto = 0,42·captura + 0,28·desvío + …"
+          formula="%RSUcapturado=sample.pctCaptura; CO₂e_acum+=co2e(u)/12; salud_acum=(m/M)×ahorroSalud; compuesto=0,42·captura+0,28·desvío+…"
           corte={CORTE_UI}
           confianza="medio"
         />
@@ -442,9 +454,9 @@ export function ProgresionPlanMunicipalTiempo() {
           </tbody>
         </table>
         <TraceRibbon
-          hecho="Catálogo Q-020 publicado en `hitosTimeline.ts` con PERT en días."
+          hecho="Catálogo de hitos con PERT en días (`hitosTimeline.ts`), versión activa según ZM."
           supuesto="Escala temporal: mes_hit = (E(PERT)/1080)×(horizonte×12), referencia 36 meses×30 días."
-          fuente="ALQUIMIA · `HITOS_TIMELINE_SLP`, `HORIZONTE_DIAS_MESES_36`."
+          fuente={`${hitosTraceFuente(zmActiva, hitosBundle.catalogLabel)} · HORIZONTE_DIAS_MESES_36.`}
           formula="pertExpectedDays = (o+4m+p)/6; mes redondeado al ciclo municipal activo."
           corte={CORTE_UI}
           confianza="bajo"

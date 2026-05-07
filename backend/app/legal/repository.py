@@ -9,7 +9,8 @@ Municipios cubiertos:
   ZM SLP  (4): slp, sol, csp, vip
   ZM QRO  (4): qro, cor, mar, hui
   ZM MTY  (9): mty, spg, snl, gua, apo, sca, gar, esc, jua
-  Total:   17 municipios individuales
+  ZM GDL  (3): gdl, zap, tla
+  Total:   20 municipios individuales
 
 En producción: PostgreSQL con migraciones Alembic.
 Ahora: dict en memoria seedeado con datos reales disponibles y
@@ -510,11 +511,11 @@ def _build_jua() -> tuple[Reglamento, list[ArticuloMatriz]]:
 
 
 def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
-    """Guadalajara — reglamento semilla no exhaustivo (Q-009). Navigator: CVE + texto vigente."""
+    """Guadalajara — marco de referencia hasta anclar texto vigente (Navigator)."""
     reg = Reglamento(
         municipio_id="gdl", zm="GDL",
-        nombre="Marco municipal de referencia RSU — Guadalajara (semilla ALQUIMIA)",
-        version="semilla", fecha_publicacion="—",
+        nombre="Marco municipal de referencia RSU — Guadalajara",
+        version="referencia", fecha_publicacion="—",
         fuente="placeholder_alquimia", url=None,
         verificado=False, requiere_revision_juridica=True,
     )
@@ -524,8 +525,8 @@ def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
 def _build_zap() -> tuple[Reglamento, list[ArticuloMatriz]]:
     reg = Reglamento(
         municipio_id="zap", zm="GDL",
-        nombre="Marco municipal de referencia RSU — Zapopan (semilla ALQUIMIA)",
-        version="semilla", fecha_publicacion="—",
+        nombre="Marco municipal de referencia RSU — Zapopan",
+        version="referencia", fecha_publicacion="—",
         fuente="placeholder_alquimia", url=None,
         verificado=False, requiere_revision_juridica=True,
     )
@@ -535,8 +536,8 @@ def _build_zap() -> tuple[Reglamento, list[ArticuloMatriz]]:
 def _build_tla() -> tuple[Reglamento, list[ArticuloMatriz]]:
     reg = Reglamento(
         municipio_id="tla", zm="GDL",
-        nombre="Marco municipal de referencia RSU — Tlaquepaque (semilla ALQUIMIA)",
-        version="semilla", fecha_publicacion="—",
+        nombre="Marco municipal de referencia RSU — Tlaquepaque",
+        version="referencia", fecha_publicacion="—",
         fuente="placeholder_alquimia", url=None,
         verificado=False, requiere_revision_juridica=True,
     )

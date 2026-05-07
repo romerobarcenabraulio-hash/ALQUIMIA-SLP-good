@@ -7,6 +7,7 @@ import type { AñoResultados, ResultadosCalculados, SimulatorState } from '@/typ
 import { MODELO_PARAMS, PRESETS_TRAYECTORIA } from '@/lib/constants'
 import { buildDespliegueOperativoSeries } from '@/lib/despliegueOperativoSeries'
 import {
+  getHitosForZm,
   HITOS_TIMELINE_SLP,
   HORIZONTE_DIAS_MESES_36,
   type Hito,
@@ -85,6 +86,7 @@ export type PuntoMesPlanMunicipal = {
   co2eEvitadasAcumTon: number
   ahorroSaludAcumMxN: number
   cumplimientoNormativoPct: number
+  rsuCapturadoPct: number
   circularidadCompuestaPct: number
 }
 
@@ -141,6 +143,7 @@ export function buildMunicipalPlanTimeSeries(
   const totalMeses = H * 12
   const serie = resultados.serieAnual
   const despliegue = buildDespliegueOperativoSeries(H, PRESET_FIJADO)
+  const { hitos } = getHitosForZm(state.zmActiva)
 
   const baseline = opts.baselineCircularityPct ?? 8
   const empleoBase =
@@ -152,7 +155,7 @@ export function buildMunicipalPlanTimeSeries(
   const diasMes = MODELO_PARAMS.diasOperativos / 12
 
   const diaTotalPlan = H * 365
-  const pepAlcanceHitos = hitosKpisHastaDia(HITOS_TIMELINE_SLP, diaTotalPlan, empleoBase).pepenadores
+  const pepAlcanceHitos = hitosKpisHastaDia(hitos, diaTotalPlan, empleoBase).pepenadores
   const escalaPep =
     pepAlcanceHitos > 0 ? resultados.pepenadoresFormalizados / pepAlcanceHitos : 1
 
@@ -182,7 +185,7 @@ export function buildMunicipalPlanTimeSeries(
     const empleosFormalesAcum = sample.empleosDirectosCA + empLineaRecic
 
     const diaSim = (m / totalMeses) * diaTotalPlan
-    const hitK = hitosKpisHastaDia(HITOS_TIMELINE_SLP, diaSim, empleoBase)
+    const hitK = hitosKpisHastaDia(hitos, diaSim, empleoBase)
     const pepenadoresFormalizadosAcum = Math.min(
       resultados.pepenadoresFormalizados,
       Math.max(0, hitK.pepenadores * escalaPep),
@@ -235,6 +238,7 @@ export function buildMunicipalPlanTimeSeries(
       co2eEvitadasAcumTon: co2Acum,
       ahorroSaludAcumMxN,
       cumplimientoNormativoPct,
+      rsuCapturadoPct: sample.pctCaptura,
       circularidadCompuestaPct,
     })
   }
