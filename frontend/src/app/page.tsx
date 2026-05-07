@@ -5,6 +5,8 @@ import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Recycle, BarChart2, FileText, Globe, ArrowRight } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { fmt } from '@/lib/utils'
+import { landingZmSlpIngresosBrutosAnualMXN, landingZmSlpRsuTonDiaRange } from '@/lib/landingReferenceKpis'
 
 const MODULOS: Array<{ ruta: string; Icon: LucideIcon; titulo: string; desc: string }> = [
   { ruta: '/simulator', Icon: BarChart2, titulo: 'Simulador interactivo', desc: 'Variables en tiempo real: demografía, sensibilidades, huella y lectura documental.' },
@@ -165,6 +167,9 @@ function AuthModule() {
 }
 
 export default function LandingPage() {
+  const rsuZm = landingZmSlpRsuTonDiaRange()
+  const ingresoAnual = landingZmSlpIngresosBrutosAnualMXN()
+
   return (
     <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
       {/* ── Navbar ─────────────────────────────────────────────────────── */}
@@ -195,7 +200,7 @@ export default function LandingPage() {
           </p>
 
           <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] tracking-[-0.025em] text-[#1C1B18] mb-7">
-            La Zona Metropolitana de San Luis Potosí genera 1,850 toneladas diarias de residuos sólidos urbanos; hoy, la mayor parte termina en disposición final.
+            La Zona Metropolitana de San Luis Potosí genera entre {fmt.num0(rsuZm.min)} y {fmt.num0(rsuZm.max)} toneladas diarias de residuos sólidos urbanos según el marco demográfico del simulador (población ZM de referencia × {rsuZm.kgPerCapita} kg/hab·día); hoy, la mayor parte termina en disposición final.
           </h1>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-5">
@@ -226,23 +231,27 @@ export default function LandingPage() {
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">35–40%</p>
+              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">15–40%</p>
               <p className="text-[13px] font-medium text-[#1C1B18] mb-1">menos basura al relleno</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                Con separación en 5 fracciones, más de un tercio de lo que hoy se entierra puede recuperarse, venderse o compostarse.
+                Rango según captura y pureza en el modelo; con separación en 5 fracciones buena parte de lo que hoy se entierra puede recuperarse, venderse o compostarse.
               </p>
             </div>
             <div>
-              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">$263M</p>
-              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">MXN/año de ingresos potenciales</p>
+              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">{fmt.mxnM(ingresoAnual)}</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">MXN/año (ingresos brutos modelados)</p>
               <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                Estimado para la Zona Metropolitana de SLP. Materiales separados que hoy se tiran y que el mercado de reciclaje ya paga.
+                Promedio anual con el escenario por defecto del simulador para la ZM (precios y captura de referencia; no constituye promesa de ingreso).
               </p>
             </div>
           </div>
 
+          <p className="text-[11px] text-[#A8A49C] leading-relaxed mb-6">
+            Cifras RSU e ingreso enlazadas al mismo motor que el simulador; población ZM y kg/hab·día son supuestos revisables en la aplicación.
+          </p>
+
           <p className="text-[14px] text-[#6B6760] leading-[1.7] mb-4">
-            El sistema genera el diagnóstico jurídico del municipio, la iniciativa de reforma al reglamento de limpia, el modelo de concesión para centros de acopio, el plan de implementación por fases y el reporte ejecutivo para presidencia — en minutos, no en semanas.
+            El sistema genera el diagnóstico jurídico del municipio, la iniciativa de reforma al reglamento de limpia, el modelo de concesión para centros de acopio, el plan de implementación por fases y el reporte ejecutivo para presidencia — los borradores asistidos tardan minutos de cómputo; el calendario político e institucional sigue siendo el del municipio.
           </p>
 
           <p className="text-[13px] text-[#A8A49C] leading-relaxed border-t border-[#E8E4DC] pt-5 mt-6">

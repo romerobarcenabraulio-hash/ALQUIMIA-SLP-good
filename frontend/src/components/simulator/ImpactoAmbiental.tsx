@@ -4,6 +4,7 @@ import { fmt } from '@/lib/utils'
 import { GaugeCO2 } from '@/components/charts/GaugeCO2'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { FACTORES_EMISION } from '@/lib/constants'
 
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -24,7 +25,7 @@ export function ImpactoAmbiental() {
         cuerpo="Los residuos tienen dos tipos de impacto climático: (1) el metano que generan los orgánicos al descomponerse en el relleno sanitario sin gestión, y (2) las emisiones que se evitan cuando reciclamos en lugar de producir material virgen. Ambos se suman para obtener el total de CO₂e evitadas."
         puntos={[
           'CO₂e orgánicos: vol. orgánico × factor CH₄ 0.234 m³/kg × densidad CH₄ × GWP₂₇ (IPCC AR6 2021).',
-          'CO₂e reciclables: cada tonelada de PET reciclado evita 2.5 tCO₂e de producción virgen; aluminio evita 9.0 tCO₂e/ton.',
+          `CO₂e reciclables: cada tonelada de PET reciclado evita ${FACTORES_EMISION.plastico.toFixed(2)} tCO₂e de producción virgen; aluminio evita ${FACTORES_EMISION.aluminio.toFixed(2)} tCO₂e/t (factores del motor, consistentes con EPA/IPCC).`,
           'PM2.5: se estima sobre el volumen que se deja de quemar a cielo abierto (0.0043 kg PM2.5/kg quemado).',
           'Casos IRA evitados: PM2.5 evitado × factor epidemiológico 847 casos/ton (OMS LATAM).',
           'Créditos de carbono voluntarios: al precio VCS 2024 ($5 USD/tCO₂e) o SCE México ($10–20 USD).',

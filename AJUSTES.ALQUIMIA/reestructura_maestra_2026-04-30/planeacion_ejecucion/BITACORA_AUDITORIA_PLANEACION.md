@@ -3585,3 +3585,18 @@ FASE GOV: PARCIALMENTE CERRADA
 
 — *Auditor · ALQUIMIA · Fase GOV · 2026-05-06*
 
+---
+
+## Ejecutor · cierre hallazgos DIA (landing + S15) · 2026-05-07
+
+**Mandato:** implementar en código los ajustes prioritarios del SCAN DIA (datos alineados al motor; copy sin contradicciones flagrantes).
+
+**Archivos:**
+- `frontend/src/lib/landingReferenceKpis.ts` (nuevo) — RSU t/día ZM SLP desde `ZMS` + `ESTACIONALIDAD`; ingreso anual MXN desde `calcular(SIMULATOR_STATE_DEFAULT)`.
+- `frontend/src/app/page.tsx` — H1 y KPIs usan esas funciones; rango relleno 15–40% unificado; ingreso brutos con etiqueta de escenario por defecto; nota metodológica; afirmación “minutos” acotada a cómputo vs calendario municipal.
+- `frontend/src/components/simulator/ImpactoAmbiental.tsx` — factores PET/aluminio en texto alineados a `FACTORES_EMISION` del motor.
+
+**Verificación:** `npx tsc --noEmit` en `frontend/` → exit 0.
+
+— *Ejecutor (implementación post-DIA SCAN)*
+
