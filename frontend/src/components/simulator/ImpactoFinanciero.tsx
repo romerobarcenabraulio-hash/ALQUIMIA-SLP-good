@@ -11,6 +11,7 @@ import { StressTest } from '@/components/charts/StressTest'
 import { Slider } from '@/components/ui/Slider'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 export function ImpactoFinanciero() {
   const { resultados, wacc, setWacc, tipoCambio, setTipoCambio,
@@ -56,6 +57,7 @@ export function ImpactoFinanciero() {
       />
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S14 — Impacto financiero</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Retorno, derrama y cobertura financiera</h2>
+      <ScopeAnclaKicker className="mb-3" />
 
       {/* KPIs financieros */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">

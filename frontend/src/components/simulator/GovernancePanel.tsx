@@ -4,6 +4,7 @@ import { Fragment, useMemo, useState } from 'react'
 import { evaluateGovernance } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import type { GovernanceResponse, RiesgoIdentificado } from '@/types'
 
 const FLOW = ['Entradas del modelo', 'Métricas de calidad', 'Revisión DoD', 'Score de gobernanza']
@@ -70,6 +71,7 @@ export function GovernancePanel() {
         Gobernanza del código — <span className="text-[14px] text-[#6B6760]">uso interno</span>
       </h1>
 
+      <ScopeAnclaKicker className="mt-2" />
       <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">

@@ -10,6 +10,7 @@ import {
 } from '@/data/sankeyData'
 import { getPlanTemporalStage, sankeyYearFromHorizonte } from '@/lib/municipalPlanTimeSeries'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 type SankeyChartLink = {
   source: number
@@ -188,6 +189,7 @@ export function SankeyFlujoResiduos() {
       <h2 className="font-serif text-[22px] text-[#1C1B18] mt-1 mb-1">
         Sankey: fuentes → materiales → destinos
       </h2>
+      <ScopeAnclaKicker className="mb-2" />
       <p className="font-mono text-[11px] text-[#6B6760] mb-3">
         Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación PD&amp;SA año {sankeyYear.toFixed(2)} / 5
       </p>

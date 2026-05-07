@@ -2,6 +2,7 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -24,6 +25,7 @@ export function MultiplicadoresEco() {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S16 — Multiplicadores económicos</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Derrama en la economía local</h2>
+      <ScopeAnclaKicker className="mb-2" />
       <p className="text-[13px] text-[#6B6760] mb-6">
         Cada peso de ingreso del programa activa múltiplos de valor en la economía regional.
       </p>

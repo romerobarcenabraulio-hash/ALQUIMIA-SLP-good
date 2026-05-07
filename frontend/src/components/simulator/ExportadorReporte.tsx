@@ -5,6 +5,7 @@ import { getApiUrl } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import type { ExportResponse } from '@/types'
 
 type ExportSection =
@@ -101,6 +102,7 @@ export function ExportadorReporte() {
         Exportación de reporte ejecutivo · <span className="text-[#6B6860] text-[14px]">propuesta</span>
       </h1>
 
+      <ScopeAnclaKicker className="mt-2" />
       <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">

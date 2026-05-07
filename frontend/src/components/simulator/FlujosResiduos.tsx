@@ -8,6 +8,7 @@ import type { DiagnosticoCircularidadResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { FlujosSankey, type SankeyLink, type SankeyNode } from '@/components/simulator/FlujosSankey'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const STEPS = [
   'RSU generado',
@@ -104,6 +105,7 @@ export function FlujosResiduos() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Flujos de residuos y cierre de ciclo · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
+      <ScopeAnclaKicker className="mt-2" />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {STEPS.map((step, i, arr) => (

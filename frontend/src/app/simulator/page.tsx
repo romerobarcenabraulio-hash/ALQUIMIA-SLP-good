@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { Header } from '@/components/layout/Header'
@@ -31,11 +31,16 @@ import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
+import {
+  aplicarPlaceholdersTerritorio,
+  getEtiquetaNarrativaCiudad,
+} from '@/lib/municipioMadurezContexto'
 
 function SimulatorSimulationRibbon() {
   const cityContext = useSimulatorStore(s => s.cityContext)
@@ -257,6 +262,7 @@ function MetasPlanDerivadasNotice() {
     <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Metas del plan</p>
       <h2 className="font-serif text-[22px] text-[#1C1B18]">Trayectoria materializada automáticamente</h2>
+      <ScopeAnclaKicker className="mt-2" />
       <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
         La ruta de captura anual, el despliegue de centros de acopio y los insumos financieros siguen el preset{' '}
         <span className="font-medium text-[#1C1B18]">Realista</span> del catálogo ALQUIMIA. Solo edita, en la franja global
@@ -276,8 +282,15 @@ function ModuleEmpty({ module }: { module: DecisionModule }) {
 }
 
 function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; error: string | null; cityId: string }) {
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const etiquetaTerritorio = useMemo(
+    () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
+    [municipiosActivos, zmActiva],
+  )
+
   const title = loading
-    ? 'Cargando la referencia RSU de tu ciudad'
+    ? aplicarPlaceholdersTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
     : error
       ? 'No pudimos obtener los datos de la ciudad'
       : 'Selecciona una ciudad para continuar'

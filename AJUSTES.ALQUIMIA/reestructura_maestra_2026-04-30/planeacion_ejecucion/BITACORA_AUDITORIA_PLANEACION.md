@@ -3600,3 +3600,19 @@ FASE GOV: PARCIALMENTE CERRADA
 
 — *Ejecutor (implementación post-DIA SCAN)*
 
+---
+
+## DIA / producto · Madurez municipal heterogénea · 2026-05-07
+
+**Mandato fundador:** cada municipio tiene escenario propio (norma de aseo/limpia, kg/hab·día, población de referencia, madurez en circularidad); los reglamentos en `ADENDOS: LEGAL/pdfs/reglamentos/` son ejemplos por municipio, no un único estándar metropolitano mezclado.
+
+**Implementación en código:**
+- `frontend/src/lib/municipioMadurezContexto.ts` — textos de contexto a partir de `ZMS` + `reglamentoFuentePorMunicipio`.
+- `frontend/src/components/simulator/MunicipioMadurezBanner.tsx` — aviso bajo “Ciudad primero”.
+- `frontend/src/components/simulator/SectionHero.tsx` — cinta breve según ancla(s).
+- `frontend/public/reglamentos/README.md` — sección explícita sobre madurez heterogénea.
+
+**Verificación:** `npx tsc --noEmit` en `frontend/`.
+
+— *CSA / Ejecutor · ALQUIMIA*
+

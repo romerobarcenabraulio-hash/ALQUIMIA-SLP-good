@@ -3,6 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { FlujosSankey, type SankeyNode, type SankeyLink } from '@/components/simulator/FlujosSankey'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const RECICLADORAS_SLP = [
   { nombre: 'IPSL', material: 'Papel/cartón', capacidad: '79,200 t/año', ciudad: 'SLP', tipo: 'existente' },
@@ -19,6 +20,7 @@ export function RecicladoarasSection() {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S13 — Recicladoras</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Cadena de valor del reciclaje</h2>
+      <ScopeAnclaKicker className="mb-2" />
       <p className="text-[13px] text-[#6B6760] mb-6">
         Las recicladoras existentes absorben los flujos sin CAPEX del programa.
         Nuevas plantas se activan conforme el volumen justifica la inversión privada.

@@ -6,6 +6,7 @@ import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { AccionEjecutiva, RoadmapMunicipalResponse } from '@/types'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const CAUSAL = [
   'Diagnóstico integral',
@@ -119,6 +120,7 @@ export function HojaRuta() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Hoja de ruta ejecutiva municipal · <span className="text-[14px] text-[#6B6860]">propuesta</span>
       </h1>
+      <ScopeAnclaKicker className="mt-2" />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {CAUSAL.map((step, i, arr) => (

@@ -8,6 +8,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { ZMS } from '@/lib/constants'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const DEFAULT_SOURCE = {
   source_id: 'semarnat-dbgir-generacion-percapita-mx',
@@ -70,6 +71,7 @@ export function EducacionCiudadana() {
       <div>
         <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.1 — Educación ciudadana</p>
         <h2 className="mt-2 font-serif text-[24px] text-[#1C1B18]">Calculadora doméstica de separación</h2>
+        <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
           Estima el RSU doméstico de un hogar de referencia y traduce el resultado en contenedores y hábitos sencillos. No
           incluye residuos peligrosos, especiales o regulados.
@@ -228,7 +230,8 @@ function ResultState({
       <NarrativeBridge
         kicker="S22 · Lectura ciudadana del RSU doméstico"
         variant="result"
-        summary={`Tu hogar proyectó ${total.toFixed(1)} kg en ${result.days} días (${(total / Math.max(result.days, 1)).toFixed(2)} kg/día equivalentes). La fracción dominante (${topCat.label}) concentra la mayor parte del volumen; separarla bien reduce lo que termina en disposición final y alinea tu hábito con la meta municipal de captura.`}
+        audience="citizen"
+        summary={`Tu hogar proyectó ${total.toFixed(1)} kg en ${result.days} días (${(total / Math.max(result.days, 1)).toFixed(2)} kg/día equivalentes). La fracción dominante (${topCat.label}) concentra la mayor parte del volumen; separarla bien reduce lo que termina en disposición final y alinea tu hábito con la meta municipal de captura en tu ciudad.`}
         evidence={[
           { label: 'Total periodo', value: `${total.toFixed(1)} kg` },
           { label: 'Días', value: String(result.days) },

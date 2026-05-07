@@ -12,6 +12,7 @@ import {
 } from '@/lib/portalEmpresaBasico'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import type {
   Action30_60_90,
   OrganizationalCircularityRequest,
@@ -165,6 +166,7 @@ export function PortalEmpresarial() {
       <header>
         <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">Empresa · plan operativo básico</p>
         <h1 className="mt-1 font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h1>
+        <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
           Lectura accionable alineada al escenario municipal; sin tableros analíticos extendidos.
         </p>

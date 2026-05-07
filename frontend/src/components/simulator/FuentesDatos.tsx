@@ -15,7 +15,9 @@ import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getApiUrl } from '@/lib/api'
+import { fmt } from '@/lib/utils'
 import type { FuenteStatus, FuenteTipo } from '@/types'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 // ─── Helpers de presentación ──────────────────────────────────────────────────
 
@@ -77,6 +79,7 @@ export function FuentesDatos() {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S2 — Fuentes de datos</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Trazabilidad de datos</h2>
+      <ScopeAnclaKicker className="mb-2" />
       <p className="text-[13px] text-[#6B6760] mb-1">
         Estado real de cada fuente de datos oficial. El simulador prioriza datos
         verificados y etiqueta cada cifra con su tier de confianza.

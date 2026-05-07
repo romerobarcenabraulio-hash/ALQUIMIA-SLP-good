@@ -5,6 +5,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { ZMS } from '@/lib/constants'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { getMadurezMensajeMultiAncla, getMunicipioMadurezVista, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import type { FuenteTipo, ResultadosCalculados } from '@/types'
 
 function KpiCompareRow({
@@ -75,12 +76,14 @@ function compareEmpleos(r: ResultadosCalculados, b: ResultadosCalculados | null)
 
 export function SectionHero() {
   const audience = useSimulatorStore(s => s.audience)
-  const { resultados, resultadosSinPrograma, zmActiva, snapshotDatos, horizonte } = useSimulatorStore()
+  const { resultados, resultadosSinPrograma, zmActiva, snapshotDatos, horizonte, municipiosActivos } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)
 
   // Provenance de los KPIs del header — viene del snapshot cuando disponible
   const pobKpi  = snapshotDatos?.kpis.find(k => k.kpi_id === 'poblacion_total')
   const genKpi  = snapshotDatos?.kpis.find(k => k.kpi_id === 'gen_percapita_kg_dia')
+  const madurezUnMunicipio =
+    municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
 
   return (
     <div>
@@ -95,15 +98,32 @@ export function SectionHero() {
       )}
       <h1 className="font-serif text-[38px] leading-[1.05] tracking-[-0.02em] text-[#1C1B18] mb-4 max-w-2xl">
         Transforma los residuos de{' '}
-        <span className="text-[#3B6D11]">{zm?.nombre ?? 'tu ciudad'}</span>{' '}
+        <span className="text-[#3B6D11]">{getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)}</span>{' '}
         en un motor económico
       </h1>
-      <p className="text-[15px] text-[#6B6760] max-w-2xl mb-8 leading-relaxed">
+      <p className="text-[15px] text-[#6B6760] max-w-2xl mb-4 leading-relaxed">
         El simulador ALQUIMIA calcula en tiempo real el impacto financiero, ambiental y social
         de un programa de valorización de RSU. Configura tu escenario, observa los números cambiar
         y avanza módulo a módulo en un paquete de trabajo consultivo: la profundidad de la entrega
         depende de los módulos y validaciones que completes.
       </p>
+      {madurezUnMunicipio && (
+        <p className="text-[12px] text-[#5A6347] max-w-2xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
+          Cada municipio es un escenario distinto: reglamento de aseo/limpia, supuestos de generación (kg/hab·día) y madurez en
+          circularidad no se transfieren mecánicamente entre ayuntamientos. El ancla activa es{' '}
+          <strong className="font-medium text-[#2D5409]">{madurezUnMunicipio.nombre}</strong>.
+        </p>
+      )}
+      {municipiosActivos.length > 1 && (
+        <p className="text-[12px] text-[#5A6347] max-w-2xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
+          {getMadurezMensajeMultiAncla(municipiosActivos.length)}
+        </p>
+      )}
+      {municipiosActivos.length === 0 && (
+        <p className="text-[12px] text-[#8A857C] max-w-2xl mb-6 leading-relaxed">
+          Define el municipio o conjunto municipal en “Ciudad primero” para anclar reglamento y parámetros; hasta entonces los KPIs son de ZM agregada.
+        </p>
+      )}
 
       {/* Métricas globales */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

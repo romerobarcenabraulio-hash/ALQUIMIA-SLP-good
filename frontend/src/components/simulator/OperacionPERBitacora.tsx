@@ -7,6 +7,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import type { PerOperationsPlan, PerPlanRequest } from '@/types'
 import { EditorialTimeline, type TimelineMilestone } from '@/components/simulator/EditorialTimeline'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const SOURCE = {
   source_id: 'alquimia-12-3-per-ui',
@@ -95,6 +96,7 @@ export function OperacionPERBitacora() {
       <div>
         <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.3 — Operación PER y bitácora</p>
         <h2 className="mt-2 font-serif text-[24px] text-[#1C1B18]">Operación mensual por ruta</h2>
+        <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
           PER explica presión, estado y respuesta de rutas RSU municipales con bitácora y evidencia operativa.
         </p>

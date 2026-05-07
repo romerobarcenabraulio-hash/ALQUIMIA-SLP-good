@@ -5,6 +5,7 @@ import { getDashboardSummary } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import type { DashboardResponse, KPIIndicador } from '@/types'
 
 const STEPS = ['Datos de entrada', 'Cálculo de score', 'KPIs por área', 'Alertas y próximas acciones']
@@ -99,6 +100,7 @@ export function DashboardKPIs() {
         Panel de indicadores municipales · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
 
+      <ScopeAnclaKicker className="mt-2" />
       <AvisoMunicipioAncla ids={municipiosActivos} />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">

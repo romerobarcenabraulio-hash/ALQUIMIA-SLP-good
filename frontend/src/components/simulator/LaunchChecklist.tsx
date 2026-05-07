@@ -3,6 +3,7 @@
 import { Fragment, useEffect, useMemo, useState } from 'react'
 import { getLaunchChecklist } from '@/lib/api'
 import type { ChecklistItem, LaunchChecklistResponse } from '@/types'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const FLOW = ['Verificar calidad', 'Verificar seguridad', 'Verificar infraestructura', 'Confirmar lanzamiento']
 
@@ -65,6 +66,8 @@ export function LaunchChecklist() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Checklist de lanzamiento · <span className="text-[14px] text-[#6B6860]">interno</span>
       </h1>
+
+      <ScopeAnclaKicker className="mt-2" variant="muted" />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {FLOW.map((step, i, arr) => (

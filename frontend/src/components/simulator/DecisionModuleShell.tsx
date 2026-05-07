@@ -7,6 +7,7 @@ import { cn } from '@/lib/utils'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { CitizenPreviewPanel } from '@/components/simulator/CitizenPreviewPanel'
 import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
 import type { DecisionModule, PortalEntry } from '@/types'
@@ -64,6 +65,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
                   : 'Ciudadania / plan de ciudad (portal tecnico)'}
           . Cada modulo resume decision, dato que sostiene la conclusion y siguiente paso recomendado.
         </p>
+        <ScopeAnclaKicker className="mt-3 border-l-[3px] border-[#8CAA7A] pl-3" />
       </div>
 
       {audienceSelected === 'functionary' && (

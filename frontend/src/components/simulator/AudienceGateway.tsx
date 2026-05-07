@@ -8,12 +8,16 @@
  * PortalEntry backend sin tocar el contrato actual.
  */
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { ArrowRight, Briefcase, HeartHandshake, Landmark } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { Audience } from '@/types'
 import { cn } from '@/lib/utils'
+import {
+  aplicarPlaceholdersTerritorio,
+  getEtiquetaNarrativaCiudad,
+} from '@/lib/municipioMadurezContexto'
 
 type AudienceCard = {
   id: Audience
@@ -57,7 +61,18 @@ const CARDS: AudienceCard[] = [
 
 export function AudienceGateway() {
   const setAudience = useSimulatorStore(s => s.setAudience)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const [submitting, setSubmitting] = useState<Audience | null>(null)
+
+  const citizenModules = useMemo(() => {
+    const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+    return [
+      aplicarPlaceholdersTerritorio('Baseline RSU de tu ciudad', etiqueta),
+      'Composición y vivienda',
+      'Huella ambiental personal',
+    ]
+  }, [municipiosActivos, zmActiva])
 
   async function handleSelect(audience: Audience) {
     if (submitting) return
@@ -93,6 +108,7 @@ export function AudienceGateway() {
         {CARDS.map(card => {
           const Icon = card.icon
           const isLoading = submitting === card.id
+          const modulesList = card.id === 'citizen' ? citizenModules : card.modules
           return (
             <article
               key={card.id}
@@ -113,7 +129,7 @@ export function AudienceGateway() {
                 {card.promise}
               </p>
               <ul className="mt-4 space-y-1.5 text-[12px] text-[#6B6760]">
-                {card.modules.map(m => (
+                {modulesList.map(m => (
                   <li key={m} className="flex items-start gap-2">
                     <span className="mt-[6px] inline-block h-[5px] w-[5px] flex-none rounded-full bg-[#3B6D11]" aria-hidden />
                     <span>{m}</span>

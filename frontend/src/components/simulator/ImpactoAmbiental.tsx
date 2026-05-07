@@ -5,6 +5,7 @@ import { GaugeCO2 } from '@/components/charts/GaugeCO2'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 import { FACTORES_EMISION } from '@/lib/constants'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -18,6 +19,7 @@ export function ImpactoAmbiental() {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S15 — Impacto ambiental</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Planeta y salud pública</h2>
+      <ScopeAnclaKicker className="mb-3" />
 
       <ContextoModulo
         variante="ambiental"

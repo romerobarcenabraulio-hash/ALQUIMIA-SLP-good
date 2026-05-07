@@ -10,6 +10,13 @@
 - **ZM:** `MTY` zona metropolitana Monterrey, `SLP` San Luis Potosí, `QRO` Querétaro, `EXT` fuera del modelo del simulador pero usado en pilots / convenios.
 - **municipio_id:** coincide con `frontend/src/lib/constants.ts` (`mty`, `gua`, `qro`, …).
 
+## Madurez en circularidad y ordenamiento — municipio por municipio
+
+En ALQUIMIA **no** se asume que todos los ayuntamientos comparten el mismo “piso” normativo ni el mismo punto de partida operativo en separación y mercados. Cada fila del catálogo `REGLAMENTOS_FUENTE` y cada espejo bajo `ADENDOS: LEGAL/pdfs/reglamentos/` refuerza que el **reglamento de aseo público / limpia** (u instrumento sustituto) es **propio del municipio**. La UI del simulador (`MunicipioMadurezBanner`, `SectionHero`) enlaza ese principio con los supuestos del modelo (`kg/hab·día`, población municipal en `constants.ts`).
+
+- **Proyectos simulados** no son plantillas intercambiables: al cambiar la ancla municipal cambian baseline, Marco Legal, exportables y, en muchos casos, el riesgo de calidad documental.
+- **Varios municipios en programa:** el mensaje multi-ancla recuerda revisar cada reglamento y cada línea de captura; las APIs que reciben un solo `municipio_id` usan la ancla acordada (véase `AvisoMunicipioAncla`).
+
 ## Dónde anclar adendo / derogación (agente legal)
 
 En instrumentos tipo reglamento mexicanos, suele ubicarse al final:

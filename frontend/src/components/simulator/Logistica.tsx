@@ -3,6 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt, MATERIAL_LABELS } from '@/lib/utils'
 import { MESES } from '@/lib/utils'
 import { ESTACIONALIDAD } from '@/lib/constants'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function Logistica() {
@@ -17,7 +18,8 @@ export function Logistica() {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S11 — Logística</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Recolección y transporte</h2>
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Recolección y transporte</h2>
+      <ScopeAnclaKicker className="mb-4" />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">

@@ -3,6 +3,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
 import { cn } from '@/lib/utils'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 export type MarcoLegalMode = 'citizen' | 'functionary'
 
@@ -21,6 +22,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
       <div>
         <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.5 — Marco legal (vista ciudadana)</p>
         <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Leyes locales y programa de limpia</h2>
+        <ScopeAnclaKicker className="mb-3" />
         <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl leading-relaxed">
           Cada municipio opera su propio reglamento de limpia. La zona metropolitana coordina —no sustituye al ayuntamiento.
           Lo que lees aquí resume el marco local en lenguaje claro.
@@ -71,6 +73,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S4.5 — Marco legal y reforma reglamentaria</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Reforma reglamentaria</h2>
+      <ScopeAnclaKicker className="mb-3 max-w-2xl" />
       <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl">
         ALQUIMIA no emite dictamen legal ni aprueba reformas. Lo que genera es el expediente técnico de respaldo — el mismo que un equipo jurídico municipal necesita para redactar la iniciativa y presentarla ante Cabildo.
       </p>

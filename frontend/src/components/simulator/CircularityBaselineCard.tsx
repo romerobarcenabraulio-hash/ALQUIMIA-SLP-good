@@ -4,6 +4,7 @@ import { useMemo } from 'react'
 import { BookOpenCheck, Database, HelpCircle } from 'lucide-react'
 import { getProgramPopulationShare } from '@/lib/zmPopulationScale'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 /** Texto institucional fijo — encaja con modelo 10.1 y con el enfoque LGPGIR de valorización y gestión integral (no es definición jurídica única). */
 const CIRCULARIDAD_DEFINITION =
@@ -36,6 +37,7 @@ export function CircularityBaselineCard() {
       <h2 id="baseline-title" className="font-serif text-[24px] text-[#1C1B18] mb-2">
         Circularidad municipal del RSU (referencia inicial)
       </h2>
+      <ScopeAnclaKicker className="mb-3" />
 
       <div className="mb-4 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-4 py-3">
         <p className="inline-flex items-start gap-2 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">

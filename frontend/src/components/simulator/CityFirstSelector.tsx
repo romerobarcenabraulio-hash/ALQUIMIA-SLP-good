@@ -7,6 +7,7 @@ import { ZMS } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import type { CityOption, EstadoMxOption, MunicipioContext, MunicipioMxApi } from '@/types'
+import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
 
 export function CityFirstSelector() {
   const {
@@ -237,6 +238,8 @@ export function CityFirstSelector() {
           </div>
         </div>
       )}
+
+      {zm && municipiosActivos.length > 0 && <MunicipioMadurezBanner municipiosActivos={municipiosActivos} />}
 
       {cityContextLoading && (
         <p className="mt-3 text-[12px] text-[#8A857C]">Cargando contexto de la ciudad...</p>

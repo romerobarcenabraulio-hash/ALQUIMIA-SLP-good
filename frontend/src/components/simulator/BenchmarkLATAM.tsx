@@ -1,7 +1,9 @@
 'use client'
+import { useMemo } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EditorialTimeline, type TimelineMilestone } from '@/components/simulator/EditorialTimeline'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { aplicarPlaceholdersTerritorio, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 
 const HITOS: Array<{ ciudad: string; año: number; evento: string; tone: 'neutral' | 'positive' | 'warning' }> = [
   { ciudad: 'Curitiba', año: 2000, evento: 'Programa Câmbio Verde iniciado', tone: 'neutral' },
@@ -20,6 +22,7 @@ const PEER_BENCHMARK = [
 
 export function BenchmarkLATAM() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const horizon = useSimulatorStore(s => s.horizonte)
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
   const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
@@ -52,6 +55,11 @@ export function BenchmarkLATAM() {
   const deltaVsAvgAño5 = localCircularityPct - avgAño5
   const deltaVsCuritibaAño5 = localCircularityPct - curitiba.año5Pct
 
+  const tituloTimeline = useMemo(() => {
+    const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+    return aplicarPlaceholdersTerritorio('De Curitiba a tu ciudad', etiqueta)
+  }, [municipiosActivos, zmActiva])
+
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S18 — Benchmark LATAM</p>
@@ -62,7 +70,7 @@ export function BenchmarkLATAM() {
 
       <EditorialTimeline
         kicker="S22 · Línea de tiempo regional"
-        title="De Curitiba a tu ciudad"
+        title={tituloTimeline}
         milestones={milestones}
       />
 

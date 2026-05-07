@@ -5,6 +5,7 @@ import { evaluateAlerts } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { Alerta, AlertasResponse } from '@/types'
 import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
+import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const FLOW = [
   'Indicadores de entrada',
@@ -16,7 +17,8 @@ const FLOW = [
 const LEVEL_ORDER = ['critica', 'alta', 'media', 'info'] as const
 
 export function AlertasPanel() {
-  const municipio = useSimulatorStore(s => s.municipiosActivos[0] ?? '')
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const municipio = municipiosActivos[0] ?? ''
   const resultados = useSimulatorStore(s => s.resultados)
   const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
   const genCount = useSimulatorStore(s => s.macroImpactSummary?.generators_count ?? 0)
@@ -114,6 +116,8 @@ export function AlertasPanel() {
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
         Panel de alertas municipales · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
+
+      <ScopeAnclaKicker className="mt-2" />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {FLOW.map((step, i, arr) => (

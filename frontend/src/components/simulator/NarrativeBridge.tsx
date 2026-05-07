@@ -18,6 +18,10 @@ import { ArrowRight, Info, Sparkles, TriangleAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getNarrativaIntro, resolveCitizenNarrativaContext } from '@/lib/narrativaIntro'
+import {
+  aplicarPlaceholdersTerritorio,
+  getEtiquetaNarrativaCiudad,
+} from '@/lib/municipioMadurezContexto'
 
 export type NarrativeBridgeVariant = 'result' | 'warning' | 'bridge'
 
@@ -49,6 +53,11 @@ export interface NarrativeBridgeProps {
   source?: NarrativeBridgeSource
   audience?: 'citizen' | 'functionary' | 'entrepreneur'
   className?: string
+  /**
+   * Sustituye en `title` y `summary` marcadores como «tu ciudad» (y «tu municipio» si hay un solo municipio en programa).
+   * Por defecto: activo cuando `audience === 'citizen'`.
+   */
+  personalizarTerritorioEnCopy?: boolean
 }
 
 const VARIANT_STYLES: Record<NarrativeBridgeVariant, { container: string; kicker: string; icon: ReactNode }> = {
@@ -79,8 +88,27 @@ export function NarrativeBridge({
   source,
   audience,
   className,
+  personalizarTerritorioEnCopy,
 }: NarrativeBridgeProps) {
   const styles = VARIANT_STYLES[variant]
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+
+  const personalizar = personalizarTerritorioEnCopy ?? audience === 'citizen'
+  const unSoloMunicipio = municipiosActivos.filter(Boolean).length === 1
+
+  const { titleShown, summaryShown } = useMemo(() => {
+    if (!personalizar) {
+      return { titleShown: title, summaryShown: summary }
+    }
+    const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+    const opts = { unSoloMunicipioEnPrograma: unSoloMunicipio }
+    return {
+      titleShown: title ? aplicarPlaceholdersTerritorio(title, etiqueta, opts) : title,
+      summaryShown: aplicarPlaceholdersTerritorio(summary, etiqueta, opts),
+    }
+  }, [personalizar, title, summary, municipiosActivos, zmActiva, unSoloMunicipio])
+
   return (
     <aside
       className={cn(
@@ -95,13 +123,13 @@ export function NarrativeBridge({
         {styles.icon}
         <p className={cn('text-[10px] uppercase tracking-[0.14em]', styles.kicker)}>{kicker}</p>
       </div>
-      {title && (
-        <h3 className="mt-2 font-serif text-[20px] leading-tight text-[#1C1B18]">{title}</h3>
+      {titleShown && (
+        <h3 className="mt-2 font-serif text-[20px] leading-tight text-[#1C1B18]">{titleShown}</h3>
       )}
       {(() => {
-        const parts = summary.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+        const parts = summaryShown.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
         if (parts.length <= 1) {
-          return <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{summary}</p>
+          return <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{summaryShown}</p>
         }
         return (
           <div className="mt-2 space-y-3">
