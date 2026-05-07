@@ -5,7 +5,7 @@ Dispara el motor ÁGORA en background y retorna progress via SSE o polling.
 Fase 3C: persiste PackageRecord tras completar, expone endpoints de consulta,
 manifest y descarga directa como ZIP.
 """
-from fastapi import APIRouter, Depends, BackgroundTasks
+from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import StreamingResponse, Response
 from typing import Dict
 import asyncio
@@ -13,7 +13,6 @@ import json
 import logging
 import uuid
 
-from app.routers.auth import get_current_user, UserInfo
 from app.agents.agora import run_agora, PlanInput
 from app.schemas.generate_plan import GeneratePlanRequest  # schema separado de auth
 from app.legal.diagnostic import build_diagnostic
@@ -29,7 +28,6 @@ jobs: Dict[str, dict] = {}
 async def trigger_plan(
     request: GeneratePlanRequest,
     background_tasks: BackgroundTasks,
-    current_user: UserInfo = Depends(get_current_user),
 ):
     # ── Gate jurídico — checa TODOS los municipios activos ───────────────────
     # Principio: Una ZM no es un municipio. Cada municipio tiene su propio
@@ -175,7 +173,6 @@ async def trigger_plan(
 @router.get("/plan/{job_id}")
 async def get_plan_status(
     job_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     if job_id not in jobs:
         from fastapi import HTTPException
@@ -205,7 +202,6 @@ async def stream_plan_progress(job_id: str):
 @router.get("/plan/{package_id}/manifest")
 async def get_package_manifest(
     package_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     """
     Retorna el manifest.json del paquete generado.
@@ -226,7 +222,6 @@ async def get_package_manifest(
 @router.get("/plan/{package_id}/download")
 async def download_package(
     package_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     """
     Descarga el paquete documental como package.zip.
@@ -261,7 +256,6 @@ async def download_package(
 @router.get("/plan/{package_id}/assets")
 async def get_package_assets(
     package_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     """
     Lista los archivos descargables del paquete.
@@ -325,7 +319,6 @@ async def get_package_assets(
 async def render_professional(
     package_id: str,
     payload: dict = {},
-    _user: UserInfo = Depends(get_current_user),
 ):
     """
     Dispara el pipeline de exportación profesional para el paquete.
@@ -371,7 +364,6 @@ async def render_professional(
 @router.get("/plan/{package_id}/render-report")
 async def get_render_report_endpoint(
     package_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     """Retorna el render_report.json del paquete profesional."""
     from fastapi import HTTPException
@@ -389,7 +381,6 @@ async def get_render_report_endpoint(
 @router.get("/plan/{package_id}/download-professional")
 async def download_professional_package(
     package_id: str,
-    _user: UserInfo = Depends(get_current_user),
 ):
     """
     Descarga el professional_package.zip con DOCX/XLSX/PDF + manifest + render_report.

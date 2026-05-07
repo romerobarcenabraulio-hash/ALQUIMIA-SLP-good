@@ -6,7 +6,6 @@ import { getCityOptions, getEstadosMx, getMunicipiosMx } from '@/lib/api'
 import { ZMS } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
-import { SIMULATION_CONTEXT_TEASER } from '@/lib/simulationDisclaimer'
 import type { CityOption, EstadoMxOption, MunicipioContext, MunicipioMxApi } from '@/types'
 
 export function CityFirstSelector() {
@@ -240,32 +239,7 @@ export function CityFirstSelector() {
       )}
 
       {cityContextLoading && (
-        <p className="mt-3 text-[12px] text-[#8A857C]">Hidratando CityContext e invalidando baseline anterior...</p>
-      )}
-
-      {!cityContextLoading && cityContext && (
-        <div className="mt-4 rounded-[8px] border-2 border-[#D4881E]/40 bg-[#FDFCFA] p-4">
-          <p className="text-[13px] font-semibold uppercase tracking-[0.04em] text-[#1C1B18]">
-            Aviso legal · simulación
-          </p>
-          <p className="mt-1 text-[12px] text-[#6B6760]">{cityContext.nombre}</p>
-          <p className="mt-2 text-[12px] font-medium leading-snug text-[#1C1B18]">{SIMULATION_CONTEXT_TEASER}</p>
-          <p className="mt-1 text-[11px] text-[#8A857C]">
-            El párrafo largo aparece también en la cinta de simulación al inicio del módulo.
-          </p>
-          <div className="mt-3 border-t border-[#E8E4DC] pt-3 space-y-2">
-            <p className="text-[12px] leading-relaxed text-[#6B6760]">
-              — <strong className="text-[#1C1B18]">Context API:</strong>{' '}
-              {cityContext.legal_notice}
-            </p>
-            <p className="font-mono text-[10px] text-[#8A857C]" title={cityContext.catalog_simulation_epoch}>
-              Época catálogo semilla · <strong className="text-[#6B6760]">{cityContext.catalog_simulation_epoch}</strong>
-            </p>
-          </div>
-          <p className="mt-3 text-[11px] text-[#8A857C]">
-            Municipios listados en contexto: elija el ámbito operativo con los botones «ZM completa» o «solo este municipio» arriba.
-          </p>
-        </div>
+        <p className="mt-3 text-[12px] text-[#8A857C]">Cargando contexto de la ciudad...</p>
       )}
 
       {!cityContextLoading && portalError && (
