@@ -1,19 +1,85 @@
 'use client'
 
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import { Download } from 'lucide-react'
 import { getOrganizationalAssessment } from '@/lib/api'
 import { getZmRecord } from '@/lib/zmPopulationScale'
+import {
+  CHECKLIST_FALLBACK_POR_GIRO,
+  GIRO_OPCIONES,
+  etiquetaGiro,
+  variablesDefaultGiro,
+} from '@/lib/portalEmpresaBasico'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
-import type { OrganizationalCircularityRequest, OrganizationalCircularityResponse } from '@/types'
+import { fmt } from '@/lib/utils'
+import type {
+  Action30_60_90,
+  OrganizationalCircularityRequest,
+  OrganizationalCircularityResponse,
+  OrganizationActivityType,
+} from '@/types'
 
-const CAUSAL_STEPS = [
-  'Tipo de actividad',
-  'Flujos RSU/no-RSU',
-  'Plan de contenedores',
-  'Acciones 30/60/90',
-  'Proveedor / validación',
-]
+function plazoTexto(p: Action30_60_90['plazo']): string {
+  switch (p) {
+    case '30_dias':
+      return '30 días'
+    case '60_dias':
+      return '60 días'
+    case '90_dias':
+      return '90 días'
+    default:
+      return p
+  }
+}
+
+function accionesToStrings(actions: Action30_60_90[]): string[] {
+  return actions.map(a => `${plazoTexto(a.plazo)} — ${a.accion}`)
+}
+
+function buildChecklistItems(
+  giro: OrganizationActivityType,
+  result: OrganizationalCircularityResponse | null,
+): string[] {
+  const fromApi = result ? accionesToStrings(result.acciones_30_60_90) : []
+  const fallback = CHECKLIST_FALLBACK_POR_GIRO[giro] ?? CHECKLIST_FALLBACK_POR_GIRO.empresa
+  const merged: string[] = []
+  const seen = new Set<string>()
+  for (const s of [...fromApi, ...fallback]) {
+    const k = s.trim()
+    if (!k || seen.has(k)) continue
+    seen.add(k)
+    merged.push(k)
+    if (merged.length >= 8) break
+  }
+  return merged
+}
+
+function useTresKpisPlan() {
+  const resultados = useSimulatorStore(s => s.resultados)
+  const horizonte = useSimulatorStore(s => s.horizonte)
+  const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
+
+  return useMemo(() => {
+    if (!resultados) {
+      return {
+        pctSeparacion: null as number | null,
+        reduccionRellenoPct: null as number | null,
+        ahorroMxn: null as number | null,
+      }
+    }
+    const idx = Math.max(0, Math.min(pctCapturaPorAño.length - 1, horizonte - 1))
+    const pctSeparacion = pctCapturaPorAño[idx] ?? pctCapturaPorAño[pctCapturaPorAño.length - 1] ?? 0
+    const ultimo = resultados.serieAnual[resultados.serieAnual.length - 1]
+    const volCaptDia = ultimo
+      ? Object.values(ultimo.volTonDia).reduce((s, v) => s + (v ?? 0), 0)
+      : 0
+    const rsuDia = resultados.rsuTotalTonDia
+    const reduccionRellenoPct =
+      rsuDia > 0 ? Math.min(100, Math.max(0, Math.round((volCaptDia / rsuDia) * 100))) : 0
+    const ahorroMxn = resultados.ahorroDisposicion
+    return { pctSeparacion, reduccionRellenoPct, ahorroMxn }
+  }, [resultados, horizonte, pctCapturaPorAño])
+}
 
 export function PortalEmpresarial() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -21,10 +87,13 @@ export function PortalEmpresarial() {
   const resultados = useSimulatorStore(s => s.resultados)
   const municipioId = municipiosActivos[0] ?? ''
 
+  const [giro, setGiro] = useState<OrganizationActivityType>('empresa')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<OrganizationalCircularityResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<OrganizationalCircularityRequest | null>(null)
+
+  const kpis = useTresKpisPlan()
 
   const payload = useMemo((): OrganizationalCircularityRequest | null => {
     if (!municipioId || !resultados) return null
@@ -35,13 +104,13 @@ export function PortalEmpresarial() {
     const empleados = Math.max(40, Math.round(resultados.empleosTotalesDirectos || 120))
     return {
       organization_id: `plan-global-${municipioId}`,
-      tipo_actividad: 'empresa',
+      tipo_actividad: giro,
       municipio_id: municipioId,
       nombre,
       empleados,
-      variables: { turnos: 1, residuos_mixtos: false },
+      variables: variablesDefaultGiro(giro),
     }
-  }, [municipioId, resultados, zmActiva])
+  }, [municipioId, resultados, zmActiva, giro])
 
   const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
 
@@ -87,54 +156,69 @@ export function PortalEmpresarial() {
     }
   }
 
+  const checklistItems = useMemo(() => buildChecklistItems(giro, result), [giro, result])
+
   const isEmpty = !loading && !error && !result && payload === null
 
   return (
-    <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
-      <div>
-        <h1 className="font-serif text-[24px] text-[#1C1B18]">Evaluación de circularidad organizacional · propuesta</h1>
-        <p className="mt-2 inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-[11px] text-amber-900">
-          Orientación no oficial — requiere validación municipal
+    <section className="space-y-5 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5 shadow-[0_1px_0_rgba(28,27,24,0.03)]">
+      <header>
+        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">Empresa · plan operativo básico</p>
+        <h1 className="mt-1 font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h1>
+        <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+          Lectura accionable alineada al escenario municipal; sin tableros analíticos extendidos.
         </p>
-        <div className="mt-3 flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
-          {CAUSAL_STEPS.map((step, i, arr) => (
-            <Fragment key={step}>
-              <span className="rounded bg-[#F0EDE5] px-2 py-0.5">{step}</span>
-              {i < arr.length - 1 && <span className="text-[#A8A49C]">→</span>}
-            </Fragment>
+        <p className="mt-3 text-[10px] leading-snug text-[#8A857C]">
+          Módulo básico de transición. Plataforma empresarial avanzada se desarrolla aparte.
+        </p>
+      </header>
+
+      <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3">
+        <label htmlFor="empresa-giro" className="text-[11px] font-medium uppercase tracking-[0.06em] text-[#A8A49C]">
+          Giro seleccionado
+        </label>
+        <select
+          id="empresa-giro"
+          value={giro}
+          onChange={e => setGiro(e.target.value as OrganizationActivityType)}
+          className="mt-2 w-full max-w-md rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 text-[13px] text-[#1C1B18]"
+        >
+          {GIRO_OPCIONES.map(o => (
+            <option key={o.value} value={o.value}>
+              {o.label}
+            </option>
           ))}
-        </div>
-        <aside className="mt-4 rounded-[12px] border border-[#C9DDB1] bg-[#F7FAF3] px-3 py-3 text-[12px] leading-relaxed text-[#3F4D38]">
-          <p className="font-medium text-[#23470A]">Reforma en modelo ALQUIMIA (predios y empresas)</p>
-          <ul className="mt-2 list-disc space-y-1 pl-4 marker:text-[#3B6D11]">
-            <li>
-              <strong>Predios:</strong> acopio de RSU o microrvertedero sin permiso municipal equivaldría a operación tipo
-              Centro de Acopio clandestino; la propuesta normativa prevé orden de saneamiento y sanciones al titular.
-            </li>
-            <li>
-              <strong>Empresas y grandes generadores:</strong> declaración o registro anual de corrientes y volúmenes,
-              alineado al mismo tipo de información que exige el permiso de Centro de Acopio — este portal ayuda a
-              dimensionar flujos; el trámite oficial sigue siendo competencia del municipio.
-            </li>
-          </ul>
-        </aside>
+        </select>
+        <p className="mt-2 text-[11px] text-[#8A857C]">
+          Municipio de anclaje: <span className="font-mono text-[#6B6760]">{municipioId || '—'}</span>
+        </p>
       </div>
 
-      <ParamsLockedNotice />
-      {payload && (
-        <p className="text-[11px] text-[#8A857C]">
-          Vista modelo <span className="font-medium text-[#6B6760]">empresa institucional</span> enlazada a municipio{' '}
-          <span className="font-mono">{municipioId}</span> y RSU total del plan global.
-        </p>
-      )}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <KpiTile
+          label="% separación objetivo (plan)"
+          value={kpis.pctSeparacion != null ? `${Math.round(kpis.pctSeparacion)}%` : '—'}
+          hint="Último año del horizonte en el simulador."
+        />
+        <KpiTile
+          label="Reducción a relleno (modelo)"
+          value={kpis.reduccionRellenoPct != null ? `${kpis.reduccionRellenoPct}%` : '—'}
+          hint="Captura modelada vs. generación diaria RSU."
+        />
+        <KpiTile
+          label="Ahorro estimado disposición"
+          value={kpis.ahorroMxn != null ? fmt.mxnM(kpis.ahorroMxn) : '—'}
+          hint="Suma del escenario (simulación)."
+        />
+      </div>
 
       {!loading && error && lastPayload && (
         <button
           type="button"
           onClick={() => void runAssessment(lastPayload)}
-          className="rounded-lg border border-[#E8E4DC] px-4 py-2 text-[12px] text-[#1C1B18]"
+          className="rounded-[8px] border border-[#E8E4DC] bg-white px-4 py-2 text-[12px] text-[#1C1B18]"
         >
-          Reintentar
+          Reintentar evaluación
         </button>
       )}
 
@@ -142,41 +226,70 @@ export function PortalEmpresarial() {
       {isEmpty && <EmptyState />}
       {!loading && error && !isEmpty && <ErrorState message={error ?? ''} />}
       {!loading && result?.status === 'blocked' && <BlockedState result={result} />}
-      {!loading && result && result.status !== 'blocked' && <ReadyState result={result} />}
+      {!loading && result && result.status !== 'blocked' && (
+        <ReadyBasico
+          giro={giro}
+          checklistItems={checklistItems}
+          warnings={result.warnings}
+          proveedor={result.proveedor_ambiental_requerido}
+        />
+      )}
+
+      <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-4">
+        <p className="text-[12px] font-medium text-[#1C1B18]">Siguiente paso</p>
+        <p className="mt-1 text-[11px] text-[#6B6760]">
+          El borrador descargable incluye anexos del simulador municipal. Avance al módulo de exportación o use el vínculo
+          directo.
+        </p>
+        <a
+          href="#sim-export-empresa-plan"
+          className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1C1B18] bg-[#1C1B18] px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#3B6D11] hover:border-[#3B6D11]"
+        >
+          <Download className="h-4 w-4" aria-hidden />
+          Descargar plan por giro (borrador operativo)
+        </a>
+      </div>
+
+      <p className="text-[10px] text-[#A8A49C]">
+        Módulo básico de transición. Plataforma empresarial avanzada se desarrolla aparte.
+      </p>
     </section>
+  )
+}
+
+function KpiTile({ label, value, hint }: { label: string; value: string; hint: string }) {
+  return (
+    <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
+      <p className="mt-1 font-mono text-[20px] font-semibold text-[#1C1B18]">{value}</p>
+      <p className="mt-1 text-[10px] leading-snug text-[#8A857C]">{hint}</p>
+    </div>
   )
 }
 
 function LoadingState() {
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-      {Array.from({ length: 3 }).map((_, i) => (
-        <div key={i} className="animate-pulse rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-          <div className="h-3 w-3/4 rounded bg-[#E8E4DC]" />
-          <div className="mt-2 h-3 w-1/2 rounded bg-[#E8E4DC]" />
-          <div className="mt-2 h-3 w-5/6 rounded bg-[#E8E4DC]" />
-        </div>
-      ))}
+    <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-4 text-[13px] text-[#6B6760]">
+      Generando lectura operativa para <span className="font-medium text-[#1C1B18]">giro</span> seleccionado…
     </div>
   )
 }
 
 function EmptyState() {
   return (
-    <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-      Completa los resultados del simulador principal (municipio, horizonte, generación per cápita) para derivar esta
-      evaluación.
+    <div className="rounded-[10px] border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
+      Completa el simulador principal (municipio y resultados RSU) para enlazar este plan por giro.
     </div>
   )
 }
 
 function ErrorState({ message }: { message: string }) {
-  return <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-[13px] text-red-800">{message}</div>
+  return <div className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-[13px] text-red-800">{message}</div>
 }
 
 function BlockedState({ result }: { result: OrganizationalCircularityResponse }) {
   return (
-    <div className="rounded-lg border border-amber-300 bg-amber-50 p-4">
+    <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-4">
       <p className="text-[12px] font-semibold text-amber-900">Evaluación bloqueada</p>
       {result.blockers.map(b => (
         <p key={b} className="mt-1 text-[12px] text-amber-800">
@@ -188,86 +301,55 @@ function BlockedState({ result }: { result: OrganizationalCircularityResponse })
   )
 }
 
-function ReadyState({ result }: { result: OrganizationalCircularityResponse }) {
-  const isWarning = result.status === 'warning' || result.warnings.length > 0
+function ReadyBasico({
+  giro,
+  checklistItems,
+  warnings,
+  proveedor,
+}: {
+  giro: OrganizationActivityType
+  checklistItems: string[]
+  warnings: string[]
+  proveedor: boolean
+}) {
+  const [done, setDone] = useState<Record<number, boolean>>({})
+
   return (
     <div className="space-y-4">
-      {isWarning && (
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-          {result.warnings.map(w => (
+      {warnings.length > 0 && (
+        <div className="rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
+          {warnings.map(w => (
             <p key={w}>{w}</p>
           ))}
         </div>
       )}
 
-      {result.proveedor_ambiental_requerido && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-[12px] text-amber-900">
-          Esta organización requiere proveedor ambiental autorizado para residuos no-RSU. ALQUIMIA no gestiona su contratación.
+      {proveedor && (
+        <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-3 text-[12px] text-amber-900">
+          Puede requerirse proveedor ambiental autorizado para corrientes no RSU. Validar con el municipio.
         </div>
       )}
 
-      <div className="rounded-lg border border-[#E8E4DC] bg-white p-4">
-        <p className="text-[13px] font-semibold text-[#1C1B18]">Flujos de residuos (RSU vs no-RSU)</p>
-        <div className="mt-2 grid grid-cols-1 gap-2 md:grid-cols-2">
-          {result.waste_streams.map(stream => (
-            <div
-              key={`${stream.material}-${stream.es_rsu}`}
-              className={`rounded-lg border p-2 text-[12px] ${
-                stream.es_rsu ? 'border-emerald-200 bg-emerald-50' : 'border-amber-300 bg-amber-50'
-              }`}
-            >
-              <p className="font-semibold text-[#1C1B18]">{stream.material}</p>
-              <p>
-                {stream.estimacion_ton_dia.toFixed(3)} ton/día · {stream.es_rsu ? 'RSU' : 'no-RSU'}
-              </p>
-              {!stream.es_rsu && <p>{stream.advertencia}</p>}
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-[#E8E4DC] bg-white p-4">
-        <p className="text-[13px] font-semibold text-[#1C1B18]">Plan de contenedores por zona interna</p>
-        <div className="mt-2 space-y-2 text-[12px] text-[#6B6760]">
-          {result.container_plan.map(plan => (
-            <div key={`${plan.zona_interna}-${plan.tipo_contenedor}`} className="rounded border border-[#F0EDE5] p-2">
-              <p className="font-semibold text-[#1C1B18]">{plan.zona_interna}</p>
-              <p>
-                {plan.tipo_contenedor} · {plan.cantidad} contenedor(es)
-              </p>
-              <p>
-                {plan.frecuencia_recoleccion} · {plan.nota}
-              </p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-[#E8E4DC] bg-white p-4">
-        <p className="text-[13px] font-semibold text-[#1C1B18]">Acciones 30/60/90</p>
-        <div className="mt-2 space-y-2 text-[12px] text-[#6B6760]">
-          {result.acciones_30_60_90.map(action => (
-            <div key={action.plazo} className="rounded border border-[#F0EDE5] p-2">
-              <p className="font-semibold text-[#1C1B18]">{action.plazo}</p>
-              <p>{action.accion}</p>
-              <p>Responsable: {action.responsable}</p>
-              <p>Impacto esperado: {action.impacto_esperado}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="rounded-lg border border-[#DAD3C7] bg-white p-3 text-[12px] text-[#6B6760]">
-        <p className="font-semibold text-[#1C1B18]">Cálculo de generación</p>
-        <p>Fórmula: {result.calculo_generacion.formula}</p>
-        <p>
-          Fuente: {result.calculo_generacion.fuente_factor} · Unidad: {result.calculo_generacion.unidad}
+      <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+        <p className="text-[12px] font-semibold text-[#1C1B18]">
+          Checklist operativo · <span className="font-normal text-[#6B6760]">{etiquetaGiro(giro)}</span>
         </p>
-        <p>
-          Rango de incertidumbre: {result.calculo_generacion.incertidumbre_rango[0]} a{' '}
-          {result.calculo_generacion.incertidumbre_rango[1]} ton/día
-        </p>
-        <p>{result.calculo_generacion.explicacion}</p>
+        <p className="mt-1 text-[11px] text-[#8A857C]">Marca avance local (no se guarda en servidor).</p>
+        <ul className="mt-3 space-y-2">
+          {checklistItems.map((texto, i) => (
+            <li key={`${i}-${texto.slice(0, 24)}`}>
+              <label className="flex cursor-pointer items-start gap-2 text-[12px] leading-snug text-[#1C1B18]">
+                <input
+                  type="checkbox"
+                  checked={Boolean(done[i])}
+                  onChange={e => setDone(d => ({ ...d, [i]: e.target.checked }))}
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border-[#C8C2B8] text-[#3B6D11] accent-[#3B6D11]"
+                />
+                <span>{texto}</span>
+              </label>
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
   )

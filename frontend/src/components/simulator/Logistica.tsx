@@ -8,7 +8,6 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export function Logistica() {
   const { resultados, capCamionTon, setCapCamion, mermaLogPct, setMerma } = useSimulatorStore()
-  const blocked = !useSimulatorStore.getState().gatesAprobados[0]
 
   const estData = ESTACIONALIDAD.map((f, i) => ({
     mes: MESES[i].slice(0, 3),
@@ -17,7 +16,7 @@ export function Logistica() {
   }))
 
   return (
-    <div className={blocked ? 'overlay-blocked' : ''}>
+    <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S11 — Logística</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Recolección y transporte</h2>
 

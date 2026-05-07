@@ -14,10 +14,9 @@ const RECICLADORAS_SLP = [
 
 export function RecicladoarasSection() {
   const { zmActiva, resultados } = useSimulatorStore()
-  const blocked = !useSimulatorStore.getState().gatesAprobados[0]
 
   return (
-    <div className={blocked ? 'overlay-blocked' : ''}>
+    <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S13 — Recicladoras</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Cadena de valor del reciclaje</h2>
       <p className="text-[13px] text-[#6B6760] mb-6">

@@ -12,24 +12,13 @@ import { DecisionModuleShell } from '@/components/simulator/DecisionModuleShell'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
 import { ComposicionRSU } from '@/components/simulator/ComposicionRSU'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
-import { TipoVivienda } from '@/components/simulator/TipoVivienda'
-import { HorizonteCircularidad } from '@/components/simulator/HorizonteCircularidad'
-import { EditorTrayectoria } from '@/components/simulator/EditorTrayectoria'
-import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
 import { CentrosAcopio } from '@/components/simulator/CentrosAcopio'
 import { Logistica } from '@/components/simulator/Logistica'
-import { RecicladoarasSection } from '@/components/simulator/RecicladoarasSection'
-import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import { ImpactoAmbiental } from '@/components/simulator/ImpactoAmbiental'
 import { MultiplicadoresEco } from '@/components/simulator/MultiplicadoresEco'
-import { BenchmarkLATAM } from '@/components/simulator/BenchmarkLATAM'
-import Macrogeneradores from '@/components/simulator/Macrogeneradores'
 import { DeclaracionWizard } from '@/components/simulator/DeclaracionWizard'
-import Precolocacion from '@/components/simulator/Precolocacion'
-import ReasoningGraphPanel from '@/components/simulator/ReasoningGraphPanel'
 import CoberturaNacional from '@/components/simulator/CoberturaNacional'
 import { OperacionPERBitacora } from '@/components/simulator/OperacionPERBitacora'
-import { AdvertenciasGateLegal } from '@/components/simulator/AdvertenciasGateLegal'
 import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { FlujosResiduos } from '@/components/simulator/FlujosResiduos'
 import { SankeyFlujoResiduos } from '@/components/simulator/SankeyFlujoResiduos'
@@ -45,8 +34,8 @@ import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
+import { GuidedPlanControls } from '@/components/simulator/GuidedPlanControls'
 import type { Audience, DecisionModule } from '@/types'
-import { ContainersProvider } from '@/components/simulator/ContainersProvider'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 
 function SimulatorSimulationRibbon() {
@@ -157,30 +146,22 @@ function renderDecisionModule(
           <>
             <DeclaracionWizard />
             <FuentesDatos />
-            <Macrogeneradores />
           </>
         )
       case 'containers_provider':
-        return <ContainersProvider />
+        return (
+          <section className="section rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-4">
+            <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Logística y contenedores</p>
+            <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
+              La ubicación de contenedores y rutas internas se resuelve con el checklist del módulo de plan por giro y con el
+              borrador exportable; aquí no se abre un configurator adicional.
+            </p>
+          </section>
+        )
       case 'market_traceability':
-        return (
-          <>
-            <Precolocacion />
-            <RecicladoarasSection />
-            <BenchmarkLATAM />
-            <ReasoningGraphPanel />
-            <ImpactoFinanciero />
-            <SankeyFlujoResiduos />
-          </>
-        )
+        return <PortalEmpresarial />
       case 'organization_report':
-        return (
-          <>
-            <ExportarSection />
-            <ExportadorReporte />
-            <DashboardKPIs />
-          </>
-        )
+        return <ExportarSection />
       default:
         return <ModuleEmpty module={module} />
     }
@@ -208,7 +189,7 @@ function renderDecisionModule(
           <>
             <EducacionCiudadana />
             <ComposicionRSU />
-            <TipoVivienda />
+            <GuidedPlanControls />
           </>
         )
       case 'impact_finance':
@@ -243,9 +224,7 @@ function renderDecisionModule(
     case 'future_goals':
       return (
         <>
-          <HorizonteCircularidad />
-          <EditorTrayectoria />
-          <ImplementacionEspacioTiempo />
+          <GuidedPlanControls />
         </>
       )
     case 'infrastructure_operations':
@@ -254,7 +233,6 @@ function renderDecisionModule(
           <CentrosAcopio />
           <Logistica />
           <OperacionPERBitacora />
-          <AdvertenciasGateLegal />
           <PortalEmpresarial />
           <FlujosResiduos />
           <SankeyFlujoResiduos />

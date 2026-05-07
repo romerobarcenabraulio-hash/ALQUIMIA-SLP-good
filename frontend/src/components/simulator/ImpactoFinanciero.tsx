@@ -17,7 +17,6 @@ export function ImpactoFinanciero() {
           precioCarbonoEsc, setPrecioCarbonoEsc, precios, setPrecio, horizonte,
           pctCapturaPorAño, mermaLogPct, zmActiva, municipiosActivos } = useSimulatorStore()
   const r = resultados
-  const blocked = !useSimulatorStore.getState().gatesAprobados[0]
 
   /* Linter: getState() no aparece en el grafo de deps; la lista fuerza recálculo al variar precios, trayectoria o ámbito municipal (Q-024). */
   /* eslint-disable react-hooks/exhaustive-deps */
@@ -40,7 +39,7 @@ export function ImpactoFinanciero() {
   }, [tirDistribution])
 
   return (
-    <div className={blocked ? 'overlay-blocked' : ''}>
+    <div>
       <ContextoModulo
         variante="financiero"
         titulo="¿Cómo está construido el modelo financiero?"

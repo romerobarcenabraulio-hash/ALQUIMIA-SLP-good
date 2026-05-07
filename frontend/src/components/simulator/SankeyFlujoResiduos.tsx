@@ -8,9 +8,7 @@ import {
   interpolateSankeyLinks,
   SANKEY_NODES,
 } from '@/data/sankeyData'
-
-// Escenario propuesto: año 3 = separación en 5 fracciones activa
-const ANIO_PROPUESTO = 3
+import { useSimulatorStore } from '@/store/simulatorStore'
 
 type SankeyChartLink = {
   source: number
@@ -137,9 +135,11 @@ function FlujoLinkTooltip({
 }
 
 export function SankeyFlujoResiduos() {
+  const horizonte = useSimulatorStore(s => s.horizonte)
+  const anioPropuesto = Math.max(1, Math.min(5, horizonte))
   const specLinks = useMemo(
-    () => interpolateSankeyLinks(ANIO_PROPUESTO),
-    [],
+    () => interpolateSankeyLinks(anioPropuesto),
+    [anioPropuesto],
   )
 
   const kpis = useMemo(() => computeSankeyKpis(specLinks), [specLinks])
@@ -220,7 +220,7 @@ export function SankeyFlujoResiduos() {
       </div>
 
       <p className="text-[11px] text-[#A8A49C] mb-4">
-        Escenario propuesto · año 3 · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales
+        Escenario propuesto · año {anioPropuesto} · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales
       </p>
 
       <div className="flex flex-wrap gap-4 justify-center text-[10px] text-[#6B6760] mb-2">

@@ -9,6 +9,7 @@ import type { InfrastructurePlanResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { DespliegueOperativoCaRecicladoraChart } from '@/components/simulator/DespliegueOperativoCaRecicladoraChart'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 
 const CAUSAL_INFRA = [
   'RSU capturable',
@@ -20,11 +21,10 @@ const CAUSAL_INFRA = [
 ]
 
 export function CentrosAcopio() {
-  const { mixCAs, setMixCA, resultados } = useSimulatorStore()
+  const mixCAs = useSimulatorStore(s => s.mixCAs)
+  const resultados = useSimulatorStore(s => s.resultados)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const horizonte = useSimulatorStore(s => s.horizonte)
-  const gatesAprobados = useSimulatorStore(s => s.gatesAprobados)
-  const blocked = !gatesAprobados[0]
 
   const municipio = municipiosActivos[0] ?? 'slp'
   const rsuCapturableTonDia = useMemo(() => {
@@ -70,7 +70,7 @@ export function CentrosAcopio() {
   }, [payload])
 
   return (
-    <div className={cn(blocked && 'overlay-blocked')}>
+    <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S13.1 — Centros de acopio</p>
       <h1 className="font-serif text-[24px] text-[#1C1B18] mb-3">
         Plan de infraestructura con trazabilidad municipal · simulación propuesta
@@ -83,12 +83,16 @@ export function CentrosAcopio() {
           'CA Pequeño: 250 m², 5 empleos, TIR 109.5%, payback ~6 meses (Año 3).',
           'CA Mediano: 750 m², 14 empleos, TIR 155.6%, payback ~5 meses.',
           'CA Grande: 2,000 m², 34 empleos, TIR 212%, payback ~7 meses.',
-          'El mix se calcula automáticamente por fase; puedes ajustarlo manualmente con los botones +/-.',
+          'El mix P/M/G sigue la fase §2.4 compatible con el horizonte y el preset elegidos en la configuración inicial del plan.',
           'La brecha es RSU capturable vs. capacidad instalada — no RSU total generado.',
         ]}
         fuente="CAPEX/OPEX/TIR por escala: Bootstrap §2.3 · Modelo_BASED.xlsx. Mix por fase: Bootstrap §2.4."
         advertencia="La ubicación física de cada CA debe validarse con el municipio (uso de suelo, conectividad vial). ALQUIMIA modela la viabilidad financiera; el predio es decisión municipal."
       />
+
+      <div className="mb-6">
+        <ParamsLockedNotice />
+      </div>
 
       <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-3">
         <InfoTile
@@ -141,17 +145,9 @@ export function CentrosAcopio() {
                     </p>
                   )}
                 </div>
-                {/* +/- counter */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setMixCA(tipo, Math.max(0, (mixCAs[tipo] ?? 0) - 1))}
-                    className="w-8 h-8 rounded-full border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F0EDE5] transition-colors"
-                  >−</button>
-                  <span className="font-mono text-[20px] w-6 text-center text-[#1C1B18]">{mixCAs[tipo] ?? 0}</span>
-                  <button
-                    onClick={() => setMixCA(tipo, (mixCAs[tipo] ?? 0) + 1)}
-                    className="w-8 h-8 rounded-full bg-[#3B6D11] text-white hover:bg-[#2D5409] transition-colors"
-                  >+</button>
+                <div className="flex shrink-0 flex-col items-end justify-center rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-2 text-right">
+                  <span className="text-[10px] uppercase tracking-wide text-[#A8A49C]">Unidades modelo</span>
+                  <span className="font-mono text-[20px] text-[#1C1B18]">{mixCAs[tipo] ?? 0}</span>
                 </div>
               </div>
 
@@ -274,10 +270,7 @@ function LoadingState() {
 function EmptyState() {
   return (
     <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-      <p>Configura el mix P/M/G de centros para calcular el plan de infraestructura.</p>
-      <button type="button" className="mt-2 text-[12px] font-medium text-[#3B6D11] underline underline-offset-2">
-        Configurar mix de centros
-      </button>
+      <p>El plan de infraestructura se actualizará cuando el simulador principal tenga RSU capturable calculado.</p>
     </div>
   )
 }
@@ -349,9 +342,9 @@ function ResultState({ plan }: { plan: InfrastructurePlanResponse }) {
             incertidumbre: plan.calculo_brecha.incertidumbre,
           }}
           nextStep={{
-            label: brecha > 0.01 ? 'Ajusta el mix P/M/G' : 'Consolida estados de centros',
+            label: brecha > 0.01 ? 'Revisar capacidad con el plan base' : 'Consolida estados de centros',
             helper: brecha > 0.01
-              ? 'Aumenta centros M o G donde la zona muestre mayor brecha.'
+              ? 'La propuesta de centros sigue el mix y el horizonte definidos en la configuración inicial.'
               : 'Documenta el centro propuesto que pasa a operando.',
           }}
         />

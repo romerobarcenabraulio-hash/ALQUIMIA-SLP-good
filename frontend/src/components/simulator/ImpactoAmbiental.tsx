@@ -12,10 +12,9 @@ function scrollToDecisionModules() {
 export function ImpactoAmbiental() {
   const { resultados } = useSimulatorStore()
   const r = resultados
-  const blocked = !useSimulatorStore.getState().gatesAprobados[0]
 
   return (
-    <div className={blocked ? 'overlay-blocked' : ''}>
+    <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S15 — Impacto ambiental</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Planeta y salud pública</h2>
 

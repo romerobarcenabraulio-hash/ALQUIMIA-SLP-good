@@ -4,6 +4,7 @@ import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotD
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS } from '@/lib/constants'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
+import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
 
 /** Contrato blueprint 22_0: `localStorage['alquimia.audience']` es la clave literal de audiencia; `alquimia-simulator` sigue siendo el persist Zustand. En conflicto tras reload, gana esta clave y luego se rehidrata el journey. */
@@ -403,7 +404,10 @@ export const useSimulatorStore = create<SimulatorStore>()(
         },
 
         setMerma: (v) => { set({ mermaLogPct: v }); get().recalcular() },
-        setMixCA: (tipo, n) => { set({ mixCAs: { ...get().mixCAs, [tipo]: n } }); get().recalcular() },
+        /** El mix §2.4 se deriva del horizonte y preset en `recalcular`; ignoramos ajustes manuales legacy. */
+        setMixCA: (_tipo, _n) => {
+          get().recalcular()
+        },
         setWacc: (v) => { set({ wacc: v }); get().recalcular() },
         setTipoCambio: (v) => { set({ tipoCambio: v }); get().recalcular() },
         setGenPercapita: (v) => { set({ genPercapita: v }); get().recalcular() },
@@ -422,10 +426,12 @@ export const useSimulatorStore = create<SimulatorStore>()(
 
         recalcular: () => {
           const state = get()
+          const mixCAs = deriveMixCasFromHorizonte(state.horizonte, state.presetTrayectoria)
+          const merged = { ...state, mixCAs }
           try {
-            const r = calcular(state)
-            const sinProg = calcularEscenarioSinPrograma(state)
-            set({ resultados: r, resultadosSinPrograma: sinProg })
+            const r = calcular(merged)
+            const sinProg = calcularEscenarioSinPrograma(merged)
+            set({ resultados: r, resultadosSinPrograma: sinProg, mixCAs })
           } catch (e) {
             console.error('Cálculo fallido', e)
           }

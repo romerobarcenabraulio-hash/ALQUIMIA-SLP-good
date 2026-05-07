@@ -20,6 +20,23 @@ export function fasesDespliegueVisibles(horizonte: number, presetTrayectoria: st
   return Math.min(FASES_CA.length, Math.max(1, Math.round(h * r)))
 }
 
+/** Parsea etiquetas §2.4 tipo `5P+3M+0G`. */
+export function parseMixPmG(mixLabel: string): { P: number; M: number; G: number } {
+  const m = mixLabel.match(/(\d+)\s*P\s*\+\s*(\d+)\s*M\s*\+\s*(\d+)\s*G/i)
+  if (!m) return { P: 3, M: 0, G: 0 }
+  return { P: Number(m[1]), M: Number(m[2]), G: Number(m[3]) }
+}
+
+/** Mix de centros alineado al horizonte y preset de trayectoria (sin ajuste manual en UI). */
+export function deriveMixCasFromHorizonte(
+  horizonte: number,
+  presetTrayectoria: string,
+): { P: number; M: number; G: number } {
+  const n = fasesDespliegueVisibles(horizonte, presetTrayectoria)
+  const row = FASES_CA[n - 1]
+  return parseMixPmG(row.mix)
+}
+
 export function empleosCaDesdeMix(mix: string): number {
   const m = mix.match(/(\d+)\s*P\s*\+\s*(\d+)\s*M\s*\+\s*(\d+)\s*G/i)
   if (!m) return 0
