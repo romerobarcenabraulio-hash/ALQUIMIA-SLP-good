@@ -173,7 +173,7 @@ export default function LandingPage() {
           <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3 min-w-0">
             <span className="font-serif text-[20px] text-[#3B6D11] font-semibold shrink-0">ALQUIMIA</span>
             <span className="text-[10px] leading-snug text-[#8C8880] max-w-[17rem]">
-              Consultoría en circularidad municipal · propuesta técnica, no dictamen oficial hasta validación competente
+              Herramienta técnica para planeación municipal de circularidad
             </span>
           </div>
           <nav className="hidden sm:flex items-center gap-4 text-[12px]">
@@ -191,26 +191,25 @@ export default function LandingPage() {
         {/* Columna izquierda: Artículo editorial */}
         <article className="max-w-2xl">
           <p className="text-[11px] uppercase tracking-[0.12em] text-[#3B6D11] mb-5 font-medium">
-            Plataforma de consultoría en circularidad municipal
+            Programa municipal de separación en cinco fracciones
           </p>
 
           <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] tracking-[-0.025em] text-[#1C1B18] mb-7">
-            México genera 120,000 toneladas de basura al día.<br />
-            <span className="text-[#3B6D11]">El 75% termina enterrado.</span>
+            La Zona Metropolitana de San Luis Potosí genera 1,850 toneladas diarias de residuos sólidos urbanos; hoy, la mayor parte termina en disposición final.
           </h1>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-5">
-            Cada municipio tiene la obligación legal de gestionar sus residuos sólidos urbanos — y la mayoría lo hace con presupuesto insuficiente, sin datos confiables y sin un plan de separación que sea técnicamente viable y socialmente aceptable.
+            El esquema actual desaprovecha valor económico recuperable y mantiene presión financiera sobre el municipio. ALQUIMIA permite simular un programa municipal de separación obligatoria en cinco fracciones —orgánicos, papel/cartón, plásticos, vidrio y metales— con trazabilidad jurídica y operativa.
           </p>
 
           <blockquote className="border-l-4 border-[#3B6D11] pl-5 my-7">
             <p className="font-serif text-[22px] text-[#1C1B18] leading-[1.4] italic">
-              &ldquo;El problema no es la voluntad política. Es la falta de herramientas para demostrar que sí funciona.&rdquo;
+              El siguiente paso es la validación política y jurídica en Cabildo. ALQUIMIA organiza la evidencia técnica para sustentar esa decisión.
             </p>
           </blockquote>
 
           <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-5">
-            ALQUIMIA es la plataforma que cierra esa brecha. Integra el marco legal vigente, los datos de generación por colonia, la ingeniería básica de centros de acopio y la narrativa institucional en un solo flujo: del diagnóstico al expediente listo para Cabildo.
+            El modelo integra reglamento vigente, precios de mercado, rutas de recolección y capacidad de centros de acopio. Con ello, el municipio puede presentar a Cabildo un expediente técnico con cronograma, costos, metas de captura y supuestos verificables.
           </p>
 
           <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-8">
@@ -269,8 +268,8 @@ export default function LandingPage() {
       {/* ── Módulos ────────────────────────────────────────────────────── */}
       <section className="border-t border-[#E8E4DC] bg-[#FDFCFA] py-16">
         <div className="max-w-5xl mx-auto px-4">
-          <p className="text-[11px] uppercase tracking-widest text-[#A8A49C] mb-2 text-center">Una vez dentro</p>
-          <h2 className="font-serif text-[28px] text-center text-[#1C1B18] mb-10">Todo lo que necesitas para presentar el programa</h2>
+          <p className="text-[11px] uppercase tracking-widest text-[#A8A49C] mb-2 text-center">Después del acceso institucional</p>
+          <h2 className="font-serif text-[28px] text-center text-[#1C1B18] mb-10">Componentes operativos de la plataforma</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {MODULOS.map(({ ruta, Icon, titulo, desc }) => (
               <Link key={ruta} href={ruta}
@@ -289,7 +288,7 @@ export default function LandingPage() {
         <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-serif text-[16px] text-[#3B6D11]">ALQUIMIA</span>
           <p className="text-[11px] text-[#A8A49C] text-center">
-            Plataforma de circularidad para municipios mexicanos · consultoría y simulación
+            Modelo técnico de apoyo para planeación municipal; no sustituye actos de autoridad
           </p>
           <nav className="flex gap-4 text-[11px] text-[#A8A49C]">
             <Link href="/aprende">Aprende</Link>
