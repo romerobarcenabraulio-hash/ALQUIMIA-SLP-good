@@ -1,9 +1,10 @@
 'use client'
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { getDashboardSummary } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
+import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 import type { DashboardResponse, KPIIndicador } from '@/types'
 
 const STEPS = ['Datos de entrada', 'Cálculo de score', 'KPIs por área', 'Alertas y próximas acciones']
@@ -11,25 +12,69 @@ const STEPS = ['Datos de entrada', 'Cálculo de score', 'KPIs por área', 'Alert
 export function DashboardKPIs() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const municipio = municipiosActivos[0] ?? ''
+  const resultados = useSimulatorStore(s => s.resultados)
+  const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
+  const genCount = useSimulatorStore(s => s.macroImpactSummary?.generators_count ?? 0)
+  const mixCAs = useSimulatorStore(s => s.mixCAs)
+  const gatesAprobados = useSimulatorStore(s => s.gatesAprobados)
 
-  const [generacionTonDia, setGeneracionTonDia] = useState(10)
-  const [tasaActual, setTasaActual] = useState(8)
-  const [brechaInfra, setBrechaInfra] = useState(2)
-  const [numMacro, setNumMacro] = useState(3)
-  const [numCentros, setNumCentros] = useState(1)
-  const [estadoLegal, setEstadoLegal] = useState('sin_gate')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<DashboardResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<object | null>(null)
 
-  const isEmpty = !loading && !error && !result
+  const payload = useMemo(() => {
+    if (!municipio || !resultados) return null
+    const tasa = baselinePct ?? 8
+    const breach = Math.max(0.01, Number((resultados.rsuTotalTonDia * 0.08).toFixed(3)))
+    const numCentros = Math.max(1, mixCAs.P + mixCAs.M + mixCAs.G)
+    const estadoLegal = gatesAprobados.some(Boolean) ? 'gate_activo' : 'sin_gate'
+    return {
+      municipio_id: municipio,
+      generacion_ton_dia: resultados.rsuTotalTonDia,
+      tasa_circularidad_actual_pct: tasa,
+      brecha_infraestructura_ton_dia: breach,
+      num_macrogeneradores: genCount,
+      num_centros_acopio: numCentros,
+      estado_legal: estadoLegal,
+      corrientes_criticas: ['organico'],
+    }
+  }, [municipio, resultados, baselinePct, genCount, mixCAs, gatesAprobados])
 
-  async function run(payload: object) {
+  const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
+
+  useEffect(() => {
+    setResult(null)
+    setError(null)
+    if (!payload) return
+    let active = true
+    setLoading(true)
+    setLastPayload(payload)
+    void getDashboardSummary(payload)
+      .then(data => {
+        if (!active) return
+        setResult(data)
+        setError(null)
+      })
+      .catch(e => {
+        if (!active) return
+        setResult(null)
+        setError(e instanceof Error ? e.message : 'Incidencia operativa al calcular dashboard municipal')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [payloadKey])
+
+  async function retry() {
+    if (!lastPayload) return
     setLoading(true)
     setError(null)
     try {
-      const data = await getDashboardSummary(payload)
+      const data = await getDashboardSummary(lastPayload)
       setResult(data)
     } catch (e) {
       setResult(null)
@@ -39,21 +84,6 @@ export function DashboardKPIs() {
     }
   }
 
-  async function handleCalculate() {
-    const payload = {
-      municipio_id: municipio,
-      generacion_ton_dia: generacionTonDia,
-      tasa_circularidad_actual_pct: tasaActual,
-      brecha_infraestructura_ton_dia: brechaInfra,
-      num_macrogeneradores: numMacro,
-      num_centros_acopio: numCentros,
-      estado_legal: estadoLegal,
-      corrientes_criticas: ['organico'],
-    }
-    setLastPayload(payload)
-    await run(payload)
-  }
-
   const scoreColor = useMemo(() => {
     const score = result?.resumen.score_circularidad ?? 0
     if (score >= 70) return 'text-[#2D7A0A]'
@@ -61,10 +91,12 @@ export function DashboardKPIs() {
     return 'text-[#B3261E]'
   }, [result])
 
+  const isEmpty = !loading && !error && !result && payload === null
+
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Panel de indicadores municipales · <span className="text-[#6B6860] text-[14px]">propuesta</span>
+        Panel de indicadores municipales · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
 
       <AvisoMunicipioAncla ids={municipiosActivos} />
@@ -72,48 +104,21 @@ export function DashboardKPIs() {
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {STEPS.map((step, i, arr) => (
           <Fragment key={step}>
-            <span className="bg-[#F0EDE5] rounded px-2 py-0.5">{step}</span>
+            <span className="rounded bg-[#F0EDE5] px-2 py-0.5">{step}</span>
             {i < arr.length - 1 && <span className="text-[#A8A49C]">→</span>}
           </Fragment>
         ))}
       </div>
 
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-2">
-        <Field label="Generación t/día" value={generacionTonDia} onChange={setGeneracionTonDia} />
-        <Field label="Tasa circularidad %" value={tasaActual} onChange={setTasaActual} />
-        <Field label="Brecha infraestructura t/día" value={brechaInfra} onChange={setBrechaInfra} />
-        <Field label="No. macrogeneradores" value={numMacro} onChange={setNumMacro} />
-        <Field label="No. centros acopio" value={numCentros} onChange={setNumCentros} />
-        <label className="text-[13px] text-[#6B6860]">
-          Estado legal
-          <select
-            value={estadoLegal}
-            onChange={e => setEstadoLegal(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2"
-          >
-            <option value="sin_gate">Sin gate activo</option>
-            <option value="gate_activo">Gate activo</option>
-            <option value="sancion_propuesta">Sanción propuesta</option>
-          </select>
-        </label>
-      </div>
-
-      <button
-        type="button"
-        onClick={handleCalculate}
-        disabled={loading}
-        className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
-      >
-        {loading ? 'Calculando dashboard...' : 'Calcular dashboard'}
-      </button>
+      <ParamsLockedNotice />
 
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="animate-pulse rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-              <div className="h-3 bg-[#E8E4DC] rounded w-3/4" />
-              <div className="mt-2 h-3 bg-[#E8E4DC] rounded w-1/2" />
-              <div className="mt-2 h-3 bg-[#E8E4DC] rounded w-5/6" />
+              <div className="h-3 w-3/4 rounded bg-[#E8E4DC]" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-[#E8E4DC]" />
+              <div className="mt-2 h-3 w-5/6 rounded bg-[#E8E4DC]" />
             </div>
           ))}
         </div>
@@ -121,7 +126,7 @@ export function DashboardKPIs() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Ingresa los datos del municipio para calcular el dashboard.
+          Los KPIs aparecerán cuando el simulador principal tenga resultados y línea base.
         </div>
       )}
 
@@ -131,7 +136,7 @@ export function DashboardKPIs() {
           {lastPayload && (
             <button
               type="button"
-              onClick={() => run(lastPayload)}
+              onClick={() => void retry()}
               className="mt-2 rounded-lg border border-red-300 bg-white px-3 py-1 text-[12px]"
             >
               Reintentar
@@ -142,7 +147,9 @@ export function DashboardKPIs() {
 
       {result?.status === 'blocked' && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-[12px] text-amber-900">
-          {result.blockers.map(b => <p key={b}>{b}</p>)}
+          {result.blockers.map(b => (
+            <p key={b}>{b}</p>
+          ))}
         </div>
       )}
 
@@ -163,42 +170,22 @@ export function DashboardKPIs() {
             <Chip label="Centros acopio" value={`${result.resumen.num_centros_acopio}`} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {result.kpis.map(kpi => <KPICard key={kpi.clave} kpi={kpi} />)}
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {result.kpis.map(kpi => (
+              <KPICard key={kpi.clave} kpi={kpi} />
+            ))}
           </div>
 
           {result.advertencias.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-              {result.advertencias.map(w => <p key={w}>{w}</p>)}
+              {result.advertencias.map(w => (
+                <p key={w}>{w}</p>
+              ))}
             </div>
           )}
         </div>
       )}
     </section>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: number
-  onChange: (v: number) => void
-}) {
-  return (
-    <label className="block text-[13px] text-[#6B6860] mb-1">
-      {label}
-      <input
-        type="number"
-        min={0}
-        step={0.1}
-        value={value}
-        onChange={e => onChange(Number(e.target.value) || 0)}
-        className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2"
-      />
-    </label>
   )
 }
 
@@ -213,10 +200,10 @@ function Chip({ label, value }: { label: string; value: string }) {
 function KPICard({ kpi }: { kpi: KPIIndicador }) {
   const trendColor =
     kpi.tendencia === 'mejora'
-      ? 'bg-emerald-50 text-emerald-900 border-emerald-200'
+      ? 'border-emerald-200 bg-emerald-50 text-emerald-900'
       : kpi.tendencia === 'estable'
-        ? 'bg-amber-50 text-amber-900 border-amber-200'
-        : 'bg-red-50 text-red-900 border-red-200'
+        ? 'border-amber-200 bg-amber-50 text-amber-900'
+        : 'border-red-200 bg-red-50 text-red-900'
   const progress = kpi.meta_90_dias > 0 ? Math.min(100, (kpi.valor_actual / kpi.meta_90_dias) * 100) : 0
   return (
     <div className="rounded-lg border border-[#E8E4DC] bg-white p-3">
@@ -224,13 +211,11 @@ function KPICard({ kpi }: { kpi: KPIIndicador }) {
       <p className="mt-1 text-[24px] font-bold text-[#1C1B18]">
         {kpi.valor_actual.toFixed(1)} <span className="text-[12px] font-normal text-[#6B6760]">{kpi.unidad}</span>
       </p>
-      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${trendColor}`}>
-        {kpi.tendencia}
-      </span>
+      <span className={`inline-flex rounded-full border px-2 py-0.5 text-[11px] ${trendColor}`}>{kpi.tendencia}</span>
       <div className="mt-2 h-2 rounded bg-[#F0EDE5]">
         <div className="h-2 rounded bg-[#3B6D11]" style={{ width: `${progress}%` }} />
       </div>
-      <p className="mt-2 text-[11px] text-[#6B6860]">{kpi.formula}</p>
+      <p className="mt-2 text-[11px] text-[#6B6760]">{kpi.formula}</p>
       {kpi.alerta && <p className="mt-1 text-[11px] text-[#B3261E]">{kpi.alerta}</p>}
     </div>
   )

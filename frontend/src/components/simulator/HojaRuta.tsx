@@ -1,9 +1,11 @@
 'use client'
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { generateRoadmap } from '@/lib/api'
+import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { AccionEjecutiva, RoadmapMunicipalResponse } from '@/types'
+import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 
 const CAUSAL = [
   'Diagnóstico integral',
@@ -13,38 +15,85 @@ const CAUSAL = [
   'KPIs de cierre',
 ]
 
-const CORRIENTES = ['organico', 'papel', 'plastico', 'vidrio', 'metal']
+/** Corrientes con participación notable respecto al mix del plan global. */
+function corrientesCriticasDesdePlan(): string[] {
+  const pairs: [string, number][] = [
+    ['organico', COMPOSICION_RSU_DETALLE.organico.pct],
+    ['papel', COMPOSICION_RSU_DETALLE.papel.pct],
+    ['plastico', COMPOSICION_RSU_DETALLE.plastico.pct],
+    ['vidrio', COMPOSICION_RSU_DETALLE.vidrio.pct],
+    ['metal', COMPOSICION_RSU_DETALLE.metales.pct],
+  ]
+  const notable = pairs.filter(([, pct]) => pct >= 10).map(([k]) => k)
+  if (notable.length > 0) return notable
+  const sorted = [...pairs].sort((a, b) => b[1] - a[1])
+  return sorted[0] ? [sorted[0][0]] : ['organico']
+}
 
 export function HojaRuta() {
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const municipio = municipiosActivos[0] ?? ''
-
-  const [generacionTonDia, setGeneracionTonDia] = useState(10)
-  const [tasaActual, setTasaActual] = useState(8)
-  const [brechaInfra, setBrechaInfra] = useState(3)
-  const [tieneMacrogeneradores, setTieneMacrogeneradores] = useState(true)
-  const [tieneResiduosRegulados, setTieneResiduosRegulados] = useState(false)
-  const [estadoLegal, setEstadoLegal] = useState('sin_gate')
-  const [corrientesCriticas, setCorrientesCriticas] = useState<string[]>(['organico'])
+  const municipio = useSimulatorStore(s => s.municipiosActivos[0] ?? '')
+  const resultados = useSimulatorStore(s => s.resultados)
+  const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
+  const genCount = useSimulatorStore(s => s.macroImpactSummary?.generators_count ?? 0)
+  const gatesAprobados = useSimulatorStore(s => s.gatesAprobados)
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<RoadmapMunicipalResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<object | null>(null)
 
-  const isEmpty = !loading && !error && !result
+  const payload = useMemo(() => {
+    if (!municipio || !resultados) return null
+    const tasa = baselinePct ?? 8
+    const gen = resultados.rsuTotalTonDia
+    const brecha = Math.max(0.01, Number((gen * 0.08).toFixed(3)))
+    const estadoLegal = gatesAprobados.some(Boolean) ? 'gate_activo' : 'sin_gate'
+    return {
+      municipio_id: municipio,
+      generacion_ton_dia: gen,
+      tasa_circularidad_actual_pct: tasa,
+      brecha_infraestructura_ton_dia: brecha,
+      tiene_macrogeneradores: genCount > 0,
+      tiene_residuos_regulados: false,
+      corrientes_criticas: corrientesCriticasDesdePlan(),
+      estado_legal: estadoLegal,
+    }
+  }, [municipio, resultados, baselinePct, genCount, gatesAprobados])
 
-  function toggleCorriente(value: string) {
-    setCorrientesCriticas(prev =>
-      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value],
-    )
-  }
+  const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
 
-  async function run(payload: object) {
+  useEffect(() => {
+    setResult(null)
+    setError(null)
+    if (!payload) return
+    let active = true
+    setLoading(true)
+    setLastPayload(payload)
+    void generateRoadmap(payload)
+      .then(data => {
+        if (!active) return
+        setResult(data)
+        setError(null)
+      })
+      .catch(e => {
+        if (!active) return
+        setResult(null)
+        setError(e instanceof Error ? e.message : 'Incidencia operativa al generar hoja de ruta')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [payloadKey])
+
+  async function retry() {
+    if (!lastPayload) return
     setLoading(true)
     setError(null)
     try {
-      const data = await generateRoadmap(payload)
+      const data = await generateRoadmap(lastPayload)
       setResult(data)
     } catch (e) {
       setResult(null)
@@ -52,21 +101,6 @@ export function HojaRuta() {
     } finally {
       setLoading(false)
     }
-  }
-
-  async function handleGenerate() {
-    const payload = {
-      municipio_id: municipio,
-      generacion_ton_dia: generacionTonDia,
-      tasa_circularidad_actual_pct: tasaActual,
-      brecha_infraestructura_ton_dia: brechaInfra,
-      tiene_macrogeneradores: tieneMacrogeneradores,
-      tiene_residuos_regulados: tieneResiduosRegulados,
-      corrientes_criticas: corrientesCriticas,
-      estado_legal: estadoLegal,
-    }
-    setLastPayload(payload)
-    await run(payload)
   }
 
   const byHorizon = useMemo(() => {
@@ -78,82 +112,32 @@ export function HojaRuta() {
     }
   }, [result])
 
+  const isEmpty = !loading && !error && !result && payload === null
+
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Hoja de ruta ejecutiva municipal · <span className="text-[#6B6860] text-[14px]">propuesta</span>
+        Hoja de ruta ejecutiva municipal · <span className="text-[14px] text-[#6B6860]">propuesta</span>
       </h1>
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {CAUSAL.map((step, i, arr) => (
           <Fragment key={step}>
-            <span className="bg-[#F0EDE5] rounded px-2 py-0.5">{step}</span>
+            <span className="rounded bg-[#F0EDE5] px-2 py-0.5">{step}</span>
             {i < arr.length - 1 && <span className="text-[#A8A49C]">→</span>}
           </Fragment>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-        <FieldNumber label="Generación t/día" value={generacionTonDia} onChange={setGeneracionTonDia} />
-        <FieldNumber label="Tasa circularidad actual %" value={tasaActual} onChange={setTasaActual} />
-        <FieldNumber label="Brecha infraestructura t/día" value={brechaInfra} onChange={setBrechaInfra} />
-      </div>
-
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-2 text-[12px]">
-        <label className="flex items-center gap-2 text-[13px] text-[#6B6860]">
-          <input type="checkbox" checked={tieneMacrogeneradores} onChange={e => setTieneMacrogeneradores(e.target.checked)} />
-          Tiene macrogeneradores
-        </label>
-        <label className="flex items-center gap-2 text-[13px] text-[#6B6860]">
-          <input type="checkbox" checked={tieneResiduosRegulados} onChange={e => setTieneResiduosRegulados(e.target.checked)} />
-          Tiene residuos regulados
-        </label>
-        <label className="text-[13px] text-[#6B6860]">
-          Estado legal
-          <select
-            value={estadoLegal}
-            onChange={e => setEstadoLegal(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2"
-          >
-            <option value="sin_gate">Sin gate activo</option>
-            <option value="gate_activo">Gate activo</option>
-            <option value="sancion_propuesta">Sanción propuesta</option>
-          </select>
-        </label>
-      </div>
-
-      <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-3">
-        <p className="text-[12px] font-semibold text-[#1C1B18]">Corrientes críticas</p>
-        <div className="mt-2 flex flex-wrap gap-2">
-          {CORRIENTES.map(c => (
-            <label key={c} className="inline-flex items-center gap-1 text-[13px] text-[#6B6860]">
-              <input
-                type="checkbox"
-                checked={corrientesCriticas.includes(c)}
-                onChange={() => toggleCorriente(c)}
-              />
-              {c}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <button
-        type="button"
-        onClick={handleGenerate}
-        disabled={loading}
-        className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
-      >
-        {loading ? 'Generando hoja de ruta...' : 'Generar hoja de ruta 30/60/90'}
-      </button>
+      <ParamsLockedNotice />
 
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="animate-pulse rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-              <div className="h-3 bg-[#E8E4DC] rounded w-2/3" />
-              <div className="mt-2 h-3 bg-[#E8E4DC] rounded w-5/6" />
-              <div className="mt-2 h-3 bg-[#E8E4DC] rounded w-1/2" />
+              <div className="h-3 w-2/3 rounded bg-[#E8E4DC]" />
+              <div className="mt-2 h-3 w-5/6 rounded bg-[#E8E4DC]" />
+              <div className="mt-2 h-3 w-1/2 rounded bg-[#E8E4DC]" />
             </div>
           ))}
         </div>
@@ -161,7 +145,7 @@ export function HojaRuta() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Completa los diagnósticos anteriores para generar la hoja de ruta.
+          La hoja de ruta aparecerá cuando el simulador principal tenga resultados.
         </div>
       )}
 
@@ -171,7 +155,7 @@ export function HojaRuta() {
           {lastPayload && (
             <button
               type="button"
-              onClick={() => run(lastPayload)}
+              onClick={() => void retry()}
               className="mt-2 rounded-lg border border-red-300 bg-white px-3 py-1 text-[12px]"
             >
               Reintentar
@@ -183,7 +167,9 @@ export function HojaRuta() {
       {result?.status === 'blocked' && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-[12px] text-amber-900">
           <p className="font-semibold">Roadmap bloqueado</p>
-          {result.blockers.map(b => <p key={b}>{b}</p>)}
+          {result.blockers.map(b => (
+            <p key={b}>{b}</p>
+          ))}
         </div>
       )}
 
@@ -195,7 +181,10 @@ export function HojaRuta() {
 
           <div className="flex flex-wrap gap-2">
             {Object.entries(result.kpi_meta_90_dias).map(([k, v]) => (
-              <span key={k} className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[12px] text-emerald-900">
+              <span
+                key={k}
+                className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-[12px] text-emerald-900"
+              >
                 {k}: {v}
               </span>
             ))}
@@ -203,11 +192,13 @@ export function HojaRuta() {
 
           {result.advertencias.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-              {result.advertencias.map(w => <p key={w}>{w}</p>)}
+              {result.advertencias.map(w => (
+                <p key={w}>{w}</p>
+              ))}
             </div>
           )}
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <TimelineColumn title="30 días" actions={byHorizon.dias_30} />
             <TimelineColumn title="60 días" actions={byHorizon.dias_60} />
             <TimelineColumn title="90 días" actions={byHorizon.dias_90} />
@@ -254,29 +245,5 @@ function PriorityBadge({ priority }: { priority: string }) {
     <span className={`rounded-full border px-2 py-0.5 text-[11px] ${cls}`}>
       {priority}
     </span>
-  )
-}
-
-function FieldNumber({
-  label,
-  value,
-  onChange,
-}: {
-  label: string
-  value: number
-  onChange: (value: number) => void
-}) {
-  return (
-    <label className="block text-[13px] text-[#6B6860] mb-1">
-      {label}
-      <input
-        type="number"
-        min={0}
-        step={0.1}
-        value={value}
-        onChange={e => onChange(Number(e.target.value) || 0)}
-        className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2"
-      />
-    </label>
   )
 }

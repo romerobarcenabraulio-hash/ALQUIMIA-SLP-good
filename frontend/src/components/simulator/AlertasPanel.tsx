@@ -1,9 +1,10 @@
 'use client'
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
 import { evaluateAlerts } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { Alerta, AlertasResponse } from '@/types'
+import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 
 const FLOW = [
   'Indicadores de entrada',
@@ -16,29 +17,77 @@ const LEVEL_ORDER = ['critica', 'alta', 'media', 'info'] as const
 
 export function AlertasPanel() {
   const municipio = useSimulatorStore(s => s.municipiosActivos[0] ?? '')
-  const [tasaCircularidad, setTasaCircularidad] = useState(8)
-  const [brechaInfra, setBrechaInfra] = useState(2)
-  const [score, setScore] = useState(35)
-  const [sinPadron, setSinPadron] = useState(0)
-  const [residuosRegulados, setResiduosRegulados] = useState(false)
-  const [estadoLegal, setEstadoLegal] = useState('sin_gate')
+  const resultados = useSimulatorStore(s => s.resultados)
+  const baselinePct = useSimulatorStore(s => s.circularityBaseline?.current_circularity_pct)
+  const genCount = useSimulatorStore(s => s.macroImpactSummary?.generators_count ?? 0)
+  const gatesAprobados = useSimulatorStore(s => s.gatesAprobados)
+  const scoreDatos = useSimulatorStore(s => s.snapshotDatos?.score_datos)
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<AlertasResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<object | null>(null)
 
-  const payload = useMemo(
-    () => ({
+  const payload = useMemo(() => {
+    if (!municipio || !resultados) return null
+    const tasa = baselinePct ?? 8
+    const brechaInfra = Math.max(0.01, Number((resultados.rsuTotalTonDia * 0.08).toFixed(3)))
+    const score = typeof scoreDatos === 'number' ? scoreDatos : 50
+    const estadoLegal = gatesAprobados.some(Boolean) ? 'gate_activo' : 'sin_gate'
+    const sinPadron = genCount > 0 ? 0 : 1
+    return {
       municipio_id: municipio,
-      tasa_circularidad_pct: tasaCircularidad,
+      tasa_circularidad_pct: tasa,
       brecha_infraestructura_ton_dia: brechaInfra,
       score_circularidad: score,
-      tiene_residuos_regulados: residuosRegulados,
+      tiene_residuos_regulados: false,
       estado_legal: estadoLegal,
       num_macrogeneradores_sin_padron: sinPadron,
-    }),
-    [municipio, tasaCircularidad, brechaInfra, score, residuosRegulados, estadoLegal, sinPadron],
-  )
+    }
+  }, [municipio, resultados, baselinePct, genCount, gatesAprobados, scoreDatos])
+
+  const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
+
+  useEffect(() => {
+    setResult(null)
+    setError(null)
+    if (!payload) return
+    let active = true
+    setLoading(true)
+    setLastPayload(payload)
+    void evaluateAlerts(payload)
+      .then(data => {
+        if (!active) return
+        setResult(data)
+        setError(null)
+      })
+      .catch(e => {
+        if (!active) return
+        setResult(null)
+        setError(e instanceof Error ? e.message : 'No fue posible evaluar alertas')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [payloadKey])
+
+  async function retry() {
+    if (!lastPayload) return
+    setLoading(true)
+    setError(null)
+    try {
+      const data = await evaluateAlerts(lastPayload)
+      setResult(data)
+    } catch (e) {
+      setResult(null)
+      setError(e instanceof Error ? e.message : 'No fue posible evaluar alertas')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const grouped = useMemo(() => {
     const source = result?.alertas ?? []
@@ -58,31 +107,12 @@ export function AlertasPanel() {
     }
   }, [result])
 
-  async function run(nextPayload: object) {
-    setLoading(true)
-    setError(null)
-    try {
-      const data = await evaluateAlerts(nextPayload)
-      setResult(data)
-    } catch (e) {
-      setResult(null)
-      setError(e instanceof Error ? e.message : 'No fue posible evaluar alertas')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function onEvaluate() {
-    setLastPayload(payload)
-    await run(payload)
-  }
-
-  const isEmpty = !loading && !error && !result
+  const isEmpty = !loading && !error && !result && payload === null
 
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Panel de alertas municipales · <span className="text-[#6B6860] text-[14px]">propuesta</span>
+        Panel de alertas municipales · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
@@ -94,52 +124,14 @@ export function AlertasPanel() {
         ))}
       </div>
 
-      <div className="mb-6 grid grid-cols-1 md:grid-cols-3 gap-2">
-        <Numeric label="Tasa circularidad %" value={tasaCircularidad} onChange={setTasaCircularidad} />
-        <Numeric label="Brecha infraestructura t/día" value={brechaInfra} onChange={setBrechaInfra} />
-        <Numeric label="Score circularidad" value={score} onChange={setScore} />
-        <Numeric
-          label="Macrogeneradores sin padrón"
-          value={sinPadron}
-          onChange={value => setSinPadron(Math.max(0, Math.round(value)))}
-        />
-        <label className="flex items-center gap-2 rounded border border-[#E8E4DC] px-3 py-2 text-[13px] text-[#6B6860]">
-          <input
-            type="checkbox"
-            checked={residuosRegulados}
-            onChange={e => setResiduosRegulados(e.target.checked)}
-          />
-          Tiene residuos regulados
-        </label>
-        <label className="text-[13px] text-[#6B6860]">
-          Estado legal
-          <select
-            value={estadoLegal}
-            onChange={e => setEstadoLegal(e.target.value)}
-            className="mt-1 w-full rounded border border-[#E8E4DC] px-2 py-2"
-          >
-            <option value="sin_gate">Sin gate activo</option>
-            <option value="gate_activo">Gate activo</option>
-            <option value="sancion_propuesta">Sanción propuesta</option>
-          </select>
-        </label>
-      </div>
-
-      <button
-        type="button"
-        onClick={onEvaluate}
-        disabled={loading}
-        className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
-      >
-        {loading ? 'Evaluando alertas...' : 'Evaluar alertas'}
-      </button>
+      <ParamsLockedNotice />
 
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="animate-pulse rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-              <div className="h-3 w-4/5 rounded bg-[#E8E4DC]" />
-              <div className="mt-2 h-3 w-2/3 rounded bg-[#E8E4DC]" />
+              <div className="h-3 w-2/3 rounded bg-[#E8E4DC]" />
+              <div className="mt-2 h-3 w-5/6 rounded bg-[#E8E4DC]" />
               <div className="mt-2 h-3 w-1/2 rounded bg-[#E8E4DC]" />
             </div>
           ))}
@@ -148,7 +140,7 @@ export function AlertasPanel() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Ingresa indicadores del municipio para evaluar alertas.
+          Las alertas se generarán cuando el simulador principal tenga resultados.
         </div>
       )}
 
@@ -158,7 +150,7 @@ export function AlertasPanel() {
           {lastPayload && (
             <button
               type="button"
-              onClick={() => run(lastPayload)}
+              onClick={() => void retry()}
               className="mt-2 rounded-lg border border-red-300 bg-white px-3 py-1 text-[12px]"
             >
               Reintentar
@@ -167,35 +159,27 @@ export function AlertasPanel() {
         </div>
       )}
 
-      {result?.status === 'blocked' && (
-        <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-[12px] text-amber-900">
-          {result.blockers.map(b => <p key={b}>{b}</p>)}
-        </div>
-      )}
-
-      {result && result.status === 'ready' && (
-        <div className="space-y-3">
-          <div className="flex flex-wrap gap-2">
-            <LevelChip level="critica" count={counts.critica} />
-            <LevelChip level="alta" count={counts.alta} />
-            <LevelChip level="media" count={counts.media} />
-            <LevelChip level="info" count={counts.info} />
+      {result && (
+        <div className="space-y-4">
+          <div className="flex flex-wrap gap-2 text-[12px] text-[#6B6760]">
+            <span className="rounded-full border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-1">Crítica: {counts.critica}</span>
+            <span className="rounded-full border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-1">Alta: {counts.alta}</span>
+            <span className="rounded-full border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-1">Media: {counts.media}</span>
+            <span className="rounded-full border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-1">Info: {counts.info}</span>
           </div>
 
-          <div
-            className={`rounded-lg border p-3 text-[13px] font-semibold ${
-              result.total_criticas > 0
-                ? 'border-red-200 bg-red-50 text-red-900'
-                : 'border-emerald-200 bg-emerald-50 text-emerald-900'
-            }`}
-          >
-            {result.resumen}
-          </div>
-
-          <div className="space-y-2">
-            {grouped.map(group =>
-              group.items.map(alerta => <AlertaCard key={`${group.level}-${alerta.tipo}-${alerta.titulo}`} alerta={alerta} />),
-            )}
+          <div className="space-y-3">
+            {grouped.map(group => (
+              <div key={group.level}>
+                <p className="text-[13px] font-semibold capitalize text-[#1C1B18]">{group.level}</p>
+                <div className="mt-2 space-y-2">
+                  {group.items.map((alerta, idx) => (
+                    <AlertaCard key={`${alerta.tipo}-${alerta.titulo}-${idx}`} alerta={alerta} />
+                  ))}
+                  {group.items.length === 0 && <p className="text-[12px] text-[#A8A49C]">Sin alertas en este nivel.</p>}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -203,49 +187,12 @@ export function AlertasPanel() {
   )
 }
 
-function Numeric({ label, value, onChange }: { label: string; value: number; onChange: (value: number) => void }) {
-  return (
-    <input
-      type="number"
-      min={0}
-      step={0.1}
-      aria-label={label}
-      value={value}
-      onChange={e => onChange(Number(e.target.value) || 0)}
-      placeholder={label}
-      className="rounded border border-[#E8E4DC] px-2 py-2 text-[12px]"
-    />
-  )
-}
-
-function LevelChip({ level, count }: { level: string; count: number }) {
-  const styles =
-    level === 'critica'
-      ? 'bg-red-50 border-red-200 text-red-900'
-      : level === 'alta'
-        ? 'bg-orange-50 border-orange-200 text-orange-900'
-        : level === 'media'
-          ? 'bg-amber-50 border-amber-200 text-amber-900'
-          : 'bg-slate-50 border-slate-200 text-slate-900'
-  return (
-    <span className={`rounded-full border px-3 py-1 text-[11px] ${styles}`}>
-      {level}: {count}
-    </span>
-  )
-}
-
 function AlertaCard({ alerta }: { alerta: Alerta }) {
-  const icon = alerta.nivel === 'critica' ? '🔴' : alerta.nivel === 'alta' ? '🟠' : alerta.nivel === 'media' ? '🟡' : 'ℹ️'
   return (
-    <article className="rounded-lg border border-[#E8E4DC] bg-white p-3">
-      <p className="text-[13px] font-bold text-[#1C1B18]">
-        {icon} {alerta.titulo}
-      </p>
-      <p className="mt-1 text-[12px] text-[#3C3A36]">{alerta.mensaje}</p>
-      <span className="mt-2 inline-flex rounded-full border border-[#E8E4DC] bg-[#FAF8F4] px-2 py-0.5 text-[11px] text-[#6B6760]">
-        {alerta.modulo_origen}
-      </span>
-      <p className="mt-2 text-[12px] italic text-[#1C1B18]">→ {alerta.accion_sugerida}</p>
-    </article>
+    <div className="rounded-lg border border-[#E8E4DC] bg-white p-3 text-[12px] text-[#6B6760]">
+      <p className="font-semibold text-[#1C1B18]">{alerta.titulo}</p>
+      <p className="mt-1">{alerta.mensaje}</p>
+      {alerta.accion_sugerida && <p className="mt-1 text-[#3B6D11]">→ {alerta.accion_sugerida}</p>}
+    </div>
   )
 }

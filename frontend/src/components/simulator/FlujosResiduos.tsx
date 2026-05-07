@@ -1,11 +1,13 @@
 'use client'
 
-import { Fragment, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useState } from 'react'
+import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { diagnosisWasteFlows } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { DiagnosticoCircularidadResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { FlujosSankey, type SankeyLink, type SankeyNode } from '@/components/simulator/FlujosSankey'
+import { ParamsLockedNotice } from '@/components/simulator/ParamsLockedNotice'
 
 const STEPS = [
   'RSU generado',
@@ -15,34 +17,77 @@ const STEPS = [
   'Oportunidad circular',
 ]
 
+function mixDesdePlanGlobal(): Record<string, number> {
+  const d = COMPOSICION_RSU_DETALLE
+  return {
+    organico: d.organico.pct,
+    papel: d.papel.pct,
+    plastico: d.plastico.pct,
+    vidrio: d.vidrio.pct,
+    metal: d.metales.pct,
+    otro: d.otros.pct,
+  }
+}
+
 export function FlujosResiduos() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
+  const resultados = useSimulatorStore(s => s.resultados)
+  const macroImpactSummary = useSimulatorStore(s => s.macroImpactSummary)
   const municipioId = municipiosActivos[0] ?? ''
 
-  const [showForm] = useState(true)
-  const [generacionTotal, setGeneracionTotal] = useState(10)
-  const [mix, setMix] = useState({
-    organico: 0.45,
-    papel: 0.2,
-    plastico: 0.15,
-    vidrio: 0.05,
-    metal: 0.05,
-    otro: 0.1,
-  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<DiagnosticoCircularidadResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<object | null>(null)
 
-  const isEmpty = !result && !loading && !error
+  const tasaRecuperacion = Math.min(99, Math.max(0, circularityBaseline?.current_circularity_pct ?? 18))
 
-  const totalMix = useMemo(() => Object.values(mix).reduce((sum, v) => sum + v, 0), [mix])
+  const payload = useMemo(() => {
+    if (!municipioId || !resultados) return null
+    return {
+      municipio_id: municipioId,
+      generacion_total_ton_dia: resultados.rsuTotalTonDia,
+      mix_corrientes: mixDesdePlanGlobal(),
+      infraestructura_actual: ['centro_pequeno'],
+      tasa_recuperacion_actual_pct: tasaRecuperacion,
+    }
+  }, [municipioId, resultados, tasaRecuperacion])
 
-  async function run(payload: object) {
+  const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
+
+  useEffect(() => {
+    setResult(null)
+    setError(null)
+    if (!payload) return
+    let active = true
+    setLoading(true)
+    setLastPayload(payload)
+    void diagnosisWasteFlows(payload)
+      .then(data => {
+        if (!active) return
+        setResult(data)
+        setError(null)
+      })
+      .catch(e => {
+        if (!active) return
+        setResult(null)
+        setError(e instanceof Error ? e.message : 'Incidencia operativa en diagnóstico de flujos')
+      })
+      .finally(() => {
+        if (active) setLoading(false)
+      })
+    return () => {
+      active = false
+    }
+  }, [payloadKey])
+
+  async function retry() {
+    if (!lastPayload) return
     setLoading(true)
     setError(null)
     try {
-      const data = await diagnosisWasteFlows(payload)
+      const data = await diagnosisWasteFlows(lastPayload)
       setResult(data)
     } catch (e) {
       setResult(null)
@@ -52,82 +97,33 @@ export function FlujosResiduos() {
     }
   }
 
-  async function handleDiagnose() {
-    const payload = {
-      municipio_id: municipioId,
-      generacion_total_ton_dia: generacionTotal,
-      mix_corrientes: mix,
-      infraestructura_actual: ['centro_pequeno'],
-      tasa_recuperacion_actual_pct: 18,
-    }
-    setLastPayload(payload)
-    await run(payload)
-  }
+  const isEmpty = !loading && !error && !result && payload === null
 
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
       <h1 className="font-serif text-[24px] text-[#1C1B18]">
-        Flujos de residuos y cierre de ciclo · <span className="text-[#6B6860] text-[14px]">propuesta</span>
+        Flujos de residuos y cierre de ciclo · <span className="text-[14px] text-[#6B6760]">propuesta</span>
       </h1>
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {STEPS.map((step, i, arr) => (
           <Fragment key={step}>
-            <span className="bg-[#F0EDE5] rounded px-2 py-0.5">{step}</span>
+            <span className="rounded bg-[#F0EDE5] px-2 py-0.5">{step}</span>
             {i < arr.length - 1 && <span className="text-[#A8A49C]">→</span>}
           </Fragment>
         ))}
       </div>
 
-      {showForm && (
-        <div className="mb-6 rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 space-y-3">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            <label className="block text-[13px] text-[#6B6860] mb-1">
-              Generación total (ton/día)
-              <input
-                type="number"
-                min={0}
-                step={0.1}
-                value={generacionTotal}
-                onChange={e => setGeneracionTotal(Number(e.target.value) || 0)}
-                className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-[12px]"
-              />
-            </label>
-            <div className="text-[12px] text-[#6B6760]">
-              Total mix actual: {(totalMix * 100).toFixed(1)}%
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {Object.entries(mix).map(([key, value]) => (
-              <label key={key} className="block text-[13px] text-[#6B6860] mb-1">
-                {key}
-                <input
-                  type="number"
-                  min={0}
-                  max={1}
-                  step={0.01}
-                  value={value}
-                  onChange={e => setMix(prev => ({ ...prev, [key]: Number(e.target.value) || 0 }))}
-                  className="mt-1 w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-[12px]"
-                />
-              </label>
-            ))}
-          </div>
-
-          <button
-            type="button"
-            onClick={handleDiagnose}
-            disabled={loading}
-            className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
-          >
-            {loading ? 'Diagnóstico en curso...' : 'Generar diagnóstico de cierre de ciclo'}
-          </button>
-        </div>
-      )}
+      <ParamsLockedNotice />
+      {macroImpactSummary?.warnings?.length ? (
+        <p className="text-[11px] text-[#8A857C]">
+          Contexto macros: <span className="font-medium text-[#6B6760]">{macroImpactSummary.generators_count}</span>{' '}
+          generadores modelados para la misma ZM.
+        </p>
+      ) : null}
 
       {loading && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="animate-pulse rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4">
               <div className="h-3 w-3/4 rounded bg-[#E8E4DC]" />
@@ -140,17 +136,18 @@ export function FlujosResiduos() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Configura generación total y mix de corrientes para ver el diagnóstico.
+          Cuando existan resultados del simulador principal, aquí aparecerá el diagnóstico con la generación RSU global y la
+          composición fija ALQUIMIA.
         </div>
       )}
 
       {error && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-[13px] text-red-800 space-y-2">
+        <div className="space-y-2 rounded-lg border border-red-200 bg-red-50 p-4 text-[13px] text-red-800">
           <p>{error}</p>
           {lastPayload && (
             <button
               type="button"
-              onClick={() => run(lastPayload)}
+              onClick={() => void retry()}
               className="rounded-lg border border-red-300 bg-white px-3 py-1 text-[12px]"
             >
               Reintentar
@@ -162,23 +159,24 @@ export function FlujosResiduos() {
       {result?.status === 'blocked' && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-[12px] text-amber-900">
           <p className="font-semibold">Diagnóstico bloqueado</p>
-          {result.blockers.map(b => <p key={b}>{b}</p>)}
+          {result.blockers.map(b => (
+            <p key={b}>{b}</p>
+          ))}
         </div>
       )}
 
       {result && result.status !== 'blocked' && (
         <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
             <Chip title="Tasa actual" value={`${result.tasa_circularidad_actual_pct.toFixed(2)}%`} />
             <Chip title="Tasa potencial" value={`${result.tasa_circularidad_potencial_pct.toFixed(2)}%`} />
-            <Chip title="Oportunidad MXN/año" value={`$${result.brecha.oportunidad_ingreso_estimado_mxn.toLocaleString('es-MX')}`} />
+            <Chip
+              title="Oportunidad MXN/año"
+              value={`$${result.brecha.oportunidad_ingreso_estimado_mxn.toLocaleString('es-MX')}`}
+            />
           </div>
 
-          <FlujosSankey
-            title="Diagnóstico de flujos · Sankey"
-            nodes={buildDiagnosticoNodes(result)}
-            links={buildDiagnosticoLinks(result)}
-          />
+          <FlujosSankey title="Diagnóstico de flujos · Sankey" nodes={buildDiagnosticoNodes(result)} links={buildDiagnosticoLinks(result)} />
 
           <NarrativeBridge
             kicker="S22 · Lectura del diagnóstico"
@@ -196,7 +194,9 @@ export function FlujosResiduos() {
 
           {result.advertencias.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-              {result.advertencias.map(w => <p key={w}>{w}</p>)}
+              {result.advertencias.map(w => (
+                <p key={w}>{w}</p>
+              ))}
             </div>
           )}
 
@@ -206,11 +206,11 @@ export function FlujosResiduos() {
               <table className="w-full text-[12px]">
                 <thead>
                   <tr className="border-b border-[#E8E4DC] text-[#6B6760]">
-                    <th className="text-left py-2">Corriente</th>
-                    <th className="text-left py-2">t/día</th>
-                    <th className="text-left py-2">Destino</th>
-                    <th className="text-left py-2">Recuperable</th>
-                    <th className="text-left py-2">Advertencia</th>
+                    <th className="py-2 text-left">Corriente</th>
+                    <th className="py-2 text-left">t/día</th>
+                    <th className="py-2 text-left">Destino</th>
+                    <th className="py-2 text-left">Recuperable</th>
+                    <th className="py-2 text-left">Advertencia</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -240,8 +240,8 @@ export function FlujosResiduos() {
           <div className="rounded-lg border border-[#DAD3C7] bg-white p-4">
             <p className="text-[13px] font-semibold text-[#1C1B18]">Brecha de recuperación</p>
             <p className="mt-1 text-[12px] text-[#6B6760]">
-              Recuperables perdidos: {result.brecha.toneladas_recuperables_perdidas.toFixed(3)} ton/día ·
-              No capturado: {result.brecha.porcentaje_recuperable_no_capturado.toFixed(2)}%
+              Recuperables perdidos: {result.brecha.toneladas_recuperables_perdidas.toFixed(3)} ton/día · No capturado:{' '}
+              {result.brecha.porcentaje_recuperable_no_capturado.toFixed(2)}%
             </p>
             <div className="mt-2 rounded border border-[#E8E4DC] bg-[#FAF8F4] p-3 text-[12px] text-[#6B6760]">
               <p className="font-semibold text-[#1C1B18]">Trazabilidad del cálculo</p>
