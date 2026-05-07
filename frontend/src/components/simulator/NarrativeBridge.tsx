@@ -12,14 +12,12 @@
  * nunca implicar sanciones a nombre de la ZM única.
  */
 
+import { useMemo } from 'react'
 import type { ReactNode } from 'react'
 import { ArrowRight, Info, Sparkles, TriangleAlert } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ZMS } from '@/lib/constants'
-import { getNarrativaIntro } from '@/lib/narrativaIntro'
-
-import type { SeleccionMunicipioCatalog } from '@/types'
+import { getNarrativaIntro, resolveCitizenNarrativaContext } from '@/lib/narrativaIntro'
 
 export type NarrativeBridgeVariant = 'result' | 'warning' | 'bridge'
 
@@ -181,48 +179,44 @@ const INTRO_ENTREPRENEUR_P1 =
 const INTRO_ENTREPRENEUR_P2 =
   'La salida no es un PDF genérico: es argumentario para mesa con municipio o cabildo, con sensibilidad a captura y a plena cobertura. Si inviertes en infraestructura de acopio, ves cómo la concesión se paga y dónde revienta el escenario adverso.'
 
-/** Catálogo INEGI y simulador alineados — Q-024. */
-function municipioCatalogoListo(
-  sel: SeleccionMunicipioCatalog | null,
-  zmActiva: string,
-  municipiosActivos: string[],
-): sel is SeleccionMunicipioCatalog {
-  if (!sel) return false
-  const municipioId = sel.municipioSimulatorId
-  if (sel.zmSimulatorId !== zmActiva) return false
-  const zm = ZMS.find(z => z.id === zmActiva)
-  if (!zm?.municipios.some(m => m.id === municipioId)) return false
-  if (!municipiosActivos.includes(municipioId)) return false
-  return sel.poblacion > 0 && sel.generacionRsuDia > 0
-}
-
-/**
- * Intro al simulador por audiencia — tono técnico-político, dos párrafos.
- * Ciudadano: si hay `seleccionMunicipioCatalog` coherente, el primer párrafo usa datos INEGI vía getNarrativaIntro.
+/** Intro al simulador por audiencia — tono técnico-político, dos párrafos.
+ * Ciudadános: territorio y cifras desde `resolveCitizenNarrativaContext` (municipio único, subconjunto o ZM completa).
  */
 export function NarrativaIntroBridge({ className }: { className?: string }) {
-  const audience          = useSimulatorStore(s => s.audience)
-  const selMunicipio      = useSimulatorStore(s => s.seleccionMunicipioCatalog)
-  const escenario         = useSimulatorStore(s => s.presetTrayectoria)
-  const zmActiva          = useSimulatorStore(s => s.zmActiva)
+  const audience = useSimulatorStore(s => s.audience)
+  const escenario = useSimulatorStore(s => s.presetTrayectoria)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const seleccionMunicipioCatalog = useSimulatorStore(s => s.seleccionMunicipioCatalog)
+  const genPercapita = useSimulatorStore(s => s.genPercapita)
+  const mesInicio = useSimulatorStore(s => s.mesInicio)
+  const snapshotDatos = useSimulatorStore(s => s.snapshotDatos)
+
+  const narrativaCtx = useMemo(
+    () => resolveCitizenNarrativaContext(useSimulatorStore.getState()),
+    [zmActiva, municipiosActivos, seleccionMunicipioCatalog, genPercapita, mesInicio, snapshotDatos],
+  )
 
   if (!audience) return null
 
   if (audience === 'citizen') {
     let p1: string
-    if (selMunicipio && municipioCatalogoListo(selMunicipio, zmActiva, municipiosActivos)) {
+    if (narrativaCtx) {
       const t = getNarrativaIntro(
-        selMunicipio.municipioSimulatorId,
-        selMunicipio.nombre,
-        selMunicipio.poblacion,
-        selMunicipio.generacionRsuDia,
+        narrativaCtx.municipioId,
+        narrativaCtx.territorioNombre,
+        narrativaCtx.poblacion,
+        narrativaCtx.rsuDia,
         escenario,
-        selMunicipio.datosEstimados,
+        narrativaCtx.esEstimado,
+        narrativaCtx.scope,
       )
-      p1 = t || 'El programa municipal no avanza por falta de voluntad única —falta evidencia pública de que la separación paga y que el reglamento la respalda.'
+      p1 =
+        t ||
+        'El programa municipal no avanza por falta de voluntad única —falta evidencia pública de que la separación paga y que el reglamento la respalda.'
     } else {
-      p1 = 'El problema no es solo recolectar más toneladas. Es decidir, con números, qué fracción del flujo se valoriza antes del relleno y quién en la cadena captura ese valor.'
+      p1 =
+        'El problema no es solo recolectar más toneladas. Es decidir, con números, qué fracción del flujo se valoriza antes del relleno y quién en la cadena captura ese valor.'
     }
     return (
       <NarrativeBridge
