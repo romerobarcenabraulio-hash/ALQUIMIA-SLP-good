@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Lighthouse sobre /simulator (export estático servido en LOCAL).
+ * Lighthouse sobre /simulator.
+ * Tras `next build`, sirve la app con `next start` (ver `audit:lighthouse:ci` en package.json).
  * Salida: audit_reports/lighthouse-simulator.report.{html,json}
  *
  * Si falta lighthouse en node_modules: ejecuta `npm install` en frontend.

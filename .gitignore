@@ -2,6 +2,7 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
+**/.DS_Store
 
 # Node — nunca subir dependencias (Vercel hace npm install en build)
 node_modules/
@@ -15,3 +16,12 @@ venv/
 # Lighthouse / auditoría local (mantener solo .gitkeep)
 frontend/audit_reports/*
 !frontend/audit_reports/.gitkeep
+
+# Secretos / env local (ACCESS_CODE, tokens)
+frontend/.env.local
+frontend/.env.*.local
+
+# Build output — NO commitear artefactos de build (causan fallos cross-platform en Vercel)
+frontend/.next/
+frontend/out/
+frontend/.turbo/
