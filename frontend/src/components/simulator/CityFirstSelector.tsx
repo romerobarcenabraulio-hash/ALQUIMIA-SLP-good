@@ -239,26 +239,7 @@ export function CityFirstSelector() {
       )}
 
       {cityContextLoading && (
-        <p className="mt-3 text-[12px] text-[#8A857C]">Hidratando CityContext e invalidando baseline anterior...</p>
-      )}
-
-      {!cityContextLoading && cityContext && (
-        <div className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-          <p className="text-[12px] font-semibold text-[#1C1B18]">Contexto municipal</p>
-          <p className="mt-1 text-[12px] text-[#6B6760]">{cityContext.nombre}</p>
-          <div className="mt-3 border-t border-[#E8E4DC] pt-3 space-y-2">
-            <p className="text-[12px] leading-relaxed text-[#6B6760]">
-              — <strong className="text-[#1C1B18]">Aviso del catálogo (API):</strong>{' '}
-              {cityContext.legal_notice}
-            </p>
-            <p className="font-mono text-[10px] text-[#8A857C]" title={cityContext.catalog_simulation_epoch}>
-              Época catálogo semilla · <strong className="text-[#6B6760]">{cityContext.catalog_simulation_epoch}</strong>
-            </p>
-          </div>
-          <p className="mt-3 text-[11px] text-[#8A857C]">
-            Municipios listados en contexto: elija el ámbito operativo con los botones «ZM completa» o «solo este municipio» arriba.
-          </p>
-        </div>
+        <p className="mt-3 text-[12px] text-[#8A857C]">Cargando contexto de la ciudad...</p>
       )}
 
       {!cityContextLoading && portalError && (

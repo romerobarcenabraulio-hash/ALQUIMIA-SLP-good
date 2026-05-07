@@ -36,7 +36,6 @@ export function GenerarPlanModal() {
     if (!generatingPlan || jobId) return
 
     const apiUrl = getApiUrl()
-    const token  = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
 
     const state = useSimulatorStore.getState()
     const scenario = {
@@ -87,7 +86,6 @@ export function GenerarPlanModal() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       body: JSON.stringify({
         municipio:          zmActiva,

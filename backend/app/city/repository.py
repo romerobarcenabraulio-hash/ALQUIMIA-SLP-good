@@ -241,9 +241,8 @@ def baseline_for(city_id: str, snapshot: SnapshotDatos) -> Optional[CircularityB
             requiere_clave_api=False,
         ),
         warnings=[
-            "Esta referencia es estimada no oficial del modelo ALQUIMIA: no viene de un censo o inventario público municipal de residuos.",
-            "Aquí sólo contemplamos RSU habitual; no están residuos peligrosos, especiales ni de manejo separado obligatorio.",
-            "Las obligaciones legales y la competencia aplican municipio por municipio, no a toda la ZM junta.",
+            "Alcance de residuo (estimación no oficial): sólo contemplamos RSU habitual; exclusos peligrosos, especiales y manejo separado obligatorio salvo donde el instrumento aplique otro alcance.",
+            "Competencia: obligaciones jurídicas y trámites aplican municipio por municipio; la zona metropolitana coordina territorio pero no reemplaza al ayuntamiento en sanciones o expedientes locales.",
         ],
         interpretation=(
             "El porcentaje resume, en esta simulación, cuánto del RSU municipal que modelamos aparece canalizado "

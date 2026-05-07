@@ -9,6 +9,9 @@ import {
   SANKEY_NODES,
 } from '@/data/sankeyData'
 
+// Escenario propuesto: año 3 = separación en 5 fracciones activa
+const ANIO_PROPUESTO = 3
+
 type SankeyChartLink = {
   source: number
   target: number
@@ -133,9 +136,6 @@ function FlujoLinkTooltip({
   return null
 }
 
-// Muestra el escenario propuesto (año 3 = separación en 5 fracciones activa)
-const ANIO_PROPUESTO = 3
-
 export function SankeyFlujoResiduos() {
   const specLinks = useMemo(
     () => interpolateSankeyLinks(ANIO_PROPUESTO),
@@ -173,7 +173,7 @@ export function SankeyFlujoResiduos() {
   if (chartData.links.length === 0) {
     return (
       <div className="rounded-[12px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-6 text-center text-[12px] text-[#6B6760]">
-        Sin flujos para el año seleccionado.
+        Sin flujos disponibles para el escenario propuesto.
       </div>
     )
   }
