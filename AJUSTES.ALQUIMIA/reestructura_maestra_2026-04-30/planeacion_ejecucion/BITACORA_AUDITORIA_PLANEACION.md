@@ -3506,3 +3506,52 @@ Siguiente acción humano: correr Lighthouse en URL real Vercel y pegar scores en
 
 — *Ejecutor · ALQUIMIA · Q-010-EXEC*
 
+---
+
+## Auditoría de Cierre — FASE GOV
+**Fecha:** 2026-05-06 · **Auditor:** Ejecutor ALQUIMIA (revisión estática de código + build)
+
+### Checklist
+
+| # | Ítem | Veredicto | Evidencia / Nota |
+|---|---|---|---|
+| 1 | **Landing — SVG flujo visible** | ✅ PASS | `FlujoCicloSVG` en `page.tsx` línea 167, `viewBox="0 0 720 140"`, 4 nodos conectados con flechas SVG marcadas. Componente renderizado en `<div className="w-full overflow-x-auto">`. |
+| 2 | **Landing — artículo editorial con datos reales** | ✅ PASS | H1 contiene "1,850 toneladas diarias"; párrafo "$446–494 millones"; KPI cards "168 empleos / 533 mil t CO₂ / $446–494 M". Commit `30623577`. |
+| 3 | **Landing — auth module funcional** | ✅ PASS | `AuthModule` con tabs `ingresar`/`solicitar`. `POST /api/acceso` → Route Handler con `ACCESS_CODE` server-side. Cookie `httpOnly`. Middleware Edge protege `/simulator`, `/hub`, `/ca-studio`. Build: `ƒ /api/acceso` (Dynamic), `ƒ Proxy (Middleware)`. |
+| 4 | **Simulador — sin texto dev expuesto** | ✅ PASS | `grep CITY_TEAM\|trace:` en `src/app/simulator/page.tsx` → sin coincidencias. `console.log/info/warn` acotados a `NODE_ENV !== 'production'`. Commit `6bd923d3` ("limpiar texto dev interno"). |
+| 5 | **Modal reglamento — 2 paneles, texto adendo legible, botón fuente oficial** | ✅ PASS (código) | `MarcoLegal.tsx` importa `useReglamentoFuente` → `openReglamento(munId)` en botón "Ver adendos propuestos". Texto: "ALQUIMIA no emite dictamen legal ni aprueba reformas." Solo un botón de acción (no iconos por ítem). Verificación visual en browser pendiente de deploy. |
+| 6 | **Sankey — estático sin slider** | ✅ PASS | `SankeyFlujoResiduos` usa `ANIO_PROPUESTO = 3` fijo; sin `useState`, sin `<Slider>`, sin `progresoAnios`. Disclaimer estático: "Escenario propuesto · año 3 · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales". |
+| 7 | **Marco Legal — sin iconos de click por ítem, botón único** | ✅ PASS | Roadmap items usan `<button>` con círculo de check (gate de flujo interno), no iconos externos de acción. Un solo botón CTA verde "Ver adendos propuestos". |
+| 8 | **ÁGORA Q-023 — ZIP con documentos** | ⚠️ PARCIAL | `generarPaqueteZipHub` en `hubPaqueteZip.ts` genera ZIP con docs del catálogo. Catálogo `documentosHub` tiene 30 entradas totales; solo 3 marcadas `disponible_web` (rest `en_elaboracion`). El requisito "7 documentos en el ZIP" depende de cuántos tengan `publicRelPath` disponible al momento del deploy — no verificable en estático sin ejecutar la app real. **Requiere verificación en `alquimiaplatform.com` con sesión activa.** |
+| 9 | **CI GitHub Actions — último run verde** | ⚠️ NO VERIFICABLE (estático) | El archivo `.github/workflows/ci.yml` fue excluido del commit por falta de scope `workflow` en el PAT. El estado del último run no es verificable desde código estático. **Requiere acceso a `https://github.com/romerobarcenabraulio-hash/ALQUIMIA-SLP--/actions`.** |
+| 10 | **Dominio alquimiaplatform.com — carga < 3s, sin errores críticos** | ⚠️ NO VERIFICABLE (estático) | No accesible desde auditoría de código. **Requiere prueba de carga en browser real.** |
+
+### Hallazgos Técnicos Confirmados ✅
+
+- `tsc --noEmit` → exit 0 (sin errores TypeScript)
+- `npm run build` → exit 0; 11 páginas generadas, `/api/acceso` como Dynamic, Middleware presente
+- `ACCESS_CODE` solo en `src/app/api/acceso/route.ts` (servidor); no expuesto en bundle cliente
+- `output: 'export'` eliminado de `next.config.js` — compatible con middleware Edge y Route Handlers
+- `NarrativaIntroBridge` requiere `seleccionMunicipioCatalog` no-null — no muestra bloque vacío
+- `narrativaIntro.ts` no calcula CO₂/árboles propios — solo datos del store
+
+### Veredicto Final
+
+```
+FASE GOV: PARCIALMENTE CERRADA
+```
+
+**PASS en código (8/10):** landing, auth gate, simulador limpio, Sankey estático, Marco Legal, tsc, build.
+
+**PENDIENTES de verificación en producción (2/10):**
+
+1. **ZIP ÁGORA Q-023:** Confirmar que con sesión activa en `alquimiaplatform.com`, el botón "Descargar paquete ZIP" en `/hub` genera un ZIP con al menos 7 documentos listos. Si el catálogo solo tiene 3 `disponible_web`, el criterio de 7 no se cumple → Ejecutor debe ampliar el catálogo o ajustar el criterio a los documentos realmente disponibles.
+
+2. **CI + Dominio:** Verificar en browser:
+   - `https://github.com/romerobarcenabraulio-hash/ALQUIMIA-SLP--/actions` → último run verde
+   - `https://alquimiaplatform.com` → carga < 3s, DevTools Console sin errores críticos (no 4xx/5xx en recursos principales)
+
+**Condición de cierre definitivo:** los 2 ítems pendientes pasan → actualizar esta bitácora con "FASE GOV CERRADA" y fecha.
+
+— *Auditor · ALQUIMIA · Fase GOV · 2026-05-06*
+

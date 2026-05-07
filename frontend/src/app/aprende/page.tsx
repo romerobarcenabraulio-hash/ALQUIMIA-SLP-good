@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { FlujosAnimados } from '@/components/aprende/FlujosAnimados'
+import { EconomiaLinealCircularIntro } from '@/components/aprende/EconomiaLinealCircularIntro'
 import { ContadorRelleno } from '@/components/aprende/ContadorRelleno'
 import { FAQSection } from '@/components/aprende/FAQSection'
 import LegislacionRSU from '@/components/aprende/LegislacionRSU'
@@ -96,7 +97,9 @@ export default function AprendePage() {
         {/* Qué pasa después del bote */}
         <section className="mb-16">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Qué pasa después del bote</p>
-          <h2 className="font-serif text-[28px] text-[#1C1B18] mb-4">¿Qué pasa con tu basura?</h2>
+          <h2 className="font-serif text-[28px] text-[#1C1B18] mb-6">¿Qué pasa con tu basura?</h2>
+          <EconomiaLinealCircularIntro />
+          <h3 className="font-serif text-[20px] text-[#1C1B18] mb-4 mt-2">Sigue el viaje de tu fracción</h3>
           <FlujosAnimados />
         </section>
 
