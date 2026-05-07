@@ -3,11 +3,10 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt, MATERIAL_LABELS } from '@/lib/utils'
 import { MESES } from '@/lib/utils'
 import { ESTACIONALIDAD } from '@/lib/constants'
-import { Slider } from '@/components/ui/Slider'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
 export function Logistica() {
-  const { resultados, capCamionTon, setCapCamion, mermaLogPct, setMerma } = useSimulatorStore()
+  const { resultados, capCamionTon, mermaLogPct } = useSimulatorStore()
 
   const estData = ESTACIONALIDAD.map((f, i) => ({
     mes: MESES[i].slice(0, 3),
@@ -21,32 +20,13 @@ export function Logistica() {
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Recolección y transporte</h2>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        {/* Config camiones */}
         <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
-          <p className="text-[12px] font-medium text-[#6B6760] mb-4">Configuración camiones</p>
-          <div className="flex flex-col gap-4">
-            <div>
-              <p className="text-[11px] text-[#6B6760] mb-2">Capacidad por camión</p>
-              <div className="flex gap-2">
-                {[8, 10, 12, 14].map(t => (
-                  <button
-                    key={t}
-                    onClick={() => setCapCamion(t)}
-                    className={`px-3 py-1.5 rounded-[6px] text-[12px] border transition-colors ${
-                      capCamionTon === t ? 'bg-[#3B6D11] text-white border-[#3B6D11]' : 'bg-transparent text-[#6B6760] border-[#E8E4DC]'
-                    }`}
-                  >
-                    {t}t
-                  </button>
-                ))}
-              </div>
-            </div>
-            <Slider
-              label="Merma logística"
-              value={mermaLogPct} min={5} max={25} step={1}
-              onChange={setMerma} unit="%" formatValue={v => `${v}%`}
-            />
-          </div>
+          <p className="text-[12px] font-medium text-[#6B6760] mb-2">Parámetros logísticos (lectura del plan global)</p>
+          <p className="text-[12px] leading-relaxed text-[#6B6760]">
+            Capacidad por camión: <span className="font-mono text-[#1C1B18]">{capCamionTon} t</span>.
+            Merma logística modelada: <span className="font-mono text-[#1C1B18]">{mermaLogPct}%</span>.
+            Se fijan en el modelo municipal; aquí no hay ajustes locales adicionales.
+          </p>
         </div>
 
         {/* Tabla camiones por material */}

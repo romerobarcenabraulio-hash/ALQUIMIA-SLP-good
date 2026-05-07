@@ -10,7 +10,6 @@ import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
 import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
 import { DecisionModuleShell } from '@/components/simulator/DecisionModuleShell'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
-import { ComposicionRSU } from '@/components/simulator/ComposicionRSU'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
 import { CentrosAcopio } from '@/components/simulator/CentrosAcopio'
 import { Logistica } from '@/components/simulator/Logistica'
@@ -25,7 +24,6 @@ import { SankeyFlujoResiduos } from '@/components/simulator/SankeyFlujoResiduos'
 import { HojaRuta } from '@/components/simulator/HojaRuta'
 import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
 import { DashboardKPIs } from '@/components/simulator/DashboardKPIs'
-import { ComparadorEscenarios } from '@/components/simulator/ComparadorEscenarios'
 import { AlertasPanel } from '@/components/simulator/AlertasPanel'
 import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { InspeccionForm } from '@/components/simulator/InspeccionForm'
@@ -34,7 +32,8 @@ import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
-import { GuidedPlanControls } from '@/components/simulator/GuidedPlanControls'
+import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
+import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 
@@ -106,6 +105,7 @@ export default function SimulatorPage() {
 
           <CityFirstSelector />
           <CircularityBaselineCard />
+          {(audience === 'functionary' || audience === 'citizen') && <PlanGlobalControlsBar />}
 
           {!baselineValid ? (
             <BaselineGateBlocked
@@ -188,8 +188,6 @@ function renderDecisionModule(
         return (
           <>
             <EducacionCiudadana />
-            <ComposicionRSU />
-            <GuidedPlanControls />
           </>
         )
       case 'impact_finance':
@@ -222,14 +220,11 @@ function renderDecisionModule(
         </>
       )
     case 'future_goals':
-      return (
-        <>
-          <GuidedPlanControls />
-        </>
-      )
+      return <MetasPlanDerivadasNotice />
     case 'infrastructure_operations':
       return (
         <>
+          <ProgresionPlanMunicipalTiempo />
           <CentrosAcopio />
           <Logistica />
           <OperacionPERBitacora />
@@ -244,7 +239,6 @@ function renderDecisionModule(
     case 'scenarios_export':
       return (
         <>
-          <ComparadorEscenarios />
           <ExportarSection />
           <ExportadorReporte />
           <DashboardKPIs />
@@ -256,6 +250,20 @@ function renderDecisionModule(
     default:
       return <ModuleEmpty module={module} />
   }
+}
+
+function MetasPlanDerivadasNotice() {
+  return (
+    <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Metas del plan</p>
+      <h2 className="font-serif text-[22px] text-[#1C1B18]">Trayectoria materializada automáticamente</h2>
+      <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
+        La ruta de captura anual, el despliegue de centros de acopio y los insumos financieros siguen el preset{' '}
+        <span className="font-medium text-[#1C1B18]">Realista</span> del catálogo ALQUIMIA. Solo edita, en la franja global
+        superior, municipio, horizonte temporal y generación per cápita; el resto del simulador permanece en modo lectura operativa.
+      </p>
+    </section>
+  )
 }
 
 function ModuleEmpty({ module }: { module: DecisionModule }) {

@@ -7,6 +7,8 @@ import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
 
+const PRESET_PLAN_FIJADO = 'Realista' as const
+
 /** Contrato blueprint 22_0: `localStorage['alquimia.audience']` es la clave literal de audiencia; `alquimia-simulator` sigue siendo el persist Zustand. En conflicto tras reload, gana esta clave y luego se rehidrata el journey. */
 const AUDIENCE_LITERAL_KEY = 'alquimia.audience' as const
 
@@ -426,12 +428,30 @@ export const useSimulatorStore = create<SimulatorStore>()(
 
         recalcular: () => {
           const state = get()
-          const mixCAs = deriveMixCasFromHorizonte(state.horizonte, state.presetTrayectoria)
-          const merged = { ...state, mixCAs }
+          const preset = PRESETS_TRAYECTORIA[PRESET_PLAN_FIJADO]
+          const años = preset?.años ?? [20, 45, 70, 90, 100]
+          const h = Math.max(1, state.horizonte)
+          const pctCapturaPorAño = Array.from(
+            { length: h },
+            (_, i) => años[Math.min(i, años.length - 1)] ?? 70,
+          )
+          const mixCAs = deriveMixCasFromHorizonte(state.horizonte, PRESET_PLAN_FIJADO)
+          const merged = {
+            ...state,
+            mixCAs,
+            presetTrayectoria: PRESET_PLAN_FIJADO,
+            pctCapturaPorAño,
+          }
           try {
             const r = calcular(merged)
             const sinProg = calcularEscenarioSinPrograma(merged)
-            set({ resultados: r, resultadosSinPrograma: sinProg, mixCAs })
+            set({
+              resultados: r,
+              resultadosSinPrograma: sinProg,
+              mixCAs,
+              presetTrayectoria: PRESET_PLAN_FIJADO,
+              pctCapturaPorAño,
+            })
           } catch (e) {
             console.error('Cálculo fallido', e)
           }

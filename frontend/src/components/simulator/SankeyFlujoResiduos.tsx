@@ -8,6 +8,7 @@ import {
   interpolateSankeyLinks,
   SANKEY_NODES,
 } from '@/data/sankeyData'
+import { getPlanTemporalStage, sankeyYearFromHorizonte } from '@/lib/municipalPlanTimeSeries'
 import { useSimulatorStore } from '@/store/simulatorStore'
 
 type SankeyChartLink = {
@@ -136,11 +137,12 @@ function FlujoLinkTooltip({
 
 export function SankeyFlujoResiduos() {
   const horizonte = useSimulatorStore(s => s.horizonte)
-  const anioPropuesto = Math.max(1, Math.min(5, horizonte))
+  const sankeyYear = sankeyYearFromHorizonte(horizonte)
   const specLinks = useMemo(
-    () => interpolateSankeyLinks(anioPropuesto),
-    [anioPropuesto],
+    () => interpolateSankeyLinks(sankeyYear),
+    [sankeyYear],
   )
+  const etapa = useMemo(() => getPlanTemporalStage(horizonte), [horizonte])
 
   const kpis = useMemo(() => computeSankeyKpis(specLinks), [specLinks])
 
@@ -183,9 +185,12 @@ export function SankeyFlujoResiduos() {
       <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">
         S15 — Flujo de residuos (modelo PD&amp;SA)
       </p>
-      <h2 className="font-serif text-[22px] text-[#1C1B18] mt-1 mb-3">
+      <h2 className="font-serif text-[22px] text-[#1C1B18] mt-1 mb-1">
         Sankey: fuentes → materiales → destinos
       </h2>
+      <p className="font-mono text-[11px] text-[#6B6760] mb-3">
+        Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación PD&amp;SA año {sankeyYear.toFixed(2)} / 5
+      </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">
         {[
@@ -220,7 +225,7 @@ export function SankeyFlujoResiduos() {
       </div>
 
       <p className="text-[11px] text-[#A8A49C] mb-4">
-        Escenario propuesto · año {anioPropuesto} · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales
+        Escenario propuesto · año modelo {sankeyYear.toFixed(2)} · separación en 5 fracciones activa — proyecciones estimadas, no datos oficiales
       </p>
 
       <div className="flex flex-wrap gap-4 justify-center text-[10px] text-[#6B6760] mb-2">
