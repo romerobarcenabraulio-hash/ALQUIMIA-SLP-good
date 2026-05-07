@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({})) as Record<string, unknown>
   const code = typeof body.code === 'string' ? body.code.trim() : ''
 
-  const expected = process.env.ACCESS_CODE ?? ''
+  const expected = process.env.ACCESS_CODE ?? process.env.accescode ?? ''
   if (!expected) {
     return NextResponse.json(
       { ok: false, error: 'ACCESS_CODE no configurado en el servidor.' },
