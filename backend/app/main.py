@@ -164,7 +164,7 @@ app.include_router(empresa_router)
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["agora"])
 app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
     return {
         "status": "ok",
