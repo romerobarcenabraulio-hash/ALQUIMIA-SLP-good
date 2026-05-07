@@ -14,7 +14,7 @@
 
 | Campo | Valor |
 |-------|--------|
-| **Fase rectora** | **23.0 ABIERTA** (CSA 2026-05-05) — intake jurisdiccional lógico · **22.x** cerrada en código salvo deuda §6.3/Lighthouse · **17.1** / **23.1** siguen en cola |
+| **Fase rectora** | **23.0 ABIERTA** (CSA 2026-05-05) + **Fase 30 EMPRESAS** (roadmap independiente 2026-05-07) |
 | **Última sincronización** | 2026-05-06 (CSA — Q-020/Q-021 cola + REQUEST Ejecutor R3→Q-007) |
 | **Rama / PR activo** | _(opcional)_ |
 | **Navigator** | **ACTIVO** — **re-PASS 23.0 emitido** en bitácora **2026-05-05** (`Navigator — re-PASS Fase 23.0…`): ítem **5 PASS**; **6–7 FAIL** documentados (`catalog_debt.py`, epoch simbólico). **23.1** sin autorización Navigator por FAIL **6–7** hasta migración CVE/MGN **o** orden CSA de riesgo. |
@@ -57,6 +57,16 @@ _Orden sugerido: de arriba hacia abajo. Un ítem = una PR o un paquete coherente
 | Q-024 | **BUG CRÍTICO Selector Municipio** — municipio individual sigue mostrando datos ZM completa en todos los módulos | Ejecutor | **HECHO** | Motor `calcular` + `resolveSimulationGeography` + `recalcular` al variar `municipiosActivos`; tests `frontend/src/lib/zmPopulationScale.test.ts`; aviso UI ancla cuando hay varios municipios en módulos con API single-id |
 | Q-025 | **Mapa de Calor Circularidad** (Mapbox) — colonia x colonia, % circularidad actual vs proyectado | Navigator → Ejecutor → Aesthete | PENDIENTE (**OLA 2**) | Navigator valida fuente INEGI/AGEB · SRID 4326 · Mapbox GL JS |
 | Q-026 | **Módulo RCD** — renta contenedores volquete, trazabilidad RCD → CA, modelo ingresos concesionario | PD&SA spec → Ejecutor → CLC | BACKLOG | Fase 2 |
+| Q-E01 | **EMPRESAS** IA/copy portal consultoría circularidad (stream independiente) | Aesthete + Ejecutor | PENDIENTE | Ver Fase 30 |
+| Q-E02 | **EMPRESAS** Auth empresarial y aislamiento de sesiones | Ejecutor + Auditor | PENDIENTE | Ver Fase 30 |
+| Q-E03 | **EMPRESAS** Perfil de Generación Estimada RSU (wizard B2B) | Ejecutor + CLC | EN CURSO | Ver Fase 30 |
+| Q-E04 | **EMPRESAS** Sankey empresarial + slider temporal | Ejecutor + Aesthete | PENDIENTE | Ver Fase 30 |
+| Q-E05 | **EMPRESAS** Timeline de implementación consultiva con hitos/KPIs | PD&SA + Ejecutor | PENDIENTE | Ver Fase 30 |
+| Q-E06 | **EMPRESAS** Módulo financiero empresarial (ROI/payback/sensibilidad) | Ejecutor | PENDIENTE | Ver Fase 30 |
+| Q-E07 | **EMPRESAS** Exportables ejecutivos (PDF + XLS) | Ejecutor | PENDIENTE | Ver Fase 30 |
+| Q-E08 | **EMPRESAS** Pricing y paquetes de consultoría (Lite/Pro/Enterprise) | CSA + PM | PENDIENTE | Ver Fase 30 |
+| Q-E09 | **EMPRESAS** Release técnico independiente en Vercel | Ejecutor + Ops | PENDIENTE | Ver Fase 30 |
+| Q-E10 | **EMPRESAS** Dominio/subdominio propio + DNS + analítica | Humano + Ops | PENDIENTE | Ver Fase 30 |
 | Q-016 | **Predios sin permiso / expediente sancionatorio** — catastro predial, detección cagaderos, cálculo multa, PDF expediente técnico para inspector municipal | CLC + Navigator + Ejecutor + Auditor | PENDIENTE (**OLA 3+**) | Navigator: polígonos predios requieren fuente catastro oficial (no INEGI solo) · CLC: expediente ≠ acto de autoridad · depende Q-009 |
 | Q-017 | **Declaración de Generación Empresarial RSU** — wizard por giro SCIAN, estimación por material, perfil descargable, integración a Macrogeneradores | CLC + Ejecutor + Auditor | PENDIENTE (**OLA 2-3**) | CLC: nombre NO puede ser "COA" ni simular obligación federal · integra con `Macrogeneradores.tsx` existente · puede iniciar antes de Q-009 |
 
@@ -155,3 +165,4 @@ Si un cambio **toca mapa + UI**: Ejecutor integra → **Navigator** (geo) y **Ae
 | Q-012 VIZ-CA (diagramas centros acopio) | `cursor-rules/AESTHETE_PROPOSICION_DIAGRAMAS_CA_VISUAL.md` |
 | Fase 28 (predios sin permiso / expediente sancionatorio) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/28_predios_sin_permiso_expediente_sancionatorio.md` |
 | Fase 29 (declaración generación empresarial RSU) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/29_declaracion_generacion_empresarial_rsu.md` |
+| Fase 30 (portal ALQUIMIA EMPRESAS independiente) | `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/30_alquimia_empresas_portal_consultoria_circularidad.md` |

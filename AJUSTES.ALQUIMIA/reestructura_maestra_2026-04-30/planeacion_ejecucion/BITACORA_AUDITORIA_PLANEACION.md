@@ -3389,6 +3389,36 @@ Siguiente acción humano: correr Lighthouse en URL real Vercel y pegar scores en
 - **Acción requerida:** Elaborar Términos de Uso mínimo viable (máx. 1 página) cubriendo: titularidad, licencia de uso, naturaleza de simulación, exclusión de responsabilidad, jurisdicción, contacto. Texto borrador disponible bajo solicitud al CLC.
 - **Estado:** ⛔ BLOCKER — Kill-switch K1 activo.
 
+---
+
+## CSA · Apertura roadmap independiente · ALQUIMIA EMPRESAS · 2026-05-07
+
+**Mandato del fundador:** crear roadmap separado para `ALQUIMIA EMPRESAS — Portal de consultoria circularidad`, con backlog propio y release independiente del sprint de cierre GOV.
+
+### Decisión de arquitectura operativa
+
+- Se crean **dos streams formales**:
+  - `GOV` (cierre institucional y cumplimiento municipal)
+  - `EMPRESAS` (portal de consultoria circularidad B2B/B2G)
+- **No mezclar releases:** cada stream con su pipeline y checklist.
+- `EMPRESAS` tendrá backlog propio `Q-E01..Q-E10`.
+
+### Dominio/release separado (aprobado)
+
+- `GOV`: se mantiene en su release actual.
+- `EMPRESAS`: proyecto Vercel separado + dominio/subdominio dedicado.
+  - Recomendado: `empresas.alquimia.mx`
+  - Alterno: `alquimia-empresas.mx`
+
+### Artefactos actualizados en repo
+
+- Blueprint nuevo: `30_alquimia_empresas_portal_consultoria_circularidad.md`
+- COLA actualizada con serie `Q-E`.
+
+### Regla CSA inmediata
+
+Ningun ticket `Q-E` bloquea por defecto el cierre GOV. Solo un riesgo legal transversal, firmado por CLC/Auditor, puede detener ambos streams.
+
 #### B-03 · Documentos ÁGORA sin disclaimer embebido en el output generado
 
 - **Hallazgo:** Los 7 prompts del pipeline ÁGORA (`prompts.py`) instruyen al LLM a producir documentos en "estilo formal institucional mexicano (informe a presidencia municipal / cabildo)". El DOC-2 es una "Iniciativa de reforma reglamentaria", el DOC-7 es un "memorando ejecutivo ciudadano-presidente municipal". Ningún prompt instruía al LLM a incluir disclaimer al inicio del documento generado. Un documento exportado podría presentarse ante un cabildo sin advertencia visible de su naturaleza no oficial.
