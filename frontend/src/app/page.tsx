@@ -217,19 +217,29 @@ export default function LandingPage() {
             Con un programa de separación en 5 fracciones, un municipio mediano puede formalizar entre 80 y 120 empleos, capturar ingresos adicionales por venta de materiales separados y reducir entre 15% y 40% el volumen enviado a relleno — todo modelado, documentado y con respaldo en la legislación aplicable.
           </p>
 
-          {/* Stats en línea */}
-          <div className="grid grid-cols-3 gap-4 py-6 border-y border-[#E8E4DC] mb-8">
-            {[
-              { v: '80–120', u: 'empleos formalizables', s: 'por municipio mediano' },
-              { v: '+35%',   u: 'reducción a relleno',   s: 'separación 5 fracciones' },
-              { v: '$263M',  u: 'MXN/año potencial',     s: 'ZM San Luis Potosí' },
-            ].map(m => (
-              <div key={m.v}>
-                <p className="font-mono text-[22px] text-[#3B6D11] leading-none mb-1">{m.v}</p>
-                <p className="text-[12px] font-medium text-[#1C1B18]">{m.u}</p>
-                <p className="text-[11px] text-[#A8A49C] mt-0.5">{m.s}</p>
-              </div>
-            ))}
+          {/* Stats con contexto */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 py-7 border-y border-[#E8E4DC] mb-8">
+            <div>
+              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">80–120</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">empleos formales nuevos</p>
+              <p className="text-[12px] text-[#6B6760] leading-relaxed">
+                Pepenadores y operadores que hoy trabajan en la informalidad y pueden tener contrato, IMSS y salario fijo con un programa de separación.
+              </p>
+            </div>
+            <div>
+              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">35–40%</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">menos basura al relleno</p>
+              <p className="text-[12px] text-[#6B6760] leading-relaxed">
+                Con separación en 5 fracciones, más de un tercio de lo que hoy se entierra puede recuperarse, venderse o compostarse.
+              </p>
+            </div>
+            <div>
+              <p className="font-mono text-[28px] text-[#3B6D11] leading-none mb-2">$263M</p>
+              <p className="text-[13px] font-medium text-[#1C1B18] mb-1">MXN/año de ingresos potenciales</p>
+              <p className="text-[12px] text-[#6B6760] leading-relaxed">
+                Estimado para la Zona Metropolitana de SLP. Materiales separados que hoy se tiran y que el mercado de reciclaje ya paga.
+              </p>
+            </div>
           </div>
 
           <p className="text-[14px] text-[#6B6760] leading-[1.7] mb-4">
