@@ -193,7 +193,8 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
         </h3>
         <p className="mt-1 text-[12px] text-[#6B6760] max-w-3xl leading-relaxed">
           Comparación <strong>actual vs proyectado</strong> desde el simulador sobre{' '}
-          <strong>{payload.feature_count}</strong> celdas espaciales (solo ZM SLP tiene rejilla en esta versión).
+          <strong>{payload.feature_count}</strong> celdas espaciales proxy por municipio de la ZM activa (todas las ZM
+          sembradas en catálogo).
           Ámbito <strong>{payload.jurisdiction_scope}</strong> — sin efectos sancionatorios municipales desde esta vista.
         </p>
       </div>
@@ -237,8 +238,8 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
 
       {emptyZm ? (
         <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-4 text-[13px] text-amber-950">
-          Esta versión solo sirve la rejilla proxy de circularidad para <strong>ZM SLP</strong>. Cambia la ZM activa a
-          San Luis Potosí o espera expansión de geometría para {zmId}.
+          No hay rejilla proxy para la ZM <strong>{zmId}</strong> (desconocida o sin semillas demográficas). Revisa el
+          catálogo nacional o la consola de red si esperabas datos.
         </div>
       ) : !token ? (
         <div className="space-y-3">

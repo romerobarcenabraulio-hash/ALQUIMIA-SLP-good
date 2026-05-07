@@ -5,11 +5,12 @@ from __future__ import annotations
 from typing import Any, Dict, List
 
 from app.city.catalog_debt import CATALOG_SIMULATION_EPOCH
-from app.national.catalog import list_zm_municipios
+from app.national.catalog import get_zm, list_zm_municipios
 from app.national.schemas import CircularityHeatmapResponse
-from app.national.slp_circularity_grid import (
-    build_slp_zm_circularity_grid_features,
-    sort_features_nearest_city,
+from app.national.zm_circularity_grid import (
+    build_zm_circularity_grid_features,
+    sort_features_nearest_ref,
+    zm_reference_point,
 )
 
 
@@ -26,31 +27,29 @@ def build_circularity_heatmap_response(zm_id: str) -> CircularityHeatmapResponse
         "esta vista no sustituye actos municipales ni límites político-administrativos (INEGI MG)."
     )
 
-    if zmu != "SLP":
+    if get_zm(zmu) is None:
         return CircularityHeatmapResponse(
             catalog_simulation_epoch=CATALOG_SIMULATION_EPOCH,
             zm_id=zmu,
             version_mgn=None,
             geometry_storage_crs="EPSG:4326",
-            metric_calculation_crs_note="Métricas de superficie/distancia en SLP deben usar EPSG:6369; esta respuesta no incluye áreas.",
-            geometry_source="none_zm_not_implemented",
-            geometry_note=(
-                f"Q-025 piloto: rejilla proxy tipo AGEB solo implementada para zm_id=SLP; "
-                f"solicitaste {zmu} sin geometría servida."
+            metric_calculation_crs_note=(
+                "Métricas de superficie/distancia en territorio MX (ZM centro-norte) deben usar EPSG:6369; "
+                "esta respuesta no incluye áreas calculadas."
             ),
+            geometry_source="none_unknown_zm",
+            geometry_note=f"ZM `{zmu}` no está en el catálogo ALQUIMIA.",
             jurisdiction_scope="MetropolitanZone",
-            disclaimer=(
-                base_disclaimer + " No hay polígonos servidos para esta ZM en esta versión."
-            ),
+            disclaimer=base_disclaimer + " Sin geometría: ZM desconocida.",
             methodology_summary=methodology,
             feature_count=0,
-            geojson=({"type": "FeatureCollection", "features": []}),
+            geojson={"type": "FeatureCollection", "features": []},
         )
 
     municipios = list_zm_municipios(zmu)
-    raw_features: List[Dict[str, Any]] = build_slp_zm_circularity_grid_features(municipios)
-    features = sort_features_nearest_city(raw_features)
-
+    raw_features: List[Dict[str, Any]] = build_zm_circularity_grid_features(zmu, municipios)
+    ref_lat, ref_lng = zm_reference_point(municipios)
+    features = sort_features_nearest_ref(raw_features, ref_lat, ref_lng)
     geojson: Dict[str, Any] = {"type": "FeatureCollection", "features": features}
 
     return CircularityHeatmapResponse(
@@ -59,13 +58,13 @@ def build_circularity_heatmap_response(zm_id: str) -> CircularityHeatmapResponse
         version_mgn=None,
         geometry_storage_crs="EPSG:4326",
         metric_calculation_crs_note=(
-            "Polígonos almacenados en WGS84 (EPSG:4326). Para áreas/distancias en territorio SLP usar EPSG:6369 en pipeline futuro."
+            "Polígonos en WGS84 (EPSG:4326). Para áreas/distancias métricas en SLP, NL, QRO o JAL usar EPSG:6369 "
+            "(Navigator); esta respuesta no computa superficies."
         ),
         geometry_source="alquimia_grid_proxy_pending_mgn_inegi_ageb",
         geometry_note=(
-            "Los polígonos son una rejilla rectangular proxy por municipio para UX Mapbox; "
-            "deben sustituirse por capa AGEB urbana del Marco Geoestadístico Nacional INEGI con "
-            "version_mgn y CVE geoestadísticos oficiales antes de comunicar granularidad 'AGEB real'."
+            "Los polígonos son rejilla rectangular proxy por municipio (todas las ZM sembradas en catálogo); "
+            "sustituir por AGEB MGN INEGI con version_mgn antes de declarar granularidad geoestadística oficial."
         ),
         jurisdiction_scope="MetropolitanZone",
         disclaimer=(
