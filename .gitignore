@@ -20,6 +20,15 @@ frontend/audit_reports/*
 # Secretos / env local (ACCESS_CODE, tokens)
 frontend/.env.local
 frontend/.env.*.local
+backend/.env
+backend/.env.save
+backend/.env.*.local
+
+# Temporales de Office / editores
+~$*
+
+# Config local Claude / IDE
+**/.claude/settings.local.json
 
 # Build output — NO commitear artefactos de build (causan fallos cross-platform en Vercel)
 frontend/.next/
