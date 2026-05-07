@@ -190,8 +190,14 @@ export function SankeyFlujoResiduos() {
         Sankey: fuentes → materiales → destinos
       </h2>
       <ScopeAnclaKicker className="mb-2" />
-      <p className="font-mono text-[11px] text-[#6B6760] mb-3">
-        Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación PD&amp;SA año {sankeyYear.toFixed(2)} / 5
+      <p
+        id="sankey-etapa-actual"
+        role="status"
+        aria-live="polite"
+        aria-label={`Etapa actual: fase ${etapa.fase}, mes ${etapa.mes}. Interpolación del modelo PD y SA: año ${sankeyYear.toFixed(2)} de cinco.`}
+        className="font-mono text-[11px] text-[#6B6760] mb-3"
+      >
+        Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación PD&SA año {sankeyYear.toFixed(2)} / 5
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">

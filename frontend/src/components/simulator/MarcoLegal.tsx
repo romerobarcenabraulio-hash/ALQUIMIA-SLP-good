@@ -60,7 +60,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
                 </span>
                 <div>
                   <p className="text-[12px] font-medium text-[#1C1B18]">{f.nombre}</p>
-                  <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.gate}</p>
+                  <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.objetivo}</p>
                 </div>
               </div>
             ))}
@@ -76,7 +76,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Reforma reglamentaria</h2>
       <ScopeAnclaKicker className="mb-3 max-w-2xl" />
       <p className="text-[13px] text-[#6B6760] mb-6 max-w-2xl">
-        ALQUIMIA no emite dictamen legal ni aprueba reformas. Lo que genera es el expediente técnico de respaldo — el mismo que un equipo jurídico municipal necesita para redactar la iniciativa y presentarla ante Cabildo.
+        Esta vista produce expediente técnico de respaldo; no reemplaza el parecer de autoridad competente ni la aprobación formal de reformas. Es el mismo insumo que un equipo jurídico municipal puede usar para redactar la iniciativa y presentarla ante Cabildo.
       </p>
       <div className="mb-6 rounded-[12px] border border-[#E8E4DC] bg-[#F8F6F1] p-5">
         <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Estado normativo actual</p>
@@ -97,7 +97,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
               <p className="text-[12px] text-[#1C1B18]">
                 <span className="font-mono text-[#6B6760]">F{f.fase}</span> · {f.nombre}
               </p>
-              <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.gate}</p>
+              <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.objetivo}</p>
             </li>
           ))}
         </ul>

@@ -38,13 +38,19 @@ import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/Progresion
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
-  aplicarPlaceholdersTerritorio,
+  aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
 
 function SimulatorSimulationRibbon() {
   const cityContext = useSimulatorStore(s => s.cityContext)
   const cityContextLoading = useSimulatorStore(s => s.cityContextLoading)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const territorioLectura = useMemo(
+    () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
+    [municipiosActivos, zmActiva],
+  )
   return (
     <div className="sticky top-0 z-30 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-4">
       <div
@@ -54,13 +60,34 @@ function SimulatorSimulationRibbon() {
       >
         <p className="text-[12px] font-semibold text-[#1C1B18]">{SIMULATION_BANNER_TITLE}</p>
         <p className="mt-1 text-[11px] leading-relaxed text-[#6B6760]">{SIMULATION_BANNER_BODY}</p>
-        {cityContextLoading && (
-          <p className="mt-2 font-mono text-[10px] text-[#8A857C]">Época catálogo (simulación): sincronizando…</p>
-        )}
-        {!cityContextLoading && cityContext && (
-          <p className="mt-2 font-mono text-[10px] text-[#8A857C]" title="Contrato API">
-            Época catálogo (simulación): {cityContext.catalog_simulation_epoch}
+        {municipiosActivos.length > 0 && (
+          <p className="mt-2 text-[11px] font-medium text-[#5C5740]">
+            Alcance de lectura en esta sesión: {territorioLectura}
+            {zmActiva ? ` · ZM ${zmActiva}` : ''}
           </p>
+        )}
+        {(cityContextLoading || cityContext) && (
+          <details className="mt-2 border-t border-[#D4881E]/20 pt-2">
+            <summary className="cursor-pointer text-[11px] font-medium text-[#8B5A00] underline-offset-2 hover:underline">
+              Detalle de la simulación
+            </summary>
+            <div className="mt-2 rounded-[8px] border border-[#E8E4DC]/80 bg-white/60 px-3 py-2 text-[11px] text-[#6B6760]">
+              {cityContextLoading && (
+                <p>Versión de referencia territorial: sincronizando con el servidor…</p>
+              )}
+              {!cityContextLoading && cityContext && (
+                <>
+                  <p>
+                    Versión declarada del catálogo demográfico-territorial usada en esta sesión:{' '}
+                    <span className="font-medium text-[#1C1B18]">{cityContext.catalog_simulation_epoch}</span>
+                  </p>
+                  <p className="mt-1 text-[10px] text-[#A8A49C]">
+                    Identificador técnico de consistencia entre pantallas; no es acto oficial ni marca de autoridad.
+                  </p>
+                </>
+              )}
+            </div>
+          </details>
         )}
       </div>
     </div>
@@ -275,13 +302,14 @@ function MetasPlanDerivadasNotice() {
 function ModuleEmpty({ module }: { module: DecisionModule }) {
   return (
     <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-white px-4 py-4">
-      <p className="text-[12px] font-semibold text-[#1C1B18]">Modulo sin herramienta conectada</p>
+      <p className="text-[12px] font-semibold text-[#1C1B18]">Sin herramienta conectada para este paso del recorrido.</p>
       <p className="mt-1 text-[12px] text-[#6B6760]">{module.next_action}</p>
     </div>
   )
 }
 
 function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; error: string | null; cityId: string }) {
+  const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const etiquetaTerritorio = useMemo(
@@ -290,7 +318,7 @@ function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; err
   )
 
   const title = loading
-    ? aplicarPlaceholdersTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
+    ? aplicarSustitucionesTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
     : error
       ? 'No pudimos obtener los datos de la ciudad'
       : 'Selecciona una ciudad para continuar'
@@ -315,6 +343,17 @@ function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; err
         )}
         <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Qué puedes hacer</p>
         <p className="mt-1 text-[12px] text-[#6B6760]">{nextAction}</p>
+        {!loading && (
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={() => void fetchCityPortalData(zmActiva)}
+              className="rounded-[8px] border border-[#3B6D11]/40 bg-white px-4 py-2 text-[12px] font-medium text-[#23470A] transition-colors hover:bg-[#EAF3DE]"
+            >
+              Intentar de nuevo
+            </button>
+          </div>
+        )}
       </div>
     </section>
   )

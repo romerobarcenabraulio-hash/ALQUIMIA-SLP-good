@@ -10,6 +10,11 @@ import type { CityOption, EstadoMxOption, MunicipioContext, MunicipioMxApi } fro
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
+/** Evita que sufijos técnicos de catálogo lleguen al nombre público del botón ZM. */
+function labelZmPublica(raw: string): string {
+  return raw.replace(/\s*\([^)]*semilla[^)]*\)\s*$/iu, '').trim()
+}
+
 export function CityFirstSelector() {
   const [gdlBlockedOpen, setGdlBlockedOpen] = useState(false)
   const {
@@ -121,7 +126,7 @@ export function CityFirstSelector() {
       {!loading && !error && estados.length > 0 && (
         <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-4 space-y-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
-            Selector INEGI (Q-009)
+            Catálogo INEGI Estado–Municipio
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <label className="flex-1 flex flex-col gap-1 text-[11px] text-[#6B6760]">
@@ -187,7 +192,7 @@ export function CityFirstSelector() {
                 )}
               >
                 <MapPin size={15} aria-hidden="true" />
-                {option.nombre}
+                {labelZmPublica(option.nombre)}
               </button>
             ))}
           </div>
@@ -203,7 +208,7 @@ export function CityFirstSelector() {
       {!loading && !error && options.length > 0 && municipiosChips.length > 0 && zm && (
         <div className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-3">
           <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
-            Ámbito del programa (Q-024)
+            Ámbito del programa municipal en la zona metropolitana
           </p>
           <p className="mt-1 text-[12px] text-[#6B6760] leading-snug">
             Las toneladas y KPIs financieros se escalan a la población del subconjunto municipal elegido respecto al total de la ZM.

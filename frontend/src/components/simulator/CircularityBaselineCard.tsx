@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import { BookOpenCheck, Database, HelpCircle } from 'lucide-react'
 import { getProgramPopulationShare } from '@/lib/zmPopulationScale'
+import { getMunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
@@ -19,6 +20,7 @@ export function CircularityBaselineCard() {
     portalError,
     zmActiva,
     municipiosActivos,
+    cityContext,
   } = useSimulatorStore()
 
   const popShare = useMemo(
@@ -34,6 +36,30 @@ export function CircularityBaselineCard() {
     circularityBaseline && circularityBaseline.rsu_total_ton_day_est > 0
       ? (circularityBaseline.material_recovery_ton_day_est / circularityBaseline.rsu_total_ton_day_est) * 100
       : null
+
+  const municipioNombreEtiquetas = useMemo(() => {
+    return municipiosActivos.map(id => {
+      const ctxNombre = cityContext?.municipios?.find(m => m.municipio_id === id)?.nombre
+      if (ctxNombre) return ctxNombre
+      return getMunicipioMadurezVista(id)?.nombre ?? id.toUpperCase()
+    })
+  }, [cityContext?.municipios, municipiosActivos])
+
+  const interpretationParaVista = useMemo(() => {
+    if (!circularityBaseline) return ''
+    const base = circularityBaseline.interpretation
+    if (popShare >= 1 - 1e-9) return base
+    const nombres = municipioNombreEtiquetas
+    const rsuAct = circularityBaseline.rsu_total_ton_day_est * popShare
+    const recAct = circularityBaseline.material_recovery_ton_day_est * popShare
+    const etiquetaAlcance = nombres.length === 1 ? nombres[0]! : nombres.join(', ')
+    return (
+      `${base} ` +
+      `Para el subprograma activo (${etiquetaAlcance}), el modelo escala ~${rsuAct.toLocaleString('es-MX', { maximumFractionDigits: 2 })} t/día ` +
+      `de RSU generado y ~${recAct.toLocaleString('es-MX', { maximumFractionDigits: 2 })} t/día canalizados a rutas útiles, ` +
+      `proporcionales a la población municipal seleccionada frente al total de la zona metropolitana.`
+    )
+  }, [circularityBaseline, municipioNombreEtiquetas, popShare])
 
   return (
     <section className="section" aria-labelledby="baseline-title">
@@ -102,7 +128,7 @@ export function CircularityBaselineCard() {
               </div>
               <p className="mt-3 text-[13px] leading-relaxed text-[#1C1B18]">
                 <span className="font-semibold text-[#1C1B18]">Cómo leer este número: </span>
-                {circularityBaseline.interpretation}
+                {interpretationParaVista}
               </p>
               <div
                 className="mt-4 flex flex-wrap items-start gap-2 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-2.5 text-[12px] leading-relaxed text-[#6B6760] [overflow-wrap:anywhere]"
@@ -123,7 +149,7 @@ export function CircularityBaselineCard() {
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <Metric
               label="RSU modelado · ámbito activo"
-              hint="Referencia ZM escalada al subconjunto municipal seleccionado (Q-024)."
+              hint="Referencia municipal escalada cuando el programa cubre menos población que la ZM total."
               value={`${(circularityBaseline.rsu_total_ton_day_est * popShare).toLocaleString('es-MX', { maximumFractionDigits: 2 })} t/día`}
             />
             <Metric
