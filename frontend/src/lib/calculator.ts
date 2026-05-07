@@ -17,6 +17,16 @@ function getZM(zmId: string) {
 
 // ─── Motor principal ─────────────────────────────────────────────────────────
 
+/** Misma geografía y generación RSU; captura 0% y sin centros de acopio → contrafactual “sin programa”. */
+export function calcularEscenarioSinPrograma(state: SimulatorState): ResultadosCalculados {
+  const ceros = Array.from({ length: Math.max(1, state.horizonte) }, () => 0)
+  return calcular({
+    ...state,
+    pctCapturaPorAño: ceros,
+    mixCAs: { P: 0, M: 0, G: 0 },
+  })
+}
+
 export function calcular(state: SimulatorState): ResultadosCalculados {
   const zm = getZM(state.zmActiva)
   const snapshot = (state as SimulatorState & { snapshotDatos?: SnapshotDatos | null }).snapshotDatos

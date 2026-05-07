@@ -3,7 +3,7 @@ import { devtools, persist } from 'zustand/middleware'
 import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotDatos, MarketSummary, MacroImpactSummary, ReasoningGraph, MunicipioProfile, CoverageStatus, OperationsSummary, PortalEntry, CityContext, CircularityBaseline, DecisionModule, Audience, MunicipioMxApi, SeleccionMunicipioCatalog } from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS } from '@/lib/constants'
-import { calcular } from '@/lib/calculator'
+import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
 
 /** Contrato blueprint 22_0: `localStorage['alquimia.audience']` es la clave literal de audiencia; `alquimia-simulator` sigue siendo el persist Zustand. En conflicto tras reload, gana esta clave y luego se rehidrata el journey. */
@@ -56,6 +56,8 @@ function catalogRowToSeleccion(row: MunicipioMxApi): SeleccionMunicipioCatalog {
 
 interface SimulatorStore extends SimulatorState {
   resultados: ResultadosCalculados | null
+  /** Contrafactual mismo estado pero captura 0% y sin CAs — para KPIs antes/después en UI. */
+  resultadosSinPrograma: ResultadosCalculados | null
   escenarios: EscenarioGuardado[]
   isCalculating: boolean
   generatingPlan: boolean
@@ -178,6 +180,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
       (set, get) => ({
         ...defaultState,
         resultados: null,
+        resultadosSinPrograma: null,
         escenarios: [],
         isCalculating: false,
         generatingPlan: false,
@@ -421,7 +424,8 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const state = get()
           try {
             const r = calcular(state)
-            set({ resultados: r })
+            const sinProg = calcularEscenarioSinPrograma(state)
+            set({ resultados: r, resultadosSinPrograma: sinProg })
           } catch (e) {
             console.error('Cálculo fallido', e)
           }
