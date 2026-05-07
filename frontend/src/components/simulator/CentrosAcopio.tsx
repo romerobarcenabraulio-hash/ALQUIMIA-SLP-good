@@ -7,6 +7,7 @@ import { VolumenBarChart } from '@/components/charts/VolumenBarChart'
 import { getInfrastructurePlan } from '@/lib/api'
 import type { InfrastructurePlanResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { DespliegueOperativoCaRecicladoraChart } from '@/components/simulator/DespliegueOperativoCaRecicladoraChart'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 
 const CAUSAL_INFRA = [
@@ -211,6 +212,8 @@ export function CentrosAcopio() {
           </table>
         </div>
       </div>
+
+      <DespliegueOperativoCaRecicladoraChart />
 
       {/* Gráfica volumen por material */}
       <div className="mb-6">
