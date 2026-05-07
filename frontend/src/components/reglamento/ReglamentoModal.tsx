@@ -21,7 +21,7 @@ import {
   reglamentoFuentePorMunicipio,
   tieneUrlFuentePrimaria,
 } from '@/data/reglamentos'
-import { adendos } from '@/data/adendos'
+import { adendos, CIUDADES_DISPONIBLES } from '@/data/adendos'
 import { cn } from '@/lib/utils'
 
 function badgeClasses(estado: ReglamentoFuente['estado_verificacion']): { label: string; className: string } {
@@ -69,20 +69,24 @@ export function ReglamentoModal({
   const badge  = registro ? badgeClasses(registro.estado_verificacion) : badgeClasses('no_localizado')
   const urlOk  = registro ? tieneUrlFuentePrimaria(registro) : false
 
+  const nombreMunicipio = CIUDADES_DISPONIBLES[ciudadKey] ?? municipioId.toUpperCase()
   const nombreReglamento = ciudadData?.nombreReglamento
     ?? registro?.nombre
     ?? 'Reglamento municipal de residuos sólidos'
 
   const textoVigente = ciudadData?.textoVigente ?? ''
   const esNoExiste   = textoVigente.startsWith('[NO EXISTE]') || textoVigente.startsWith('[NO DISPONIBLE')
-  const textoPropuesto = adendo?.adendoPropuesto ?? ''
-  const efectoOp       = adendo?.efectoOperativo ?? ''
+  // El adendo es por-ciudad si existe; si no, cae al genérico (redactado base SLP).
+  const textoPropuesto       = ciudadData?.adendoPropuesto ?? adendo?.adendoPropuesto ?? ''
+  const adendoEstaLocalizado = Boolean(ciudadData?.adendoPropuesto)
+  const efectoOp             = adendo?.efectoOperativo ?? ''
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      {/* Modal grande — casi pantalla completa */}
+      {/* Modal grande — casi pantalla completa.
+          NB: el base DialogContent tiene `md:max-w-3xl`; usamos !important para sobreescribirlo en desktop. */}
       <DialogContent
-        className="max-w-[95vw] w-full h-[90vh] flex flex-col overflow-hidden p-0 gap-0"
+        className="!max-w-[95vw] w-[95vw] md:!max-w-[1280px] md:w-[95vw] h-[90vh] md:h-[88vh] flex flex-col overflow-hidden p-0 gap-0"
         showClose
       >
 
@@ -149,31 +153,33 @@ export function ReglamentoModal({
         <div className="flex flex-1 min-h-0 divide-x divide-[#E8E4DC]">
 
           {/* Panel izquierdo: Texto vigente */}
-          <div className="flex flex-col w-[38%] min-w-0">
-            <div className="shrink-0 px-4 py-2 border-b border-[#E8E4DC] bg-[#FAF8F5]">
-              <p className="text-[10px] uppercase tracking-widest text-[#A8A49C]">📄 Reglamento vigente</p>
+          <div className="flex flex-col w-[42%] min-w-0">
+            <div className="shrink-0 px-5 py-3 border-b border-[#E8E4DC] bg-[#FAF8F5]">
+              <p className="text-[10px] uppercase tracking-widest text-[#A8A49C]">Reglamento vigente · {nombreMunicipio}</p>
               {ciudadData && (
-                <p className="text-[10px] text-[#A8A49C] mt-0.5">{ciudadData.nombreReglamento} · {ciudadData.anio}</p>
+                <p className="text-[11px] text-[#6B6760] mt-1 leading-snug">
+                  {ciudadData.nombreReglamento} · {ciudadData.anio} · <span className="font-mono">{ciudadData.numeroArticulo}</span>
+                </p>
               )}
             </div>
-            <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="flex-1 overflow-y-auto px-5 py-5">
               {!ciudadData ? (
-                <p className="text-[12px] text-[#A8A49C] text-center py-8">
-                  Sin texto verificado para {municipioId?.toUpperCase()} en este adendo.
+                <p className="text-[13px] text-[#A8A49C] text-center py-8">
+                  Sin texto verificado para {nombreMunicipio} en este adendo.
                 </p>
               ) : esNoExiste ? (
                 <div className="rounded-[10px] bg-[#FEF7E7] border border-[#FCD34D] p-4">
-                  <p className="text-[12px] font-medium text-[#8B5A00] mb-1">
+                  <p className="text-[13px] font-medium text-[#8B5A00] mb-2">
                     {textoVigente.startsWith('[NO EXISTE]')
-                      ? 'Artículo no existe en el reglamento vigente'
+                      ? `Artículo equivalente no existe en el reglamento vigente de ${nombreMunicipio}`
                       : 'PDF del reglamento pendiente de carga'}
                   </p>
-                  <p className="text-[11px] text-[#6B6760] leading-relaxed">
+                  <p className="text-[12px] text-[#6B6760] leading-relaxed">
                     {textoVigente.replace(/^\[NO EXISTE\]\s*/, '').replace(/^\[NO DISPONIBLE.*?\]\s*/, '')}
                   </p>
                 </div>
               ) : (
-                <pre className="text-[12px] text-[#3A3832] leading-[1.7] whitespace-pre-wrap font-mono">
+                <pre className="text-[13px] text-[#3A3832] leading-[1.75] whitespace-pre-wrap font-mono">
                   {textoVigente}
                 </pre>
               )}
@@ -182,27 +188,40 @@ export function ReglamentoModal({
 
           {/* Panel derecho: Adendo propuesto — texto grande y prominente */}
           <div className="flex flex-col flex-1 min-w-0">
-            <div className="shrink-0 px-4 py-2 border-b border-[#E8E4DC] bg-[#EAF3DE]/40">
-              <div className="flex items-center gap-2">
+            <div className="shrink-0 px-5 py-3 border-b border-[#E8E4DC] bg-[#EAF3DE]/40">
+              <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[10px] uppercase tracking-widest text-[#3B6D11]">
-                  ✏️ Adendo {adendo?.id} — {adendo?.titulo}
+                  Adendo {adendo?.id} propuesto · {nombreMunicipio}
                 </p>
                 <span className="inline-flex rounded-full bg-[#EAF3DE] border border-[#3B6D11]/30 px-2 py-0.5 text-[10px] font-medium text-[#3B6D11]">
                   {adendo?.tecnica}
                 </span>
               </div>
+              <p className="text-[12px] text-[#1C1B18] mt-1 leading-snug">{adendo?.titulo}</p>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-5 py-5">
+            <div className="flex-1 overflow-y-auto px-6 py-5">
+              {/* Aviso cuando el texto es genérico (redactado base SLP) en otra ciudad */}
+              {!adendoEstaLocalizado && ciudadKey !== 'slp' && (
+                <div className="mb-4 rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3">
+                  <p className="text-[12px] font-semibold text-[#8B5A00] mb-1">
+                    Borrador redactado para San Luis Potosí
+                  </p>
+                  <p className="text-[11px] leading-relaxed text-[#8B5A00]">
+                    El texto de abajo cita instrumentos de SLP (Reglamento de Aseo Público, Dirección de Aseo Público, Ley sobre Régimen de Propiedad en Condominio del Estado de SLP). Antes de presentar a Cabildo de {nombreMunicipio}, sustituir referencias por las equivalentes locales: <strong>{ciudadData?.nombreReglamento ?? 'reglamento municipal de RSU'}</strong>, autoridad de aseo correspondiente y ley estatal de condominios aplicable.
+                  </p>
+                </div>
+              )}
+
               {/* Texto del adendo — grande y legible */}
-              <pre className="text-[14px] leading-[1.85] whitespace-pre-wrap font-sans text-[#1C1B18]">
+              <pre className="text-[15px] leading-[1.9] whitespace-pre-wrap font-sans text-[#1C1B18]">
                 {textoPropuesto}
               </pre>
             </div>
 
             {/* Efecto operativo */}
             {efectoOp && (
-              <div className="shrink-0 border-t border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3">
+              <div className="shrink-0 border-t border-[#E8E4DC] bg-[#FAFAF8] px-5 py-3">
                 <p className="text-[10px] uppercase tracking-widest text-[#A8A49C] mb-1">Efecto operativo</p>
                 <p className="text-[12px] text-[#6B6760] leading-relaxed">{efectoOp}</p>
               </div>

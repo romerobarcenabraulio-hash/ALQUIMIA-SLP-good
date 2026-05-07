@@ -1714,6 +1714,12 @@ export interface AdendoCiudadData {
   numeroArticulo: string
   textoVigente: string
   pdfCargado: boolean
+  /**
+   * Texto del adendo propuesto adaptado al lenguaje y autoridad locales de la ciudad.
+   * Si no existe, se usa `AdendoData.adendoPropuesto` (genérico, redactado base SLP)
+   * y se muestra un aviso de adaptación pendiente.
+   */
+  adendoPropuesto?: string
 }
 
 export interface AdendoData {
