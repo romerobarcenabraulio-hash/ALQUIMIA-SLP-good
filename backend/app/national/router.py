@@ -6,8 +6,10 @@ from fastapi import APIRouter, HTTPException
 from app.national.catalog import get_profile, get_zm, list_estados, list_zm_municipios
 from app.national.coverage import coverage_for_municipio, coverage_for_zm, legal_source_for_municipio
 from app.national.legal_ingest import upsert_municipio_profile
+from app.national.circularity_heatmap import build_circularity_heatmap_response
 from app.national.rsu_footprint_map import build_rsu_footprint_map_response
 from app.national.schemas import (
+    CircularityHeatmapResponse,
     CoverageStatus,
     EstadoCatalog,
     LegalSource,
@@ -77,4 +79,10 @@ def zm_legal_coverage(zm_id: str):
 def rsu_footprint_map():
     """GeoJSON-friendly payload para mapa RSU (piloto catálogo ALQUIMIA)."""
     return build_rsu_footprint_map_response()
+
+
+@router.get("/map/zm/{zm_id}/circularity-heatmap", response_model=CircularityHeatmapResponse)
+def circularity_heatmap_zm(zm_id: str):
+    """Mapa calor circularidad (simulador) sobre rejilla proxy — ZM SLP piloto Q-025."""
+    return build_circularity_heatmap_response(zm_id)
 

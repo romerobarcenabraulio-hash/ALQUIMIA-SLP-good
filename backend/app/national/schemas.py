@@ -93,6 +93,29 @@ class RsuFootprintMapResponse(BaseModel):
     disclaimer: str
 
 
+class CircularityHeatmapResponse(BaseModel):
+    """Envelope JSON + GeoJSON embebido para Mapbox GL JS (Q-025)."""
+
+    catalog_simulation_epoch: str
+    zm_id: str
+    version_mgn: Optional[str] = Field(
+        default=None,
+        description="Edición MGN cuando la geometría provenga de INEGI; None mientras use rejilla proxy.",
+    )
+    geometry_storage_crs: str = Field(default="EPSG:4326")
+    metric_calculation_crs_note: str = Field(
+        default="",
+        description="Recordatorio SRID para métricas territoriales (SLP → EPSG:6369).",
+    )
+    geometry_source: str
+    geometry_note: str
+    jurisdiction_scope: str = Field(default="MetropolitanZone")
+    disclaimer: str
+    methodology_summary: str
+    feature_count: int = Field(ge=0)
+    geojson: Dict[str, Any] = Field(description="GeoJSON FeatureCollection en EPSG:4326")
+
+
 class LegalSource(BaseModel):
     legal_source_id: str
     municipio_id: str

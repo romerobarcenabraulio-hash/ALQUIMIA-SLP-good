@@ -16,6 +16,15 @@ const MexicoRsuFootprintMap = dynamic(() => import('@/components/simulator/Mexic
   ),
 })
 
+const ZmCircularityHeatmapMap = dynamic(() => import('@/components/simulator/ZmCircularityHeatmapMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-6 text-[13px] text-[#6B6760]">
+      Preparando mapa circularidad…
+    </div>
+  ),
+})
+
 const STATUS_COLOR: Record<string, string> = {
   verificado: 'bg-green-100 text-green-800',
   localizado: 'bg-[#EAF3DE] text-[#23470A]',
@@ -141,6 +150,8 @@ export default function CoberturaNacional() {
       </div>
 
       <MexicoRsuFootprintMap />
+
+      <ZmCircularityHeatmapMap zmId={zmActiva} />
 
       {error && (
         <div className="rounded-lg bg-red-50 border border-red-200 px-4 py-3 text-sm text-red-700">

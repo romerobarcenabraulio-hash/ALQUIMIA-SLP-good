@@ -12,6 +12,7 @@ import type {
   DecisionExplanation,
   MunicipioProfile,
   RsuFootprintMapResponse,
+  CircularityHeatmapResponse,
   CoverageStatus,
   OperationsSummary,
   CityOption,
@@ -701,6 +702,14 @@ export async function getRsuFootprintMap(): Promise<RsuFootprintMapResponse> {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Mapa RSU no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getCircularityHeatmap(zm: string): Promise<CircularityHeatmapResponse> {
+  const res = await fetch(`${getApiUrl()}/national/map/zm/${encodeURIComponent(zm)}/circularity-heatmap`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Mapa circularidad no disponible: ${res.status}`)
   return res.json()
 }
 

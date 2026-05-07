@@ -1673,6 +1673,29 @@ export interface RsuFootprintMapResponse {
   disclaimer: string
 }
 
+/** Q-025 envelope + GeoJSON FeatureCollection (EPSG:4326). */
+export interface CircularityHeatmapResponse {
+  catalog_simulation_epoch: string
+  zm_id: string
+  version_mgn: string | null
+  geometry_storage_crs: string
+  metric_calculation_crs_note: string
+  geometry_source: string
+  geometry_note: string
+  jurisdiction_scope: string
+  disclaimer: string
+  methodology_summary: string
+  feature_count: number
+  geojson: {
+    type: 'FeatureCollection'
+    features: Array<{
+      type: 'Feature'
+      geometry: { type: string; coordinates: number[][][] }
+      properties: Record<string, unknown>
+    }>
+  }
+}
+
 export interface CoverageStatus {
   municipio_id: string
   demografia: NationalSourceStatus
