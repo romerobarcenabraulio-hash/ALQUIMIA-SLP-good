@@ -38,7 +38,7 @@ import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/Progresion
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
-  aplicarSustitucionesTerritorio,
+  aplicarPlaceholdersTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
 
@@ -318,7 +318,7 @@ function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; err
   )
 
   const title = loading
-    ? aplicarSustitucionesTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
+    ? aplicarPlaceholdersTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
     : error
       ? 'No pudimos obtener los datos de la ciudad'
       : 'Selecciona una ciudad para continuar'

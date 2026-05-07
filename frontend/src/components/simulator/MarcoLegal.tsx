@@ -60,7 +60,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
                 </span>
                 <div>
                   <p className="text-[12px] font-medium text-[#1C1B18]">{f.nombre}</p>
-                  <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.objetivo}</p>
+                  <p className="text-[11px] text-[#6B6760]">{f.meses} · {f.gate}</p>
                 </div>
               </div>
             ))}
@@ -97,7 +97,7 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
               <p className="text-[12px] text-[#1C1B18]">
                 <span className="font-mono text-[#6B6760]">F{f.fase}</span> · {f.nombre}
               </p>
-              <p className="text-[11px] text-[#6B6760]">{f.meses} meses · {f.objetivo}</p>
+              <p className="text-[11px] text-[#6B6760]">{f.meses} · {f.gate}</p>
             </li>
           ))}
         </ul>

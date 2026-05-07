@@ -14,7 +14,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
   </h2>
   <p
     aria-live="polite"
-    class="text-[11px] leading-snug text-[#8A857C] mb-3"
+    class="text-[11px] leading-snug text-[#5A6347] mb-3"
   >
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
   </p>
@@ -72,7 +72,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
             class="text-[11px] text-[#6B6760]"
           >
             0–6
-             meses · 
+             · 
             Reforma reglamentaria aprobada
           </p>
         </div>
@@ -96,8 +96,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
             class="text-[11px] text-[#6B6760]"
           >
             4–9
-             meses · 
-            Instrumento contractual firmado con el concesionario
+             · 
+            Concertación con operador
           </p>
         </div>
       </div>
@@ -120,8 +120,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
             class="text-[11px] text-[#6B6760]"
           >
             9–18
-             meses · 
-            Red de centros de acopio en despliegue conforme al plan
+             · 
+            Construcción CAs
           </p>
         </div>
       </div>
@@ -144,8 +144,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
             class="text-[11px] text-[#6B6760]"
           >
             18–24
-             meses · 
-            Indicadores del piloto consolidados y validados
+             · 
+            Validación KPIs
           </p>
         </div>
       </div>
@@ -168,8 +168,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
             class="text-[11px] text-[#6B6760]"
           >
             24–36
-             meses · 
-            Cobertura metropolitana del servicio en fase de consolidación
+             · 
+            Cobertura ZM completa
           </p>
         </div>
       </div>
@@ -192,7 +192,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
   </h2>
   <p
     aria-live="polite"
-    class="text-[11px] leading-snug text-[#8A857C] mb-3 max-w-2xl"
+    class="text-[11px] leading-snug text-[#5A6347] mb-3 max-w-2xl"
   >
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
   </p>
@@ -246,7 +246,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
           class="text-[11px] text-[#6B6760]"
         >
           0–6
-           meses · 
+           · 
           Reforma reglamentaria aprobada
         </p>
       </li>
@@ -269,8 +269,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
           class="text-[11px] text-[#6B6760]"
         >
           4–9
-           meses · 
-          Instrumento contractual firmado con el concesionario
+           · 
+          Concertación con operador
         </p>
       </li>
       <li
@@ -292,8 +292,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
           class="text-[11px] text-[#6B6760]"
         >
           9–18
-           meses · 
-          Red de centros de acopio en despliegue conforme al plan
+           · 
+          Construcción CAs
         </p>
       </li>
       <li
@@ -315,8 +315,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
           class="text-[11px] text-[#6B6760]"
         >
           18–24
-           meses · 
-          Indicadores del piloto consolidados y validados
+           · 
+          Validación KPIs
         </p>
       </li>
       <li
@@ -338,8 +338,8 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
           class="text-[11px] text-[#6B6760]"
         >
           24–36
-           meses · 
-          Cobertura metropolitana del servicio en fase de consolidación
+           · 
+          Cobertura ZM completa
         </p>
       </li>
     </ul>

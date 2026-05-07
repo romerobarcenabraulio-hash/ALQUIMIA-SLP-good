@@ -73,8 +73,8 @@ export const FASES_CA: FaseCA[] = [
 
 // ─── Fases institucionales (§2.5) ─────────────────────────────────────────────
 export const FASES_INSTITUCIONALES: FaseInstitucional[] = [
-  { fase: 1, meses: '0–6',  nombre: 'Alineación institucional y jurídica', gate: '★ BLOQUEANTE: sin reforma aprobada', bloqueante: true },
-  { fase: 2, meses: '4–9',  nombre: 'Negociación y pacto con concesionario', gate: 'Adenda al contrato' },
+  { fase: 1, meses: '0–6',  nombre: 'Alineación institucional y jurídica', gate: 'Reforma reglamentaria aprobada', bloqueante: true },
+  { fase: 2, meses: '4–9',  nombre: 'Negociación y pacto con concesionario', gate: 'Concertación con operador' },
   { fase: 3, meses: '9–18', nombre: 'Despliegue de infraestructura', gate: 'Construcción CAs' },
   { fase: 4, meses: '18–24', nombre: 'Arranque y operación del piloto', gate: 'Validación KPIs' },
   { fase: 5, meses: '24–36', nombre: 'Evaluación y escalamiento', gate: 'Cobertura ZM completa' },
