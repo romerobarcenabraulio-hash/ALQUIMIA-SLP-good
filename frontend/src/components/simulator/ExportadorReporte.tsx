@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import { getApiUrl } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
@@ -54,11 +55,11 @@ export function ExportadorReporte() {
     setError(null)
     try {
       const API_BASE = getApiUrl()
-      const res = await fetch(`${API_BASE}/export/report`, {
+      const res = await fetch(`${API_BASE}/export/report`, withRequestId({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-      })
+      }))
       if (res.status === 403) {
         setResult(null)
         setError('Acceso restringido · se requiere rol técnico o superior para exportar reportes.')

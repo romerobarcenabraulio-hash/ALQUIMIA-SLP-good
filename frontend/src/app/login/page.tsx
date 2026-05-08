@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getApiUrl } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 
 export default function LoginPage() {
   const [email, setEmail]     = useState('')
@@ -15,11 +16,11 @@ export default function LoginPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${getApiUrl()}/auth/login`, {
+      const res = await fetch(`${getApiUrl()}/auth/login`, withRequestId({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
-      })
+      }))
       if (!res.ok) throw new Error('Credenciales inválidas')
       const { access_token } = await res.json()
       localStorage.setItem('alquimia_token', access_token)

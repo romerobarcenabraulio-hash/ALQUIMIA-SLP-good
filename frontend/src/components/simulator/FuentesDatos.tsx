@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getApiUrl } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 import { fmt } from '@/lib/utils'
 import type { FuenteStatus, FuenteTipo } from '@/types'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
@@ -61,7 +62,7 @@ export function FuentesDatos() {
 
   useEffect(() => {
     setState({ status: 'loading' })
-    fetch(`${getApiUrl()}/data/fuentes`)
+    fetch(`${getApiUrl()}/data/fuentes`, withRequestId())
       .then(async res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data: FuenteStatus[] = await res.json()

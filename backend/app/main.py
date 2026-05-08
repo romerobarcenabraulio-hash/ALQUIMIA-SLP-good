@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import Response
@@ -35,8 +36,41 @@ from app.empresa.router import router as empresa_router
 from app.city.api_v1 import router as cities_v1_router
 from app.agora.router import router as agora_router
 from app.agents.dna_loader import load_slp_dna
+from app.observability import (
+    RequestLoggingMiddleware,
+    app_version_from_env,
+    build_deep_health_payload,
+    get_app_environment,
+)
 
 logger = logging.getLogger(__name__)
+
+
+def _init_sentry_if_configured() -> None:
+    dsn = os.getenv("SENTRY_DSN", "").strip()
+    if not dsn:
+        return
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.fastapi import FastApiIntegration
+
+        sentry_sdk.init(
+            dsn=dsn,
+            integrations=[FastApiIntegration()],
+            environment=get_app_environment(),
+            release=(
+                os.getenv("SENTRY_RELEASE")
+                or os.getenv("RENDER_GIT_COMMIT")
+                or os.getenv("GIT_COMMIT")
+                or None
+            ),
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+        )
+    except Exception as exc:  # pragma: no cover - defensivo para arranque
+        logger.warning("sentry_init_failed", extra={"error": str(exc)})
+
+
+_init_sentry_if_configured()
 
 # Orígenes CORS por defecto (staging Vercel + producción declarada en blueprint 17.1)
 _DEFAULT_CORS_ORIGINS: tuple[str, ...] = (
@@ -126,6 +160,7 @@ app.add_middleware(
 )
 
 app.add_middleware(RateLimitMiddleware)
+app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.middleware("http")
@@ -171,6 +206,12 @@ app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
 async def health():
     return {
         "status": "ok",
-        "version": "1.0.0",
-        "environment": os.getenv("APP_ENV", os.getenv("ENVIRONMENT", "development")),
+        "version": app_version_from_env(app.version),
+        "environment": get_app_environment(),
     }
+
+
+@app.api_route("/health/deep", methods=["GET", "HEAD"])
+async def health_deep():
+    payload, status_code = build_deep_health_payload(api_version_fallback=app.version)
+    return JSONResponse(content=payload, status_code=status_code)

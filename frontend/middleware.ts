@@ -10,17 +10,27 @@ export function middleware(request: NextRequest) {
   const isProtected = PROTECTED.some(
     route => pathname === route || pathname.startsWith(route + '/'),
   )
-  if (!isProtected) return NextResponse.next()
+  if (!isProtected) {
+    const response = NextResponse.next()
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    return response
+  }
 
   const cookie = request.cookies.get(COOKIE_NAME)
-  if (cookie?.value === 'granted') return NextResponse.next()
+  if (cookie?.value === 'granted') {
+    const response = NextResponse.next()
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+    return response
+  }
 
   const acceso = request.nextUrl.clone()
   acceso.pathname = '/acceso'
   acceso.searchParams.set('next', pathname)
-  return NextResponse.redirect(acceso)
+  const response = NextResponse.redirect(acceso)
+  response.headers.set('X-Robots-Tag', 'noindex, nofollow')
+  return response
 }
 
 export const config = {
-  matcher: ['/simulator/:path*', '/hub/:path*', '/ca-studio/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }

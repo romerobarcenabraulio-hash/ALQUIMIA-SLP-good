@@ -45,6 +45,7 @@ import type {
   MunicipioMxApi,
 } from '@/types'
 import type { AgoraPlanGenerateBody } from '@/lib/agoraPlanPayload'
+import { withRequestId } from '@/lib/requestId'
 
 export function getApiUrl() {
   const configured = process.env.NEXT_PUBLIC_API_URL
@@ -67,7 +68,7 @@ async function fetchWithRetry(
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 35_000)
     try {
-      const response = await fetch(input, { ...init, signal: controller.signal })
+      const response = await fetch(input, withRequestId({ ...init, signal: controller.signal }))
       clearTimeout(timeoutId)
       return response
     } catch (err) {
@@ -126,6 +127,10 @@ export function triggerBrowserDownload(blob: Blob, filename: string) {
   } finally {
     URL.revokeObjectURL(url)
   }
+}
+
+export async function backendFetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
+  return fetch(input, withRequestId(init))
 }
 
 export { fetchWithRetry, fetchWithRetry as apiFetch }
@@ -203,7 +208,7 @@ export async function getPortalJourney(entry: PortalEntry): Promise<DecisionModu
 export async function calculateDomesticEducation(
   payload: HouseholdEducationRequest,
 ): Promise<DomesticEducationResult> {
-  const res = await fetch(`${getApiUrl()}/education/domestic-calculator`, {
+  const res = await backendFetch(`${getApiUrl()}/education/domestic-calculator`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -215,7 +220,7 @@ export async function calculateDomesticEducation(
 export async function buildTerritorialPlan(
   payload: TerritorialPlanRequest,
 ): Promise<TerritorialImplementationPlan> {
-  const res = await fetch(`${getApiUrl()}/implementation/territorial-plan`, {
+  const res = await backendFetch(`${getApiUrl()}/implementation/territorial-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -227,7 +232,7 @@ export async function buildTerritorialPlan(
 export async function buildPerOperationsPlan(
   payload: PerPlanRequest,
 ): Promise<PerOperationsPlan> {
-  const res = await fetch(`${getApiUrl()}/operations/per-plan`, {
+  const res = await backendFetch(`${getApiUrl()}/operations/per-plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -239,7 +244,7 @@ export async function buildPerOperationsPlan(
 export async function evaluateLegalGatedAction(
   payload: LegalGatedActionRequest,
 ): Promise<LegalGatedActionResponse> {
-  const res = await fetch(`${getApiUrl()}/operations/legal-gated-action`, {
+  const res = await backendFetch(`${getApiUrl()}/operations/legal-gated-action`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -251,7 +256,7 @@ export async function evaluateLegalGatedAction(
 export async function getInfrastructurePlan(
   payload: InfrastructurePlanRequest,
 ): Promise<InfrastructurePlanResponse> {
-  const res = await fetch(`${getApiUrl()}/infrastructure/plan`, {
+  const res = await backendFetch(`${getApiUrl()}/infrastructure/plan`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -263,7 +268,7 @@ export async function getInfrastructurePlan(
 export async function getOrganizationalAssessment(
   payload: OrganizationalCircularityRequest,
 ): Promise<OrganizationalCircularityResponse> {
-  const res = await fetch(`${getApiUrl()}/organizations/assessment`, {
+  const res = await backendFetch(`${getApiUrl()}/organizations/assessment`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -274,7 +279,7 @@ export async function getOrganizationalAssessment(
 
 export async function diagnosisWasteFlows(payload: object): Promise<DiagnosticoCircularidadResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/waste-flows/diagnosis`, {
+  const res = await backendFetch(`${API_BASE}/waste-flows/diagnosis`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -285,7 +290,7 @@ export async function diagnosisWasteFlows(payload: object): Promise<DiagnosticoC
 
 export async function generateRoadmap(payload: object): Promise<RoadmapMunicipalResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/roadmap/generate`, {
+  const res = await backendFetch(`${API_BASE}/roadmap/generate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -296,7 +301,7 @@ export async function generateRoadmap(payload: object): Promise<RoadmapMunicipal
 
 export async function exportReport(payload: object): Promise<ExportResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/export/report`, {
+  const res = await backendFetch(`${API_BASE}/export/report`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -307,7 +312,7 @@ export async function exportReport(payload: object): Promise<ExportResponse> {
 
 export async function getDashboardSummary(payload: object): Promise<DashboardResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/dashboard/summary`, {
+  const res = await backendFetch(`${API_BASE}/dashboard/summary`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -318,7 +323,7 @@ export async function getDashboardSummary(payload: object): Promise<DashboardRes
 
 export async function compareScenarios(payload: object): Promise<ComparadorResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/scenarios/compare`, {
+  const res = await backendFetch(`${API_BASE}/scenarios/compare`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -329,7 +334,7 @@ export async function compareScenarios(payload: object): Promise<ComparadorRespo
 
 export async function evaluateAlerts(payload: object): Promise<AlertasResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/alerts/evaluate`, {
+  const res = await backendFetch(`${API_BASE}/alerts/evaluate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -340,7 +345,7 @@ export async function evaluateAlerts(payload: object): Promise<AlertasResponse> 
 
 export async function evaluateGovernance(payload: object): Promise<GovernanceResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/governance/evaluate`, {
+  const res = await backendFetch(`${API_BASE}/governance/evaluate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -351,7 +356,7 @@ export async function evaluateGovernance(payload: object): Promise<GovernanceRes
 
 export async function getLaunchChecklist(): Promise<LaunchChecklistResponse> {
   const API_BASE = getApiUrl()
-  const res = await fetch(`${API_BASE}/launch/checklist`)
+  const res = await backendFetch(`${API_BASE}/launch/checklist`)
   if (!res.ok) throw new Error(await res.text())
   return res.json()
 }
@@ -363,7 +368,7 @@ export async function getLaunchChecklist(): Promise<LaunchChecklistResponse> {
  * Retorna PackageStatus con package_id, checksum, n_documents si ya terminó.
  */
 export async function getJobStatus(jobId: string): Promise<PackageStatus> {
-  const res = await fetch(`${getApiUrl()}/generate/plan/${jobId}`, {
+  const res = await backendFetch(`${getApiUrl()}/generate/plan/${jobId}`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   })
   if (!res.ok) throw new Error(`Job no encontrado: ${res.status}`)
@@ -386,7 +391,7 @@ export async function getJobStatus(jobId: string): Promise<PackageStatus> {
  * Retorna el manifest.json del paquete: fuentes, KPIs, warnings, score.
  */
 export async function getPackageManifest(packageId: string): Promise<PackageManifest> {
-  const res = await fetch(`${getApiUrl()}/generate/plan/${packageId}/manifest`, {
+  const res = await backendFetch(`${getApiUrl()}/generate/plan/${packageId}/manifest`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   })
   if (!res.ok) throw new Error(`Manifest no disponible: ${res.status}`)
@@ -403,7 +408,7 @@ export async function getPackageAssets(packageId: string): Promise<{
   checksum: string | null
   assets: PackageAsset[]
 }> {
-  const res = await fetch(`${getApiUrl()}/generate/plan/${packageId}/assets`, {
+  const res = await backendFetch(`${getApiUrl()}/generate/plan/${packageId}/assets`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   })
   if (!res.ok) throw new Error(`Assets no disponibles: ${res.status}`)
@@ -438,7 +443,7 @@ export async function downloadProfessionalZip(
 }
 
 async function _downloadZipFrom(url: string, filename: string): Promise<void> {
-  const res = await fetch(url, { headers: authHeaders() })
+  const res = await backendFetch(url, { headers: authHeaders() })
   if (!res.ok) throw new Error(`Descarga no disponible: ${res.status}`)
   const blob = await res.blob()
   const blobUrl = URL.createObjectURL(blob)
@@ -471,7 +476,7 @@ export async function renderProfessionalPackage(
   warnings: string[]
   errors: string[]
 }> {
-  const res = await fetch(`${getApiUrl()}/generate/plan/${packageId}/render`, {
+  const res = await backendFetch(`${getApiUrl()}/generate/plan/${packageId}/render`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
     body: JSON.stringify(resultados ? { resultados } : {}),
@@ -484,7 +489,7 @@ export async function renderProfessionalPackage(
  * Retorna el render_report.json del paquete profesional.
  */
 export async function getRenderReport(packageId: string): Promise<Record<string, unknown> | null> {
-  const res = await fetch(`${getApiUrl()}/generate/plan/${packageId}/render-report`, {
+  const res = await backendFetch(`${getApiUrl()}/generate/plan/${packageId}/render-report`, {
     headers: { 'Content-Type': 'application/json', ...authHeaders() },
   })
   if (res.status === 404) return null
@@ -506,7 +511,7 @@ export async function getMarketBuyers(
   if (material) params.set('material', material)
   if (zm) params.set('zm', zm)
   const qs = params.toString() ? `?${params.toString()}` : ''
-  const res = await fetch(`${getApiUrl()}/market/buyers${qs}`, {
+  const res = await backendFetch(`${getApiUrl()}/market/buyers${qs}`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Buyers no disponibles: ${res.status}`)
@@ -524,7 +529,7 @@ export async function placeMarket(
   municipios: string[],
   volumes_ton_anio: Record<string, number>,
 ): Promise<MarketSummary> {
-  const res = await fetch(`${getApiUrl()}/market/place`, {
+  const res = await backendFetch(`${getApiUrl()}/market/place`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ zm, municipios, volumes_ton_anio }),
@@ -538,7 +543,7 @@ export async function placeMarket(
  * Retorna null si no se ha ejecutado placeMarket para esa ZM.
  */
 export async function getMarketSummary(zm: string): Promise<MarketSummary | null> {
-  const res = await fetch(`${getApiUrl()}/market/summary/${zm}`, {
+  const res = await backendFetch(`${getApiUrl()}/market/summary/${zm}`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (res.status === 404) return null
@@ -556,7 +561,7 @@ export async function getMacroGenerators(
   if (zm) params.set('zm', zm)
   if (municipio) params.set('municipio', municipio)
   const qs = params.toString() ? `?${params.toString()}` : ''
-  const res = await fetch(`${getApiUrl()}/macros/generators${qs}`, {
+  const res = await backendFetch(`${getApiUrl()}/macros/generators${qs}`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Macrogeneradores no disponibles: ${res.status}`)
@@ -569,7 +574,7 @@ export async function computeMacroImpact(
   generators?: MacroGenerator[],
   includeRegistry = true,
 ): Promise<MacroImpactSummary> {
-  const res = await fetch(`${getApiUrl()}/macros/impact`, {
+  const res = await backendFetch(`${getApiUrl()}/macros/impact`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -584,7 +589,7 @@ export async function computeMacroImpact(
 }
 
 export async function createMacroGenerator(generator: MacroGenerator): Promise<MacroGenerator> {
-  const res = await fetch(`${getApiUrl()}/macros/generators`, {
+  const res = await backendFetch(`${getApiUrl()}/macros/generators`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(generator),
@@ -597,7 +602,7 @@ export async function updateMacroGenerator(
   generatorId: string,
   updates: Partial<MacroGenerator>,
 ): Promise<MacroGenerator> {
-  const res = await fetch(`${getApiUrl()}/macros/generators/${generatorId}`, {
+  const res = await backendFetch(`${getApiUrl()}/macros/generators/${generatorId}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(updates),
@@ -657,7 +662,7 @@ export function perfilGeneracionPdfUrl(declaracionId: string): string {
 // ─── Fase 7: ReasoningGraph ─────────────────────────────────────────────────
 
 export async function createReasoningGraph(payload: Record<string, unknown>): Promise<ReasoningGraph> {
-  const res = await fetch(`${getApiUrl()}/reasoning/graph`, {
+  const res = await backendFetch(`${getApiUrl()}/reasoning/graph`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -670,7 +675,7 @@ export async function explainReasoning(
   graph: ReasoningGraph,
   pregunta: string,
 ): Promise<DecisionExplanation> {
-  const res = await fetch(`${getApiUrl()}/reasoning/explain`, {
+  const res = await backendFetch(`${getApiUrl()}/reasoning/explain`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ graph, pregunta }),
@@ -682,7 +687,7 @@ export async function explainReasoning(
 // ─── Fase 8: Expansion nacional ─────────────────────────────────────────────
 
 export async function getNationalMunicipios(zm: string): Promise<MunicipioProfile[]> {
-  const res = await fetch(`${getApiUrl()}/national/zm/${zm}/municipios`, {
+  const res = await backendFetch(`${getApiUrl()}/national/zm/${zm}/municipios`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Municipios nacionales no disponibles: ${res.status}`)
@@ -690,7 +695,7 @@ export async function getNationalMunicipios(zm: string): Promise<MunicipioProfil
 }
 
 export async function getNationalCoverage(zm: string): Promise<CoverageStatus[]> {
-  const res = await fetch(`${getApiUrl()}/national/legal/zm/${zm}/coverage`, {
+  const res = await backendFetch(`${getApiUrl()}/national/legal/zm/${zm}/coverage`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Coverage nacional no disponible: ${res.status}`)
@@ -698,7 +703,7 @@ export async function getNationalCoverage(zm: string): Promise<CoverageStatus[]>
 }
 
 export async function getRsuFootprintMap(): Promise<RsuFootprintMapResponse> {
-  const res = await fetch(`${getApiUrl()}/national/map/rsu-footprint`, {
+  const res = await backendFetch(`${getApiUrl()}/national/map/rsu-footprint`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Mapa RSU no disponible: ${res.status}`)
@@ -706,7 +711,7 @@ export async function getRsuFootprintMap(): Promise<RsuFootprintMapResponse> {
 }
 
 export async function getCircularityHeatmap(zm: string): Promise<CircularityHeatmapResponse> {
-  const res = await fetch(`${getApiUrl()}/national/map/zm/${encodeURIComponent(zm)}/circularity-heatmap`, {
+  const res = await backendFetch(`${getApiUrl()}/national/map/zm/${encodeURIComponent(zm)}/circularity-heatmap`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Mapa circularidad no disponible: ${res.status}`)
@@ -716,7 +721,7 @@ export async function getCircularityHeatmap(zm: string): Promise<CircularityHeat
 // ─── Fase 9: Operacion en campo ─────────────────────────────────────────────
 
 export async function createPickupEvent(payload: Record<string, unknown>): Promise<Record<string, unknown>> {
-  const res = await fetch(`${getApiUrl()}/operations/pickups`, {
+  const res = await backendFetch(`${getApiUrl()}/operations/pickups`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -726,7 +731,7 @@ export async function createPickupEvent(payload: Record<string, unknown>): Promi
 }
 
 export async function getOperationsSummary(municipioId: string): Promise<OperationsSummary> {
-  const res = await fetch(`${getApiUrl()}/operations/summary/${municipioId}`, {
+  const res = await backendFetch(`${getApiUrl()}/operations/summary/${municipioId}`, {
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Resumen operativo no disponible: ${res.status}`)

@@ -6,6 +6,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
 import { getApiUrl, getJobStatus, getPackageManifest, downloadPackageZip } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 import type { PackageStatus, PackageManifest } from '@/types'
 
 const AGENT_STEPS = [
@@ -82,7 +83,7 @@ export function GenerarPlanModal() {
 
     const data_provenance = state.snapshotDatos ?? null
 
-    fetch(`${apiUrl}/generate/plan`, {
+    fetch(`${apiUrl}/generate/plan`, withRequestId({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ export function GenerarPlanModal() {
         coverage_statuses:    coverageStatuses,
         operations_summary:    operationsSummary,
       }),
-    })
+    }))
       .then(r => r.json())
       .then(data => {
         if (!data.job_id) throw new Error('Sin job_id')

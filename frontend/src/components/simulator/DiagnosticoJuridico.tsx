@@ -21,6 +21,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
   PaqueteMetropolitano, DiagnosticoMunicipal, ReformEstrategia,
@@ -349,7 +350,7 @@ export function DiagnosticoJuridico() {
     setError(null)
     const apiUrl = getApiUrl()
 
-    fetch(`${apiUrl}/legal/zm/${zmActiva}/paquete`)
+    fetch(`${apiUrl}/legal/zm/${zmActiva}/paquete`, withRequestId())
       .then(r => {
         if (!r.ok) throw new Error(`Legal municipal no disponible: ${r.status}`)
         return r.json()

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getApiUrl } from '@/lib/api'
+import { withRequestId } from '@/lib/requestId'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, formatFastApiDetail } from '@/lib/utils'
 import type {
@@ -133,7 +134,7 @@ export function InspeccionForm() {
     let cancel = false
     void (async () => {
       try {
-        const r = await fetch(`${base}/predios/catalogo/sanciones-slp`, { cache: 'no-store' })
+        const r = await fetch(`${base}/predios/catalogo/sanciones-slp`, withRequestId({ cache: 'no-store' }))
         if (!r.ok) return
         const data = (await r.json()) as CatalogoEscalerasSlpDto
         if (!cancel) {
@@ -189,11 +190,11 @@ export function InspeccionForm() {
         area_m2: areaNum,
         notas: notas.trim() || undefined,
       }
-      const r1 = await fetch(`${base}/predios/registro`, {
+      const r1 = await fetch(`${base}/predios/registro`, withRequestId({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyPredio),
-      })
+      }))
       if (!r1.ok)
         throw new Error(
           formatFastApiDetail(await r1.json().catch(() => null), 'Error al registrar predio'),
@@ -216,11 +217,11 @@ export function InspeccionForm() {
         inspector_nombre: inspectorNombre.trim() || undefined,
         inspector_cargo: inspectorCargo.trim() || undefined,
       }
-      const r2 = await fetch(`${base}/predios/${pred.predio_id}/inspecciones`, {
+      const r2 = await fetch(`${base}/predios/${pred.predio_id}/inspecciones`, withRequestId({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyInspeccion),
-      })
+      }))
       if (!r2.ok)
         throw new Error(
           formatFastApiDetail(await r2.json().catch(() => null), 'Error al crear inspección'),
@@ -232,11 +233,11 @@ export function InspeccionForm() {
         inspeccion_id: ins.inspeccion_id,
         nivel_sancion_sugerido: nivelElegido || undefined,
       }
-      const r3 = await fetch(`${base}/predios/expedientes`, {
+      const r3 = await fetch(`${base}/predios/expedientes`, withRequestId({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(bodyEx),
-      })
+      }))
       if (!r3.ok) {
         const d = await r3.json().catch(() => null)
         throw new Error(
