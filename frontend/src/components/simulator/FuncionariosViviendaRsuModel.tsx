@@ -135,7 +135,8 @@ export function FuncionariosViviendaRsuModel() {
             <div>
               <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Precios de residuos</p>
               <p className="mt-1 text-[12px] text-[#6B6760]">
-                Cada precio recalcula ingresos y viabilidad. La referencia territorial es aproximada, no cotización live.
+                Cada precio recalcula ingresos y viabilidad. La fuente visible es documental; si falta cotización local,
+                el valor queda como supuesto de escenario.
               </p>
             </div>
           </div>

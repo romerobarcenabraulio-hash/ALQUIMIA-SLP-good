@@ -27,6 +27,16 @@ type ReferenceRow = {
 
 const INTERNAL_DOC_BASE = 'ALQUIMIA-SLP / SLP ( contexto ) / DOCS'
 const DELIVERY_DOC_BASE = 'ADENDOS: LEGAL/pdfs/contexto_slp_entrega'
+const CAPITULO_SLP_DOC =
+  `${INTERNAL_DOC_BASE}/CAPITULO SAN LUIS POTOSÍ.docx`
+const RECICLADORAS_URL =
+  'https://docs.google.com/spreadsheets/d/1fvSxwPwS1OKLhOMKFIgUguklD_ynKoqA/edit'
+const RECICLADORAS_PDF_URL =
+  'https://drive.google.com/file/d/1gqgv9cx1mmfLCRR9F_9WDdsYAW9rbS2g/view'
+const MODELO_BASED_PDF_URL =
+  'https://drive.google.com/file/d/1yxydr3_MF_qBefR-H2em9jjctJOF8lj3/view'
+const ESTRATEGIA_VALORIZACION_URL =
+  'https://drive.google.com/file/d/1ARZAZOVKVHwFV7yg4fcHuWmGlZSGnuRW/view'
 
 export function ReferenciasCalculos() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -58,7 +68,7 @@ export function ReferenciasCalculos() {
       calculo: 'RSU doméstico municipal o ZM',
       formula: 'población activa x kg/hab/día x factor mensual / 1000',
       unidad: 't/día',
-      fuente: `${INEGI_HOUSING_SOURCE}; SEMARNAT DBGIR como referencia de generación per cápita; ${INTERNAL_DOC_BASE}/Modelo_BASED.xlsx`,
+      fuente: `${INEGI_HOUSING_SOURCE}; SEMARNAT DBGIR 2020 para generación per cápita; ${CAPITULO_SLP_DOC}, Anexo 3; ${INTERNAL_DOC_BASE}/Modelo_BASED.xlsx`,
       uso: resultados ? `${fmt.num(resultados.rsuTotalTonDia)} t/día con ${genPercapita.toFixed(2)} kg/hab/día` : 'Pendiente de cálculo',
     },
     {
@@ -78,7 +88,7 @@ export function ReferenciasCalculos() {
       calculo: 'Fracciones materialmente recuperables',
       formula: 'RSU activo x composición x captura anual x merma logística x pureza material',
       unidad: 't/día por material',
-      fuente: `${INTERNAL_DOC_BASE}/Modelo_BASED.xlsx; ${DELIVERY_DOC_BASE}/99_ Modelo_BASED.pdf`,
+      fuente: `${CAPITULO_SLP_DOC}, Tabla 2 y Anexo 3: composición atribuida a SEMARNAT 2020; ${INTERNAL_DOC_BASE}/Modelo_BASED.xlsx; ${DELIVERY_DOC_BASE}/99_ Modelo_BASED.pdf (${MODELO_BASED_PDF_URL})`,
       uso: `Orgánico ${Math.round(COMPOSICION_RSU_DETALLE.organico.pct * 100)}%, papel ${Math.round(COMPOSICION_RSU_DETALLE.papel.pct * 100)}%, plástico ${Math.round(COMPOSICION_RSU_DETALLE.plastico.pct * 100)}%, vidrio ${Math.round(COMPOSICION_RSU_DETALLE.vidrio.pct * 100)}%, metales ${Math.round(COMPOSICION_RSU_DETALLE.metales.pct * 100)}%`,
     },
     {
@@ -86,7 +96,7 @@ export function ReferenciasCalculos() {
       calculo: 'Ingresos por valorización',
       formula: 't/día capturable x precio MXN/kg x 1000 x días operativos',
       unidad: 'MXN/año',
-      fuente: `${INTERNAL_DOC_BASE}/Recicladoras_por_Giro.xlsx; rangos de escenario ALQUIMIA; validar cotización local antes de presupuesto`,
+      fuente: `${CAPITULO_SLP_DOC}, Tabla 1 y Tabla 3; ${INTERNAL_DOC_BASE}/Recicladoras_por_Giro.xlsx, Matriz_Compradores y hojas por giro (${RECICLADORAS_URL}); PDF espejo ${RECICLADORAS_PDF_URL}. No se usan precios QRO/MTY/CDMX como sustento.`,
       uso: `PET $${precios.pet}/kg, HDPE $${precios.hdpe}/kg, papel $${precios.papel}/kg, vidrio $${precios.vidrio}/kg, aluminio $${precios.aluminio}/kg, orgánico $${precios.organico}/kg`,
     },
     {
@@ -94,8 +104,8 @@ export function ReferenciasCalculos() {
       calculo: 'Control de sensibilidad por material',
       formula: 'slider limitado por mínimo, máximo y paso declarados por material',
       unidad: 'MXN/kg',
-      fuente: 'Referencias territoriales CDMX, MTY y QRO en frontend/src/lib/viviendaInegi.ts; no son cotización live',
-      uso: `PET ${rangeText('pet')}; HDPE ${rangeText('hdpe')}; papel ${rangeText('papel')}; vidrio ${rangeText('vidrio')}; aluminio ${rangeText('aluminio')}; orgánico ${rangeText('organico')}`,
+      fuente: 'Rangos de sensibilidad del modelo para probar escenarios; el Capítulo SLP indica precios de referencia marzo 2026 sujetos a revisión trimestral con ANIPAC, CEMPRE México y cotizaciones directas de compradores ancla. Si no hay cotización local, no se presenta como precio verdadero.',
+      uso: `PET ${rangeText('pet')}; HDPE ${rangeText('hdpe')} (sin fuente cerrada propia en el capítulo); papel ${rangeText('papel')}; vidrio ${rangeText('vidrio')} (conciliar $2.30 capítulo vs anexos); aluminio ${rangeText('aluminio')}; orgánico ${rangeText('organico')} (mercado local por confirmar)`,
     },
     {
       tema: 'Centros de acopio',
@@ -118,7 +128,7 @@ export function ReferenciasCalculos() {
       calculo: 'Ahorro por toneladas desviadas de relleno',
       formula: 'volumen desviado en el horizonte x $320 MXN/t',
       unidad: 'MXN/horizonte',
-      fuente: `${DELIVERY_DOC_BASE}/00001_CAPITULO SAN LUIS POTOSÍ.pdf; supuesto interno de disposición final, validar con contrato municipal`,
+      fuente: `${DELIVERY_DOC_BASE}/00001_CAPITULO SAN LUIS POTOSÍ.pdf; ${CAPITULO_SLP_DOC} documenta ahorro municipal $52-94M/año y exige actualizar tarifa vigente de disposición final; el $/t debe validarse con contrato municipal.`,
       uso: resultados ? fmt.mxnM(resultados.ahorroDisposicion) : 'Pendiente de cálculo',
     },
     {
@@ -126,7 +136,7 @@ export function ReferenciasCalculos() {
       calculo: 'CO₂e por reciclaje y orgánico aprovechado',
       formula: 'material recuperado x factor de emisión; orgánico biodigestor x CH₄ x densidad x GWP',
       unidad: 'tCO₂e/año',
-      fuente: `Factores en constants.ts: papel ${FACTORES_EMISION.papel}, plástico ${FACTORES_EMISION.plastico}, vidrio ${FACTORES_EMISION.vidrio}, aluminio ${FACTORES_EMISION.aluminio}; CH₄ ${MODELO_PARAMS.factorCH4}, GWP ${MODELO_PARAMS.gwpCH4}`,
+      fuente: `${CAPITULO_SLP_DOC}: sección ambiental y bibliografía IPCC AR6 / INECC 2024; factores operativos en constants.ts: papel ${FACTORES_EMISION.papel}, plástico ${FACTORES_EMISION.plastico}, vidrio ${FACTORES_EMISION.vidrio}, aluminio ${FACTORES_EMISION.aluminio}; CH4 ${MODELO_PARAMS.factorCH4}, GWP ${MODELO_PARAMS.gwpCH4}`,
       uso: resultados ? `${fmt.co2(resultados.co2eEvitadasAnualTon)} en año final` : 'Pendiente de cálculo',
     },
     {
@@ -134,8 +144,16 @@ export function ReferenciasCalculos() {
       calculo: 'Ahorro social por PM2.5, IRA, dengue y exposición poblacional',
       formula: 'PM2.5 evitado x tasa IRA x costo caso + orgánico evitado x tasa dengue x costo caso + población x $145 x 20%',
       unidad: 'MXN/horizonte',
-      fuente: `${INTERNAL_DOC_BASE}/CAPITULO SAN LUIS POTOSÍ.docx; multiplicador salud ${MULTIPLICADORES.ahorroSaludHabAño} MXN/hab/año en constants.ts; requiere revisión técnica antes de dictamen sanitario`,
+      fuente: `${CAPITULO_SLP_DOC}; bibliografía ambiental/sanitaria del capítulo; multiplicador salud ${MULTIPLICADORES.ahorroSaludHabAño} MXN/hab/año en constants.ts. Es estimación de política pública, no dictamen sanitario.`,
       uso: resultados ? `${fmt.mxnM(resultados.ahorroSalud)}; ${fmt.num0(resultados.casosIRAEvitados)} casos IRA estimados evitados` : 'Pendiente de cálculo',
+    },
+    {
+      tema: 'Bibliografía base del capítulo',
+      calculo: 'Sustento documental transversal',
+      formula: 'Referencia cualitativa -> dato usado -> fórmula del simulador -> validación local cuando aplique',
+      unidad: 'documentos y URL',
+      fuente: `${CAPITULO_SLP_DOC}; Estrategia_Valorizacion_RSU_SLP ${ESTRATEGIA_VALORIZACION_URL}; Recicladoras_por_Giro ${RECICLADORAS_URL}; Modelo_BASED ${MODELO_BASED_PDF_URL}; bibliografía: INEGI 2020/2023, SEMARNAT DBGIR 2017/2020/2022, IPCC AR6, INECC 2024, NOM-083-SEMARNAT-2003.`,
+      uso: 'La fuente externa sostiene el fenómeno; el modelo ALQUIMIA solo transforma ese dato en cálculo trazable.',
     },
     {
       tema: 'Línea base circularidad',
@@ -163,8 +181,8 @@ export function ReferenciasCalculos() {
               Referencias que justifican los cálculos
             </h2>
             <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
-              Esta tabla resume qué dato sostiene cada número del simulador. Los precios, costos y efectos de salud son
-              supuestos de escenario hasta validarlos con cotización local, medición municipal o fuente técnica competente.
+              Esta tabla resume qué dato sostiene cada número del simulador. Cuando un precio, costo o efecto no tiene
+              cotización local verificable, se marca como supuesto de escenario y no como dato oficial.
             </p>
           </div>
           <div className="inline-flex items-center gap-2 rounded-[999px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1 text-[11px] text-[#3B6D11]">

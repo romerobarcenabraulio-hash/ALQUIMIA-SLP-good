@@ -95,56 +95,41 @@ export function getHousingCategoryByType(
   return distribution?.categories.find(c => c.operationalType === tipo) ?? null
 }
 
-type MarketReference = {
-  city: string
-  value: number
-  source: string
-}
-
-const PRICE_REFERENCES: Record<keyof PreciosMaterial, MarketReference[]> = {
-  pet: [
-    { city: 'MTY', value: 4.8, source: 'referencia mercado reciclaje MTY' },
-    { city: 'QRO', value: 5.5, source: 'referencia mercado reciclaje QRO' },
-    { city: 'CDMX', value: 7.8, source: 'referencia mercado reciclaje CDMX' },
-  ],
-  hdpe: [
-    { city: 'MTY', value: 7.2, source: 'referencia mercado reciclaje MTY' },
-    { city: 'QRO', value: 8.5, source: 'referencia mercado reciclaje QRO' },
-    { city: 'CDMX', value: 11.5, source: 'referencia mercado reciclaje CDMX' },
-  ],
-  papel: [
-    { city: 'MTY', value: 1.8, source: 'referencia mercado reciclaje MTY' },
-    { city: 'QRO', value: 2.5, source: 'referencia mercado reciclaje QRO' },
-    { city: 'CDMX', value: 3.6, source: 'referencia mercado reciclaje CDMX' },
-  ],
-  vidrio: [
-    { city: 'MTY', value: 1.4, source: 'referencia mercado reciclaje MTY' },
-    { city: 'QRO', value: 2.3, source: 'referencia mercado reciclaje QRO' },
-    { city: 'CDMX', value: 3.4, source: 'referencia mercado reciclaje CDMX' },
-  ],
-  aluminio: [
-    { city: 'MTY', value: 13.0, source: 'referencia mercado reciclaje MTY' },
-    { city: 'QRO', value: 15.1, source: 'referencia mercado reciclaje QRO' },
-    { city: 'CDMX', value: 22.0, source: 'referencia mercado reciclaje CDMX' },
-  ],
-  organico: [
-    { city: 'MTY', value: 0.3, source: 'referencia composta basica MTY' },
-    { city: 'QRO', value: 0.6, source: 'referencia composta basica QRO' },
-    { city: 'CDMX', value: 1.1, source: 'referencia composta basica CDMX' },
-  ],
+const PRICE_SOURCE_NOTES: Record<keyof PreciosMaterial, { base: number; note: string }> = {
+  pet: {
+    base: 5.50,
+    note: 'Base SLP: Capitulo San Luis tabla de valorizacion y Recicladoras_por_Giro.xlsx; actualizar con cotizacion de comprador ancla.',
+  },
+  hdpe: {
+    base: 8.50,
+    note: 'Parametro de sensibilidad del modelo; no hay fuente documental cerrada en Capitulo SLP para HDPE separado.',
+  },
+  papel: {
+    base: 2.50,
+    note: 'Base SLP: Capitulo San Luis y Recicladoras_por_Giro.xlsx; comprador/capacidad papel-carton requiere validacion local.',
+  },
+  vidrio: {
+    base: 2.30,
+    note: 'Base Capitulo SLP $2.30/kg; anexos de recicladoras traen valores distintos, por eso requiere conciliacion y cotizacion local.',
+  },
+  aluminio: {
+    base: 15.10,
+    note: 'Base Capitulo SLP y hoja Aluminio de Recicladoras_por_Giro.xlsx; validar contra fundidora o comprador ancla.',
+  },
+  organico: {
+    base: 0.30,
+    note: 'Escenario conservador del simulador; el capitulo documenta composta a granel como mercado local por confirmar.',
+  },
 }
 
 export function describeMaterialPriceReference(
   material: keyof PreciosMaterial,
   value: number,
 ): string {
-  const references = PRICE_REFERENCES[material]
-  const nearest = references.reduce((best, item) =>
-    Math.abs(item.value - value) < Math.abs(best.value - value) ? item : best,
-  references[0])
-  const tolerance = Math.max(0.35, nearest.value * 0.18)
-  if (Math.abs(nearest.value - value) <= tolerance) {
-    return `Precio estimado cercano a ${nearest.city} (${nearest.source}); no es cotizacion live.`
+  const source = PRICE_SOURCE_NOTES[material]
+  const tolerance = Math.max(0.35, source.base * 0.18)
+  if (Math.abs(value - source.base) <= tolerance) {
+    return `${source.note} No es cotizacion live ni precio oficial.`
   }
-  return 'Precio manual del escenario; documentar cotizacion local antes de presupuesto.'
+  return `Precio manual del escenario. ${source.note} Documentar cotizacion local antes de presupuesto.`
 }

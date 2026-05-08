@@ -22,8 +22,9 @@ describe('viviendaInegi', () => {
     expect(getInegiHousingDistribution('EXT', ['ext'])).toBeNull()
   })
 
-  it('describe referencia territorial de precio o escenario manual', () => {
-    expect(describeMaterialPriceReference('pet', 7.8)).toMatch(/CDMX/)
+  it('describe fuente documental de precio o escenario manual sin inventar ciudad', () => {
+    expect(describeMaterialPriceReference('pet', 5.5)).toMatch(/Capitulo San Luis/)
+    expect(describeMaterialPriceReference('pet', 5.5)).not.toMatch(/CDMX|QRO|MTY/)
     expect(describeMaterialPriceReference('pet', 12)).toMatch(/manual/)
   })
 })

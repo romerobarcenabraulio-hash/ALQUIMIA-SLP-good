@@ -53,7 +53,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(after).toBeLessThan(before)
   })
 
-  it('cambiar precio recalcula ingresos y muestra referencia territorial', () => {
+  it('cambiar precio recalcula ingresos y muestra fuente documental sin inventar referencia territorial', () => {
     const before = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
     render(<FuncionariosViviendaRsuModel />)
 
@@ -61,7 +61,8 @@ describe('FuncionariosViviendaRsuModel', () => {
 
     const after = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
     expect(after).toBeGreaterThan(before)
-    expect(screen.getAllByText(/referencia mercado reciclaje CDMX/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Capitulo San Luis/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/referencia mercado reciclaje CDMX/)).toBeNull()
   })
 
   it('sin datos INEGI muestra warning y no inventa porcentajes', () => {
@@ -86,5 +87,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByText(/Precios de materiales/)).toBeTruthy()
     expect(screen.getAllByText(/CAPITULO SAN LUIS POTOSÍ/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Modelo_BASED/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/https:\/\/docs\.google\.com\/spreadsheets\/d\/1fvSxwPwS1OKLhOMKFIgUguklD_ynKoqA\/edit/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/No se usan precios QRO\/MTY\/CDMX como sustento/i).length).toBeGreaterThan(0)
   })
 })
