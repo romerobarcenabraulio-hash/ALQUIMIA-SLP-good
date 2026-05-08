@@ -37,3 +37,5 @@ frontend/.turbo/
 
 # TypeScript incremental (local; cambia en cada tsc y ensucia diffs/PRs)
 frontend/tsconfig.tsbuildinfo
+.vercel
+.env*.local
