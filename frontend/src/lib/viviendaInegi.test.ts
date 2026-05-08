@@ -6,19 +6,19 @@ import {
 } from '@/lib/viviendaInegi'
 
 describe('viviendaInegi', () => {
-  it('devuelve solo categorias literales INEGI cargadas', () => {
-    const distribution = getInegiHousingDistribution('QRO', ['qro'])
+  it('devuelve hechos estatales INEGI sin inventar categorias de vivienda', () => {
+    const distribution = getInegiHousingDistribution('QRO', ['qro', 'cor', 'mar', 'hui'])
 
     expect(distribution?.source).toMatch(/INEGI Censo 2020/)
-    expect(distribution?.categories.map(c => c.label)).toEqual([
-      'Casa independiente',
-      'Departamento en edificio',
-    ])
-    expect(distribution?.categories.map(c => c.operationalType)).toEqual(['casa', 'vertical'])
+    expect(distribution?.statePopulation2020).toBe(2368467)
+    expect(distribution?.stateOccupiedDwellings2020).toBe(668487)
+    expect(distribution?.stateAvgOccupants2020).toBe(3.5)
+    expect(distribution?.categories).toEqual([])
     expect(isInegiLiteralHousingType('residencial')).toBe(false)
   })
 
-  it('reporta empty cuando no hay distribucion cargada', () => {
+  it('reporta empty cuando no hay distribucion municipal cargada', () => {
+    expect(getInegiHousingDistribution('QRO', ['qro'])).toBeNull()
     expect(getInegiHousingDistribution('EXT', ['ext'])).toBeNull()
   })
 

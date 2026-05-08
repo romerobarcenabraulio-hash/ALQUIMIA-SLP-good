@@ -25,7 +25,8 @@ export function TipoVivienda() {
         {TIPOS.map(t => {
           const active = tiposVivienda.includes(t.key)
           const inegiCategory = distribution?.categories.find(c => c.operationalType === t.key)
-          const pct    = Math.round((inegiCategory?.pct ?? zm.mixVivienda[t.key]) * 100)
+          const hasInegiPct = Boolean(inegiCategory)
+          const pct = hasInegiPct ? Math.round((inegiCategory?.pct ?? 0) * 100) : Math.round(zm.mixVivienda[t.key] * 100)
           return (
             <button
               key={t.key}
@@ -39,13 +40,15 @@ export function TipoVivienda() {
             >
               <span className="text-[12px] font-medium">{t.label}</span>
               <span className="font-mono text-[18px]">{pct}%</span>
-              <span className="text-[10px]">INEGI · factor {t.factor}x</span>
+              <span className="text-[10px]">{hasInegiPct ? 'INEGI' : 'Modelo operativo'} · factor {t.factor}x</span>
             </button>
           )
         })}
       </div>
       <p className="mb-4 text-[10px] leading-relaxed text-[#A8A49C]">
-        Fuente: INEGI Censo 2020 / tabulados de vivienda. No se muestra residencial como categoría INEGI literal.
+        {distribution?.categories.length
+          ? 'Fuente: INEGI Censo 2020 / tabulados de vivienda. No se muestra residencial como categoría INEGI literal.'
+          : 'Los archivos INEGI cargados validan población, viviendas habitadas y ocupantes promedio por entidad; no traen porcentaje casa/departamento. Los porcentajes visibles son pesos operativos del modelo hasta cargar el tabulado municipal por clase de vivienda.'}
       </p>
 
       {/* Slider generación per cápita */}

@@ -18,57 +18,41 @@ export interface InegiHousingDistribution {
   retrievedLabel: string
   confidenceLabel: string
   note: string
+  statePopulation2020: number
+  stateOccupiedDwellings2020: number
+  stateAvgOccupants2020: number
   categories: InegiHousingCategory[]
 }
 
 export const INEGI_HOUSING_SOURCE =
   'INEGI Censo 2020 / tabulados de vivienda'
 
-const CASA_VARIABLE = 'Clase de vivienda particular: casa independiente'
-const DEPTO_VARIABLE = 'Clase de vivienda particular: departamento en edificio'
-
 const DISTRIBUTIONS: Record<string, InegiHousingDistribution> = {
-  SLP: distribution('SLP', 'Zona Metropolitana de San Luis Potosi', 0.50, 0.50),
-  MTY: distribution('MTY', 'Zona Metropolitana de Monterrey', 0.45, 0.55),
-  QRO: distribution('QRO', 'Zona Metropolitana de Queretaro', 0.35, 0.65),
-  GDL: distribution('GDL', 'Zona Metropolitana de Guadalajara', 0.42, 0.58),
-  slp: distribution('slp', 'Municipio de San Luis Potosi', 0.50, 0.50),
-  sol: distribution('sol', 'Soledad de Graciano Sanchez', 0.58, 0.42),
-  qro: distribution('qro', 'Municipio de Queretaro', 0.35, 0.65),
-  mty: distribution('mty', 'Municipio de Monterrey', 0.45, 0.55),
-  gdl: distribution('gdl', 'Municipio de Guadalajara', 0.42, 0.58),
+  SLP: distribution('SLP', 'San Luis Potosi (entidad federativa)', 2_822_255, 774_658, 3.6),
+  MTY: distribution('MTY', 'Nuevo Leon (entidad federativa)', 5_784_442, 1_655_256, 3.5),
+  QRO: distribution('QRO', 'Queretaro (entidad federativa)', 2_368_467, 668_487, 3.5),
+  GDL: distribution('GDL', 'Jalisco (entidad federativa)', 8_348_151, 2_330_706, 3.6),
 }
 
 function distribution(
   geographyId: string,
   geographyLabel: string,
-  casaPct: number,
-  deptoPct: number,
+  statePopulation2020: number,
+  stateOccupiedDwellings2020: number,
+  stateAvgOccupants2020: number,
 ): InegiHousingDistribution {
   return {
     geographyId,
     geographyLabel,
     source: INEGI_HOUSING_SOURCE,
     sourceKind: 'inegi_censo_2020_tabulados_vivienda',
-    retrievedLabel: 'Censo 2020; no es medicion en tiempo real.',
-    confidenceLabel: 'Distribucion literal INEGI normalizada al 100% para las categorias cargadas.',
-    note: 'No se muestra residencial como categoria INEGI porque no es una clase literal comparable en todos los municipios.',
-    categories: [
-      {
-        key: 'casa_independiente',
-        label: 'Casa independiente',
-        pct: casaPct,
-        operationalType: 'casa',
-        inegiVariable: CASA_VARIABLE,
-      },
-      {
-        key: 'departamento_edificio',
-        label: 'Departamento en edificio',
-        pct: deptoPct,
-        operationalType: 'vertical',
-        inegiVariable: DEPTO_VARIABLE,
-      },
-    ],
+    retrievedLabel: 'Consulta INEGI 08/05/2026; tabulados por entidad federativa, no por municipio ni ZM.',
+    confidenceLabel: 'Los archivos cargados validan población, viviendas habitadas y ocupantes promedio estatales. No contienen distribución casa/departamento.',
+    note: 'No se muestra porcentaje de casa independiente ni departamento como dato INEGI porque Vivienda_01.xlsx y Vivienda_02.xlsx no traen clase de vivienda. Para activar esa distribución hace falta el tabulado municipal por clase de vivienda.',
+    statePopulation2020,
+    stateOccupiedDwellings2020,
+    stateAvgOccupants2020,
+    categories: [],
   }
 }
 
@@ -77,7 +61,7 @@ export function getInegiHousingDistribution(
   municipioIds: string[],
 ): InegiHousingDistribution | null {
   if (municipioIds.length === 1) {
-    return DISTRIBUTIONS[municipioIds[0]] ?? DISTRIBUTIONS[zmId] ?? null
+    return DISTRIBUTIONS[municipioIds[0]] ?? null
   }
   return DISTRIBUTIONS[zmId] ?? null
 }

@@ -77,10 +77,12 @@ export function ReferenciasCalculos() {
       formula: 'RSU por tipo = RSU base x participación de vivienda x factor operativo del tipo',
       unidad: '% y viviendas',
       fuente: vivienda
-        ? `${vivienda.source}; variables: ${vivienda.categories.map(c => c.inegiVariable).join('; ')}`
+        ? `${vivienda.source}; ${vivienda.confidenceLabel}`
         : `${INEGI_HOUSING_SOURCE} - sin distribución cargada para este territorio`,
       uso: vivienda
-        ? vivienda.categories.map(c => `${c.label} ${Math.round(c.pct * 100)}%`).join(', ')
+        ? vivienda.categories.length
+          ? vivienda.categories.map(c => `${c.label} ${Math.round(c.pct * 100)}%`).join(', ')
+          : `El XLSX valida ${fmt.num0(vivienda.stateOccupiedDwellings2020)} viviendas habitadas estatales y ${vivienda.stateAvgOccupants2020.toFixed(1)} ocupantes/vivienda; no valida porcentajes casa/departamento.`
         : 'No se inventan porcentajes de vivienda',
     },
     {

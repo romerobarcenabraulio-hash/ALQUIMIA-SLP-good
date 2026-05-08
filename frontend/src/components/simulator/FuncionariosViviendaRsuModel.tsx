@@ -21,6 +21,11 @@ const MATERIAL_LABEL: Record<keyof PreciosMaterial, string> = {
   organico: 'Organico / composta',
 }
 
+const OPERATIONAL_HOUSING_TYPES = [
+  { key: 'casa' as const, label: 'Casa independiente', helper: 'Segmento operativo; sin porcentaje INEGI en los XLSX cargados.' },
+  { key: 'vertical' as const, label: 'Departamento en edificio', helper: 'Segmento operativo; requiere tabulado INEGI por clase de vivienda.' },
+]
+
 export function FuncionariosViviendaRsuModel() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -91,32 +96,39 @@ export function FuncionariosViviendaRsuModel() {
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Distribución vivienda INEGI</p>
           {!distribution ? (
             <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-              Sin distribución INEGI cargada para esta ciudad. No se inventan porcentajes de vivienda.
+              Sin tabulado INEGI municipal de vivienda para esta selección. No se inventan porcentajes de casa/departamento.
             </div>
           ) : (
             <>
               <p className="mt-1 text-[12px] text-[#6B6760]">
                 {distribution.geographyLabel}. {distribution.retrievedLabel}
               </p>
-              <div className="mt-3 flex flex-wrap gap-3">
-                {distribution.categories.map(cat => {
-                  const active = tiposVivienda.includes(cat.operationalType)
-                  const viviendas = resultados ? Math.round(resultados.vivActivas * cat.pct) : 0
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <MiniFact label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
+                <MiniFact label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
+                <MiniFact label="Ocupantes/vivienda" value={distribution.stateAvgOccupants2020.toFixed(1)} />
+              </div>
+              <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] leading-relaxed text-amber-900">
+                {distribution.note}
+              </div>
+              <p className="mt-3 text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Segmentos operativos ajustables</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {OPERATIONAL_HOUSING_TYPES.map(tipo => {
+                  const active = tiposVivienda.includes(tipo.key)
                   return (
                     <button
-                      key={cat.key}
+                      key={tipo.key}
                       type="button"
-                      onClick={() => toggleTipoVivienda(cat.operationalType)}
+                      onClick={() => toggleTipoVivienda(tipo.key)}
                       className={cn(
-                        'min-w-[145px] rounded-[10px] border px-4 py-3 text-left transition-colors',
+                        'min-w-[165px] rounded-[10px] border px-4 py-3 text-left transition-colors',
                         active
                           ? 'border-[#3B6D11]/35 bg-[#EAF3DE] text-[#23470A]'
                           : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#A8A49C]',
                       )}
                     >
-                      <span className="block text-[12px] font-medium">{cat.label}</span>
-                      <span className="mt-1 block font-mono text-[22px]">{Math.round(cat.pct * 100)}%</span>
-                      <span className="block text-[10px]">{fmt.num0(viviendas)} viviendas</span>
+                      <span className="block text-[12px] font-medium">{tipo.label}</span>
+                      <span className="mt-1 block text-[10px] leading-relaxed">{tipo.helper}</span>
                     </button>
                   )
                 })}
@@ -186,6 +198,15 @@ function MetricCard({ label, value, helper }: { label: string; value: string; he
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
       <p className="mt-1 font-mono text-[18px] text-[#1C1B18]">{value}</p>
       <p className="mt-1 text-[10px] text-[#8C8880]">{helper}</p>
+    </div>
+  )
+}
+
+function MiniFact({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2">
+      <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
+      <p className="mt-1 font-mono text-[14px] text-[#1C1B18]">{value}</p>
     </div>
   )
 }

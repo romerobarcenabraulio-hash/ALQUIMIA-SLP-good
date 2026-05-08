@@ -22,12 +22,16 @@ describe('FuncionariosViviendaRsuModel', () => {
     useSimulatorStore.getState().recalcular()
   })
 
-  it('renderiza el bloque institucional con fuente INEGI y sin residencial como categoria oficial', () => {
+  it('renderiza el bloque institucional con hechos INEGI y sin porcentaje inventado por tipo', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getByTestId('funcionarios-vivienda-rsu-model')).toBeTruthy()
     expect(screen.getByText(/Distribución de vivienda, generación y costo público/)).toBeTruthy()
     expect(screen.getAllByText(/INEGI Censo 2020/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Población estatal 2020/)).toBeTruthy()
+    expect(screen.getByText(/2,822,255/)).toBeTruthy()
+    expect(screen.getByText(/774,658/)).toBeTruthy()
+    expect(screen.getAllByText(/No contienen distribución casa\/departamento/i).length).toBeGreaterThan(0)
     expect(screen.getByText(/Casa independiente/)).toBeTruthy()
     expect(screen.getByText(/Departamento en edificio/)).toBeTruthy()
     expect(screen.queryByText(/Residencial/)).toBeNull()
@@ -75,7 +79,7 @@ describe('FuncionariosViviendaRsuModel', () => {
 
     render(<FuncionariosViviendaRsuModel />)
 
-    expect(screen.getAllByText(/Sin distribución INEGI cargada/).length).toBe(1)
+    expect(screen.getAllByText(/Sin tabulado INEGI municipal/).length).toBe(1)
   })
 
   it('renderiza anexo final con fórmulas y bibliografía de cálculos', () => {
