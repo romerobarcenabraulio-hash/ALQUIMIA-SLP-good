@@ -132,7 +132,6 @@ export function CircularityBaselineCard() {
               </p>
               <div
                 className="mt-4 flex flex-wrap items-start gap-2 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-2.5 text-[12px] leading-relaxed text-[#6B6760] [overflow-wrap:anywhere]"
-                title="Margen declarado sobre el mismo indicador 0–100%"
               >
                 <HelpCircle size={14} className="mt-0.5 shrink-0 text-[#3B6D11]" aria-hidden="true" />
                 <p>

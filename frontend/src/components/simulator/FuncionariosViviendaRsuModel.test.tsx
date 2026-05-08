@@ -2,6 +2,7 @@
 import { describe, expect, it, beforeEach, afterEach } from 'vitest'
 import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
+import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { PRECIOS_DEFAULTS } from '@/lib/constants'
 import { SIMULATOR_STATE_DEFAULT, useSimulatorStore } from '@/store/simulatorStore'
 
@@ -74,5 +75,16 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getAllByText(/Sin distribución INEGI cargada/).length).toBe(1)
+  })
+
+  it('renderiza anexo final con fórmulas y bibliografía de cálculos', () => {
+    render(<ReferenciasCalculos />)
+
+    expect(screen.getByTestId('referencias-calculos')).toBeTruthy()
+    expect(screen.getByText(/Referencias que justifican los cálculos/)).toBeTruthy()
+    expect(screen.getByText(/Población y territorio/)).toBeTruthy()
+    expect(screen.getByText(/Precios de materiales/)).toBeTruthy()
+    expect(screen.getAllByText(/CAPITULO SAN LUIS POTOSÍ/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Modelo_BASED/i).length).toBeGreaterThan(0)
   })
 })

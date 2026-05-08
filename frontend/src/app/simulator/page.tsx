@@ -36,6 +36,7 @@ import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
+import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
@@ -157,6 +158,7 @@ export default function SimulatorPage() {
                 audience={portalEntry}
                 renderModule={module => renderDecisionModule(module, isOrganizationJourney, audience)}
               />
+              <ReferenciasCalculos />
             </>
           )}
 
