@@ -8,6 +8,40 @@ import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getMadurezMensajeMultiAncla, getMunicipioMadurezVista, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import type { FuenteTipo, ResultadosCalculados } from '@/types'
 
+const GENTILICIO_POR_TERRITORIO: Record<string, string> = {
+  SLP: 'potosinos',
+  MTY: 'regiomontanos',
+  QRO: 'queretanos',
+  GDL: 'jaliscienses',
+  slp: 'potosinos',
+  sol: 'soledenses',
+  csp: 'cerreños',
+  vip: 'villenses',
+  mty: 'regiomontanos',
+  spg: 'sampetreños',
+  snl: 'nicolaítas',
+  gua: 'guadalupenses',
+  apo: 'apodaquenses',
+  sca: 'santacatarinenses',
+  gar: 'garcianos',
+  esc: 'escobedenses',
+  jua: 'juarenses',
+  qro: 'queretanos',
+  cor: 'corregidorenses',
+  mar: 'marquesanos',
+  hui: 'huimilpenses',
+  gdl: 'tapatíos',
+  zap: 'zapopanos',
+  tla: 'tlaquepaquenses',
+}
+
+function gentilicioLectura(zmActiva: string, municipiosActivos: string[], territorio: string): string {
+  if (municipiosActivos.length === 1) {
+    return GENTILICIO_POR_TERRITORIO[municipiosActivos[0] ?? ''] ?? `habitantes de ${territorio}`
+  }
+  return GENTILICIO_POR_TERRITORIO[zmActiva] ?? `habitantes de ${territorio}`
+}
+
 function KpiCompareRow({
   sinProgramaLabel,
   deltaLabel,
@@ -76,8 +110,14 @@ function compareEmpleos(r: ResultadosCalculados, b: ResultadosCalculados | null)
 
 export function SectionHero() {
   const audience = useSimulatorStore(s => s.audience)
-  const { resultados, resultadosSinPrograma, zmActiva, snapshotDatos, horizonte, municipiosActivos } = useSimulatorStore()
+  const { resultados, resultadosSinPrograma, zmActiva, snapshotDatos, horizonte, municipiosActivos, genPercapita } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)
+  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const gentilicio = gentilicioLectura(zmActiva, municipiosActivos, territorio)
+  const rsuDia = resultados?.rsuTotalTonDia ?? 0
+  const rsuAnual = rsuDia * 365
+  const costoPublicoAnual = resultados ? resultados.opexAnual + resultados.ahorroDisposicion : 0
+  const saludPublicaAnual = resultados?.ahorroSalud ?? 0
 
   // Provenance de los KPIs del header — viene del snapshot cuando disponible
   const pobKpi  = snapshotDatos?.kpis.find(k => k.kpi_id === 'poblacion_total')
@@ -96,19 +136,44 @@ export function SectionHero() {
           S1 — Plataforma de circularidad municipal
         </p>
       )}
-      <h1 className="font-serif text-[38px] leading-[1.05] tracking-[-0.02em] text-[#1C1B18] mb-4 max-w-2xl">
-        Transforma los residuos de{' '}
-        <span className="text-[#3B6D11]">{getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)}</span>{' '}
-        en un motor económico
+      <h1 className="font-serif text-[38px] leading-[1.05] tracking-[-0.02em] text-[#1C1B18] mb-4 max-w-3xl">
+        ¿Sabes cuánto le cuesta a{' '}
+        <span className="text-[#3B6D11]">{territorio}</span>{' '}
+        no separar sus residuos?
       </h1>
-      <p className="text-[15px] text-[#6B6760] max-w-2xl mb-4 leading-relaxed">
-        El simulador ALQUIMIA calcula en tiempo real el impacto financiero, ambiental y social
-        de un programa de valorización de RSU. Configura tu escenario, observa los números cambiar
-        y avanza módulo a módulo en un paquete de trabajo consultivo: la profundidad de la entrega
-        depende de los módulos y validaciones que completes.
-      </p>
+      <div className="max-w-3xl space-y-4 text-[15px] leading-relaxed text-[#6B6760] mb-5">
+        <p>
+          A veces el problema parece absurdo de tan cotidiano: una bolsa mezclada sale de la casa, desaparece de la vista
+          y se vuelve costo municipal, presión sanitaria y trabajo más pesado para quienes recuperan materiales.
+          Separar no resuelve todo, pero cambia el punto de partida.
+        </p>
+        <p>
+          Actualmente, en <strong className="font-medium text-[#1C1B18]">{territorio}</strong>, el modelo estima que si una persona genera{' '}
+          <strong className="font-mono text-[#1C1B18]">{genPercapita.toFixed(2)} kg/día</strong> de RSU municipal,
+          los {gentilicio} del ámbito activo generan alrededor de{' '}
+          <strong className="font-mono text-[#1C1B18]">{rsuDia > 0 ? fmt.kgd(rsuDia) : '—'}</strong>, es decir{' '}
+          <strong className="font-mono text-[#1C1B18]">{rsuAnual > 0 ? `${fmt.num0(rsuAnual)} t/año` : '—'}</strong>.
+          Esta lectura se limita a residuos sólidos urbanos del escenario municipal; no modela residuos peligrosos,
+          especiales ni regulados.
+        </p>
+        {resultados && (
+          <p>
+            Bajo este escenario, la operación y disposición asociadas representan cerca de{' '}
+            <strong className="font-mono text-[#1C1B18]">{fmt.mxnM(costoPublicoAnual)}</strong> al año para el gobierno local,
+            mientras que la mejora del manejo puede reflejar hasta{' '}
+            <strong className="font-mono text-[#1C1B18]">{fmt.mxnM(saludPublicaAnual)}</strong> de ahorro social estimado en salud.
+            Son cifras de simulación: sirven para decidir, ajustar supuestos y abrir una conversación pública responsable.
+          </p>
+        )}
+        <p>
+          El municipio debe prestar servicios como seguridad, agua, energía urbana y recolección de residuos; cuando no tiene
+          infraestructura suficiente, contrata o concesiona parte del servicio y todo termina en rutas, patios de transferencia
+          y disposición final. En medio están los recolectores de base: si hogares, oficinas, hoteles y comercios separan desde
+          el origen, su trabajo se vuelve más seguro, más digno y menos laborioso.
+        </p>
+      </div>
       {madurezUnMunicipio && (
-        <p className="text-[12px] text-[#5A6347] max-w-2xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
+        <p className="text-[12px] text-[#5A6347] max-w-3xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
           Cada municipio es un escenario distinto: reglamento de aseo/limpia, supuestos de generación (kg/hab·día) y madurez en
           circularidad no se transfieren mecánicamente entre ayuntamientos. El ancla activa es{' '}
           <strong className="font-medium text-[#2D5409]">{madurezUnMunicipio.nombre}</strong>.
