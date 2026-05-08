@@ -7,6 +7,14 @@ import json
 from fastapi.testclient import TestClient
 
 from app.main import app
+from app.observability import get_app_environment
+
+
+def test_environment_accepts_render_mixed_case_key(monkeypatch):
+    monkeypatch.delenv("APP_ENV", raising=False)
+    monkeypatch.delenv("ENVIRONMENT", raising=False)
+    monkeypatch.setenv("Environment", "production")
+    assert get_app_environment() == "production"
 
 
 def test_health_deep_ok_structure():

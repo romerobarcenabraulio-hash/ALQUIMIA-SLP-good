@@ -29,7 +29,13 @@ def app_version_from_env(default: str) -> str:
 
 
 def get_app_environment() -> str:
-    raw = (os.getenv("APP_ENV") or os.getenv("ENVIRONMENT") or "development").strip().lower()
+    raw = (
+        os.getenv("APP_ENV")
+        or os.getenv("ENVIRONMENT")
+        or os.getenv("Environment")
+        or os.getenv("environment")
+        or "development"
+    ).strip().lower()
     if raw in ("production", "prod"):
         return "production"
     return raw or "development"
