@@ -4,7 +4,7 @@
  * para servir `/reglamentos/...`. Los .doc siguen en `public/reglamentos/`. Vigencia frente a terceros = fuente oficial (URL).
  */
 
-export type ZmReglamentoId = 'SLP' | 'MTY' | 'QRO' | 'EXT'
+export type ZmReglamentoId = 'SLP' | 'MTY' | 'QRO' | 'GDL' | 'EXT'
 
 export interface ReglamentoFuente {
   zm_id: ZmReglamentoId
@@ -101,17 +101,19 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     zm_id: 'MTY',
     municipio_id: 'spg',
     nombre:
-      'San Pedro Garza García · reglamento ambiental (Gaceta 118, 2009) y reglamento de zonificación y usos de suelo',
-    anio_version: 2009,
-    url_fuente: 'https://aplicativos.sanpedro.gob.mx/Gaceta/GACETA118.pdf',
+      'San Pedro Garza García · candidato SISTEC de limpia + reglamentos ambientales de contexto',
+    anio_version: 0,
+    url_fuente: 'https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf',
     archivo_local: [
+      '/reglamentos/MTY_spg_san_pedro_reglamento_limpia_sistec_candidate.pdf',
       '/reglamentos/MTY_spg_san_pedro_reglamento_ambiental_gaceta118_2009.pdf',
       '/reglamentos/MTY_spg_san_pedro_reglamento_zonificacion_usos_suelo.pdf',
     ],
-    articulos_clave: ['Título', 'Disposiciones transitorias'],
+    articulos_clave: ['Limpia municipal (candidato)', 'Título', 'Disposiciones transitorias'],
     estado_verificacion: 'en_revision',
-    fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo: ANCLA_STD,
+    fecha_verificacion: '2026-05-07',
+    hint_ancla_adendo:
+      `${ANCLA_STD} CSA (2026-05-07): no declarar vigencia; el PDF SISTEC corto es candidato de limpia y debe cotejarse contra POE/gaceta SPGG y reglamentos ambientales de contexto.`,
   },
   {
     zm_id: 'MTY',
@@ -240,6 +242,48 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     estado_verificacion: 'no_localizado',
     fecha_verificacion: '2026-05-05',
     hint_ancla_adendo: ANCLA_STD,
+  },
+  {
+    zm_id: 'GDL',
+    municipio_id: 'gdl',
+    nombre: 'Guadalajara · Reglamento de Gestión Integral del Municipio de Guadalajara',
+    anio_version: 2016,
+    url_fuente:
+      'https://transparencia.guadalajara.gob.mx/sites/default/files/reglamentos/Reg.GestionIntegralMunicipioGuadalajara.pdf',
+    fecha_publicacion:
+      'Gaceta base 2016-07-15 + reformas posteriores por cotejar; servidor Last-Modified 2025-05-13.',
+    archivo_local: ['/reglamentos/GDL_gdl_guadalajara_reglamento_gestion_integral_municipio.pdf'],
+    articulos_clave: ['Objeto', 'Definiciones', 'Obligaciones', 'Sanciones', 'Desarrollo urbano articulado'],
+    estado_verificacion: 'en_revision',
+    fecha_verificacion: '2026-05-07',
+    hint_ancla_adendo:
+      `${ANCLA_STD} CSA (2026-05-07): PDF descargado y SHA256 verificado contra portal; vigencia jurídica y técnica de reforma siguen sujetas a revisión competente.`,
+  },
+  {
+    zm_id: 'GDL',
+    municipio_id: 'zap',
+    nombre: 'Zapopan · Reglamento de Prevención y Gestión Integral de Residuos del Municipio de Zapopan, Jalisco',
+    anio_version: 2024,
+    url_fuente:
+      'https://servicios.zapopan.gob.mx:8000/wwwportal/publicfiles/descargasEnlaces/10-2024/Reglamento%20de%20Prevenci%C3%B3n%20y%20Gesti%C3%B3n%20Integral%20de%20Residuos%20del%20Municipio%20de%20Zapopan%2C%20Jalisco.pdf',
+    fecha_publicacion: 'Versión oficial de archivo 2024-10-15; gaceta origen 2021-09-02.',
+    archivo_local: ['/reglamentos/GDL_zap_zapopan_reglamento_gestion_integral_residuos.pdf'],
+    articulos_clave: ['Disposiciones generales', 'Gestión integral de residuos', 'Obligaciones', 'Infracciones'],
+    estado_verificacion: 'en_revision',
+    fecha_verificacion: '2026-05-07',
+    hint_ancla_adendo:
+      `${ANCLA_STD} CSA (2026-05-07): PDF Oct 2024 descargado desde portal oficial y SHA256 verificado; no sustituye validación jurídica municipal.`,
+  },
+  {
+    zm_id: 'GDL',
+    municipio_id: 'tla',
+    nombre: 'San Pedro Tlaquepaque · reglamento municipal RSU / limpia (pendiente localización directa)',
+    anio_version: 0,
+    url_fuente: 'https://www.tlaquepaque.gob.mx/transparencia/',
+    fecha_publicacion: 'Portal TLS / índice normativo sin PDF RSU fijado en CSA.',
+    estado_verificacion: 'no_localizado',
+    fecha_verificacion: '2026-05-07',
+    hint_ancla_adendo: `${ANCLA_STD} Requiere captura humana, fuente directa o solicitud INFOMEX Jalisco.`,
   },
   {
     zm_id: 'EXT',

@@ -226,7 +226,7 @@ const QRO_NOMBRE_REG =
 const QRO_SINTESIS_MARCO_NORMATIVO = `MARCO NORMATIVO EXISTENTE (síntesis CLC — no constituye cita literal).
 El reglamento municipal de limpia y aseo **sí contiene** obligaciones y un esquema de infracciones/fiscalización aplicable a generadores, condominios y bienes privados; incluye definiciones (capítulo inicial), disposiciones vinculadas al régimen de condominio (referencia de trabajo: Art. 15 y correlativos), obligaciones (ref. Art. 16), acumulación en predios/baldíos (ref. Art. 17), prohibiciones (ref. Art. 18) e inspección/sanciones (refs. Arts. 8 a 11 — **verificar numeración, títulos y tabuladores en el PDF oficial publicado por el municipio**).
 
-BRECHA JURÍDICO-OPERATIVA (no “ausencia normativa total”): hace falta **instrumentar** con precisión el sistema de cinco fracciones SEMARNAT en condominio, rutas A/B, cadena probatoria digital y transitorios graduales, alineados al tabulador y procedimientos ya previstos, evitando duplicidad o choque con sanciones generales.`
+BRECHA JURÍDICO-OPERATIVA (no “ausencia normativa total”): hace falta **instrumentar** con precisión el sistema de cinco fracciones SEMARNAT en condominio, rutas A/B, cadena probatoria digital, expediente verificable y transitorios graduales, alineados al tabulador y procedimientos ya previstos. Para Querétaro capital, la mejora no consiste en inventar nueva sancionalidad, sino en fortalecer evidencia, trazabilidad y encaje operativo con el régimen municipal existente.`
 
 const MAR_TEXTO_FUENTE_PENDIENTE =
   'Reglamento de limpia/RSU de El Marqués, Qro.: **PDF** y mapeo artículo por artículo **pendientes** en el repositorio ALQUIMIA. No se presume vacío absoluto de norma municipal; se suspende la localización de adendos hasta anexar fuente oficial.'
@@ -264,7 +264,7 @@ function localizeAdendoMty(slp: string): string {
   ) + NOTA_PROPUESTA_ALQUIMIA_NO_EFECTOS
 }
 
-/** Querétaro capital: encaje sobre reglamento de limpia y aseo; enfatiza que ya hay marco sancionador. */
+/** Querétaro capital: encaje sobre reglamento de limpia y aseo; enfatiza que la madurez pendiente es probatoria/operativa. */
 function localizeAdendoQro(slp: string): string {
   return (
     slp
@@ -291,7 +291,7 @@ function localizeAdendoQro(slp: string): string {
       )
       .replace(
         /"Artículo \[●\]\. De la fiscalización y sanción/g,
-        '"Artículo [●] (reforma al bloque de infracciones — verificar encaje con Arts. 8-11 y tabulador). De la fiscalización y sanción',
+        '"Lineamiento técnico probatorio [●] (ubicación sugerida: capítulo operativo o anexo técnico; verificar encaje con Arts. 8-11 y tabulador existente). De la evidencia y expediente para fiscalización',
       )
       .replace(
         /El presente decreto entra en vigor al día siguiente de su publicación en el Periódico Oficial del Estado y\/o en la Gaceta u órgano de difusión normativa municipal que resulte competente para San Luis Potosí/g,
@@ -409,19 +409,18 @@ Reincidencia: aplicar el artículo 62 del reglamento local (doble de multa) **so
 La sanción será recurrible ante la autoridad municipal competente, con garantía de audiencia (artículo 14 constitucional).` +
   NOTA_PROPUESTA_ALQUIMIA_NO_EFECTOS
 
-/** Querétaro capital: no afirmar vacío legal; integrar al bloque sancionador existente. */
+/** Querétaro capital: no afirmar vacío legal ni proponer nueva sancionalidad; madurar evidencia y expediente. */
 const ADENDO_5_PROPUESTO_QRO =
-  `TÉCNICA NORMATIVA SUGERIDA (Querétaro capital): el ${QRO_NOMBRE_REG} **ya prevé** infracciones, inspección y sanciones. Esta propuesta ALQUIMIA **no sustituye** ese marco: busca **adicionar o reformar** el bloque aplicable (referencias de trabajo: arts. 8 a 11 y correlativos sobre procedimiento y multas — **cotejar títulos y numeración en el PDF oficial**) para incorporar, sin duplicidad incompatible, el circuito de graduación por incumplimiento del sistema de cinco fracciones en condominios.
+  `TÉCNICA OPERATIVA SUGERIDA (Querétaro capital): el ${QRO_NOMBRE_REG} **ya prevé** infracciones, inspección y sanciones. Esta propuesta ALQUIMIA **no crea** sancionalidad nueva, no propone una escala UMA paralela y no sustituye el tabulador o procedimiento municipal existente. Su objetivo es madurar la evidencia y el expediente para que, cuando proceda, la autoridad competente pueda aplicar el régimen queretano vigente con trazabilidad suficiente.
 
-La Secretaría de Servicios Públicos Municipales y las unidades de inspección que el propio reglamento designe [VERIFICAR denominación] documentarán incumplimientos con prueba idónea, georreferencia y metadatos temporales.
+Ruta de mejora sugerida: emitir lineamiento/protocolo técnico probatorio o anexo operativo, sin desplazar el reglamento ni convertir esta propuesta en acto oficial.
 
-Nivel 1 — Aviso educativo / constancia en expediente.
-Nivel 2 — Advertencia formal y plazo de corrección (15 días hábiles sugeridos).
-Nivel 3 — Multa en **UMA** según tabulador o cuotas previstas localmente, con **escala orientativa** 4 → 8 → 12 UMA por evento, **armonizada** con topes del reglamento queretano (no implica confesar que el tabulador esté hoy calibrado para este supuesto; es propuesta de reforma).
+1. Evidencia mínima: fotografía o registro verificable, fecha/hora, georreferencia, ruta o zona, inspector/operador responsable, tipo de residuo **RSU municipal**, vínculo con condominio o predio y descripción del hecho observado.
+2. Cadena administrativa: folio, bitácora, resguardo, responsable de captura, responsable de revisión, posibilidad de corrección educativa y estado del expediente.
+3. Integración de expediente: acta o reporte operativo, evidencia de notificación cuando aplique, reincidencia documentada si existe, trazabilidad de seguimiento y remisión a la autoridad competente.
+4. Armonización: toda multa, medida o determinación formal se define conforme al reglamento, tabulador y procedimiento queretano vigentes; ALQUIMIA solo sugiere estándares de evidencia, trazabilidad y mejora operativa.
 
-Causales: entrega mezclada; contenedor incorrecto; incumplimiento de horarios; obstrucción a inspección — respecto de condominios incorporados al sistema.
-
-Reincidencia y recursos: conforme al propio reglamento municipal y Ley de Justicia Administrativa aplicable, sin contravenir el debido proceso (arts. 14 y 16 constitucionales).` +
+No se proponen cuotas 4/8/12 UMA para Querétaro capital. Si el municipio decide ajustar tabulador, procedimiento o técnica normativa, eso corresponde a revisión jurídica municipal, dictamen competente y aprobación del Ayuntamiento.` +
   NOTA_PROPUESTA_ALQUIMIA_NO_EFECTOS
 
 // ─── Datos completos de los 6 adendos ────────────────────────────────────────

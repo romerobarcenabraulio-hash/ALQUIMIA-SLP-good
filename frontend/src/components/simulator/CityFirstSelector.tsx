@@ -273,7 +273,7 @@ export function CityFirstSelector() {
           <DialogHeader>
             <DialogTitle>ZM Guadalajara</DialogTitle>
             <DialogDescription>
-              Reglamentos municipales no cargados — ZM bloqueada para demo hasta anclar fuentes oficiales.
+              Fuentes municipales en revisión — la ZM no sustituye el análisis por municipio ni vuelve oficial una propuesta.
             </DialogDescription>
           </DialogHeader>
         </DialogContent>

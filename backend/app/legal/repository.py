@@ -183,9 +183,9 @@ def _build_qro() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="qro", zm="QRO",
-        nombre="Reglamento Municipal de Gestión Integral de Residuos Sólidos de Querétaro",
+        nombre="Reglamento de Limpia y Aseo Público del Municipio de Querétaro, Querétaro",
         version="2021-B", fecha_publicacion="2021-06-10",
-        fuente="POE", url="https://municipio.queretaro.gob.mx/reglamentos/residuos2021.pdf",
+        fuente="Portal reglamentario municipal", url="https://municipiodequeretaro.gob.mx/reglamento/",
         verificado=True, requiere_revision_juridica=False,
     )
     arts = [
@@ -288,10 +288,10 @@ def _build_mty() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="mty", zm="MTY",
-        nombre="Reglamento de Gestión Integral de Residuos Sólidos Urbanos del Municipio de Monterrey",
-        version="2023-C", fecha_publicacion="2023-09-22",
-        fuente="POE", url="https://www.monterrey.gob.mx/reglamentos/residuos-solidos-2023.pdf",
-        verificado=True, requiere_revision_juridica=False,
+        nombre="Reglamento de Limpia Municipal de Monterrey",
+        version="2021", fecha_publicacion="Confirmar POE/Gaceta NL",
+        fuente="Portal municipal Monterrey", url="https://www.monterrey.gob.mx/pdf/reglamentos/1/Reglamento_de_Limpia_Municipal_de_Monterrey.pdf",
+        verificado=False, requiere_revision_juridica=True,
     )
     arts = [
         _article(0,  EstadoArticulo.presente_adecuado, "Reglamento en concordancia con la Ley de Gestión Integral de los Residuos del Estado de NL."),
@@ -313,14 +313,15 @@ def _build_mty() -> tuple[Reglamento, list[ArticuloMatriz]]:
 def _build_spg() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     San Pedro Garza García. 163K hab. Municipio de alto ingreso — el más avanzado de la ZM MTY.
-    Reglamento 2022 completo, verificado. Único municipio NL con tarifa verde implementada.
+    Fuente SISTEC corta de limpia localizada como candidato; pendiente cotejo POE/gaceta y armonización con
+    reglamentos ambientales/zonificación previamente identificados. No declarar vigencia validada.
     """
     reg = Reglamento(
         municipio_id="spg", zm="MTY",
-        nombre="Reglamento de Gestión Ambiental y Residuos Sólidos de San Pedro Garza García",
-        version="2022-B", fecha_publicacion="2022-03-10",
-        fuente="POE", url="https://www.sanpedro.gob.mx/reglamentos/ambiental-rsu-2022.pdf",
-        verificado=True, requiere_revision_juridica=False,
+        nombre="Reglamento de Limpia de San Pedro Garza García — candidato SISTEC",
+        version="en_revision", fecha_publicacion="Pendiente cotejo POE/gaceta SPGG",
+        fuente="SISTEC NL", url="https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf",
+        verificado=False, requiere_revision_juridica=True,
     )
     arts = [
         _article(0,  EstadoArticulo.presente_adecuado, "Reglamento de vanguardia alineado a estándares internacionales GRI."),
@@ -511,12 +512,12 @@ def _build_jua() -> tuple[Reglamento, list[ArticuloMatriz]]:
 
 
 def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
-    """Guadalajara — marco de referencia hasta anclar texto vigente (Navigator)."""
+    """Guadalajara — PDF oficial descargado/verificado por checksum; vigencia jurídica queda en revisión competente."""
     reg = Reglamento(
         municipio_id="gdl", zm="GDL",
-        nombre="Marco municipal de referencia RSU — Guadalajara",
-        version="referencia", fecha_publicacion="—",
-        fuente="placeholder_alquimia", url=None,
+        nombre="Reglamento de Gestión Integral del Municipio de Guadalajara",
+        version="2016-consolidado-portal", fecha_publicacion="2016-07-15 + reformas posteriores por cotejar",
+        fuente="Transparencia municipal Guadalajara", url="https://transparencia.guadalajara.gob.mx/sites/default/files/reglamentos/Reg.GestionIntegralMunicipioGuadalajara.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     return reg, _todos_ausentes()
@@ -525,9 +526,9 @@ def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
 def _build_zap() -> tuple[Reglamento, list[ArticuloMatriz]]:
     reg = Reglamento(
         municipio_id="zap", zm="GDL",
-        nombre="Marco municipal de referencia RSU — Zapopan",
-        version="referencia", fecha_publicacion="—",
-        fuente="placeholder_alquimia", url=None,
+        nombre="Reglamento de Prevención y Gestión Integral de Residuos del Municipio de Zapopan, Jalisco",
+        version="2024-10", fecha_publicacion="2024-10-15",
+        fuente="Portal municipal Zapopan", url="https://servicios.zapopan.gob.mx:8000/wwwportal/publicfiles/descargasEnlaces/10-2024/Reglamento%20de%20Prevenci%C3%B3n%20y%20Gesti%C3%B3n%20Integral%20de%20Residuos%20del%20Municipio%20de%20Zapopan%2C%20Jalisco.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     return reg, _todos_ausentes()

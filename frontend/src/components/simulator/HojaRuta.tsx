@@ -168,7 +168,7 @@ export function HojaRuta() {
 
       {result?.status === 'blocked' && (
         <div className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-[12px] text-amber-900">
-          <p className="font-semibold">Roadmap bloqueado</p>
+          <p className="font-semibold">Roadmap pendiente de insumos</p>
           {result.blockers.map(b => (
             <p key={b}>{b}</p>
           ))}

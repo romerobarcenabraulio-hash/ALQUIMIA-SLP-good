@@ -169,10 +169,10 @@ function TarjetaMunicipio({
             )}
           </div>
 
-          {/* Gate legal municipal */}
+          {/* Alcance municipal para oficialidad */}
           {(!d.can_enable_sanctions || !d.can_generate_official_document) && (
             <div className="bg-[#F3EAF5] rounded-[8px] p-3">
-              <p className="text-[11px] text-[#7B3FA0] font-medium mb-1">Bloqueo legal municipal</p>
+              <p className="text-[11px] text-[#7B3FA0] font-medium mb-1">Restricción de oficialidad municipal</p>
               {d.sanctions_blocked_reason && (
                 <p className="text-[11px] text-[#6B6760]">{d.sanctions_blocked_reason}</p>
               )}
@@ -358,8 +358,8 @@ export function DiagnosticoJuridico() {
       .then(data => {
         const p = data as PaqueteMetropolitano
         setPaquete(p)
-        // Gate legal: bloqueado si cualquier municipio activo no puede habilitar
-        // sanciones o documento oficial por falta de validación competente.
+        // Alcance municipal: restringir sanciones/documentos oficiales cuando falte
+        // revisión competente, sin impedir educación, análisis ni propuestas.
         const activosBloqueados = p.paquete_municipal.some(
           dm => municipiosActivos.includes(dm.municipio_id)
             && (!dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document)
@@ -367,9 +367,9 @@ export function DiagnosticoJuridico() {
         setAgoraLegalBloqueado(activosBloqueados)
       })
       .catch(() => {
-        // Sin API legal no hay fuente municipal validada: bloquear sanciones/documentos oficiales.
+        // Sin API legal no hay fuente municipal validada: restringir sanciones/documentos oficiales.
         setPaquete(null)
-        setError('No se pudo cargar el contexto legal municipal. Sanciones y documentos oficiales quedan bloqueados.')
+        setError('No se pudo cargar el contexto legal municipal. Sanciones y documentos oficiales quedan restringidos; educación, análisis y propuestas pueden continuar.')
         setAgoraLegalBloqueado(true)
       })
       .finally(() => setLoading(false))

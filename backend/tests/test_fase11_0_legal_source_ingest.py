@@ -50,6 +50,30 @@ def test_fuente_localizada_no_se_marca_vigente_ni_validada():
     assert manifest.blockers
 
 
+@pytest.mark.parametrize(
+    ("municipio_id", "expected_status"),
+    [
+        ("gdl", "localizado"),
+        ("zap", "localizado"),
+        ("spg", "localizado"),
+    ],
+)
+def test_fuentes_csa_localizadas_no_desbloquean_oficialidad(municipio_id, expected_status):
+    manifest = locate_municipal_legal_source(municipio_id)
+
+    assert manifest is not None
+    assert manifest.municipio_id == municipio_id
+    assert manifest.official_url
+    assert manifest.ingest_status == expected_status
+    assert manifest.validation_status == "pendiente_validacion_juridica"
+    assert manifest.officiality == "fuente_localizada_no_validada"
+    assert manifest.can_enable_education is True
+    assert manifest.can_enable_simulation is True
+    assert manifest.can_enable_sanctions is False
+    assert manifest.can_generate_official_document is False
+    assert manifest.next_action
+
+
 def test_fuente_descargada_guarda_checksum_de_bytes_no_solo_metadata():
     payload = b"%PDF-1.4 reglamento municipal de prueba"
     content_b64 = base64.b64encode(payload).decode("ascii")
@@ -130,4 +154,3 @@ def test_endpoint_post_rechaza_base64_invalido_con_error_explicito():
 
     assert res.status_code == 400
     assert "content_base64" in res.json()["detail"]
-

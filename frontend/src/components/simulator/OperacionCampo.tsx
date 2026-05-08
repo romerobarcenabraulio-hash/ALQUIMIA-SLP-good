@@ -64,7 +64,7 @@ export default function OperacionCampo() {
           </p>
           <h3 className="text-base font-semibold text-gray-800">Bitácora operativa — {municipio}</h3>
           <p className="text-xs text-gray-500 mt-0.5">
-            Recolección, pureza, contaminación y advertencias educativas. Sanciones solo con gate legal.
+            Recolección, pureza, contaminación y advertencias educativas. Propuestas sancionatorias solo con alcance municipal revisado.
           </p>
         </div>
         <div className="flex gap-2">

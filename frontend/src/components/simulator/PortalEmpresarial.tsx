@@ -13,6 +13,8 @@ import {
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { TraceRibbon } from '@/components/ui/TraceRibbon'
+import { CORTE_UI } from '@/lib/progresionUiConstants'
 import type {
   Action30_60_90,
   OrganizationalCircularityRequest,
@@ -201,18 +203,30 @@ export function PortalEmpresarial() {
           label="% separación objetivo (plan)"
           value={kpis.pctSeparacion != null ? `${Math.round(kpis.pctSeparacion)}%` : '—'}
           hint="Último año del horizonte en el simulador."
+          formula="pct_captura_por_año[horizonte]"
         />
         <KpiTile
           label="Reducción a relleno (modelo)"
           value={kpis.reduccionRellenoPct != null ? `${kpis.reduccionRellenoPct}%` : '—'}
           hint="Captura modelada vs. generación diaria RSU."
+          formula="captura_modelada / RSU_total"
         />
         <KpiTile
           label="Ahorro estimado disposición"
           value={kpis.ahorroMxn != null ? fmt.mxnM(kpis.ahorroMxn) : '—'}
           hint="Suma del escenario (simulación)."
+          formula="ton_desviadas * costo_disposición_evitable"
         />
       </div>
+
+      <TraceRibbon
+        hecho="El plan empresarial se ancla al municipio activo y al escenario RSU municipal vigente en el simulador."
+        supuesto="La organización adopta el mismo horizonte y metas del plan municipal, ajustadas por giro y generación declarada."
+        fuente="ALQUIMIA · simulador municipal, baseline RSU y evaluación organizacional conectada."
+        formula="KPIs empresariales = escenario municipal + variables por giro + checklist de acciones 30/60/90."
+        corte={CORTE_UI}
+        confianza="medio"
+      />
 
       {!loading && error && lastPayload && (
         <button
@@ -259,9 +273,9 @@ export function PortalEmpresarial() {
   )
 }
 
-function KpiTile({ label, value, hint }: { label: string; value: string; hint: string }) {
+function KpiTile({ label, value, hint, formula }: { label: string; value: string; hint: string; formula: string }) {
   return (
-    <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
+    <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3" title={formula}>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
       <p className="mt-1 font-mono text-[20px] font-semibold text-[#1C1B18]">{value}</p>
       <p className="mt-1 text-[10px] leading-snug text-[#8A857C]">{hint}</p>

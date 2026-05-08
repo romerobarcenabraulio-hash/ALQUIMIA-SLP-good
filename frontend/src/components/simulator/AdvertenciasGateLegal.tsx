@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
-import { AlertTriangle, CheckCircle2, FileWarning, Info, Lock, RefreshCw } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, FileWarning, Info, RefreshCw } from 'lucide-react'
 import { evaluateLegalGatedAction } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { LegalGatedActionRequest, LegalGatedActionResponse, LegalGatedActionType } from '@/types'
@@ -33,13 +33,13 @@ const ACTIONS: Array<{ key: LegalGatedActionType; label: string; chip: string; c
   {
     key: 'due_process',
     label: 'Debido proceso',
-    chip: 'Debido proceso · compuerta',
+    chip: 'Debido proceso · ruta',
     chipClass: 'bg-[#F0EDE5] text-[#6B6760] border-[#E8E4DC]',
   },
   {
     key: 'definitive_document',
     label: 'Documento definitivo',
-    chip: 'Documento definitivo · gate bloqueado',
+    chip: 'Documento definitivo · no emitido por ALQUIMIA',
     chipClass: 'bg-red-50 text-red-900 border-red-200',
   },
 ]
@@ -91,7 +91,7 @@ export function AdvertenciasGateLegal() {
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Gate legal educativo</p>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Alcance legal educativo</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h1 className="font-serif text-[24px] text-[#1C1B18]">
               Advertencias, inspección y propuestas ·{' '}
@@ -100,7 +100,7 @@ export function AdvertenciasGateLegal() {
             <FuenteReglamentoIcon municipioId={municipio} label="Abrir fuente primaria del reglamento aplicable al municipio activo" />
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-            Distingue orientación educativa, inspección, propuesta y bloqueo legal municipal. Todo se mantiene como simulación o propuesta hasta validación competente.
+            Distingue orientación educativa, inspección, propuesta, ruta de debido proceso y documento oficial. ALQUIMIA analiza y propone; la autoridad competente conserva la emisión y validación formal.
           </p>
           <AvisoMunicipioAncla ids={municipiosActivos} />
         </div>
@@ -129,10 +129,10 @@ export function AdvertenciasGateLegal() {
 
       <details className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#1C1B18]">
-          Parámetros de simulación del gate municipal · uso en capacitación
+          Parámetros de alcance municipal · uso en capacitación
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
-          Ajustan el alcance geográfico o el estado de validación legal en la evaluación de la compuerta. Son herramientas de estudio para capacitación; no reemplazan criterio de autoridad competente ni un expediente real.
+          Ajustan el alcance geográfico o el estado de revisión legal en la simulación. Son herramientas de estudio y mejora de política pública; no reemplazan criterio de autoridad competente ni un expediente real.
         </p>
         <div className="mt-3 space-y-2">
           <label className="flex items-start gap-2 text-[12px] text-[#6B6760]">
@@ -143,7 +143,7 @@ export function AdvertenciasGateLegal() {
               onChange={event => setZmDemo(event.target.checked)}
             />
             <span>
-              Activar caso de estudio: alcance metropolitano tratado como municipio en la evaluación.
+              Activar caso de estudio: alcance metropolitano tratado como si fuera municipio para mostrar por qué debe separarse por municipio.
             </span>
           </label>
           <label className="flex items-start gap-2 text-[12px] text-[#6B6760]">
@@ -169,8 +169,8 @@ export function AdvertenciasGateLegal() {
         <NarrativeBridge
           variant={result.status === 'blocked' ? 'warning' : 'bridge'}
           audience="functionary"
-          kicker="Gate legal · narrativa"
-          summary={`Evaluación ${actionType} en municipio ${municipio} (${zmDemo ? 'alcance metropolitano sintético' : 'ámbito municipio'}). Estado: ${result.status}.${result.blockers.length ? ` Bloqueos activos: ${result.blockers.length}.` : ''} ${result.language_help_text || 'Sin texto auxiliar del servicio.'}`}
+          kicker="Alcance legal · narrativa"
+          summary={`Evaluación ${actionType} en municipio ${municipio} (${zmDemo ? 'alcance metropolitano sintético' : 'ámbito municipio'}). Estado de alcance: ${result.status}.${result.blockers.length ? ` Restricciones activas: ${result.blockers.length}.` : ''} ${result.language_help_text || 'Sin texto auxiliar del servicio.'}`}
           evidence={[
             { label: 'Validación legal', value: String(result.due_process_gate.legal_validation_status) },
             { label: 'Advertencia educativa', value: result.due_process_gate.can_issue_educational_warning ? 'permitida' : 'no' },
@@ -191,7 +191,7 @@ function LoadingState() {
   return (
     <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
       <RefreshCw className="mr-2 inline h-4 w-4 animate-spin" />
-      Evaluando compuerta legal municipal.
+      Evaluando alcance legal municipal.
     </div>
   )
 }
@@ -217,8 +217,8 @@ function BlockedState({ result }: { result: LegalGatedActionResponse }) {
   return (
     <div className="rounded-[8px] border border-amber-300 bg-amber-50 p-4">
       <p className="text-[12px] font-semibold text-amber-900">
-        <Lock className="mr-2 inline h-4 w-4" />
-        Acción bloqueada por gate municipal
+        <AlertTriangle className="mr-2 inline h-4 w-4" />
+        Alcance restringido por revisión municipal pendiente
       </p>
       {result.blockers.map(blocker => (
         <p key={blocker} className="mt-2 text-[12px] text-amber-800">{blocker}</p>
@@ -322,17 +322,17 @@ function GatePanel({
 }) {
   return (
     <div className={cn('rounded-[8px] border border-[#DAD3C7] bg-white p-4', className)}>
-      <p className="text-[13px] font-semibold text-[#1C1B18]">Compuerta de debido proceso</p>
+      <p className="text-[13px] font-semibold text-[#1C1B18]">Alcance de debido proceso</p>
       <div className="mt-2 space-y-1 text-[12px] text-[#6B6760]">
         <p>Municipio: {gate.municipio_id || '—'}</p>
         <p>Validación legal: {gate.legal_validation_status}</p>
         <p>Puede emitir advertencia educativa: {gate.can_issue_educational_warning ? 'sí' : 'no'}</p>
         <p>Puede registrar inspección: {gate.can_register_inspection ? 'sí' : 'no'}</p>
-        <p>Puede proponer sanción: {gate.can_propose_sanction ? 'sí' : 'no'}</p>
-        <p>Puede crear documento definitivo: {gate.can_create_definitive_document ? 'sí' : 'no'}</p>
+        <p>Puede elaborar propuesta sancionatoria: {gate.can_propose_sanction ? 'sí' : 'no'}</p>
+        <p>Puede emitir documento definitivo desde ALQUIMIA: {gate.can_create_definitive_document ? 'sí' : 'no'}</p>
         {blockers && blockers.length > 0 && (
           <div className="mt-2">
-            <p className="font-semibold text-[#1C1B18]">Restricciones del gate:</p>
+            <p className="font-semibold text-[#1C1B18]">Restricciones de alcance:</p>
             {blockers.map(blocker => (
               <p key={blocker}>{blocker}</p>
             ))}

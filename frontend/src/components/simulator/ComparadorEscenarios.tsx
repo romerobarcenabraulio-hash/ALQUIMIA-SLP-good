@@ -148,8 +148,8 @@ export function ComparadorEscenarios() {
                 onChange={e => updateRow(row.id, { estado_legal: e.target.value })}
                 className="rounded border border-[#E8E4DC] px-2 py-1 text-[12px]"
               >
-                <option value="sin_gate">Sin gate activo</option>
-                <option value="gate_activo">Gate activo</option>
+                <option value="sin_gate">Fuente en revisión</option>
+                <option value="gate_activo">Alcance revisado</option>
                 <option value="sancion_propuesta">Sanción propuesta</option>
               </select>
               <button
@@ -224,7 +224,7 @@ export function ComparadorEscenarios() {
                   <Th>Score</Th>
                   <Th>Tasa %</Th>
                   <Th>Brecha t/día</Th>
-                  <Th>Estado Legal</Th>
+                  <Th>Alcance legal</Th>
                   <Th>Delta Score vs Base</Th>
                 </tr>
               </thead>
@@ -240,7 +240,7 @@ export function ComparadorEscenarios() {
                     <Td>{esc.score_circularidad.toFixed(1)}</Td>
                     <Td>{esc.tasa_circularidad_pct.toFixed(1)}</Td>
                     <Td>{esc.brecha_ton_dia.toFixed(1)}</Td>
-                    <Td>{esc.kpi_resumen.legal ?? 'sin_gate'}</Td>
+                    <Td>{legalScopeLabel(esc.kpi_resumen.legal ?? 'sin_gate')}</Td>
                     <Td>{(esc.diferencia_vs_base.score ?? 0).toFixed(1)}</Td>
                   </tr>
                 ))}
@@ -262,7 +262,7 @@ export function ComparadorEscenarios() {
                 variant={delta > 0 ? 'result' : 'bridge'}
                 summary={delta > 0
                   ? `El escenario "${ganador.nombre}" supera al base ("${base.nombre}") por ${delta.toFixed(1)} puntos de score y mueve la tasa de circularidad de ${base.tasa_circularidad_pct.toFixed(1)}% a ${ganador.tasa_circularidad_pct.toFixed(1)}%. Es la opción a recomendar formalmente.`
-                  : `Los escenarios analizados están dentro de un margen estrecho (Δ ≤ ${Math.abs(delta).toFixed(1)} pts). Antes de elegir, revisa estado legal y brecha de infraestructura.`}
+                  : `Los escenarios analizados están dentro de un margen estrecho (Δ ≤ ${Math.abs(delta).toFixed(1)} pts). Antes de elegir, revisa alcance legal y brecha de infraestructura.`}
                 evidence={[
                   { label: 'Ganador', value: ganador.nombre },
                   { label: 'Score', value: ganador.score_circularidad.toFixed(1) },
@@ -299,6 +299,19 @@ function Numeric({ label, value, onChange }: { label: string; value: number; onC
       placeholder={label}
     />
   )
+}
+
+function legalScopeLabel(value: string): string {
+  switch (value) {
+    case 'gate_activo':
+      return 'Alcance revisado'
+    case 'sancion_propuesta':
+      return 'Sanción propuesta'
+    case 'sin_gate':
+      return 'Fuente en revisión'
+    default:
+      return value
+  }
 }
 
 function Th({ children }: { children: ReactNode }) {

@@ -144,8 +144,8 @@ class TestDiagnosticoTodos:
 
 class TestGatesAgora:
 
-    # Verificados → no bloqueados
-    @pytest.mark.parametrize("m_id", ["qro", "mty", "spg"])
+    # Fuente suficientemente anclada en catálogo municipal → no bloqueada para análisis
+    @pytest.mark.parametrize("m_id", ["qro"])
     def test_municipios_verificados_no_bloqueados(self, m_id):
         d = build_diagnostic(m_id)
         assert d.agora_bloqueado is False, f"{m_id} debería estar desbloqueado"
@@ -154,7 +154,7 @@ class TestGatesAgora:
     @pytest.mark.parametrize("m_id", [
         "slp", "sol", "csp", "vip",          # ZM SLP
         "cor", "mar", "hui",                   # ZM QRO (menos qro)
-        "snl", "gua", "apo", "sca",           # ZM MTY
+        "mty", "spg", "snl", "gua", "apo", "sca",  # ZM MTY
         "gar", "esc", "jua",
     ])
     def test_municipios_no_verificados_bloqueados(self, m_id):
@@ -305,11 +305,11 @@ class TestEstrategias:
             assert num.startswith("Art."), f"{m_id}: artículo clave inesperado '{num}'"
 
     def test_spg_estrategia_optima(self):
-        """San Pedro Garza García: el reglamento más completo → A o B."""
+        """San Pedro Garza García: base operativa alta, pero fuente SISTEC candidata aún requiere revisión."""
         d = build_diagnostic("spg")
         s = select_strategy(d)
         assert s.estrategia in (ReformEstrategia.A, ReformEstrategia.B)
-        assert s.agora_bloqueado is False
+        assert s.agora_bloqueado is True
 
     def test_micro_municipios_estrategia_alta(self):
         """Micro-municipios sin reglamento → estrategia C o D."""
@@ -328,7 +328,7 @@ class TestEstrategias:
             assert len(s.motivo_bloqueo) > 10
 
     def test_sin_motivo_cuando_verificado(self):
-        for m_id in ["qro", "mty", "spg"]:
+        for m_id in ["qro"]:
             d = build_diagnostic(m_id)
             s = select_strategy(d)
             assert s.motivo_bloqueo is None, f"{m_id}: no debería tener motivo"

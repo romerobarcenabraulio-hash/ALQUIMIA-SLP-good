@@ -84,20 +84,20 @@ export function GovernancePanel() {
       </div>
 
       <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 text-[12px] text-[#1C1B18]">
-        <p className="font-semibold">Gates jurídicos del simulador —estado en vivo</p>
+        <p className="font-semibold">Alcance jurídico del simulador —estado en vivo</p>
         <p className="mt-1 text-[#6B6760]">
-          S4.6 marca, por cada <span className="font-mono">municipio_id</span> activo, si el reglamento permite multar o emitir documentos oficiales —banderas{' '}
+          S4.6 marca, por cada <span className="font-mono">municipio_id</span> activo, el nivel de fuente y revisión aplicable a propuestas, sanciones y documentos oficiales —banderas{' '}
           <span className="font-mono">can_enable_sanctions</span> y{' '}
           <span className="font-mono">can_generate_official_document</span>.
         </p>
         <p className="mt-2">
           Hoy el simulador está{' '}
           {agoraLegalBloqueado ? (
-            <span className="font-medium text-[#C0392B]">bloqueado para sanciones y documentos con sello</span>
+            <span className="font-medium text-[#C0392B]">con restricciones de oficialidad para sanciones y documentos con sello</span>
           ) : (
-            <span className="font-medium text-[#2D7A0A]">sin bloqueo en los municipios activos</span>
+            <span className="font-medium text-[#2D7A0A]">con alcance revisado en los municipios activos</span>
           )}
-          —la educación y el modelo numérico siguen abiertos, con advertencias donde falte validación.
+          —la educación, el análisis y las propuestas siguen abiertos, con advertencias donde falte revisión competente.
         </p>
       </div>
 
