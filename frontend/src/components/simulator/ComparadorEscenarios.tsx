@@ -100,9 +100,9 @@ export function ComparadorEscenarios() {
 
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
-      <h1 className="font-serif text-[24px] text-[#1C1B18]">
+      <h2 className="font-serif text-[24px] text-[#1C1B18]">
         Comparador de escenarios municipales · <span className="text-[#6B6860] text-[14px]">propuesta</span>
-      </h1>
+      </h2>
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">
         {FLOW.map((step, i, arr) => (

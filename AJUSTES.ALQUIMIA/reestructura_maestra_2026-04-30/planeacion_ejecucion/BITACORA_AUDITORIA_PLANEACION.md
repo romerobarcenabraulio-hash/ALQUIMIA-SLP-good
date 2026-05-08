@@ -3616,3 +3616,25 @@ FASE GOV: PARCIALMENTE CERRADA
 
 — *CSA / Ejecutor · ALQUIMIA*
 
+---
+
+## Reconciliación Universo 2026-05-07 · alcance cívico/legaltech
+
+**Mandato de producto:** ALQUIMIA puede analizar, simular, comparar y proponer mejoras de política pública municipal. La plataforma no debe presentarse como dictamen jurídico, acto oficial, sanción firme ni documento municipal definitivo. El control correcto no es convertir la experiencia en una colección de "gates legales"; el control correcto es distinguir con claridad: propuesta, simulación, evidencia, revisión competente, aprobación municipal y oficialidad.
+
+**Criterio de página:**
+- Entrada por audiencia y municipio antes de módulos complejos.
+- La ZM puede organizar coordinación, pero nunca sustituye el municipio para reglamento, propuesta normativa, evidencia o responsabilidad operativa.
+- Cada municipio conserva madurez propia: fuente, estructura normativa, escenario operativo, nivel de evidencia y ruta de mejora.
+- Querétaro no debe recibir propuesta de sancionalidad nueva: el foco ALQUIMIA es evidencia, expediente, protocolo probatorio y mejora de trazabilidad para que la autoridad use el régimen existente cuando proceda.
+- Las salidas legales se leen como insumos expositivos o propuestas de mejora, no como documentos oficiales.
+
+**Ajustes reconciliados en árbol:**
+- Documentos nuevos de release/observabilidad y auditoría quedaron clasificados entre integrado, histórico y pendiente.
+- Se agregó `BITACORA_RECONCILIACION_2026-05-07.md` para dejar una sola lectura operativa de lo que sí debe sobrevivir de los agentes del día.
+- Se reemplazó lenguaje visible de "gate legal" por "alcance/restricción/revisión competente" donde afectaba UX, alertas y tablero.
+- Se corrigió QRO en estrategia metropolitana: evidencia y fiscalización existente, no sanciones ejecutables nuevas.
+
+**Verificación requerida para cierre operativo:** pruebas backend/frontend locales, commit/push a `main` y revisión de GitHub Actions del commit resultante.
+
+— *Reconciliación Codex · ALQUIMIA*

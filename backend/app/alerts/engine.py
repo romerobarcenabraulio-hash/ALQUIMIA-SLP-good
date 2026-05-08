@@ -110,10 +110,10 @@ def generate_alerts(req: AlertasRequest) -> AlertasResponse:
             _alerta(
                 tipo=AlertaTipo.legal_gate_pendiente,
                 nivel=AlertaNivel.alta,
-                titulo="Gate legal pendiente de resolución",
+                titulo="Alcance legal pendiente de revisión",
                 mensaje="El municipio tiene sanción propuesta activa sin cierre de debido proceso.",
-                accion_sugerida="Completar validación jurídica y evidencia documental antes de acciones definitivas.",
-                modulo_origen="12.4 Gate Legal",
+                accion_sugerida="Completar revisión jurídica y evidencia documental antes de acciones definitivas.",
+                modulo_origen="12.4 Alcance legal",
             )
         )
 
@@ -160,7 +160,7 @@ def generate_alerts(req: AlertasRequest) -> AlertasResponse:
                 nivel=AlertaNivel.info,
                 titulo="Sin alertas activas",
                 mensaje="Municipio sin alertas activas. Monitorear indicadores mensualmente.",
-                accion_sugerida="Mantener seguimiento mensual de tasa, brecha, score y gate legal.",
+                accion_sugerida="Mantener seguimiento mensual de tasa, brecha, score y alcance legal.",
                 modulo_origen="13.7 Dashboard",
             )
         )

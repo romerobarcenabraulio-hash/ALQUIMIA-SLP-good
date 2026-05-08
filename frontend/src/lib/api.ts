@@ -155,7 +155,7 @@ export async function getCityOptions(): Promise<CityOption[]> {
   return res.json()
 }
 
-/** Q-009 — entidades presentes en el catálogo semilla (CVE 2 dígitos). */
+/** Entidades presentes en el catálogo territorial (CVE 2 dígitos). */
 export async function getEstadosMx(): Promise<EstadoMxOption[]> {
   const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/estados`, {
     headers: { 'Content-Type': 'application/json' },
@@ -164,7 +164,7 @@ export async function getEstadosMx(): Promise<EstadoMxOption[]> {
   return res.json()
 }
 
-/** Q-009 — municipios; `estado_id` opcional (CVE entidad INEGI). */
+/** Municipios; `estado_id` opcional (CVE entidad INEGI). */
 export async function getMunicipiosMx(estadoId?: string): Promise<MunicipioMxApi[]> {
   const qs = estadoId ? `?estado_id=${encodeURIComponent(estadoId)}` : ''
   const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities${qs}`, {
@@ -249,7 +249,7 @@ export async function evaluateLegalGatedAction(
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
-  if (!res.ok) throw new Error(`Gate legal operativo no disponible: ${res.status}`)
+  if (!res.ok) throw new Error(`Alcance legal operativo no disponible: ${res.status}`)
   return res.json()
 }
 

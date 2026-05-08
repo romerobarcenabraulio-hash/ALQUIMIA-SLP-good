@@ -3,16 +3,17 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt, cn } from '@/lib/utils'
 import { Slider } from '@/components/ui/Slider'
 import { ZMS } from '@/lib/constants'
+import { getInegiHousingDistribution } from '@/lib/viviendaInegi'
 
 const TIPOS = [
-  { key: 'vertical' as const,    label: 'Vertical / Depto', factor: 1.00 },
-  { key: 'casa' as const,        label: 'Casa habitación',  factor: 0.95 },
-  { key: 'residencial' as const, label: 'Residencial',      factor: 1.15 },
+  { key: 'vertical' as const, label: 'Departamento en edificio', factor: 1.00 },
+  { key: 'casa' as const,     label: 'Casa independiente',       factor: 0.95 },
 ]
 
 export function TipoVivienda() {
-  const { zmActiva, tiposVivienda, toggleTipoVivienda, genPercapita, setGenPercapita, resultados } = useSimulatorStore()
+  const { zmActiva, municipiosActivos, tiposVivienda, toggleTipoVivienda, genPercapita, setGenPercapita, resultados } = useSimulatorStore()
   const zm = ZMS.find(z => z.id === zmActiva)!
+  const distribution = getInegiHousingDistribution(zmActiva, municipiosActivos)
 
   return (
     <div>
@@ -23,7 +24,8 @@ export function TipoVivienda() {
       <div className="flex gap-3 mb-6 flex-wrap">
         {TIPOS.map(t => {
           const active = tiposVivienda.includes(t.key)
-          const pct    = Math.round(zm.mixVivienda[t.key] * 100)
+          const inegiCategory = distribution?.categories.find(c => c.operationalType === t.key)
+          const pct    = Math.round((inegiCategory?.pct ?? zm.mixVivienda[t.key]) * 100)
           return (
             <button
               key={t.key}
@@ -37,11 +39,14 @@ export function TipoVivienda() {
             >
               <span className="text-[12px] font-medium">{t.label}</span>
               <span className="font-mono text-[18px]">{pct}%</span>
-              <span className="text-[10px]">factor {t.factor}x</span>
+              <span className="text-[10px]">INEGI · factor {t.factor}x</span>
             </button>
           )
         })}
       </div>
+      <p className="mb-4 text-[10px] leading-relaxed text-[#A8A49C]">
+        Fuente: INEGI Censo 2020 / tabulados de vivienda. No se muestra residencial como categoría INEGI literal.
+      </p>
 
       {/* Slider generación per cápita */}
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-5 mb-6">
@@ -70,7 +75,8 @@ export function TipoVivienda() {
             <tbody>
               {TIPOS.map(t => {
                 const rsu = resultados.rsuPorTipo[t.key]
-                const viv = Math.round(resultados.vivActivas * zm.mixVivienda[t.key])
+                const inegiCategory = distribution?.categories.find(c => c.operationalType === t.key)
+                const viv = Math.round(resultados.vivActivas * (inegiCategory?.pct ?? zm.mixVivienda[t.key]))
                 const active = tiposVivienda.includes(t.key)
                 return (
                   <tr key={t.key} className={cn('border-b border-[#F0EDE5]', !active && 'opacity-40')}>

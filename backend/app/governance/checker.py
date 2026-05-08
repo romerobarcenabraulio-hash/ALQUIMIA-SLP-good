@@ -108,7 +108,7 @@ def evaluate_governance(req: GovernanceRequest) -> GovernanceResponse:
             id="legal_gate_sin_base",
             descripcion="Acciones sancionatorias propuestas sin validación legal competente.",
             nivel=RiesgoNivel.alto,
-            modulo_origen="12.4 Gate Legal",
+            modulo_origen="12.4 Alcance legal",
             mitigacion="legal_validation_status validado antes de proponer sanción",
             estado="mitigado" if req.has_access_control else "abierto",
         ),

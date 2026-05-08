@@ -1,4 +1,4 @@
-import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos } from '@/types'
+import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos, TipoVivienda } from '@/types'
 import {
   COMPOSICION_RSU_DETALLE, OPEX_PARAMS, MODELO_PARAMS,
   MULTIPLICADORES, FACTORES_EMISION, CA_CONFIG, ESTACIONALIDAD,
@@ -40,14 +40,27 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
 
   // RSU total (baseline, mes inicio estacionalidad)
   const factorEst = 1 + ESTACIONALIDAD[clamp(state.mesInicio - 1, 0, 11)]
-  const rsuTotalTonDia = popActiva * genKgDia / 1000 * factorEst
+  const rsuBaseTonDia = popActiva * genKgDia / 1000 * factorEst
+  const viviendaFactors = {
+    vertical: 1.00,
+    casa: 0.95,
+    residencial: 1.15,
+  } as const
+  const viviendaWeights = {
+    vertical: zm.mixVivienda.vertical * viviendaFactors.vertical,
+    casa: zm.mixVivienda.casa * viviendaFactors.casa,
+    residencial: zm.mixVivienda.residencial * viviendaFactors.residencial,
+  }
+  const totalViviendaWeight = Math.max(0.0001, Object.values(viviendaWeights).reduce((s, v) => s + v, 0))
+  const activeTypes: TipoVivienda[] = state.tiposVivienda.length ? state.tiposVivienda : ['vertical', 'casa', 'residencial']
 
   // RSU por tipo vivienda
   const rsuPorTipo = {
-    vertical:    vivActivas * zm.mixVivienda.vertical * zm.ocu * genKgDia / 1000 * 1.00,
-    casa:        vivActivas * zm.mixVivienda.casa * zm.ocu * genKgDia / 1000 * 0.95,
-    residencial: vivActivas * zm.mixVivienda.residencial * zm.ocu * genKgDia / 1000 * 1.15,
+    vertical:    rsuBaseTonDia * viviendaWeights.vertical / totalViviendaWeight,
+    casa:        rsuBaseTonDia * viviendaWeights.casa / totalViviendaWeight,
+    residencial: rsuBaseTonDia * viviendaWeights.residencial / totalViviendaWeight,
   }
+  const rsuTotalTonDia = activeTypes.reduce((s, tipo) => s + (rsuPorTipo[tipo] ?? 0), 0)
 
   // ─── Series anuales ───────────────────────────────────────────────────────
   const serieAnual: AñoResultados[] = []
@@ -55,10 +68,11 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   let fcfAcum   = 0
 
   // CAPEX basureros (one-time año 0)
+  const activeSet = new Set(activeTypes)
   const capexBasureros = vivActivas * OPEX_PARAMS.pctVivReqBasurero * (
-    zm.mixVivienda.vertical    * OPEX_PARAMS.costoBasureroVertical +
-    zm.mixVivienda.casa        * OPEX_PARAMS.costoBasureroCasa +
-    zm.mixVivienda.residencial * OPEX_PARAMS.costoBasureroResidencial
+    (activeSet.has('vertical') ? zm.mixVivienda.vertical * OPEX_PARAMS.costoBasureroVertical : 0) +
+    (activeSet.has('casa') ? zm.mixVivienda.casa * OPEX_PARAMS.costoBasureroCasa : 0) +
+    (activeSet.has('residencial') ? zm.mixVivienda.residencial * OPEX_PARAMS.costoBasureroResidencial : 0)
   )
   const capexComSocial = state.costoComSocial * state.horizonte
 

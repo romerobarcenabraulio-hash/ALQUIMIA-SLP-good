@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getNarrativaIntro, resolveCitizenNarrativaContext } from '@/lib/narrativaIntro'
 import {
-  aplicarPlaceholdersTerritorio,
+  aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
 
@@ -104,8 +104,8 @@ export function NarrativeBridge({
     const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
     const opts = { unSoloMunicipioEnPrograma: unSoloMunicipio }
     return {
-      titleShown: title ? aplicarPlaceholdersTerritorio(title, etiqueta, opts) : title,
-      summaryShown: aplicarPlaceholdersTerritorio(summary, etiqueta, opts),
+      titleShown: title ? aplicarSustitucionesTerritorio(title, etiqueta, opts) : title,
+      summaryShown: aplicarSustitucionesTerritorio(summary, etiqueta, opts),
     }
   }, [personalizar, title, summary, municipiosActivos, zmActiva, unSoloMunicipio])
 
@@ -284,7 +284,7 @@ export function NarrativaIntroBridge({ className }: { className?: string }) {
   return null
 }
 
-/** Resumen derivado: ZM = coordinación agregada; efectos legales por municipio (`municipio_id`) según alcance Navigator en datos. */
+/** Resumen derivado: ZM = coordinación agregada; efectos legales por municipio según alcance Navigator en datos. */
 export function traceabilityMunicipalVersusZmSummary(zmLabel: string, municipalIds: readonly string[]): string {
   const ids = municipalIds.length ? municipalIds.join(', ') : 'sin municipios activos'
   return (

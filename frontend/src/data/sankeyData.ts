@@ -1,5 +1,5 @@
 /**
- * Q-021 · Sankey Flujo Residuos — catálogo PD&SA (ilustrativo, simulación ALQUIMIA).
+ * Sankey Flujo Residuos — catálogo de flujo material (ilustrativo, simulación ALQUIMIA).
  *
  * Estructura: 3 columnas
  *   Fuentes → Materiales → Destinos
@@ -78,7 +78,7 @@ const DESC_MAT_DEST = {
   rej_rell: 'Rechazo → disposición final municipal.',
 } as const
 
-/** Keyframes PD&SA: conservación de flujo verificada por capas (fuente→mat→dest). */
+/** Keyframes del modelo de flujo: conservación verificada por capas (fuente→mat→dest). */
 export const SANKEY_YEAR_KEYFRAMES: SankeyYear[] = [
   {
     year: 0,

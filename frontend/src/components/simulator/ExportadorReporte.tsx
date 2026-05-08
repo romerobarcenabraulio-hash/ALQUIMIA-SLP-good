@@ -99,9 +99,9 @@ export function ExportadorReporte() {
       id="sim-exportador-reporte"
       className="scroll-mt-28 space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5"
     >
-      <h1 className="font-serif text-[24px] text-[#1C1B18]">
+      <h2 className="font-serif text-[24px] text-[#1C1B18]">
         Exportación de reporte ejecutivo · <span className="text-[#6B6860] text-[14px]">propuesta</span>
-      </h1>
+      </h2>
 
       <ScopeAnclaKicker className="mt-2" />
       <AvisoMunicipioAncla ids={municipiosActivos} />

@@ -1,4 +1,4 @@
-"""Contratos Fase 12.4: advertencias educativas y gate legal municipal."""
+"""Contratos Fase 12.4: advertencias educativas y alcance municipal de oficialidad."""
 from __future__ import annotations
 
 from enum import Enum

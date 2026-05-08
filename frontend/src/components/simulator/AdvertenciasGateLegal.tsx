@@ -93,10 +93,10 @@ export function AdvertenciasGateLegal() {
         <div className="min-w-0 flex-1">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Alcance legal educativo</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <h1 className="font-serif text-[24px] text-[#1C1B18]">
+            <h2 className="font-serif text-[24px] text-[#1C1B18]">
               Advertencias, inspección y propuestas ·{' '}
               <span className="text-[#6B6760] text-[14px]">simulación propuesta</span>
-            </h1>
+            </h2>
             <FuenteReglamentoIcon municipioId={municipio} label="Abrir fuente primaria del reglamento aplicable al municipio activo" />
           </div>
           <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">

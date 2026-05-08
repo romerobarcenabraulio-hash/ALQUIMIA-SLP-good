@@ -168,7 +168,7 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
       { id: 'vip', nombre: 'Villa de Pozos', estado: 'SLP', pop: 3422, viv: 1000, ocu: 3.6, genKgDia: 0.85, crecPct: 1.0 },
     ],
     totalPop: 1243980, totalViv: 224000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2,
-    mixVivienda: { vertical: 0.50, casa: 0.30, residencial: 0.20 },
+    mixVivienda: { vertical: 0.50, casa: 0.50, residencial: 0.00 },
     costoTerrenoM2: 1600, rellenoVidaUtil: 12, pepenadoresActivos: 540,
   },
   {
@@ -185,7 +185,7 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
       { id: 'jua', nombre: 'Juárez', estado: 'NL', pop: 276669, viv: 34000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
     ],
     totalPop: 5341171, totalViv: 890000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8,
-    mixVivienda: { vertical: 0.55, casa: 0.30, residencial: 0.15 },
+    mixVivienda: { vertical: 0.55, casa: 0.45, residencial: 0.00 },
     costoTerrenoM2: 4200, rellenoVidaUtil: 8, pepenadoresActivos: 2400,
   },
   {
@@ -197,7 +197,7 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
       { id: 'hui', nombre: 'Huimilpan', estado: 'QRO', pop: 34306, viv: 4000, ocu: 3.4, genKgDia: 0.90, crecPct: 2.1 },
     ],
     totalPop: 1444083, totalViv: 260000, ocu: 3.4, genKgDia: 0.95, crecPct: 2.1,
-    mixVivienda: { vertical: 0.65, casa: 0.20, residencial: 0.15 },
+    mixVivienda: { vertical: 0.65, casa: 0.35, residencial: 0.00 },
     costoTerrenoM2: 2800, pepenadoresActivos: 680,
   },
   {
@@ -208,7 +208,7 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
       { id: 'tla', nombre: 'San Pedro Tlaquepaque', estado: 'JAL', pop: 650_000, viv: 132_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5 },
     ],
     totalPop: 3_097_600, totalViv: 627_000, ocu: 3.5, genKgDia: 0.688, crecPct: 1.5,
-    mixVivienda: { vertical: 0.58, casa: 0.25, residencial: 0.17 },
+    mixVivienda: { vertical: 0.58, casa: 0.42, residencial: 0.00 },
     costoTerrenoM2: 3600, rellenoVidaUtil: 10, pepenadoresActivos: 2100,
   },
 ]

@@ -1,5 +1,5 @@
 /**
- * Q-020 — Catálogo de hitos espacio-tiempo (SLP referencia).
+ * Catálogo de hitos espacio-tiempo (SLP referencia).
  * Simulación orientativa; no sustituye calendario oficial de cabildo.
  */
 
@@ -102,7 +102,7 @@ export const HITOS_TIMELINE_SLP: Hito[] = [
     nombre_corto: 'CA piloto',
     descripcion_ciudadano:
       'Primer centro de acopio visible con horario, reglas y personal capacitado; colonias piloto tienen dónde llevar reciclables limpios.',
-    // Q-020: pertExpectedDays debía ser ≤ ~120 para reflejar efecto en KPIs hacia mes 4 (día 120); mantiene orden h03 < h05 < h06.
+    // Ajuste PERT: esperanza ≤ ~120 para reflejar efecto en KPIs hacia mes 4 (día 120); mantiene orden h03 < h05 < h06.
     pert: pert(70, 110, 190),
     kpis: kpi({ empleos_delta: 12, pepenadores_delta: 25, captura_pct_pts: 4, co2e_evitado_ton_delta: 450 }),
     es_gate_clave: false,
@@ -240,7 +240,7 @@ export const HITOS_TIMELINE_SLP: Hito[] = [
   },
 ]
 
-/** Placeholders P1-4 — misma forma PERT; calendario por ZM sujeto a CLC / cabildo. */
+/** Paquetes metropolitanos P1-4 — misma forma PERT; calendario por ZM sujeto a CLC / cabildo. */
 export const HITOS_TIMELINE_MTY: Hito[] = [
   {
     id: 'mty-h01',
@@ -378,11 +378,11 @@ export function getHitosForZm(zmId: string): { hitos: Hito[]; catalogLabel: stri
   if (z === 'SLP') return { hitos: HITOS_TIMELINE_SLP, catalogLabel: null }
   return {
     hitos: HITOS_TIMELINE_SLP,
-    catalogLabel: `Catálogo Q-020 SLP · escalado para ZM ${z}`,
+    catalogLabel: `Catálogo de despliegue SLP · escalado para ZM ${z}`,
   }
 }
 
-/** KPI acumulados en el día D según timeline de la ZM (fallback SLP si no hay catálogo propio). */
+/** KPI acumulados en el día D según timeline de la ZM (referencia SLP si no hay catálogo propio). */
 export function kpisAcumulados(dia_actual: number, empleo_base: number, zmId = 'SLP'): KpisAcumulados {
   const { hitos } = getHitosForZm(zmId)
   return kpisAcumuladosCore(hitos, dia_actual, empleo_base)

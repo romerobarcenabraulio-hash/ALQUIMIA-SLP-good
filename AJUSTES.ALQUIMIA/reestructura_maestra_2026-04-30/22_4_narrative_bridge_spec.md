@@ -27,7 +27,7 @@ interface NarrativeBridgeProps {
 ## Variantes
 
 - `result`: lectura post-cálculo (verde sutil). Usar tras un chart cuantitativo.
-- `warning`: alerta o riesgo (ámbar). Usar cuando hay incertidumbre alta o gate bloqueado.
+- `warning`: alerta o riesgo (ámbar). Usar cuando hay incertidumbre alta o restricción de alcance pendiente.
 - `bridge`: transición pura entre módulos (gris/serif). Usar para empujar al siguiente paso.
 
 ## Plantillas por tipo de cálculo

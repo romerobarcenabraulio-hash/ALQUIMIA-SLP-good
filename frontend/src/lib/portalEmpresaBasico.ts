@@ -35,8 +35,8 @@ export function variablesDefaultGiro(tipo: OrganizationActivityType): Record<str
   }
 }
 
-/** Acciones operativas genéricas si la API devuelve pocas filas — mismo tono GOV, sin prometer datos ficticios. */
-export const CHECKLIST_FALLBACK_POR_GIRO: Record<OrganizationActivityType, string[]> = {
+/** Acciones operativas de referencia si la API devuelve pocas filas — mismo tono GOV, sin prometer datos ficticios. */
+export const CHECKLIST_REFERENCIA_POR_GIRO: Record<OrganizationActivityType, string[]> = {
   empresa: [
     'Designar responsable interno de separación y bitácora mensual.',
     'Inventariar corrientes de residuo por zona (oficinas, cafetería, almacén).',

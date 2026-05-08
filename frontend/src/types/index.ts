@@ -424,7 +424,7 @@ export interface PerOperationsPlan {
   next_action: string
 }
 
-// ─── Fase 12.4: advertencias educativas y gate legal ───────────────────────
+// ─── Fase 12.4: advertencias educativas y alcance legal ─────────────────────
 
 export interface EducationalWarning {
   warning_id: string

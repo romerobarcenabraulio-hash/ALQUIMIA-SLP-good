@@ -82,13 +82,13 @@ Titular operativo: ${p.secretaria}. ${p.poa}` + NOTA,
 ${p.poa}` + NOTA,
   }
   const ad5: AdendoCiudadData = {
-    nombreReglamento: 'PROYECTO — sanciones',
+    nombreReglamento: 'PROYECTO — fiscalización y evidencia',
     anio: 2026,
-    numeroArticulo: 'Art. [●] — fiscalización y multas (UMA)',
+    numeroArticulo: 'Art. [●] — fiscalización, evidencia y remisión al régimen municipal aplicable',
     textoVigente: `Sin tabulador RSU verificado en repo; ${p.bando}`,
     pdfCargado: false,
-      adendoPropuesto: `${B}Art. [●]. Fiscalización por incumplimiento del esquema en condominios.
-Escalera orientativa en ${p.uma}: 4 → 8 → 12 cuotas por evento (tres niveles: aviso; advertencia; multa), sin perjuicio de topes del ${p.bando}.
+      adendoPropuesto: `${B}Art. [●]. Fiscalización y evidencia por incumplimiento del esquema en condominios.
+La propuesta ALQUIMIA no fija cuotas ni crea una escala paralela de multas. El municipio debe cotejar primero el ${p.bando}, reglamento aplicable y tabulador vigente. La mejora sugerida se limita a protocolo de evidencia, aviso, plazo de corrección, trazabilidad del expediente y remisión al régimen municipal que resulte aplicable.
 
 [REDACCIÓN PENDIENTE — ${p.bando}]
 

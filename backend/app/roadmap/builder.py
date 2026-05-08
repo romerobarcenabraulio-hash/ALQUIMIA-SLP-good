@@ -154,7 +154,7 @@ def build_roadmap(req: RoadmapMunicipalRequest) -> RoadmapMunicipalResponse:
                 "Consolidar evidencia operativa para cumplimiento normativo y trazabilidad.",
                 "Dirección Jurídica y Normativa",
                 "100% expedientes con evidencia completa",
-                "Gate legal 12.4: estado gate_activo",
+                "Alcance legal 12.4: estado municipal revisado",
                 NivelPrioridad.media,
             )
         )

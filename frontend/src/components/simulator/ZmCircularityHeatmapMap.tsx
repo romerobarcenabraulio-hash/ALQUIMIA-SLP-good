@@ -238,8 +238,8 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
 
       {emptyZm ? (
         <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-4 text-[13px] text-amber-950">
-          No hay rejilla proxy para la ZM <strong>{zmId}</strong> (desconocida o sin semillas demográficas). Revisa el
-          catálogo nacional o la consola de red si esperabas datos.
+          No hay rejilla proxy para la ZM <strong>{zmId}</strong> (desconocida o sin referencia demográfica cargada). Revisa el
+          catálogo nacional o la configuración de datos si esperabas información.
         </div>
       ) : !token ? (
         <div className="space-y-3">

@@ -56,7 +56,7 @@ def _manifest_no_disponible(municipio_id: str) -> Optional[MunicipalLegalSourceM
             "La ausencia de fuente legal municipal no bloquea educación ni simulación.",
         ],
         blockers=[
-            "Sanciones y documentos legales quedan bloqueados hasta localizar fuente oficial municipal y validar jurídicamente.",
+            "Sanciones propuestas y documentos definitivos quedan restringidos hasta localizar fuente oficial municipal y validar jurídicamente.",
         ],
         next_action="Localizar reglamento en sitio municipal, periódico oficial estatal, Orden Jurídico Nacional o portal de transparencia.",
     )
@@ -94,7 +94,7 @@ def locate_municipal_legal_source(municipio_id: str) -> Optional[MunicipalLegalS
             "Documento legal tratado como insumo pendiente de validación jurídica competente.",
         ],
         blockers=[
-            "Validación jurídica externa requerida antes de habilitar sanciones o documento oficial.",
+            "Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles.",
         ],
         next_action="Descargar archivo oficial, registrar checksum y solicitar validación jurídica competente.",
     )
@@ -148,13 +148,13 @@ def ingest_municipal_legal_source(
         "Manifest municipal registrado sin declarar vigencia ni dictamen.",
         "Una descarga exitosa no equivale a validación jurídica competente.",
     ]
-    blockers = ["Validación jurídica externa requerida antes de habilitar sanciones o documento oficial."]
+    blockers = ["Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles."]
     next_action = "Enviar fuente y manifest a revisión jurídica competente."
 
     if ingest_status == LegalSourceIngestStatus.no_disponible:
         warnings.append("La descarga/localización falló o no produjo archivo verificable.")
         blockers = [
-            "Sanciones y documentos legales quedan bloqueados hasta localizar fuente oficial municipal y validar jurídicamente.",
+            "Sanciones propuestas y documentos definitivos quedan restringidos hasta localizar fuente oficial municipal y validar jurídicamente.",
         ]
         next_action = "Reintentar desde fuente oficial municipal, periódico oficial, Orden Jurídico Nacional o transparencia."
 

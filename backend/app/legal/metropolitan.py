@@ -64,7 +64,7 @@ _ZM_CONFIG: dict[str, dict] = {
         ),
         "oleadas": [
             OleadaImplementacion(numero=1, nombre="Completar brechas QRO capital",
-                municipios=["qro"], descripcion="Añadir Art. 5 (compostaje) y Art. 11 (sanciones ejecutables). Escalar CAs actuales.",
+                municipios=["qro"], descripcion="Fortalecer compostaje y evidencia operativa para inspección/fiscalización existente; no crear sancionalidad nueva.",
                 mes_inicio=1, mes_fin=6),
             OleadaImplementacion(numero=2, nombre="Industriales: Corregidora y El Marqués",
                 municipios=["cor", "mar"], descripcion="Reforma integral 6 meses. Énfasis en RSU industrial + CAs especializados.",

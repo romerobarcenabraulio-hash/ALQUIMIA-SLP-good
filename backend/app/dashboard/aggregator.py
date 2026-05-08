@@ -121,8 +121,8 @@ def build_dashboard(req: DashboardRequest) -> DashboardResponse:
             unidad="estado",
             meta_90_dias=1.0,
             tendencia=TendenciaSentido.mejora if req.estado_legal == "gate_activo" else TendenciaSentido.estable,
-            fuente="Gate legal 12.4",
-            formula="1 si estado_legal == gate_activo, en otro caso 0",
+            fuente="Alcance legal 12.4",
+            formula="1 si alcance municipal esta revisado, en otro caso 0",
         ),
     ]
 

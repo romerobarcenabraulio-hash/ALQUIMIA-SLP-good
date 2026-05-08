@@ -35,10 +35,11 @@ import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
+import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
-  aplicarPlaceholdersTerritorio,
+  aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
 
@@ -137,7 +138,8 @@ export default function SimulatorPage() {
 
           <CityFirstSelector />
           <CircularityBaselineCard />
-          {(audience === 'functionary' || audience === 'citizen') && <PlanGlobalControlsBar />}
+          {audience === 'citizen' && <PlanGlobalControlsBar />}
+          {audience === 'functionary' && <PlanGlobalControlsBar showGeneration={false} />}
 
           {!baselineValid ? (
             <BaselineGateBlocked
@@ -146,13 +148,16 @@ export default function SimulatorPage() {
               cityId={zmActiva}
             />
           ) : (
-            <DecisionModuleShell
-              modules={portalJourney}
-              loading={portalJourneyLoading}
-              error={portalError}
-              audience={portalEntry}
-              renderModule={module => renderDecisionModule(module, isOrganizationJourney, audience)}
-            />
+            <>
+              {audience === 'functionary' && <FuncionariosViviendaRsuModel />}
+              <DecisionModuleShell
+                modules={portalJourney}
+                loading={portalJourneyLoading}
+                error={portalError}
+                audience={portalEntry}
+                renderModule={module => renderDecisionModule(module, isOrganizationJourney, audience)}
+              />
+            </>
           )}
 
         </main>
@@ -318,7 +323,7 @@ function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; err
   )
 
   const title = loading
-    ? aplicarPlaceholdersTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
+    ? aplicarSustitucionesTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
     : error
       ? 'No pudimos obtener los datos de la ciudad'
       : 'Selecciona una ciudad para continuar'
@@ -358,4 +363,3 @@ function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; err
     </section>
   )
 }
-

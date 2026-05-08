@@ -102,9 +102,9 @@ export function FlujosResiduos() {
 
   return (
     <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
-      <h1 className="font-serif text-[24px] text-[#1C1B18]">
+      <h2 className="font-serif text-[24px] text-[#1C1B18]">
         Flujos de residuos y cierre de ciclo · <span className="text-[14px] text-[#6B6760]">propuesta</span>
-      </h1>
+      </h2>
       <ScopeAnclaKicker className="mt-2" />
 
       <div className="flex flex-wrap items-center gap-1 text-[11px] text-[#6B6760]">

@@ -73,9 +73,9 @@ export function CentrosAcopio() {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S13.1 — Centros de acopio</p>
-      <h1 className="font-serif text-[24px] text-[#1C1B18] mb-2">
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">
         Plan de infraestructura con trazabilidad municipal · simulación propuesta
-      </h1>
+      </h2>
       <ScopeAnclaKicker className="mb-3" />
       <ContextoModulo
         variante="operativo"

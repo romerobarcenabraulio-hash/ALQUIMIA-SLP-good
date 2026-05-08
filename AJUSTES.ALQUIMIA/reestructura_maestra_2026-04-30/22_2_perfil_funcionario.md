@@ -24,4 +24,4 @@ Propósito: dar al funcionario público una sala de mando institucional, con bas
 ## Criterios de aceptación
 - Vista predeterminada solo módulos listados.
 - Toggle opcional para "ver vista ciudadana" sin perder la vista principal.
-- Cada gate legal y PER tiene NarrativeBridge.
+- Cada alcance legal, PER y decisión municipal tiene NarrativeBridge.

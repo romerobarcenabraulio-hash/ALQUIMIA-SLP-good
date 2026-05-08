@@ -7,14 +7,14 @@
  *
  *  Capa 1 — Municipios individuales:
  *    Cada municipio activo con su propio diagnóstico,
- *    score legal, estrategia de reforma, manifest y bloqueo municipal.
+ *    score legal, estrategia de reforma, manifest y alcance municipal.
  *
  *  Capa 2 — Coordinación metropolitana:
  *    Convenio marco, homologación, estándar de datos,
  *    infraestructura compartida y oleadas de implementación.
  *
  * Fuente: GET /legal/zm/{zm}/paquete
- * Fallback: datos seed estáticos si no hay API.
+ * Referencia local: datos de catálogo si no hay API.
  */
 import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -31,10 +31,10 @@ import type {
 
 function estadoChip(estado: EstadoArticulo) {
   switch (estado) {
-    case 'presente_adecuado': return { bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]',  label: '✅' }
-    case 'presente_obsoleto': return { bg: 'bg-[#FEF7E7]', text: 'text-[#D4881E]',  label: '⚠️' }
-    case 'ausente':           return { bg: 'bg-[#FBEAEA]', text: 'text-[#C0392B]',  label: '❌' }
-    case 'conflicto':         return { bg: 'bg-[#F3EAF5]', text: 'text-[#7B3FA0]',  label: '🔴' }
+    case 'presente_adecuado': return { bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]',  label: 'Adecuado' }
+    case 'presente_obsoleto': return { bg: 'bg-[#FEF7E7]', text: 'text-[#D4881E]',  label: 'Obsoleto' }
+    case 'ausente':           return { bg: 'bg-[#FBEAEA]', text: 'text-[#C0392B]',  label: 'Ausente' }
+    case 'conflicto':         return { bg: 'bg-[#F3EAF5]', text: 'text-[#7B3FA0]',  label: 'Conflicto' }
   }
 }
 
@@ -61,10 +61,10 @@ function validationLabel(status: string) {
 }
 
 const CONVENIO_BADGE: Record<string, { label: string; color: string }> = {
-  firmado:    { label: '✓ Firmado',  color: 'text-[#3B6D11]' },
-  borrador:   { label: '⟳ Borrador', color: 'text-[#D4881E]' },
-  pendiente:  { label: '◎ Pendiente', color: '#6B6760' },
-  no_existe:  { label: '✗ No existe', color: 'text-[#C0392B]' },
+  firmado:    { label: 'Firmado',  color: 'text-[#3B6D11]' },
+  borrador:   { label: 'Borrador', color: 'text-[#D4881E]' },
+  pendiente:  { label: 'Pendiente', color: '#6B6760' },
+  no_existe:  { label: 'No existe', color: 'text-[#C0392B]' },
 }
 
 function diagnosticoTituloTeaser() {
@@ -165,7 +165,10 @@ function TarjetaMunicipio({
               <p className="mt-1 text-[11px] text-[#6B6760] break-all">Fuente localizada: {manifest.official_url}</p>
             )}
             {manifest.checksum_sha256 && (
-              <p className="mt-1 font-mono text-[10px] text-[#8A857C] break-all">sha256: {manifest.checksum_sha256}</p>
+              <details className="mt-1 rounded-[6px] border border-[#E8E4DC] bg-white px-2 py-1 text-[10px] text-[#8A857C]">
+                <summary className="cursor-pointer font-medium text-[#6B6760]">Ver huella técnica SHA-256</summary>
+                <p className="mt-1 break-all font-mono">{manifest.checksum_sha256}</p>
+              </details>
             )}
           </div>
 
@@ -192,7 +195,7 @@ function TarjetaMunicipio({
             <div className="rounded-[8px] bg-[#FEF7E7] p-3">
               <p className="text-[10px] text-[#D4881E] font-medium">Sanciones/documentos oficiales</p>
               <p className="text-[11px] text-[#6B6760]">
-                {d.can_enable_sanctions ? 'Habilitadas por validacion competente.' : 'Bloqueadas hasta validacion competente.'}
+                {d.can_enable_sanctions ? 'Con revisión competente declarada.' : 'Restringidas hasta revisión competente.'}
               </p>
             </div>
           </div>
@@ -237,7 +240,7 @@ function TarjetaMunicipio({
                 <div
                   key={i}
                   title={`${a.numero} — ${a.titulo}: ${a.estado}`}
-                  className={cn('rounded-[6px] text-center py-1 text-[10px] font-mono cursor-help', c.bg, c.text)}
+                  className={cn('rounded-[6px] text-center px-1 py-1 text-[9px] font-medium cursor-help', c.bg, c.text)}
                 >
                   {c.label}
                 </div>
@@ -245,7 +248,7 @@ function TarjetaMunicipio({
             })}
           </div>
           <div className="flex gap-3 text-[10px] text-[#A8A49C]">
-            <span>✅ adecuado</span><span>⚠️ obsoleto</span><span>❌ ausente</span><span>🔴 conflicto</span>
+            <span>Adecuado</span><span>Obsoleto</span><span>Ausente</span><span>Conflicto</span>
           </div>
         </div>
       )}
@@ -263,8 +266,7 @@ function CoordinacionMetro({ p }: { p: PaqueteMetropolitano }) {
     <div className="space-y-4">
       <p className="text-[11px] text-[#6B6760] rounded-[8px] border border-[#E8E4DC] bg-[#FAF9F7] px-3 py-2">
         Coordinación territorial y convenios entre municipios. No habilita sanciones ni reglamentos a nombre
-        de la ZM como autoridad ficticia única — cada decisión ejecutable sigue ligada al{' '}
-        <span className="font-mono">municipio_id</span> activo mostrado en Capa&nbsp;1.
+        de la ZM como autoridad ficticia única; cada decisión ejecutable sigue ligada al municipio activo mostrado en Capa&nbsp;1.
       </p>
       {/* Convenio marco */}
       <div className="flex items-center justify-between">
@@ -401,7 +403,7 @@ export function DiagnosticoJuridico() {
           {error ?? 'Selecciona una ciudad/ZM con municipios registrados para consultar diagnósticos por municipio.'}
         </p>
         <p className="mt-2 text-[11px] text-[#8A857C]">
-          Acción siguiente: consultar /legal/{'<municipio>'}/context o revisar disponibilidad de /legal/zm/{'<zm>'}/paquete.
+          Acción siguiente: revisar disponibilidad del paquete jurídico municipal y volver a cargar el simulador.
         </p>
       </div>
       </div>
@@ -421,12 +423,12 @@ export function DiagnosticoJuridico() {
         <p className="text-[12px] font-semibold text-[#1C1B18]">Paquete ZM = coordinación; artículos y scores = municipio</p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
           El paquete metropolitano resume convenios, datos e infraestructura compartida; los artículos del reglamento,
-          el score legal y las banderas <span className="font-mono">can_enable_sanctions</span> / documento oficial se
-          evalúan por <span className="font-mono">municipio_id</span>. Fuentes no validadas o simulación semilla se
-          muestran según el API; validar con jurídico institucional antes de actos de autoridad.
+          el score legal y las banderas de sanciones/documento oficial se
+          evalúan por municipio. Fuentes no validadas o referencias de catálogo se muestran según el API; validar con
+          jurídico institucional antes de actos de autoridad.
         </p>
         <p className="mt-2 text-[11px] text-[#8A857C]">
-          Sin municipio activo explícito en la simulación no hay alcance para proponer sanciones ejecutables desde esta vista.
+          Sin municipio activo explícito en la simulación no hay alcance para evaluar propuestas sancionatorias desde esta vista.
         </p>
       </div>
 
@@ -435,7 +437,7 @@ export function DiagnosticoJuridico() {
         <p className="text-[12px] font-medium text-[#1C1B18]">Legal municipal independiente</p>
         <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
           La ZM coordina territorio; no sustituye reglamentos municipales. Cada tarjeta conserva fuente,
-          manifest, validacion juridica, bloqueos y accion siguiente por municipio. ALQUIMIA genera
+          manifest, validacion juridica, restricciones y accion siguiente por municipio. ALQUIMIA genera
           simulaciones e insumos expositivos, no dictamen legal ni documento oficial.
         </p>
       </div>
@@ -467,11 +469,11 @@ export function DiagnosticoJuridico() {
         </div>
       </div>
 
-      {/* ── Gate global si hay municipios activos bloqueados ────────────── */}
+      {/* ── Aviso global si hay municipios activos con restricciones ────── */}
       {activos.some(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document) && (
         <div className="bg-[#F3EAF5] border border-[#7B3FA0]/30 rounded-[12px] p-4">
           <p className="text-[12px] font-medium text-[#7B3FA0] mb-1">
-            Sanciones y documentos oficiales bloqueados por municipio
+            Sanciones y documentos oficiales restringidos por municipio
           </p>
           <div className="flex flex-wrap gap-1 mt-1">
             {activos.filter(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document).map(dm => (
@@ -487,11 +489,15 @@ export function DiagnosticoJuridico() {
       )}
 
       {/* ── Tabs ────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 bg-[#F0EDE5] p-1 rounded-[10px]">
+      <div className="flex gap-1 bg-[#F0EDE5] p-1 rounded-[10px]" role="tablist" aria-label="Capas del diagnóstico jurídico">
         {(['municipal', 'metropolitano'] as const).map(t => (
           <button
             key={t}
             onClick={() => setTab(t)}
+            role="tab"
+            id={`diagnostico-tab-${t}`}
+            aria-controls={`diagnostico-panel-${t}`}
+            aria-selected={tab === t}
             className={cn(
               'flex-1 text-[12px] py-1.5 rounded-[8px] font-medium transition-all',
               tab === t ? 'bg-white text-[#1C1B18] shadow-sm' : 'text-[#6B6760] hover:text-[#1C1B18]'
@@ -504,7 +510,12 @@ export function DiagnosticoJuridico() {
 
       {/* ── Capa 1: Municipios ──────────────────────────────────────────── */}
       {tab === 'municipal' && (
-        <div className="space-y-3">
+        <div
+          id="diagnostico-panel-municipal"
+          role="tabpanel"
+          aria-labelledby="diagnostico-tab-municipal"
+          className="space-y-3"
+        >
           {activos.length > 0 && (
             <div>
               <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2">Municipios activos en la simulación</p>
@@ -543,7 +554,13 @@ export function DiagnosticoJuridico() {
 
       {/* ── Capa 2: Coordinación metropolitana ─────────────────────────── */}
       {tab === 'metropolitano' && (
-        <CoordinacionMetro p={paquete} />
+        <div
+          id="diagnostico-panel-metropolitano"
+          role="tabpanel"
+          aria-labelledby="diagnostico-tab-metropolitano"
+        >
+          <CoordinacionMetro p={paquete} />
+        </div>
       )}
 
       <p className="text-[10px] text-[#A8A49C]">Motor Jurídico v1.5 · ZM ≠ municipio</p>

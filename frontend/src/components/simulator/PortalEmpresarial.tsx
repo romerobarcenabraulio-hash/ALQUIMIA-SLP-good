@@ -5,7 +5,7 @@ import { Download } from 'lucide-react'
 import { getOrganizationalAssessment } from '@/lib/api'
 import { getZmRecord } from '@/lib/zmPopulationScale'
 import {
-  CHECKLIST_FALLBACK_POR_GIRO,
+  CHECKLIST_REFERENCIA_POR_GIRO,
   GIRO_OPCIONES,
   etiquetaGiro,
   variablesDefaultGiro,
@@ -44,10 +44,10 @@ function buildChecklistItems(
   result: OrganizationalCircularityResponse | null,
 ): string[] {
   const fromApi = result ? accionesToStrings(result.acciones_30_60_90) : []
-  const fallback = CHECKLIST_FALLBACK_POR_GIRO[giro] ?? CHECKLIST_FALLBACK_POR_GIRO.empresa
+  const checklistReferencia = CHECKLIST_REFERENCIA_POR_GIRO[giro] ?? CHECKLIST_REFERENCIA_POR_GIRO.empresa
   const merged: string[] = []
   const seen = new Set<string>()
-  for (const s of [...fromApi, ...fallback]) {
+  for (const s of [...fromApi, ...checklistReferencia]) {
     const k = s.trim()
     if (!k || seen.has(k)) continue
     seen.add(k)
@@ -167,7 +167,7 @@ export function PortalEmpresarial() {
     <section className="space-y-5 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5 shadow-[0_1px_0_rgba(28,27,24,0.03)]">
       <header>
         <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">Empresa · plan operativo básico</p>
-        <h1 className="mt-1 font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h1>
+        <h2 className="mt-1 font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h2>
         <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
           Lectura accionable alineada al escenario municipal; sin tableros analíticos extendidos.
@@ -285,8 +285,15 @@ function KpiTile({ label, value, hint, formula }: { label: string; value: string
 
 function LoadingState() {
   return (
-    <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-4 text-[13px] text-[#6B6760]">
-      Generando lectura operativa para <span className="font-medium text-[#1C1B18]">giro</span> seleccionado…
+    <div
+      role="status"
+      aria-live="polite"
+      className="flex items-center gap-3 rounded-[10px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-4 text-[13px] text-[#6B6760]"
+    >
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-[#C8C2B8] border-t-[#3B6D11]" aria-hidden />
+      <span>
+        Generando lectura operativa para <span className="font-medium text-[#1C1B18]">giro</span> seleccionado…
+      </span>
     </div>
   )
 }

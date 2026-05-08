@@ -1,4 +1,4 @@
-"""Motor 12.4: advertencias educativas y sanciones con gate legal municipal."""
+"""Motor 12.4: advertencias educativas y alcance municipal de oficialidad."""
 from __future__ import annotations
 
 from app.legal.diagnostic import build_diagnostic
@@ -44,9 +44,9 @@ def _has_executable_sanction_base(request: LegalGatedActionRequest) -> bool:
 def _base_blockers(request: LegalGatedActionRequest) -> list[str]:
     blockers: list[str] = []
     if request.geography_scope != LegalGatedScope.municipio:
-        blockers.append("Una ZM no desbloquea acciones legales municipales; seleccionar municipio.")
+        blockers.append("Una ZM no sustituye el alcance municipal; seleccionar municipio.")
     if not _clean(request.municipio_id):
-        blockers.append("Falta municipio_id para evaluar gate municipal.")
+        blockers.append("Falta municipio_id para evaluar alcance municipal.")
     if request.waste_scope != WasteScope.rsu_municipal:
         blockers.append("12.4 solo evalua RSU municipal; residuos regulados requieren modulo especializado.")
     return blockers
@@ -59,7 +59,7 @@ def _sanction_blockers(
     blockers = _base_blockers(request)
     municipio_id = _clean(request.municipio_id).lower()
     if validation_status != LegalSourceValidationStatus.validado_externamente:
-        blockers.append("Sancion propuesta bloqueada: falta base legal municipal validada externamente.")
+        blockers.append("Sancion propuesta restringida: falta base legal municipal validada externamente.")
     if _clean(request.legal_source_municipio_id).lower() != municipio_id:
         blockers.append("La fuente legal debe corresponder al mismo municipio.")
     if not _clean(request.legal_basis_article_id):
@@ -96,7 +96,7 @@ def _gate(
         can_create_definitive_document=False,
         blockers=blockers,
         next_action=(
-            "Resolver bloqueos municipales antes de proponer una sancion."
+            "Resolver restricciones municipales antes de proponer una sancion."
             if blockers
             else "Continuar solo como propuesta sujeta a revision competente."
         ),
@@ -140,7 +140,7 @@ def evaluate_legal_gated_action(request: LegalGatedActionRequest) -> LegalGatedA
             )
     elif request.action_type == LegalGatedActionType.definitive_document:
         blockers.append(
-            "Documento definitivo bloqueado: ALQUIMIA no emite documentos oficiales ni dictamen juridico."
+            "Documento definitivo restringido: ALQUIMIA no emite documentos oficiales ni dictamen juridico."
         )
         if request.competent_validation_explicit:
             warnings.append("Existe validacion externa declarada, pero la plataforma no convierte la salida en oficial.")
@@ -150,7 +150,7 @@ def evaluate_legal_gated_action(request: LegalGatedActionRequest) -> LegalGatedA
     )
     gate = _gate(request, validation_status, blockers)
     next_action = (
-        "Atender bloqueos antes de avanzar."
+        "Atender restricciones antes de avanzar."
         if blockers
         else (
             "Usar la salida como orientacion educativa u operativa, no como documento oficial."

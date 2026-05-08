@@ -1,5 +1,5 @@
 /**
- * Serie temporal unificada del plan municipal (Q-020 + motor §2.4 + resultados calculados).
+ * Serie temporal unificada del plan municipal (hitos territoriales + motor §2.4 + resultados calculados).
  * Un solo lugar para progresión mes a mes; los componentes de UI solo proyectan.
  */
 
@@ -131,7 +131,7 @@ function etiquetaMes(m: number, h: number): { añoEtiqueta: number; mesEnAño: n
 }
 
 /**
- * Construye la serie mensual completa. `empleoBaseHitos` ancla Q-020 a personal ya contabilizado en motor.
+ * Construye la serie mensual completa. `empleoBaseHitos` ancla hitos a personal ya contabilizado en motor.
  */
 export function buildMunicipalPlanTimeSeries(
   state: SimulatorState,
@@ -247,7 +247,7 @@ export function buildMunicipalPlanTimeSeries(
 }
 
 /**
- * Hitos Q-020 escalados al horizonte global; deltas del catálogo; acumulados narrativos.
+ * Hitos territoriales escalados al horizonte global; deltas del catálogo; acumulados narrativos.
  */
 export function buildHitosResumenRows(horizonte: number, hitos: Hito[] = HITOS_TIMELINE_SLP): FilaHitoResumen[] {
   const totalMeses = Math.max(1, horizonte * 12)

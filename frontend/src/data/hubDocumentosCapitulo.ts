@@ -201,7 +201,7 @@ export const HUB_DOCUMENTOS_CAPITULO: Record<'SLP' | 'QRO' | 'MTY', HubDocumento
       id: 'slp-fuentes-provenance',
       nombre: 'Fuentes, supuestos y trazabilidad de datos del paquete SLP',
       descripcionLinea:
-        'Inventario de KPIs semilla, advertencias Navigator y vínculos a fuentes primarias conocidas.',
+        'Inventario de KPIs de referencia, advertencias Navigator y vínculos a fuentes primarias conocidas.',
       tipo: 'Trazabilidad',
       formato: 'MD',
       versionFecha: '2026-05-05',
@@ -259,7 +259,7 @@ export const HUB_DOCUMENTOS_CAPITULO: Record<'SLP' | 'QRO' | 'MTY', HubDocumento
     {
       id: 'qro-fuentes-provenance',
       nombre: 'Fuentes y trazabilidad (plantilla)',
-      descripcionLinea: 'Placeholder hasta paquete QRO completo.',
+      descripcionLinea: 'Plantilla pendiente de paquete QRO completo.',
       tipo: 'Trazabilidad',
       formato: 'MD',
       versionFecha: '2026-05-05',
@@ -297,7 +297,7 @@ export const HUB_DOCUMENTOS_CAPITULO: Record<'SLP' | 'QRO' | 'MTY', HubDocumento
     {
       id: 'mty-fuentes-provenance',
       nombre: 'Fuentes y trazabilidad (plantilla MTY)',
-      descripcionLinea: 'Placeholder programa documental Monterrey.',
+      descripcionLinea: 'Plantilla de programa documental Monterrey.',
       tipo: 'Trazabilidad',
       formato: 'MD',
       versionFecha: '2026-05-05',

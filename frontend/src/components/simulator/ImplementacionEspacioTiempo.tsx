@@ -241,7 +241,7 @@ function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; 
 
   return (
     <div className="rounded-[8px] border border-[#E0D9CE] bg-[#FDFCF9] p-4 shadow-sm">
-      <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Q-020 · Línea tiempo programa (referencia)</p>
+      <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Línea tiempo programa (referencia)</p>
       <h3 className="mt-1 font-serif text-[17px] text-[#1C1B18]">Hitos PERT y avance acumulado</h3>
       <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
         Eje Día 0 → Mes 36 (equiv. {maxD} días de referencia). Los hitos muestran fecha esperada; la banda pesimista/optimista queda implicita en el catalogo PERT.

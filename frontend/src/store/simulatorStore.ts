@@ -140,7 +140,7 @@ interface SimulatorStore extends SimulatorState {
 const defaultState: SimulatorState = {
   zmActiva:          'SLP',
   municipiosActivos: ['slp', 'sol', 'csp', 'vip'],
-  tiposVivienda:     ['vertical', 'casa', 'residencial'],
+  tiposVivienda:     ['vertical', 'casa'],
   horizonte:         3,
   presetTrayectoria: 'Realista',
   pctCapturaPorAño:  [20, 45, 70, 90, 100],

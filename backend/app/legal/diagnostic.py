@@ -185,7 +185,7 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
         validation_status=source_manifest.validation_status,
     )
     official_document_blocked_reason = None if can_generate_official_document else (
-        "Documento oficial bloqueado: ALQUIMIA solo puede producir insumos expositivos "
+        "Documento oficial restringido: ALQUIMIA solo puede producir insumos expositivos "
         "hasta validación competente y aprobación de autoridad facultada."
     )
     next_action = build_next_action(

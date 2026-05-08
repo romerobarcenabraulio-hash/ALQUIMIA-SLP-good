@@ -1,5 +1,5 @@
 /**
- * Q-020 — Posición PERT de hitos y agregación de KPI sobre el tiempo.
+ * Posición PERT de hitos y agregación de KPI sobre el tiempo.
  */
 
 import type { Hito, KpisAcumulados } from '@/data/hitosTimeline'

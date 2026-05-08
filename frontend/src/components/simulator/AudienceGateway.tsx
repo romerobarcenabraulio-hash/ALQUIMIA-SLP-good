@@ -15,7 +15,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import type { Audience } from '@/types'
 import { cn } from '@/lib/utils'
 import {
-  aplicarPlaceholdersTerritorio,
+  aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
 
@@ -68,7 +68,7 @@ export function AudienceGateway() {
   const citizenModules = useMemo(() => {
     const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
     return [
-      aplicarPlaceholdersTerritorio('Baseline RSU de tu ciudad', etiqueta),
+      aplicarSustitucionesTerritorio('Baseline RSU de tu ciudad', etiqueta),
       'Composición y vivienda',
       'Huella ambiental personal',
     ]

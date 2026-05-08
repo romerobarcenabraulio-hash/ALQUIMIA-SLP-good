@@ -28,7 +28,7 @@ function hitosTraceFuente(zmId: string, catalogLabel: string | null): string {
   if (catalogLabel) {
     return `ALQUIMIA · ${catalogLabel}`
   }
-  return `ALQUIMIA · hitos ZM ${zmId} (catálogo Q-020 / placeholder territorial).`
+  return `ALQUIMIA · hitos ZM ${zmId} (catálogo territorial de referencia).`
 }
 
 export function ProgresionPlanMunicipalTiempo() {
@@ -182,8 +182,8 @@ export function ProgresionPlanMunicipalTiempo() {
       <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
         <p className="text-[11px] font-semibold text-[#1C1B18]">Infraestructura y personas formales (acumulado)</p>
         <p className="text-[11px] text-[#6B6760] mt-0.5">
-          CAs y recicladoras activas (catálogo Bootstrap 2.4); empleos directos CA + línea reciclaje (80); pepenadores con Q-020
-          escalado al horizonte.
+          CAs y recicladoras activas según catálogo operativo; empleos directos CA + línea reciclaje (80); recuperación de base
+          escalada al horizonte.
         </p>
         <div className="h-[320px] w-full mt-3">
           <ResponsiveContainer width="100%" height="100%">
@@ -225,7 +225,7 @@ export function ProgresionPlanMunicipalTiempo() {
           </ResponsiveContainer>
         </div>
         <TraceRibbon
-          hecho="Catálogo de despliegue CA (Bootstrap 2.4) y población/RSU activa según selección municipal."
+          hecho="Catálogo de despliegue CA y población/RSU activa según selección municipal."
           supuesto="Pepenadores: hitos escalados al horizonte y alineados al tope del motor municipal."
           fuente={`ALQUIMIA · FASES_CA + buildDespliegueOperativoSeries + ${hitosTraceFuente(zmActiva, hitosBundle.catalogLabel)}`}
           formula="Por mes m: mix visible = f(horizonte, Realista); pep_acum = min(pep_modelo, Σ hitos≤día(m)) con día ∝ m."
@@ -389,7 +389,7 @@ export function ProgresionPlanMunicipalTiempo() {
 
       {/* Tabla hitos */}
       <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 overflow-x-auto">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Resumen por hitos (Q-020 escalado al horizonte)</p>
+        <p className="text-[11px] font-semibold text-[#1C1B18]">Resumen por hitos escalados al horizonte</p>
         <p className="text-[11px] text-[#6B6760] mt-0.5 mb-3">
           Fechas en meses relativos al plan; deltas del catálogo; columna de acumulados orientativa.
         </p>

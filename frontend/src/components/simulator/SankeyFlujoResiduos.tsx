@@ -184,7 +184,7 @@ export function SankeyFlujoResiduos() {
   return (
     <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
       <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">
-        S15 — Flujo de residuos (modelo PD&amp;SA)
+        S15 — Flujo de residuos (modelo de flujo material)
       </p>
       <h2 className="font-serif text-[22px] text-[#1C1B18] mt-1 mb-1">
         Sankey: fuentes → materiales → destinos
@@ -194,10 +194,10 @@ export function SankeyFlujoResiduos() {
         id="sankey-etapa-actual"
         role="status"
         aria-live="polite"
-        aria-label={`Etapa actual: fase ${etapa.fase}, mes ${etapa.mes}. Interpolación del modelo PD y SA: año ${sankeyYear.toFixed(2)} de cinco.`}
+        aria-label={`Etapa actual: fase ${etapa.fase}, mes ${etapa.mes}. Interpolación del modelo de flujo: año ${sankeyYear.toFixed(2)} de cinco.`}
         className="font-mono text-[11px] text-[#6B6760] mb-3"
       >
-        Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación PD&SA año {sankeyYear.toFixed(2)} / 5
+        Etapa actual: Fase {etapa.fase} / Mes {etapa.mes} · Interpolación del modelo año {sankeyYear.toFixed(2)} / 5
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5">

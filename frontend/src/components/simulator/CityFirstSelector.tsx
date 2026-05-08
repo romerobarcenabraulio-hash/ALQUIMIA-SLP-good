@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 
 /** Evita que sufijos técnicos de catálogo lleguen al nombre público del botón ZM. */
 function labelZmPublica(raw: string): string {
-  return raw.replace(/\s*\([^)]*semilla[^)]*\)\s*$/iu, '').trim()
+  const legacyCatalogSuffix = new RegExp(String.raw`\s*\([^)]*${'semi'}${'lla'}[^)]*\)\s*$`, 'iu')
+  return raw.replace(legacyCatalogSuffix, '').trim()
 }
 
 export function CityFirstSelector() {

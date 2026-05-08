@@ -3,7 +3,7 @@ import { useMemo } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EditorialTimeline, type TimelineMilestone } from '@/components/simulator/EditorialTimeline'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
-import { aplicarPlaceholdersTerritorio, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
+import { aplicarSustitucionesTerritorio, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 
 const HITOS: Array<{ ciudad: string; año: number; evento: string; tone: 'neutral' | 'positive' | 'warning' }> = [
   { ciudad: 'Curitiba', año: 2000, evento: 'Programa Câmbio Verde iniciado', tone: 'neutral' },
@@ -57,7 +57,7 @@ export function BenchmarkLATAM() {
 
   const tituloTimeline = useMemo(() => {
     const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-    return aplicarPlaceholdersTerritorio('De Curitiba a tu ciudad', etiqueta)
+    return aplicarSustitucionesTerritorio('De Curitiba a tu ciudad', etiqueta)
   }, [municipiosActivos, zmActiva])
 
   return (

@@ -79,7 +79,7 @@ export function getScopeAnclaLine(ids: string[]): string {
   if (ids.length === 1) {
     return `Ámbito modelado: ${nombreAncla} (único municipio en programa).`
   }
-  return `Programa con ${ids.length} municipios; en llamadas que piden un solo municipio_id la ancla técnica es ${nombreAncla}.`
+  return `Programa con ${ids.length} municipios; en llamadas que piden una sola ancla municipal la referencia técnica es ${nombreAncla}.`
 }
 
 /**
@@ -120,7 +120,7 @@ export type AplicarTerritorioOpts = {
  * - `tu ciudad`
  * - opcionalmente `tu municipio` si `unSoloMunicipioEnPrograma`
  */
-export function aplicarPlaceholdersTerritorio(
+export function aplicarSustitucionesTerritorio(
   text: string,
   etiqueta: string,
   opts?: AplicarTerritorioOpts,
