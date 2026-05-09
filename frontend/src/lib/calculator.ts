@@ -52,10 +52,12 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   const condominioShare = typeof state.viviendaCondominioPct === 'number'
     ? clamp(state.viviendaCondominioPct / 100, 0, 1)
     : zm.mixVivienda.vertical
+  const condoDeptShare = condominioShare * clamp((state.viviendaCondominioDepartamentoPct ?? 70) / 100, 0, 1)
+  const condoHouseShare = condominioShare - condoDeptShare
   const noCondominioShare = 1 - condominioShare
   const viviendaWeights = {
-    vertical: condominioShare * viviendaFactors.vertical,
-    casa: noCondominioShare * viviendaFactors.casa,
+    vertical: condoDeptShare * viviendaFactors.vertical,
+    casa: (noCondominioShare + condoHouseShare) * viviendaFactors.casa,
     residencial: 0 * viviendaFactors.residencial,
   }
   const activeTypes: TipoVivienda[] = state.tiposVivienda.length ? state.tiposVivienda : ['vertical', 'casa', 'residencial']
@@ -85,15 +87,20 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   for (let año = 1; año <= state.horizonte; año++) {
     const pctCaptura = (state.pctCapturaPorAño[año - 1] ?? 100) / 100
     const rampaCAs   = año === 1 ? MODELO_PARAMS.rampaCAs.año1 : año === 2 ? MODELO_PARAMS.rampaCAs.año2 : MODELO_PARAMS.rampaCAs.año3plus
-    const merma      = 1 - state.mermaLogPct / 100
+    const capturaMaterial = (mat: keyof typeof state.precios) =>
+      clamp((state.capturaPctPorMaterial?.[mat] ?? pctCaptura * 100) / 100, 0, 1)
+    const mermaMaterial = (mat: keyof typeof state.precios) =>
+      1 - clamp((state.mermaPctPorMaterial?.[mat] ?? state.mermaLogPct) / 100, 0, 0.95)
+    const capturaPlastico = (capturaMaterial('pet') + capturaMaterial('hdpe')) / 2
+    const mermaPlastico = (mermaMaterial('pet') + mermaMaterial('hdpe')) / 2
 
     // Volumen capturable por material (t/día)
-    const volOrg  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.organico.pct * pctCaptura * merma * (1 - (state.rechazoPorMat.organico ?? 5) / 100)
-    const volPap  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.papel.pct * pctCaptura * merma * (1 - (state.rechazoPorMat.papel ?? 8) / 100)
-    const volPlas = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.plastico.pct * pctCaptura * merma * (1 - (state.rechazoPorMat.plastico ?? 10) / 100)
-    const volVid  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.vidrio.pct * pctCaptura * merma * (1 - (state.rechazoPorMat.vidrio ?? 8) / 100)
-    const volMet  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.metales.pct * pctCaptura * merma * (1 - (state.rechazoPorMat.aluminio ?? 5) / 100)
-    const volOtros= rsuTotalTonDia * COMPOSICION_RSU_DETALLE.otros.pct * pctCaptura * merma
+    const volOrg  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.organico.pct * capturaMaterial('organico') * mermaMaterial('organico') * (1 - (state.rechazoPorMat.organico ?? 5) / 100)
+    const volPap  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.papel.pct * capturaMaterial('papel') * mermaMaterial('papel') * (1 - (state.rechazoPorMat.papel ?? 8) / 100)
+    const volPlas = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.plastico.pct * capturaPlastico * mermaPlastico * (1 - (state.rechazoPorMat.plastico ?? 10) / 100)
+    const volVid  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.vidrio.pct * capturaMaterial('vidrio') * mermaMaterial('vidrio') * (1 - (state.rechazoPorMat.vidrio ?? 8) / 100)
+    const volMet  = rsuTotalTonDia * COMPOSICION_RSU_DETALLE.metales.pct * capturaMaterial('aluminio') * mermaMaterial('aluminio') * (1 - (state.rechazoPorMat.aluminio ?? 5) / 100)
+    const volOtros= rsuTotalTonDia * COMPOSICION_RSU_DETALLE.otros.pct * pctCaptura * (1 - state.mermaLogPct / 100)
 
     const volTonDia = {
       organico:  volOrg,

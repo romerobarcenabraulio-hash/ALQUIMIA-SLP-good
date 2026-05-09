@@ -29,7 +29,7 @@ const SCENARIOS = [
   },
   {
     id: 'D',
-    label: 'OPEX +20%',
+    label: 'Costos operativos +20%',
     desc: 'Inflación de costos operativos 20%',
     modify: (s: ReturnType<typeof useSimulatorStore.getState>) => ({
       ...s, costoComSocial: s.costoComSocial * 1.2, mermaLogPct: Math.min(25, s.mermaLogPct * 1.2)

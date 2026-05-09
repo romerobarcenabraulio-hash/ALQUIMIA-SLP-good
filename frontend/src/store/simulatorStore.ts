@@ -118,7 +118,10 @@ interface SimulatorStore extends SimulatorState {
   setCostoDisposicionPorTon: (v: number) => void
   setViviendaCondominioPct: (v: number) => void
   setViviendaNoCondominioPct: (v: number) => void
+  setViviendaCondominioDepartamentoPct: (v: number) => void
   setOcupantesPorViviendaEscenario: (v: number | null) => void
+  setCapturaMaterialPct: (mat: keyof SimulatorState['precios'], v: number) => void
+  setMermaMaterialPct: (mat: keyof SimulatorState['precios'], v: number) => void
   setSubsidioFederal:  (v: number) => void
   setCreditoVerde:     (v: boolean) => void
   setGate:             (idx: number, val: boolean) => void
@@ -165,7 +168,10 @@ const defaultState: SimulatorState = {
   costoDisposicionActivo: true,
   costoDisposicionPorTon: 320,
   viviendaCondominioPct: 45,
+  viviendaCondominioDepartamentoPct: 70,
   ocupantesPorViviendaEscenario: null,
+  capturaPctPorMaterial: {},
+  mermaPctPorMaterial: {},
   wacc:              20,
   tipoCambio:        17.10,
   precioCarbonoEsc:  'voluntario',
@@ -436,8 +442,20 @@ export const useSimulatorStore = create<SimulatorStore>()(
           set({ viviendaCondominioPct: 100 - Math.min(100, Math.max(0, v)) })
           get().recalcular()
         },
+        setViviendaCondominioDepartamentoPct: (v) => {
+          set({ viviendaCondominioDepartamentoPct: Math.min(100, Math.max(0, v)) })
+          get().recalcular()
+        },
         setOcupantesPorViviendaEscenario: (v) => {
           set({ ocupantesPorViviendaEscenario: v === null ? null : Math.min(6, Math.max(1, v)) })
+          get().recalcular()
+        },
+        setCapturaMaterialPct: (mat, v) => {
+          set({ capturaPctPorMaterial: { ...get().capturaPctPorMaterial, [mat]: Math.min(100, Math.max(0, v)) } })
+          get().recalcular()
+        },
+        setMermaMaterialPct: (mat, v) => {
+          set({ mermaPctPorMaterial: { ...get().mermaPctPorMaterial, [mat]: Math.min(95, Math.max(0, v)) } })
           get().recalcular()
         },
         setSubsidioFederal: (v) => { set({ subsidioFederal: v }); get().recalcular() },

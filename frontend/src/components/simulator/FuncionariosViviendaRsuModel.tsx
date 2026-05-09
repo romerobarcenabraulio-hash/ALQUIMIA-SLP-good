@@ -35,8 +35,15 @@ export function FuncionariosViviendaRsuModel() {
   const viviendaCondominioPct = useSimulatorStore(s => s.viviendaCondominioPct)
   const setViviendaCondominioPct = useSimulatorStore(s => s.setViviendaCondominioPct)
   const setViviendaNoCondominioPct = useSimulatorStore(s => s.setViviendaNoCondominioPct)
+  const viviendaCondominioDepartamentoPct = useSimulatorStore(s => s.viviendaCondominioDepartamentoPct)
+  const setViviendaCondominioDepartamentoPct = useSimulatorStore(s => s.setViviendaCondominioDepartamentoPct)
   const ocupantesPorViviendaEscenario = useSimulatorStore(s => s.ocupantesPorViviendaEscenario)
   const setOcupantesPorViviendaEscenario = useSimulatorStore(s => s.setOcupantesPorViviendaEscenario)
+  const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
+  const capturaPctPorMaterial = useSimulatorStore(s => s.capturaPctPorMaterial)
+  const mermaPctPorMaterial = useSimulatorStore(s => s.mermaPctPorMaterial)
+  const setCapturaMaterialPct = useSimulatorStore(s => s.setCapturaMaterialPct)
+  const setMermaMaterialPct = useSimulatorStore(s => s.setMermaMaterialPct)
   const costoDisposicionActivo = useSimulatorStore(s => s.costoDisposicionActivo)
   const setCostoDisposicionActivo = useSimulatorStore(s => s.setCostoDisposicionActivo)
   const costoDisposicionPorTon = useSimulatorStore(s => s.costoDisposicionPorTon)
@@ -50,6 +57,14 @@ export function FuncionariosViviendaRsuModel() {
   const ocupantesBase = distribution?.stateAvgOccupants2020 ?? 3.6
   const ocupantesEscenario = ocupantesPorViviendaEscenario ?? ocupantesBase
   const viviendaNoCondominioPct = 100 - viviendaCondominioPct
+  const viviendaCondominioCasaPct = 100 - viviendaCondominioDepartamentoPct
+  const viviendasActivas = resultados?.vivActivas ?? distribution?.stateOccupiedDwellings2020 ?? 0
+  const viviendasCondominio = viviendasActivas * viviendaCondominioPct / 100
+  const viviendasCondoDepartamento = viviendasCondominio * viviendaCondominioDepartamentoPct / 100
+  const viviendasCondoCasa = viviendasCondominio - viviendasCondoDepartamento
+  const viviendasNoCondominio = viviendasActivas * viviendaNoCondominioPct / 100
+  const capturaBasePct = pctCapturaPorAño[Math.max(0, Math.min(horizonte - 1, pctCapturaPorAño.length - 1))] ?? 70
+  const pagoEvitableAnual = resultados ? resultados.ahorroDisposicion / Math.max(1, horizonte) : 0
 
   return (
     <section
@@ -78,7 +93,7 @@ export function FuncionariosViviendaRsuModel() {
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <MetricCard label="RSU activo" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="t/día recalculadas" />
         <MetricCard label="Emisiones evitables" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="CO₂e/año del escenario" />
-        <MetricCard label="Costo gobierno" value={resultados ? fmt.mxnM(resultados.opexAnual + resultados.ahorroDisposicion) : '—'} helper={`OPEX + ${costoDisposicionActivo ? `$${costoDisposicionPorTon}/t disposición` : 'sin disposición'}`} />
+        <MetricCard label="Pago evitable por entierro" value={resultados ? fmt.mxnM(pagoEvitableAnual) : '—'} helper={costoDisposicionActivo ? `captura × $${costoDisposicionPorTon}/t; sin OPEX` : 'supuesto de comisión apagado'} />
         <MetricCard label="Salud pública" value={resultados ? fmt.mxnM(resultados.ahorroSalud) : '—'} helper="PM2.5, IRA y ahorro poblacional estimado" />
       </div>
 
@@ -101,7 +116,7 @@ export function FuncionariosViviendaRsuModel() {
             className="mt-3 h-2 w-full cursor-pointer accent-[#3B6D11]"
           />
           <p className="mt-1 text-[10px] text-[#A8A49C]">
-            Fuente base SEMARNAT DBGIR; ajuste manual del escenario. Fórmula: población activa × kg/hab/día ÷ 1000.
+            Fuente: matriz Bibliografía y cálculos. Fórmula: población activa × kg/hab/día ÷ 1000; el slider es supuesto editable.
           </p>
         </div>
 
@@ -161,6 +176,17 @@ export function FuncionariosViviendaRsuModel() {
                   helper="Supuesto operativo: vivienda vertical, condominios o conjuntos con administración común."
                 />
                 <ScenarioSlider
+                  id="vivienda-condominio-depto"
+                  label="Dentro de condominio: departamento"
+                  value={viviendaCondominioDepartamentoPct}
+                  suffix="%"
+                  min={0}
+                  max={100}
+                  step={5}
+                  onChange={setViviendaCondominioDepartamentoPct}
+                  helper={`El resto (${viviendaCondominioCasaPct.toFixed(0)}%) se modela como casa habitacion dentro de condominio.`}
+                />
+                <ScenarioSlider
                   id="vivienda-no-condominio"
                   label="Vivienda no sujeta a condominio"
                   value={viviendaNoCondominioPct}
@@ -182,6 +208,11 @@ export function FuncionariosViviendaRsuModel() {
                   onChange={setOcupantesPorViviendaEscenario}
                   helper={`INEGI 2020 estima ${ocupantesBase.toFixed(1)} ocupantes/vivienda; moverlo cambia población modelada y RSU.`}
                 />
+                <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+                  <p className="font-medium text-[#1C1B18]">Viviendas por porcentaje</p>
+                  <p className="mt-1">Condominio: {fmt.num0(viviendasCondominio)} viviendas; de ellas {fmt.num0(viviendasCondoDepartamento)} deptos y {fmt.num0(viviendasCondoCasa)} casas.</p>
+                  <p className="mt-1">No condominio: {fmt.num0(viviendasNoCondominio)} viviendas modeladas.</p>
+                </div>
                 <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
                   <p className="font-medium text-[#1C1B18]">Clasificación de cifra</p>
                   <p className="mt-1">INEGI: fuente verificada para población, viviendas y ocupantes promedio. Condominio/no condominio: supuesto editable del escenario hasta contar con tabulado local específico.</p>
@@ -279,6 +310,28 @@ export function FuncionariosViviendaRsuModel() {
                     onChange={event => setPrecio(material, Number(event.target.value))}
                     className="mt-2 h-2 w-full cursor-pointer accent-[#3B6D11]"
                   />
+                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                    <CompactSlider
+                      id={`captura-${material}`}
+                      label="Captura"
+                      value={capturaPctPorMaterial[material] ?? capturaBasePct}
+                      suffix="%"
+                      min={0}
+                      max={100}
+                      step={5}
+                      onChange={value => setCapturaMaterialPct(material, value)}
+                    />
+                    <CompactSlider
+                      id={`merma-${material}`}
+                      label="Merma"
+                      value={mermaPctPorMaterial[material] ?? 10}
+                      suffix="%"
+                      min={0}
+                      max={60}
+                      step={5}
+                      onChange={value => setMermaMaterialPct(material, value)}
+                    />
+                  </div>
                   <p className="mt-1 text-[10px] leading-snug text-[#A8A49C]">
                     {describeMaterialPriceReference(material, precios[material])}
                   </p>
@@ -294,7 +347,8 @@ export function FuncionariosViviendaRsuModel() {
               <div>
                 <p className="text-[12px] font-medium text-[#1C1B18]">Costo/comisión por tonelada enterrada</p>
                 <p className="mt-1 text-[10px] leading-relaxed text-[#6B6760]">
-                  Supuesto de contrato o concesión. Si no hay contrato confirmado, puede apagarse para no inflar el costo público.
+              Supuesto de contrato o concesión por tonelada que termina enterrada. Si no hay contrato confirmado, puede apagarse
+              para no mostrarlo como ahorro público.
                 </p>
               </div>
               <button
@@ -327,15 +381,16 @@ export function FuncionariosViviendaRsuModel() {
               disabled={!costoDisposicionActivo}
             />
             <p className="mt-2 text-[10px] leading-relaxed text-[#8C8880]">
-              Cálculo: toneladas desviadas del relleno × ${costoDisposicionPorTon.toFixed(0)}/t. Etiqueta: supuesto editable, no presupuesto aprobado.
+              Cálculo: toneladas capturadas que dejarían de enterrarse × ${costoDisposicionPorTon.toFixed(0)}/t. Esto mide pago evitable
+              por disposición, no OPEX del programa ni presupuesto aprobado.
             </p>
           </div>
         </div>
       </div>
 
       <p className="mt-3 text-[10px] leading-relaxed text-[#A8A49C]">
-        Anexo de cálculo: RSU activo = viviendas activas × ocupantes del escenario × generación per cápita; costo gobierno =
-        OPEX anual + disposición/concesión si está activa; salud = PM2.5, casos IRA y ahorro poblacional estimado.
+        Anexo de cálculo: RSU activo = viviendas activas × ocupantes del escenario × generación per cápita; pago evitable =
+        toneladas capturadas no enterradas × comisión por tonelada; salud = PM2.5, casos IRA y ahorro poblacional estimado.
       </p>
     </section>
   )
@@ -379,6 +434,45 @@ function ScenarioSlider({
         className="mt-2 h-2 w-full cursor-pointer accent-[#3B6D11]"
       />
       <p className="mt-1 text-[10px] leading-relaxed text-[#8C8880]">{helper}</p>
+    </div>
+  )
+}
+
+function CompactSlider({
+  id,
+  label,
+  value,
+  suffix,
+  min,
+  max,
+  step,
+  onChange,
+}: {
+  id: string
+  label: string
+  value: number
+  suffix: string
+  min: number
+  max: number
+  step: number
+  onChange: (value: number) => void
+}) {
+  return (
+    <div>
+      <div className="flex items-center justify-between gap-2">
+        <label htmlFor={id} className="text-[10px] text-[#6B6760]">{label}</label>
+        <span className="font-mono text-[10px] text-[#3B6D11]">{value.toFixed(0)}{suffix}</span>
+      </div>
+      <input
+        id={id}
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={value}
+        onChange={event => onChange(Number(event.target.value))}
+        className="mt-1 h-1.5 w-full cursor-pointer accent-[#3B6D11]"
+      />
     </div>
   )
 }

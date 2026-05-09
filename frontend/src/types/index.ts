@@ -68,6 +68,8 @@ export interface PreciosMaterial {
   organico: number
 }
 
+export type MaterialValorizable = keyof PreciosMaterial
+
 export interface FaseCA {
   fase:        number
   nombre:      string
@@ -534,7 +536,10 @@ export interface SimulatorState {
   costoDisposicionActivo: boolean
   costoDisposicionPorTon: number
   viviendaCondominioPct: number
+  viviendaCondominioDepartamentoPct: number
   ocupantesPorViviendaEscenario: number | null
+  capturaPctPorMaterial: Partial<Record<MaterialValorizable, number>>
+  mermaPctPorMaterial: Partial<Record<MaterialValorizable, number>>
 
   // Financieros
   wacc:              number

@@ -19,7 +19,10 @@ describe('FuncionariosViviendaRsuModel', () => {
       costoDisposicionActivo: true,
       costoDisposicionPorTon: 320,
       viviendaCondominioPct: 45,
+      viviendaCondominioDepartamentoPct: 70,
       ocupantesPorViviendaEscenario: null,
+      capturaPctPorMaterial: {},
+      mermaPctPorMaterial: {},
       resultados: null,
       resultadosSinPrograma: null,
     })
@@ -41,6 +44,8 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getAllByText(/Casa independiente/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Departamento en edificio/).length).toBeGreaterThan(0)
     expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
+    expect(screen.getByText(/Dentro de condominio: departamento/)).toBeTruthy()
+    expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
     expect(screen.getByText(/Vivienda no sujeta a condominio/)).toBeTruthy()
     expect(screen.getByText(/Ocupantes por vivienda del escenario/)).toBeTruthy()
     expect(screen.getAllByText(/Modelo operativo ALQUIMIA/i).length).toBeGreaterThan(0)
@@ -94,10 +99,18 @@ describe('FuncionariosViviendaRsuModel', () => {
     const afterHousingVertical = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
     expect(afterHousing).not.toBe(afterOccupants)
     expect(afterHousingVertical).toBeGreaterThan(0)
+
+    fireEvent.change(screen.getByLabelText(/Dentro de condominio: departamento/), { target: { value: '20' } })
+    const afterCondoSplit = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
+    expect(afterCondoSplit).toBeLessThan(afterHousingVertical)
   })
 
-  it('costo por tonelada enterrada altera costo gobierno cuando esta activo', () => {
+  it('costo por tonelada enterrada altera pago evitable sin mezclar OPEX', () => {
     render(<FuncionariosViviendaRsuModel />)
+
+    expect(screen.getByText(/Pago evitable por entierro/)).toBeTruthy()
+    expect(screen.getByText(/sin OPEX/)).toBeTruthy()
+    expect(screen.queryByText(/OPEX \+/)).toBeNull()
 
     const initial = useSimulatorStore.getState().resultados?.ahorroDisposicion ?? 0
     fireEvent.change(screen.getByLabelText(/MXN por tonelada/), { target: { value: '640' } })
@@ -106,6 +119,24 @@ describe('FuncionariosViviendaRsuModel', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /Incluido/ }))
     expect(useSimulatorStore.getState().resultados?.ahorroDisposicion).toBe(0)
+  })
+
+  it('captura y merma por material recalculan ingresos', () => {
+    const { container } = render(<FuncionariosViviendaRsuModel />)
+    const before = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
+
+    const capturaPet = container.querySelector<HTMLInputElement>('#captura-pet')
+    const mermaPet = container.querySelector<HTMLInputElement>('#merma-pet')
+    expect(capturaPet).toBeTruthy()
+    expect(mermaPet).toBeTruthy()
+
+    fireEvent.change(capturaPet!, { target: { value: '20' } })
+    const afterCapture = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
+    expect(afterCapture).toBeLessThan(before)
+
+    fireEvent.change(mermaPet!, { target: { value: '50' } })
+    const afterMerma = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
+    expect(afterMerma).toBeLessThan(afterCapture)
   })
 
   it('sin datos INEGI muestra warning y no inventa porcentajes', () => {

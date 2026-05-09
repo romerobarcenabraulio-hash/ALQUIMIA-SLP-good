@@ -50,7 +50,7 @@ export function ImpactoFinanciero() {
         puntos={[
           'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
           'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y OPEX.',
-          'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, OPEX +20%).',
+          'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, costos operativos +20%).',
           'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
           'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende del CAPEX de basureros y comunicación.',
         ]}

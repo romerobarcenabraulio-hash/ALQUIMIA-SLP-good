@@ -36,7 +36,6 @@ import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/Progresion
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
-import { EducacionFuncionarioIntro } from '@/components/simulator/EducacionFuncionarioIntro'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
@@ -303,13 +302,13 @@ function renderDecisionModule(
   switch (module.module_id) {
     case 'city_baseline':
       return (
-        <>
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
           <SectionHero />
-          <EducacionFuncionarioIntro />
-          <ImpactoAmbiental />
-          <MultiplicadoresEco />
-          <EducacionCiudadana />
-        </>
+          <div className="grid gap-5">
+            <ImpactoAmbiental />
+            <MultiplicadoresEco />
+          </div>
+        </div>
       )
     case 'municipal_context':
       return (

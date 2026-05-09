@@ -18,6 +18,7 @@ import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
+import { EducacionFuncionarioIntro } from '@/components/simulator/EducacionFuncionarioIntro'
 
 type AudienceCard = {
   id: Audience
@@ -160,29 +161,9 @@ export function AudienceGateway() {
       <footer className="mt-8 max-w-3xl text-[12px] text-[#A8A49C]">
         Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador.
       </footer>
-      <div className="mt-8 grid gap-3 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 sm:grid-cols-3">
-        <EducationFact
-          title="Lo que cuesta no separar"
-          body="No solo se pierde material: aumentan viajes, relleno, exposición sanitaria y horas de recuperación manual."
-        />
-        <EducationFact
-          title="Qué pasa después del camión"
-          body="La recolección lleva los residuos a transferencia, valorización o disposición final; si llegan mezclados, todo se vuelve más caro."
-        />
-        <EducationFact
-          title="Por qué importa el origen"
-          body="Separar desde casa, oficina o comercio mejora la pureza del material y reduce el trabajo riesgoso de separación posterior."
-        />
+      <div className="mt-8">
+        <EducacionFuncionarioIntro />
       </div>
     </section>
-  )
-}
-
-function EducationFact({ title, body }: { title: string; body: string }) {
-  return (
-    <div>
-      <p className="font-serif text-[16px] text-[#1C1B18]">{title}</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">{body}</p>
-    </div>
   )
 }
