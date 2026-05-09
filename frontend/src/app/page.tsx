@@ -275,10 +275,7 @@ export default function LandingPage() {
           </p>
           <AuthModule />
           <p className="text-[11px] text-[#A8A49C] text-center mt-4 leading-relaxed">
-            Acceso demo sin cuenta:{' '}
-            <Link href="/simulator" className="text-[#3B6D11] hover:underline">
-              explorar simulador →
-            </Link>
+            El recorrido institucional inicia con código de acceso y selección de audiencia.
           </p>
         </div>
       </div>

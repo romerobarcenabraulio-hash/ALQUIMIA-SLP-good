@@ -19,7 +19,7 @@ export interface MaterialPriceResearch {
 }
 
 export const PRICE_RESEARCH_SOURCE_LABEL =
-  'Investigacion_Precios_RSU_SLP.xlsx + Tabla_Maestra_Fuentes_CapituloSLP.docx'
+  'Investigacion_Precios_RSU_SLP.xlsx + matriz de trazabilidad documental'
 
 export const MATERIAL_PRICE_RESEARCH: Record<keyof PreciosMaterial, MaterialPriceResearch> = {
   pet: {
@@ -32,7 +32,7 @@ export const MATERIAL_PRICE_RESEARCH: Record<keyof PreciosMaterial, MaterialPric
     sourceCount: 10,
     status: 'validado',
     verdict: 'En el rango medio de la investigación documental.',
-    sourceSummary: 'Capitulo San Luis, Recicladoras_por_Giro y referencias de mercado mexicano 2026.',
+    sourceSummary: 'Investigacion_Precios_RSU_SLP.xlsx, Recicladoras_por_Giro y referencias de mercado mexicano 2026.',
     explanation: 'Precio documental de escenario. Requiere cotización local antes de presupuesto; no se presenta como precio oficial.',
     sourceRefs: [
       'Investigacion_Precios_RSU_SLP.xlsx / Resumen Precios / PET',
@@ -67,7 +67,7 @@ export const MATERIAL_PRICE_RESEARCH: Record<keyof PreciosMaterial, MaterialPric
     sourceCount: 9,
     status: 'condicionado',
     verdict: 'Ancla coincide con Caple; OCC tiene referencia más baja.',
-    sourceSummary: 'Capitulo San Luis, Recicladoras_por_Giro y Supraciclaje; distinguir Caple de OCC.',
+    sourceSummary: 'Investigacion_Precios_RSU_SLP.xlsx, Recicladoras_por_Giro y Supraciclaje; distinguir Caple de OCC.',
     explanation: 'El escenario debe documentar si el flujo es papel/cartón mezclado, Caple u OCC antes de presupuestar.',
     sourceRefs: [
       'Investigacion_Precios_RSU_SLP.xlsx / Resumen Precios / Papel-Cartón',
@@ -104,7 +104,7 @@ export const MATERIAL_PRICE_RESEARCH: Record<keyof PreciosMaterial, MaterialPric
     sourceCount: 12,
     status: 'condicionado',
     verdict: 'Conservador frente a la mediana; existe discrepancia de unidad en una hoja anexa.',
-    sourceSummary: 'Capitulo San Luis y hoja de aluminio; revisar unidad antes de usar valores extremos.',
+    sourceSummary: 'Investigacion_Precios_RSU_SLP.xlsx y hoja de aluminio; revisar unidad antes de usar valores extremos.',
     explanation: 'Mantiene ancla conservadora. La matriz marca revisión porque una referencia anexa parece tener error MXN/kg.',
     sourceRefs: [
       'Investigacion_Precios_RSU_SLP.xlsx / Resumen Precios / Aluminio',
@@ -122,7 +122,7 @@ export const MATERIAL_PRICE_RESEARCH: Record<keyof PreciosMaterial, MaterialPric
     sourceCount: 4,
     status: 'condicionado',
     verdict: 'Mercado local por confirmar; el simulador puede usar escenario conservador menor.',
-    sourceSummary: 'Capitulo San Luis documenta composta a granel; falta contrato o comprador recurrente.',
+    sourceSummary: 'Investigacion_Precios_RSU_SLP.xlsx documenta composta a granel; falta contrato o comprador recurrente.',
     explanation: 'Si el valor se mantiene bajo, se interpreta como escenario conservador de aprovechamiento, no como precio de mercado certificado.',
     sourceRefs: [
       'Investigacion_Precios_RSU_SLP.xlsx / Resumen Precios / Orgánicos-Composta',

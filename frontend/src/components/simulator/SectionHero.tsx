@@ -143,7 +143,7 @@ export function SectionHero() {
         <span className="text-[#3B6D11]">{territorio}</span>{' '}
         no separar sus residuos?
       </h1>
-      <div className="max-w-3xl space-y-4 text-[15px] leading-relaxed text-[#6B6760] mb-5">
+      <div className="max-w-3xl space-y-4 text-[17px] leading-[1.7] text-[#6B6760] mb-5">
         <p>
           A veces el problema parece absurdo de tan cotidiano: una bolsa mezclada sale de la casa, desaparece de la vista
           y se vuelve costo municipal, presión sanitaria y trabajo más pesado para quienes recuperan materiales.
@@ -175,7 +175,7 @@ export function SectionHero() {
         </p>
       </div>
       {madurezUnMunicipio && (
-        <p className="text-[12px] text-[#5A6347] max-w-3xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
+        <p className="text-[14px] text-[#5A6347] max-w-3xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
           Cada municipio es un escenario distinto: reglamento de aseo/limpia, supuestos de generación (kg/hab·día) y madurez en
           circularidad no se transfieren mecánicamente entre ayuntamientos. El ancla activa es{' '}
           <strong className="font-medium text-[#2D5409]">{madurezUnMunicipio.nombre}</strong>.
@@ -198,63 +198,62 @@ export function SectionHero() {
         </p>
       )}
 
-      {/* Métricas globales */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <MetricGlobal
-          label="RSU generado diario"
-          value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'}
-          sub={`${resultados?.pobActiva?.toLocaleString('es-MX') ?? zm?.totalPop?.toLocaleString('es-MX') ?? '—'} hab activos`}
-          // RSU depende de población (INEGI) + gen per cápita (SEMARNAT)
-          provenance={pobKpi?.provenance.tipo ?? genKpi?.provenance.tipo}
-          provenanceFuente={pobKpi ? `${pobKpi.provenance.fuente_nombre} + SEMARNAT` : undefined}
-          compare={
-            resultados ? (
-              <KpiCompareRow {...compareRsu(resultados, resultadosSinPrograma)} />
-            ) : undefined
-          }
-        />
-        <MetricGlobal
-          label="Ingreso potencial/año"
-          value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'}
-          sub="a plena cobertura"
-          color="text-[#3B6D11]"
-          compare={
-            resultados ? (
-              <KpiCompareRow {...compareIngreso(resultados, resultadosSinPrograma, horizonte)} />
-            ) : undefined
-          }
-        />
-        <MetricGlobal
-          label="CO₂e a evitar/año"
-          value={resultados ? `${(resultados.co2eEvitadasAnualTon / 1000).toFixed(0)}K t` : '—'}
-          sub="tCO₂e — año final"
-          color="text-[#1A5FA8]"
-          // CO2e depende de gen per cápita (SEMARNAT)
-          provenance={genKpi?.provenance.tipo}
-          provenanceFuente={genKpi?.provenance.fuente_nombre}
-          compare={
-            resultados ? (
-              <KpiCompareRow {...compareCo2(resultados, resultadosSinPrograma)} />
-            ) : undefined
-          }
-        />
-        <MetricGlobal
-          label="Empleos directos"
-          value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'}
-          sub="en el programa"
-          compare={
-            resultados ? (
-              <KpiCompareRow {...compareEmpleos(resultados, resultadosSinPrograma)} />
-            ) : undefined
-          }
-        />
-      </div>
+      {audience !== 'functionary' && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <MetricGlobal
+            label="RSU generado diario"
+            value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'}
+            sub={`${resultados?.pobActiva?.toLocaleString('es-MX') ?? zm?.totalPop?.toLocaleString('es-MX') ?? '—'} hab activos`}
+            provenance={pobKpi?.provenance.tipo ?? genKpi?.provenance.tipo}
+            provenanceFuente={pobKpi ? `${pobKpi.provenance.fuente_nombre} + SEMARNAT` : undefined}
+            compare={
+              resultados ? (
+                <KpiCompareRow {...compareRsu(resultados, resultadosSinPrograma)} />
+              ) : undefined
+            }
+          />
+          <MetricGlobal
+            label="Ingreso potencial/año"
+            value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'}
+            sub="a plena cobertura"
+            color="text-[#3B6D11]"
+            compare={
+              resultados ? (
+                <KpiCompareRow {...compareIngreso(resultados, resultadosSinPrograma, horizonte)} />
+              ) : undefined
+            }
+          />
+          <MetricGlobal
+            label="CO₂e a evitar/año"
+            value={resultados ? `${(resultados.co2eEvitadasAnualTon / 1000).toFixed(0)}K t` : '—'}
+            sub="tCO₂e — año final"
+            color="text-[#1A5FA8]"
+            provenance={genKpi?.provenance.tipo}
+            provenanceFuente={genKpi?.provenance.fuente_nombre}
+            compare={
+              resultados ? (
+                <KpiCompareRow {...compareCo2(resultados, resultadosSinPrograma)} />
+              ) : undefined
+            }
+          />
+          <MetricGlobal
+            label="Empleos directos"
+            value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'}
+            sub="en el programa"
+            compare={
+              resultados ? (
+                <KpiCompareRow {...compareEmpleos(resultados, resultadosSinPrograma)} />
+              ) : undefined
+            }
+          />
+        </div>
+      )}
 
       {/* Advertencias de datos cuando hay baja confianza */}
       {snapshotDatos?.advertencias.some(a => a.bloquea_agora) && (
         <div className="mt-4 bg-red-50 border border-red-200 rounded-[10px] px-4 py-3">
           <p className="text-[12px] font-medium text-red-800">
-            ⚠ Datos con calidad insuficiente para ÁGORA — revisa la sección Fuentes de Datos
+            Datos con calidad insuficiente para ÁGORA — revisa Bibliografía y cálculos
           </p>
         </div>
       )}

@@ -5,9 +5,7 @@ import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulatio
 import { Header } from '@/components/layout/Header'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { SectionHero } from '@/components/simulator/SectionHero'
-import { FuentesDatos } from '@/components/simulator/FuentesDatos'
 import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
-import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
 import { DecisionModuleShell } from '@/components/simulator/DecisionModuleShell'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
@@ -38,6 +36,7 @@ import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/Progresion
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
+import { EducacionFuncionarioIntro } from '@/components/simulator/EducacionFuncionarioIntro'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
@@ -53,6 +52,52 @@ const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
   evidence: 'Matriz de trazabilidad de fuentes, fórmulas, estado de verificación y acción correctiva.',
   status: 'ready',
   next_action: 'Cerrar pendientes de fuente antes de usar el escenario como soporte público formal.',
+}
+
+const FUNCTIONARY_MODULE_LABELS: Record<string, Pick<DecisionModule, 'label' | 'decision' | 'evidence' | 'next_action'>> = {
+  city_baseline: {
+    label: 'Problema y resumen ejecutivo',
+    decision: 'Entender el costo municipal, sanitario y económico de no separar antes de plantear metas.',
+    evidence: 'RSU activo, salud pública, derrama por valorización y supuestos editables del escenario.',
+    next_action: 'Ajustar vivienda, generación, precios y costo de disposición antes de revisar marco jurídico.',
+  },
+  municipal_context: {
+    label: 'Marco jurídico municipal',
+    decision: 'Revisar qué puede hacer cada municipio con su reglamento vigente y qué requiere reforma.',
+    evidence: 'Diagnóstico legal por municipio, fuentes localizadas y propuesta expositiva no oficial.',
+    next_action: 'Validar fuente municipal competente antes de usar sanciones o documentos oficiales.',
+  },
+  future_goals: {
+    label: 'Metas futuras / Gantt-PERT',
+    decision: 'Convertir metas de circularidad en ruta temporal, dependencias y brechas de capacidad.',
+    evidence: 'Horizonte, curva de captura, calendario y dependencia territorial de implementación.',
+    next_action: 'Confirmar compatibilidad entre metas, capacidad e infraestructura por trimestre.',
+  },
+  infrastructure_operations: {
+    label: 'Infraestructura en espacio-tiempo',
+    decision: 'Definir qué infraestructura se crea, dónde, cuándo y con qué capacidad operativa.',
+    evidence: 'Zonas, rutas, centros de acopio, bitácora PER y flujo material conectado al territorio.',
+    next_action: 'Validar responsables, rutas, evidencia operativa y capacidad instalada.',
+  },
+  inspeccion_predios: {
+    label: 'Inspección de predios / estrategia administrativa',
+    decision: 'Separar educación, visita técnica, evidencia e inspección sin presentar sanciones firmes.',
+    evidence: 'Bitácora, actor responsable, predio/ruta y evidencia requerida por el flujo operativo.',
+    next_action: 'Usar la evidencia para mejorar cumplimiento y preparar revisión jurídica municipal.',
+  },
+  scenarios_export: {
+    label: 'Escenarios y salida',
+    decision: 'Comparar escenarios y preparar borradores de trabajo sin carácter oficial.',
+    evidence: 'KPIs, supuestos, exportables y advertencias de validación pendientes.',
+    next_action: 'Revisar matriz de fuentes antes de presentar cifras en sesión pública.',
+  },
+}
+
+function enrichFunctionaryModules(modules: DecisionModule[]) {
+  return modules.map(module => {
+    const copy = FUNCTIONARY_MODULE_LABELS[module.module_id]
+    return copy ? { ...module, ...copy } : module
+  })
 }
 
 function SimulatorSimulationRibbon() {
@@ -132,8 +177,9 @@ export default function SimulatorPage() {
   const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
   const portalJourneyWithTraceability = useMemo(() => {
     if (audience !== 'functionary') return portalJourney
-    if (portalJourney.some(module => module.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return portalJourney
-    return [...portalJourney, SOURCE_TRACEABILITY_MODULE]
+    const enriched = enrichFunctionaryModules(portalJourney)
+    if (enriched.some(module => module.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return enriched
+    return [...enriched, SOURCE_TRACEABILITY_MODULE]
   }, [audience, portalJourney])
 
   // Fase 22.0 — Gateway obligatorio: sin audiencia no se carga ningún módulo.
@@ -154,9 +200,7 @@ export default function SimulatorPage() {
         <main className="px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto">
 
           <CityFirstSelector />
-          <CircularityBaselineCard />
           {audience === 'citizen' && <PlanGlobalControlsBar />}
-          {audience === 'functionary' && <PlanGlobalControlsBar showGeneration={false} />}
 
           {!baselineValid ? (
             <BaselineGateBlocked
@@ -199,7 +243,6 @@ function renderDecisionModule(
         return (
           <>
             <DeclaracionWizard />
-            <FuentesDatos />
           </>
         )
       case 'containers_provider':
@@ -228,7 +271,6 @@ function renderDecisionModule(
         return (
           <>
             <SectionHero />
-            <FuentesDatos />
           </>
         )
       case 'municipal_context':
@@ -263,7 +305,10 @@ function renderDecisionModule(
       return (
         <>
           <SectionHero />
-          <FuentesDatos />
+          <EducacionFuncionarioIntro />
+          <ImpactoAmbiental />
+          <MultiplicadoresEco />
+          <EducacionCiudadana />
         </>
       )
     case 'municipal_context':

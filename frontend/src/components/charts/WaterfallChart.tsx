@@ -9,15 +9,14 @@ export function WaterfallChart() {
 
   const r = resultados
   const items = [
-    { label: 'RSU capturable', value: r.ingresosBrutos * 1.4, color: '#639922', cumulative: 0 },
-    { label: 'Ingresos brutos', value: r.ingresosBrutos, color: '#1A5FA8', cumulative: 0 },
+    { label: 'Venta materiales', value: r.ingresosBrutos, color: '#1A5FA8', cumulative: 0 },
     { label: 'OPEX', value: -r.opexAnual * r.serieAnual.length, color: '#C0392B', cumulative: 0 },
     { label: 'EBITDA', value: r.ebitda, color: '#3B6D11', cumulative: 0 },
     { label: 'Carbono', value: r.ingresoCarbono, color: '#1D9E75', cumulative: 0 },
     { label: 'Biogás', value: r.ingresoBiogas, color: '#639922', cumulative: 0 },
     { label: 'Ahorro disp.', value: r.ahorroDisposicion, color: '#D4881E', cumulative: 0 },
     { label: 'Ahorro salud', value: r.ahorroSalud, color: '#8B6B4A', cumulative: 0 },
-    { label: 'Derrama total', value: r.derremaTotal, color: '#1C1B18', cumulative: 0 },
+    { label: 'Escenario ampliado', value: r.derremaTotal, color: '#1C1B18', cumulative: 0 },
   ]
 
   // Calcular cumulativos (waterfall logic)

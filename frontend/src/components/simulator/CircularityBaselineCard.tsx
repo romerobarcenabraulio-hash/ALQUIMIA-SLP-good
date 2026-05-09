@@ -111,7 +111,7 @@ export function CircularityBaselineCard() {
               <p className="text-[12px] text-[#6B6760]">{circularityBaseline.city_name}</p>
               <div className="mt-1 flex flex-wrap items-end gap-5">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Circularidad real estimada</p>
+                  <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Circularidad modelada</p>
                   <p
                     className="font-mono text-[34px] leading-none text-[#1C1B18]"
                     aria-label={`Porcentaje de circularidad del modelo ${circularityBaseline.current_circularity_pct.toFixed(1)} por ciento`}
@@ -166,7 +166,7 @@ export function CircularityBaselineCard() {
           <div className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] p-3">
             <p className="inline-flex items-center gap-2 text-[12px] font-semibold text-[#1C1B18]">
               <Database size={14} aria-hidden="true" />
-              Fuente declarada por el modelo
+              Fuente y condición de la referencia
             </p>
             <p className="mt-2 text-[12px] text-[#6B6760]">
               <strong className="text-[#1C1B18]">{circularityBaseline.provenance.fuente_nombre}</strong>

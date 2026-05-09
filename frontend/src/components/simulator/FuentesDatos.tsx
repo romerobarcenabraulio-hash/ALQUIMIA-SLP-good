@@ -79,7 +79,7 @@ export function FuentesDatos() {
   return (
     <div>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S2 — Fuentes de datos</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Trazabilidad de datos</h2>
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Bibliografía y cálculos</h2>
       <ScopeAnclaKicker className="mb-2" />
       <p className="text-[13px] text-[#6B6760] mb-1">
         Estado real de cada fuente de datos oficial. El simulador prioriza datos

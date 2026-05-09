@@ -16,6 +16,10 @@ describe('FuncionariosViviendaRsuModel', () => {
       municipiosActivos: ['slp', 'sol', 'csp', 'vip'],
       tiposVivienda: ['vertical', 'casa'],
       precios: { ...PRECIOS_DEFAULTS },
+      costoDisposicionActivo: true,
+      costoDisposicionPorTon: 320,
+      viviendaCondominioPct: 45,
+      ocupantesPorViviendaEscenario: null,
       resultados: null,
       resultadosSinPrograma: null,
     })
@@ -36,6 +40,9 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByText(/Siguiente acción:/)).toBeTruthy()
     expect(screen.getAllByText(/Casa independiente/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Departamento en edificio/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
+    expect(screen.getByText(/Vivienda no sujeta a condominio/)).toBeTruthy()
+    expect(screen.getByText(/Ocupantes por vivienda del escenario/)).toBeTruthy()
     expect(screen.getAllByText(/Modelo operativo ALQUIMIA/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/no es porcentaje oficial INEGI/i).length).toBeGreaterThan(0)
     expect(screen.queryByText(/Residencial/)).toBeNull()
@@ -69,8 +76,36 @@ describe('FuncionariosViviendaRsuModel', () => {
 
     const after = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
     expect(after).toBeGreaterThan(before)
-    expect(screen.getAllByText(/Capitulo San Luis/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Investigacion_Precios_RSU_SLP/i).length).toBeGreaterThan(0)
+    expect(screen.queryByText(/Capitulo San Luis/i)).toBeNull()
     expect(screen.queryByText(/referencia mercado reciclaje CDMX/)).toBeNull()
+  })
+
+  it('sliders de condominio y ocupantes recalculan RSU activo', () => {
+    const before = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
+    render(<FuncionariosViviendaRsuModel />)
+
+    fireEvent.change(screen.getByLabelText(/Ocupantes por vivienda del escenario/), { target: { value: '4.2' } })
+    const afterOccupants = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
+    expect(afterOccupants).not.toBe(before)
+
+    fireEvent.change(screen.getByLabelText(/Vivienda en propiedad de condominio/), { target: { value: '80' } })
+    const afterHousing = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
+    const afterHousingVertical = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
+    expect(afterHousing).not.toBe(afterOccupants)
+    expect(afterHousingVertical).toBeGreaterThan(0)
+  })
+
+  it('costo por tonelada enterrada altera costo gobierno cuando esta activo', () => {
+    render(<FuncionariosViviendaRsuModel />)
+
+    const initial = useSimulatorStore.getState().resultados?.ahorroDisposicion ?? 0
+    fireEvent.change(screen.getByLabelText(/MXN por tonelada/), { target: { value: '640' } })
+    const raised = useSimulatorStore.getState().resultados?.ahorroDisposicion ?? 0
+    expect(raised).toBeGreaterThan(initial)
+
+    fireEvent.click(screen.getByRole('button', { name: /Incluido/ }))
+    expect(useSimulatorStore.getState().resultados?.ahorroDisposicion).toBe(0)
   })
 
   it('sin datos INEGI muestra warning y no inventa porcentajes', () => {
@@ -95,7 +130,6 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByText(/Población y territorio/)).toBeTruthy()
     expect(screen.getAllByText(/Precios de materiales/).length).toBeGreaterThan(0)
     expect(screen.getByText(/Acción correctiva/)).toBeTruthy()
-    expect(screen.getAllByText(/CAPITULO SAN LUIS POTOSÍ/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Investigacion_Precios_RSU_SLP/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Vidrio baja de \$2\.30\/kg a \$1\.30\/kg/i).length).toBeGreaterThan(0)
   })

@@ -114,6 +114,11 @@ interface SimulatorStore extends SimulatorState {
   setTipoCambio:       (v: number) => void
   setGenPercapita:     (v: number) => void
   setCostoComSocial:   (v: number) => void
+  setCostoDisposicionActivo: (v: boolean) => void
+  setCostoDisposicionPorTon: (v: number) => void
+  setViviendaCondominioPct: (v: number) => void
+  setViviendaNoCondominioPct: (v: number) => void
+  setOcupantesPorViviendaEscenario: (v: number | null) => void
   setSubsidioFederal:  (v: number) => void
   setCreditoVerde:     (v: boolean) => void
   setGate:             (idx: number, val: boolean) => void
@@ -157,6 +162,10 @@ const defaultState: SimulatorState = {
   creditoVerde:      false,
   tasaCreditoVerde:  6.5,
   plazoCreditoAños:  7,
+  costoDisposicionActivo: true,
+  costoDisposicionPorTon: 320,
+  viviendaCondominioPct: 45,
+  ocupantesPorViviendaEscenario: null,
   wacc:              20,
   tipoCambio:        17.10,
   precioCarbonoEsc:  'voluntario',
@@ -417,6 +426,20 @@ export const useSimulatorStore = create<SimulatorStore>()(
         setTipoCambio: (v) => { set({ tipoCambio: v }); get().recalcular() },
         setGenPercapita: (v) => { set({ genPercapita: v }); get().recalcular() },
         setCostoComSocial: (v) => { set({ costoComSocial: v }); get().recalcular() },
+        setCostoDisposicionActivo: (v) => { set({ costoDisposicionActivo: v }); get().recalcular() },
+        setCostoDisposicionPorTon: (v) => { set({ costoDisposicionPorTon: v }); get().recalcular() },
+        setViviendaCondominioPct: (v) => {
+          set({ viviendaCondominioPct: Math.min(100, Math.max(0, v)) })
+          get().recalcular()
+        },
+        setViviendaNoCondominioPct: (v) => {
+          set({ viviendaCondominioPct: 100 - Math.min(100, Math.max(0, v)) })
+          get().recalcular()
+        },
+        setOcupantesPorViviendaEscenario: (v) => {
+          set({ ocupantesPorViviendaEscenario: v === null ? null : Math.min(6, Math.max(1, v)) })
+          get().recalcular()
+        },
         setSubsidioFederal: (v) => { set({ subsidioFederal: v }); get().recalcular() },
         setCreditoVerde: (v) => { set({ creditoVerde: v }); get().recalcular() },
         setCapCamion: (v) => { set({ capCamionTon: v }); get().recalcular() },

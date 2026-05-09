@@ -256,7 +256,7 @@ export function ProgresionPlanMunicipalTiempo() {
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E8E4DC' }}
                 formatter={(value: number, name: string) => {
-                  if (name === 'Derrama acum. (MXN M)' || name === 'Ingreso valoriz. (MXN M)') return [fmt.mxnM(value * 1e6), name]
+                  if (name === 'Derrama base acum. (MXN M)' || name === 'Ingreso valoriz. (MXN M)') return [fmt.mxnM(value * 1e6), name]
                   if (name === 'Tons capturadas / mes') return [`${value.toFixed(1)} t`, name]
                   return [`${value.toFixed(1)}%`, name]
                 }}
@@ -276,7 +276,7 @@ export function ProgresionPlanMunicipalTiempo() {
                 strokeWidth={1.5}
                 label={{ value: 'Consulta', position: 'insideTopRight', fill: '#1C1B18', fontSize: 9 }}
               />
-              <Line yAxisId="left" type="monotone" dataKey="derramaM" name="Derrama acum. (MXN M)" stroke="#0f766e" dot={false} strokeWidth={2} />
+              <Line yAxisId="left" type="monotone" dataKey="derramaM" name="Derrama base acum. (MXN M)" stroke="#0f766e" dot={false} strokeWidth={2} />
               <Line yAxisId="left" type="monotone" dataKey="ingresoM" name="Ingreso valoriz. (MXN M)" stroke="#15803d" dot={false} strokeWidth={2} />
               <Line yAxisId="right" type="monotone" dataKey="toneladasCapturadasMes" name="Tons capturadas / mes" stroke="#ca8a04" dot={false} strokeWidth={2} />
               <Line yAxisId="right" type="monotone" dataKey="reduccionRellenoPct" name="Desvío vs RSU total (%)" stroke="#b91c1c" dot={false} strokeWidth={2} />
@@ -285,9 +285,9 @@ export function ProgresionPlanMunicipalTiempo() {
         </div>
         <TraceRibbon
           hecho="Ingresos anuales del bloque `serieAnual` (precios modelo 2.2, 300 días operativos)."
-          supuesto="Derrama acumulada acreta ingresos mensuales × (derremaTotal/ingresosBrutos) del cierre de horizonte."
-          fuente="Motor `calculator.ts` (`derremaTotal`, `ingresos`, volúmenes por material)."
-          formula="derrama_acum(m)+= ingreso_año(u)/12 × factor; desvío % ≈ vol_capturado / RSU_total."
+          supuesto="Derrama base acumulada suma venta mensual de materiales separados; no incluye externalidades, salud ni efecto industrial ampliado."
+          fuente="Motor `calculator.ts` (`ingresosBrutos`, `serieAnual.ingresos`, volúmenes por material y precios trazados)."
+          formula="derrama_base_acum(m)+= ingreso_valorización_año(u)/12; desvío % ≈ vol_capturado / RSU_total."
           corte={CORTE_UI}
           confianza="medio"
         />

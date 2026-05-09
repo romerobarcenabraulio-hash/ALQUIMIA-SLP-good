@@ -50,6 +50,10 @@ export function GenerarPlanModal() {
       tipo_cambio:        state.tipoCambio,
       precio_carbono_esc: state.precioCarbonoEsc,
       precios:            state.precios,
+      costo_disposicion_activo: state.costoDisposicionActivo,
+      costo_disposicion_por_ton: state.costoDisposicionPorTon,
+      vivienda_condominio_pct: state.viviendaCondominioPct,
+      ocupantes_por_vivienda_escenario: state.ocupantesPorViviendaEscenario,
       costo_com_social:   state.costoComSocial,
     }
 
@@ -74,6 +78,7 @@ export function GenerarPlanModal() {
       kwh_biogas:               resultados.kwhBiogas,
       extension_relleno:        resultados.extensionRelleno,
       ahorro_salud:             resultados.ahorroSalud,
+      derrama_base_materiales:  resultados.ingresosBrutos,
       derrama_total:            resultados.derremaTotal,
       ingreso_carbono:          resultados.ingresoCarbono,
       score_politico:           resultados.scorePolitico,

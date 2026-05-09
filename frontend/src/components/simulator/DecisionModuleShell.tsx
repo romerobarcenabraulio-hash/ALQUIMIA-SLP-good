@@ -1,14 +1,12 @@
 'use client'
 
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import * as Switch from '@radix-ui/react-switch'
 import { AlertTriangle, CheckCircle2, ChevronRight, Lock } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, fmt } from '@/lib/utils'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import { CitizenPreviewPanel } from '@/components/simulator/CitizenPreviewPanel'
 import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
 import type { DecisionModule, PortalEntry } from '@/types'
 
@@ -29,7 +27,6 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
     [modules, visibleIds],
   )
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
-  const [citizenPreviewOpen, setCitizenPreviewOpen] = useState(false)
   const activeModule = useMemo(
     () => filteredModules.find(module => module.module_id === activeModuleId) ?? filteredModules[0] ?? null,
     [activeModuleId, filteredModules]
@@ -63,57 +60,11 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
                 : audience === 'organization'
                   ? 'Empresa / institucion (portal tecnico)'
                   : 'Ciudadania / plan de ciudad (portal tecnico)'}
-          . Cada modulo resume decision, dato que sostiene la conclusion y siguiente paso recomendado.
+          . Cada modulo abre una parte del expediente municipal: problema, marco jurídico, ruta temporal, operación,
+          estrategia administrativa, salida y matriz de fuentes.
         </p>
         <ScopeAnclaKicker className="mt-3 border-l-[3px] border-[#8CAA7A] pl-3" />
       </div>
-
-      {audienceSelected === 'functionary' && (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
-          <div className="min-w-[200px] flex-1">
-            <p className="text-[12px] font-medium text-[#1C1B18]" id="citizen-preview-label">
-              Referencia · vista ciudadana
-            </p>
-            <p className="text-[11px] text-[#6B6760]">
-              Activa el mismo contenido educativo que ve el perfil ciudadano, sin salir del journey institucional.
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <label htmlFor="citizen-preview-switch" className="cursor-pointer text-[12px] text-[#1C1B18]">
-              Ver vista ciudadana
-            </label>
-            <Switch.Root
-              id="citizen-preview-switch"
-              checked={citizenPreviewOpen}
-              onCheckedChange={setCitizenPreviewOpen}
-              className={cn(
-                'relative h-7 w-12 shrink-0 cursor-pointer rounded-full border-2 border-transparent',
-                'bg-[#E2DED6] outline-none transition-colors',
-                'data-[state=checked]:bg-[#3B6D11]',
-                'focus-visible:ring-2 focus-visible:ring-[#3B6D11] focus-visible:ring-offset-2',
-              )}
-              aria-labelledby="citizen-preview-label"
-            >
-              <Switch.Thumb
-                className={cn(
-                  'pointer-events-none block h-6 w-6 translate-x-0.5 rounded-full bg-white shadow-md ring-0 transition-transform',
-                  'data-[state=checked]:translate-x-[22px]',
-                )}
-              />
-            </Switch.Root>
-          </div>
-        </div>
-      )}
-
-      {audienceSelected === 'functionary' && citizenPreviewOpen && (
-        <div
-          role="region"
-          aria-labelledby="citizen-preview-label"
-          className="mb-4 rounded-[8px] border border-[#C9DDB1] bg-[#F1F6E5]/60 p-4"
-        >
-          <CitizenPreviewPanel />
-        </div>
-      )}
 
       {loading && (
         <ShellState title="Cargando modulos" detail="Obteniendo DecisionModule desde el contrato /city/journey/steps." />
@@ -202,6 +153,9 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
 
 function DecisionHeader({ module }: { module: DecisionModule }) {
   const blocked = module.status === 'blocked'
+  const audienceSelected = useSimulatorStore(s => s.audience)
+  const resultados = useSimulatorStore(s => s.resultados)
+  const horizonte = useSimulatorStore(s => s.horizonte)
   return (
     <header className="border-b border-[#E8E4DC] pb-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -219,12 +173,31 @@ function DecisionHeader({ module }: { module: DecisionModule }) {
           {blocked ? 'Requiere acción' : 'Disponible'}
         </span>
       </div>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <InfoBlock label="Que decido" value={module.decision} />
-        <InfoBlock label="Dato que sostiene" value={module.evidence} />
-        <InfoBlock label="Que sigue" value={module.next_action} />
-      </div>
+      {audienceSelected === 'functionary' ? (
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
+          <KpiBlock label="RSU generado diario" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="estimación de escenario" />
+          <KpiBlock label="Derrama base/año" value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'} helper="venta de material separado" />
+          <KpiBlock label="CO₂e a evitar/año" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="factor ambiental trazado" />
+          <KpiBlock label="Empleos directos" value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'} helper="programa + reciclaje" />
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          <InfoBlock label="Que decido" value={module.decision} />
+          <InfoBlock label="Dato que sostiene" value={module.evidence} />
+          <InfoBlock label="Que sigue" value={module.next_action} />
+        </div>
+      )}
     </header>
+  )
+}
+
+function KpiBlock({ label, value, helper }: { label: string; value: string; helper: string }) {
+  return (
+    <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
+      <p className="mt-1 font-mono text-[17px] leading-tight text-[#1C1B18]">{value}</p>
+      <p className="mt-1 text-[10px] leading-relaxed text-[#8C8880]">{helper}</p>
+    </div>
   )
 }
 
@@ -252,4 +225,3 @@ function ShellState({ title, detail, tone = 'neutral' }: { title: string; detail
     </div>
   )
 }
-

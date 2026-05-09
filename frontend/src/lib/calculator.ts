@@ -31,10 +31,13 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   const zm = getZM(state.zmActiva)
   const snapshot = (state as SimulatorState & { snapshotDatos?: SnapshotDatos | null }).snapshotDatos
 
-  const { popActiva, vivActivas } = resolveSimulationGeography({
+  const { popActiva: popActivaBase, vivActivas } = resolveSimulationGeography({
     ...state,
     snapshotDatos: snapshot,
   })
+  const popActiva = state.ocupantesPorViviendaEscenario
+    ? vivActivas * state.ocupantesPorViviendaEscenario
+    : popActivaBase
 
   const genKgDia = state.genPercapita || zm.genKgDia
 
@@ -46,19 +49,22 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     casa: 0.95,
     residencial: 1.15,
   } as const
+  const condominioShare = typeof state.viviendaCondominioPct === 'number'
+    ? clamp(state.viviendaCondominioPct / 100, 0, 1)
+    : zm.mixVivienda.vertical
+  const noCondominioShare = 1 - condominioShare
   const viviendaWeights = {
-    vertical: zm.mixVivienda.vertical * viviendaFactors.vertical,
-    casa: zm.mixVivienda.casa * viviendaFactors.casa,
-    residencial: zm.mixVivienda.residencial * viviendaFactors.residencial,
+    vertical: condominioShare * viviendaFactors.vertical,
+    casa: noCondominioShare * viviendaFactors.casa,
+    residencial: 0 * viviendaFactors.residencial,
   }
-  const totalViviendaWeight = Math.max(0.0001, Object.values(viviendaWeights).reduce((s, v) => s + v, 0))
   const activeTypes: TipoVivienda[] = state.tiposVivienda.length ? state.tiposVivienda : ['vertical', 'casa', 'residencial']
 
   // RSU por tipo vivienda
   const rsuPorTipo = {
-    vertical:    rsuBaseTonDia * viviendaWeights.vertical / totalViviendaWeight,
-    casa:        rsuBaseTonDia * viviendaWeights.casa / totalViviendaWeight,
-    residencial: rsuBaseTonDia * viviendaWeights.residencial / totalViviendaWeight,
+    vertical:    rsuBaseTonDia * viviendaWeights.vertical,
+    casa:        rsuBaseTonDia * viviendaWeights.casa,
+    residencial: rsuBaseTonDia * viviendaWeights.residencial,
   }
   const rsuTotalTonDia = activeTypes.reduce((s, tipo) => s + (rsuPorTipo[tipo] ?? 0), 0)
 
@@ -211,7 +217,10 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   // Ahorro disposición (volDesviado = t totales en todo el horizonte)
   const volDesviado    = serieAnual.reduce((s, a) =>
     s + Object.values(a.volTonDia).reduce((sv, v) => sv + v, 0) * MODELO_PARAMS.diasOperativos, 0)
-  const ahorroDisp     = volDesviado * 320
+  const costoDisposicionPorTon = typeof state.costoDisposicionPorTon === 'number'
+    ? Math.max(0, state.costoDisposicionPorTon)
+    : 320
+  const ahorroDisp     = state.costoDisposicionActivo === false ? 0 : volDesviado * costoDisposicionPorTon
 
   // Extensión vida relleno (Bug 2 fix):
   // ratio = t/día desviadas en año final / t/día totales generadas → × 10 → capped 15 años

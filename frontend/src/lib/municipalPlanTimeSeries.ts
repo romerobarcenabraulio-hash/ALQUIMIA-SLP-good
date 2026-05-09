@@ -149,9 +149,6 @@ export function buildMunicipalPlanTimeSeries(
   const empleoBase =
     opts.empleoBaseHitos ?? Math.max(0, Math.round(resultados.empleosDirectosCAs * 0.12))
 
-  const ingresosBrutos = Math.max(1, resultados.ingresosBrutos)
-  const factorDerrama = resultados.derremaTotal / ingresosBrutos
-
   const diasMes = MODELO_PARAMS.diasOperativos / 12
 
   const diaTotalPlan = H * 365
@@ -192,7 +189,7 @@ export function buildMunicipalPlanTimeSeries(
     )
 
     ingBrutoAcum += sample.ingresosAnual / 12
-    const derramaAcumuladaMxN = ingBrutoAcum * factorDerrama
+    const derramaAcumuladaMxN = ingBrutoAcum
 
     const toneladasCapturadasMes = sample.volSumTonDia * diasMes
     const ingresoValorizacionMesMxN = sample.ingresosAnual / 12

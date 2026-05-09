@@ -23,19 +23,21 @@ export function MultiplicadoresEco() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S16 — Multiplicadores económicos</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Derrama en la economía local</h2>
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S16 — Valorización económica</p>
+      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Derrama por valorización de residuos</h2>
       <ScopeAnclaKicker className="mb-2" />
       <p className="text-[13px] text-[#6B6760] mb-6">
-        Cada peso de ingreso del programa activa múltiplos de valor en la economía regional.
+        Se estima una derrama de {r ? fmt.mxnK(r.ingresosBrutos) : '—'} considerando solamente la venta del residuo
+        separado a la industria del reciclaje con el precio fijado en este escenario. La derrama puede aumentar si después
+        se modela el efecto industrial por mayor oferta de RSU recuperable.
       </p>
 
       {/* KPI strip */}
       {r && (
         <div className="bg-gradient-to-r from-[#EAF3DE] to-[#EBF3FB] rounded-[14px] p-5 mb-6">
-          <p className="text-[11px] uppercase tracking-wide text-[#3B6D11] mb-2">Derrama económica total</p>
-          <p className="font-mono text-[38px] text-[#3B6D11]">{fmt.mxnM(r.derremaTotal)}</p>
-          <p className="text-[13px] text-[#6B6760]">sobre el horizonte del plan · incluye ingresos + externalidades</p>
+          <p className="text-[11px] uppercase tracking-wide text-[#3B6D11] mb-2">Derrama base por venta de materiales</p>
+          <p className="font-mono text-[38px] text-[#3B6D11]">{fmt.mxnM(r.ingresosBrutos)}</p>
+          <p className="text-[13px] text-[#6B6760]">sobre el horizonte del plan · solo valorización material, sin externalidades</p>
         </div>
       )}
 
@@ -53,13 +55,23 @@ export function MultiplicadoresEco() {
       </div>
 
       {r && (
+        <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Escenario ampliado separado</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
+            Las siguientes cifras son externalidades y multiplicadores de sensibilidad. No se suman a la derrama base como
+            ingreso disponible del programa sin fuente o convenio adicional.
+          </p>
+        </div>
+      )}
+
+      {r && (
         <NarrativeBridge
           variant="bridge"
           audience="citizen"
           kicker="Derrama y bienestar local"
-          summary={`El modelo suma unos ${fmt.mxnM(r.derremaTotal)} de actividad indirecta en el horizonte (cadena de compras, empleo formal estimado y ahorro en salud pública), sin usar indicadores de rentabilidad financiera para ciudadanía. El mayor aporte a salud pública estimado es ${fmt.mxnK(r.ahorroSalud)} y la derrama salarial total ${fmt.mxnK(r.derramaSalarial)}.`}
+          summary={`La derrama base del escenario es ${fmt.mxnM(r.ingresosBrutos)} por venta de material recuperado. Como escenario ampliado, el modelo muestra hasta ${fmt.mxnM(r.derremaTotal)} al sumar externalidades condicionadas como cadena de compras, empleo formal estimado y ahorro en salud pública. Esa suma ampliada requiere verificación adicional antes de presentarse como beneficio público.`}
           evidence={[
-            { label: 'Derrama total', value: fmt.mxnM(r.derremaTotal) },
+            { label: 'Derrama base', value: fmt.mxnM(r.ingresosBrutos) },
             { label: 'Ahorro salud', value: fmt.mxnK(r.ahorroSalud) },
             { label: 'Derrama salarial', value: fmt.mxnK(r.derramaSalarial) },
             { label: 'Empleos directos', value: `${fmt.num0(r.empleosTotalesDirectos)} puestos` },

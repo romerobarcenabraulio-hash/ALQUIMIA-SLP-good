@@ -12,11 +12,13 @@ import { Slider } from '@/components/ui/Slider'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { describeMaterialPriceReference, PRICE_RESEARCH_SOURCE_LABEL } from '@/data/materialPriceResearch'
 
 export function ImpactoFinanciero() {
   const { resultados, wacc, setWacc, tipoCambio, setTipoCambio,
           precioCarbonoEsc, setPrecioCarbonoEsc, precios, setPrecio, horizonte,
-          pctCapturaPorAño, mermaLogPct, zmActiva, municipiosActivos } = useSimulatorStore()
+          pctCapturaPorAño, mermaLogPct, zmActiva, municipiosActivos,
+          costoDisposicionActivo, costoDisposicionPorTon } = useSimulatorStore()
   const r = resultados
 
   /* Linter: getState() no aparece en el grafo de deps; la lista fuerza recálculo al variar precios, trayectoria o ámbito municipal (Q-024). */
@@ -44,7 +46,7 @@ export function ImpactoFinanciero() {
       <ContextoModulo
         variante="financiero"
         titulo="¿Cómo está construido el modelo financiero?"
-        cuerpo="El modelo calcula los flujos de caja del programa desde tres fuentes de ingreso: venta de materiales reciclados (precio × volumen capturable × días operativos 300), ahorro en disposición final (vol. desviado × $320/ton) e ingresos por crédito de carbono (CO₂e × precio escenario). Contra eso se proyectan CAPEX (infraestructura CA + basureros) y OPEX (operación, logística, comunicación, capacitación). El resultado es el EBITDA, VPN, TIR y payback."
+        cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta CAPEX y OPEX. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
         puntos={[
           'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
           'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y OPEX.',
@@ -52,7 +54,7 @@ export function ImpactoFinanciero() {
           'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
           'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende del CAPEX de basureros y comunicación.',
         ]}
-        fuente="Modelo financiero: Bootstrap §2.3 / Modelo_BASED.xlsx. WACC: Bootstrap §0. Precios: Serper API + Bootstrap §2.2. Crédito carbono: VCS Market 2024 / SEMARNAT SCE."
+        fuente={`Modelo financiero: calculator.ts / Modelo_BASED.xlsx. Precios: ${PRICE_RESEARCH_SOURCE_LABEL}. Crédito carbono: VCS Market 2024 / SEMARNAT SCE.`}
         advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
       />
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S14 — Impacto financiero</p>
@@ -85,13 +87,13 @@ export function ImpactoFinanciero() {
 
           {/* Precios commodities */}
           <Slider label="Precio PET ($/kg)" value={precios.pet} min={3} max={12} step={0.10}
-            onChange={v => setPrecio('pet', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source="Serper API" />
+            onChange={v => setPrecio('pet', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source={describeMaterialPriceReference('pet', precios.pet)} />
           <Slider label="Precio Aluminio ($/kg)" value={precios.aluminio} min={10} max={40} step={0.50}
-            onChange={v => setPrecio('aluminio', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source="Serper API" />
+            onChange={v => setPrecio('aluminio', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source={describeMaterialPriceReference('aluminio', precios.aluminio)} />
           <Slider label="Precio Papel ($/kg)" value={precios.papel} min={0.70} max={5} step={0.10}
-            onChange={v => setPrecio('papel', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source="Serper API" />
+            onChange={v => setPrecio('papel', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source={describeMaterialPriceReference('papel', precios.papel)} />
           <Slider label="Precio Vidrio ($/kg)" value={precios.vidrio} min={0.90} max={5} step={0.10}
-            onChange={v => setPrecio('vidrio', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source="Serper API" />
+            onChange={v => setPrecio('vidrio', v)} formatValue={v => `$${v.toFixed(2)}/kg`} source={describeMaterialPriceReference('vidrio', precios.vidrio)} />
         </div>
 
         {/* Precio carbono */}
@@ -121,7 +123,7 @@ export function ImpactoFinanciero() {
 
       {/* Gráfica Waterfall */}
       <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Valor acumulado — waterfall de derrama</p>
+        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Valor acumulado — venta base y escenario ampliado</p>
         <WaterfallChart />
         {r && (
           <NarrativeBridge
@@ -136,7 +138,7 @@ export function ImpactoFinanciero() {
               { label: 'WACC', value: `${wacc}%` },
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
             ]}
-            source={{ fuente: 'Derrama = precio_material × volumen_capturado × (1−merma); EBITDA = derrama − OPEX centros − OPEX ruta; VPN y TIR al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios de commodity y a la curva de captura.' }}
+            source={{ fuente: 'Venta base = precio_material × volumen_capturado × (1−merma); EBITDA = venta base + supuestos habilitados − OPEX centros − OPEX ruta; VPN y TIR al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios de material, curva de captura y costo de disposición editable.' }}
             nextStep={{ label: 'Lee la sensibilidad (Tornado)' }}
           />
         )}

@@ -16,7 +16,7 @@ const COMP = {
 const PCT_PET_DE_PLASTICO    = 0.50
 const PCT_ALUMINIO_DE_METAL  = 0.70
 
-// PRECIOS MXN/kg — base (Serper API los actualiza, Bootstrap §2.2)
+// PRECIOS MXN/kg — base documental; el simulador permite ajustar supuestos del escenario.
 const PRECIO = {
   organico:  1.00,
   papel:     2.50,
@@ -352,13 +352,13 @@ export function WalkthroughArticle() {
       <p className="text-[15px] text-[#6B6760] leading-[1.7] mt-5 mb-2">
         Los precios de la tabla son precios base de compra en recicladora, no precios al
         consumidor. El PET a $5.50/kg es el precio al que PetStar y centros de acopio en
-        México compran material limpio y separado. El aluminio a $15.10/kg es el precio
-        referencia fundidora. El papel a $2.50/kg es precio IPSL (la mayor papelera de reciclado
-        en SLP). <strong className="text-[#1C1B18]">Estos precios los actualiza en tiempo real
-        nuestra integración con la API Serper</strong>; los valores aquí son la base estable del modelo.
+        México pueden comprar material limpio y separado bajo ciertas condiciones. El aluminio a
+        $15.10/kg es una referencia conservadora y el papel a $2.50/kg depende de calidad y comprador.
+        <strong className="text-[#1C1B18]">Estos precios son supuestos documentales editables del escenario</strong>;
+        requieren cotización local antes de usarse como presupuesto o convenio.
       </p>
       <Fuente>
-        Precios base: Bootstrap ALQUIMIA §2.2, actualización Serper API (datos de mercado spot 2024-2025).
+        Precios base: Investigacion_Precios_RSU_SLP.xlsx y matriz de trazabilidad documental.
         Composición RSU: Bootstrap §2.1 / Modelo_BASED.xlsx — validado contra SEMARNAT DBGIR 2022 y medición directa en SLP.
       </Fuente>
 
@@ -763,8 +763,8 @@ export function WalkthroughArticle() {
         <div className="text-[11px] text-[#6B6760] leading-relaxed space-y-2">
           <p><strong className="text-[#1C1B18]">Generación per cápita:</strong> SEMARNAT, Base de Datos de Generación y Composición de Residuos (DBGIR) 2022. Para ciudades no en DBGIR, se usa el rango SEMARNAT por estrato de ciudad (megalópolis, grande, media, pequeña).</p>
           <p><strong className="text-[#1C1B18]">Composición RSU:</strong> 45% orgánico / 20% papel / 15% plásticos / 5% vidrio / 5% metales / 10% otros — SEMARNAT y validación con el Modelo_BASED.xlsx del proyecto SLP. Esta composición es fija en el modelo.</p>
-          <p><strong className="text-[#1C1B18]">Precios de reciclaje:</strong> Precios base ALQUIMIA §2.2, actualizados vía Serper API con búsquedas de precio spot en mercado mexicano 2024-2025. Los valores aquí mostrados son la base estable; el simulador usa precios en tiempo real.</p>
-          <p><strong className="text-[#1C1B18]">Costo disposición final:</strong> $320 MXN/ton — referencia SEMARNAT y análisis de contratos de concesión. Rango nacional: $240–$480/ton.</p>
+          <p><strong className="text-[#1C1B18]">Precios de reciclaje:</strong> Precios base trazados en Investigacion_Precios_RSU_SLP.xlsx, Recicladoras_por_Giro.xlsx y matriz documental. Los valores son supuestos editables; no son cotización local ni precio oficial.</p>
+          <p><strong className="text-[#1C1B18]">Costo disposición final:</strong> referencia editable por tonelada enterrada — debe sustituirse por contrato, concesión o cotización municipal cuando exista. No es presupuesto oficial.</p>
           <p><strong className="text-[#1C1B18]">Emisiones CO₂e:</strong> Factor CH₄ 0.234 m³/kg (SEMARNAT), GWP₁₀₀ = 27 (IPCC AR6 2021). Factores de emisión virgen: EPA/IPCC por material.</p>
           <p><strong className="text-[#1C1B18]">Costo salud pública:</strong> $145 MXN/hab/año — multiplicador OMS-OPS LATAM para gestión inadecuada RSU (Bootstrap §2.8).</p>
           <p className="border-t border-[#E8E4DC] pt-2 mt-2 text-[#A8A49C]">

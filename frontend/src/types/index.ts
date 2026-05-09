@@ -531,6 +531,10 @@ export interface SimulatorState {
   creditoVerde:      boolean
   tasaCreditoVerde:  number
   plazoCreditoAños:  number
+  costoDisposicionActivo: boolean
+  costoDisposicionPorTon: number
+  viviendaCondominioPct: number
+  ocupantesPorViviendaEscenario: number | null
 
   // Financieros
   wacc:              number
