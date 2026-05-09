@@ -590,6 +590,22 @@ export interface EstadoMxOption {
   nombre: string
 }
 
+export interface InegiMunicipalSourceAudit {
+  clave_inegi: string
+  municipio: string
+  estado_id: string
+  estado: string
+  census_source: string
+  census_source_url: string
+  census_status: 'xlsx_loaded' | 'catalog_only' | 'missing'
+  denue_api_url: string
+  denue_status: 'configured' | 'blocked_missing_token'
+  live_query_performed: boolean
+  warnings: string[]
+  blockers: string[]
+  next_action: string
+}
+
 // ─── Resultados calculados ───────────────────────────────────────────────────
 
 export interface ResultadosCalculados {

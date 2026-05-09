@@ -42,3 +42,31 @@ def test_cities_estados_endpoint():
     assert isinstance(eds, list) and len(eds) >= 4
     ids = {e["estado_id"] for e in eds}
     assert "24" in ids and "22" in ids and "19" in ids and "14" in ids
+
+
+def test_inegi_source_audit_without_denue_token_is_domain_blocked(monkeypatch):
+    monkeypatch.delenv("INEGI_DENUE_TOKEN", raising=False)
+    monkeypatch.delenv("DENUE_API_TOKEN", raising=False)
+
+    r = client.get("/api/v1/cities/24028/inegi-source")
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["clave_inegi"] == "24028"
+    assert payload["census_source"].startswith("INEGI Censo")
+    assert payload["denue_status"] == "blocked_missing_token"
+    assert payload["live_query_performed"] is False
+    assert payload["blockers"]
+    assert "INEGI_DENUE_TOKEN" in payload["next_action"]
+    assert "api_denue" in payload["denue_api_url"]
+
+
+def test_inegi_source_audit_with_token_is_configured_not_live(monkeypatch):
+    monkeypatch.setenv("INEGI_DENUE_TOKEN", "token-de-prueba")
+
+    r = client.get("/api/v1/cities/24028/inegi-source")
+    assert r.status_code == 200
+    payload = r.json()
+    assert payload["denue_status"] == "configured"
+    assert payload["live_query_performed"] is False
+    assert payload["blockers"] == []
+    assert "consulta explícita" in payload["next_action"]

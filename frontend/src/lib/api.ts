@@ -42,6 +42,7 @@ import type {
   DeclaracionGeneracionRSU,
   DeclaracionGeneracionRSUCreate,
   EstadoMxOption,
+  InegiMunicipalSourceAudit,
   MunicipioMxApi,
 } from '@/types'
 import type { AgoraPlanGenerateBody } from '@/lib/agoraPlanPayload'
@@ -171,6 +172,14 @@ export async function getMunicipiosMx(estadoId?: string): Promise<MunicipioMxApi
     headers: { 'Content-Type': 'application/json' },
   })
   if (!res.ok) throw new Error(`Catálogo municipal no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getInegiMunicipalSourceAudit(claveInegi: string): Promise<InegiMunicipalSourceAudit> {
+  const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/${encodeURIComponent(claveInegi)}/inegi-source`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Auditoría INEGI no disponible: ${res.status}`)
   return res.json()
 }
 

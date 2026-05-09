@@ -80,6 +80,28 @@ class EstadoMxOption(BaseModel):
     nombre: str
 
 
+class InegiMunicipalSourceAudit(BaseModel):
+    """Auditoría de fuente INEGI por CVE municipal.
+
+    No descarga ni inventa datos: declara qué fuente sostiene el catálogo
+    actual y si la API DENUE puede consultarse en esta sesión.
+    """
+
+    clave_inegi: str
+    municipio: str
+    estado_id: str
+    estado: str
+    census_source: str
+    census_source_url: str
+    census_status: Literal["xlsx_loaded", "catalog_only", "missing"] = "catalog_only"
+    denue_api_url: str
+    denue_status: Literal["configured", "blocked_missing_token"] = "blocked_missing_token"
+    live_query_performed: bool = False
+    warnings: List[str] = Field(default_factory=list)
+    blockers: List[str] = Field(default_factory=list)
+    next_action: str
+
+
 class CityContext(CityOption):
     geography_scope: Literal["city_zm"] = "city_zm"
     jurisdiction_scope: Literal["MetropolitanZone"] = "MetropolitanZone"

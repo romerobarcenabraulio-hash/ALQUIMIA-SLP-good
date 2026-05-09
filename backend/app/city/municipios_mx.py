@@ -193,6 +193,11 @@ def list_municipios_mx(estado_id: str | None = None) -> list[MunicipioMxRow]:
     return rows
 
 
+def get_municipio_mx_by_clave(clave_inegi: str) -> MunicipioMxRow | None:
+    clave = clave_inegi.strip().zfill(5) if clave_inegi.strip().isdigit() else clave_inegi.strip()
+    return next((r for r in MUNICIPIOS_MX if r.clave_inegi == clave), None)
+
+
 def list_estados_distinct() -> list[tuple[str, str]]:
     """(estado_id, estado_nombre) únicos ordenados por nombre."""
     seen: dict[str, str] = {}

@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { MapPin } from 'lucide-react'
-import { getCityOptions, getEstadosMx, getMunicipiosMx } from '@/lib/api'
+import { getCityOptions, getEstadosMx, getInegiMunicipalSourceAudit, getMunicipiosMx } from '@/lib/api'
 import { ZMS, alquimiaHideGdlFromUi, GDL_ZM_SELECTOR_FOOTNOTE } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
-import type { CityOption, EstadoMxOption, MunicipioContext, MunicipioMxApi } from '@/types'
+import type { CityOption, EstadoMxOption, InegiMunicipalSourceAudit, MunicipioContext, MunicipioMxApi } from '@/types'
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 
@@ -38,6 +38,9 @@ export function CityFirstSelector() {
   const [loading, setLoading] = useState(true)
   const [loadingEstado, setLoadingEstado] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [inegiAudit, setInegiAudit] = useState<InegiMunicipalSourceAudit | null>(null)
+  const [inegiAuditLoading, setInegiAuditLoading] = useState(false)
+  const [inegiAuditError, setInegiAuditError] = useState<string | null>(null)
 
   const zm = useMemo(() => ZMS.find(z => z.id === zmActiva), [zmActiva])
 
@@ -103,8 +106,17 @@ export function CityFirstSelector() {
 
   const onSelectMunicipio = (cve: string) => {
     setMunicipioPick(cve)
+    setInegiAudit(null)
+    setInegiAuditError(null)
     const row = municipiosApi.find(m => m.clave_inegi === cve)
-    if (row) applyMunicipioCatalog(row)
+    if (row) {
+      applyMunicipioCatalog(row)
+      setInegiAuditLoading(true)
+      getInegiMunicipalSourceAudit(row.clave_inegi)
+        .then(audit => setInegiAudit(audit))
+        .catch(err => setInegiAuditError(err instanceof Error ? err.message : 'Auditoría INEGI no disponible'))
+        .finally(() => setInegiAuditLoading(false))
+    }
   }
 
   return (
@@ -166,6 +178,13 @@ export function CityFirstSelector() {
             <p className="rounded-[6px] border border-amber-300/80 bg-amber-50 px-3 py-2 text-[11px] text-amber-950">
               Datos estimados — en proceso de validación oficial
             </p>
+          )}
+          {(inegiAuditLoading || inegiAudit || inegiAuditError) && (
+            <InegiSourceStatusCard
+              audit={inegiAudit}
+              loading={inegiAuditLoading}
+              error={inegiAuditError}
+            />
           )}
         </div>
       )}
@@ -285,5 +304,69 @@ export function CityFirstSelector() {
         </DialogContent>
       </Dialog>
     </section>
+  )
+}
+
+function InegiSourceStatusCard({
+  audit,
+  loading,
+  error,
+}: {
+  audit: InegiMunicipalSourceAudit | null
+  loading: boolean
+  error: string | null
+}) {
+  if (loading) {
+    return (
+      <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3 text-[12px] text-[#6B6760]">
+        Verificando fuente INEGI del municipio…
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-[8px] border border-red-200 bg-red-50 px-3 py-3 text-[12px] text-red-800">
+        {error}
+      </div>
+    )
+  }
+
+  if (!audit) return null
+
+  const denueBlocked = audit.denue_status === 'blocked_missing_token'
+
+  return (
+    <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
+      <div className="flex flex-wrap items-start justify-between gap-2">
+        <div>
+          <p className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[#6B6760]">
+            Auditoría INEGI · CVE {audit.clave_inegi}
+          </p>
+          <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+            Censo: {audit.census_source}. DENUE: {denueBlocked ? 'bloqueado por token faltante' : 'configurado, sin consulta automática'}.
+          </p>
+        </div>
+        <span
+          className={cn(
+            'rounded-full border px-2 py-0.5 text-[10px] font-medium',
+            denueBlocked
+              ? 'border-amber-300 bg-amber-50 text-amber-900'
+              : 'border-[#3B6D11]/30 bg-[#EAF3DE] text-[#23470A]',
+          )}
+        >
+          {denueBlocked ? 'DENUE bloqueado' : 'DENUE configurado'}
+        </span>
+      </div>
+      {audit.blockers.length > 0 && (
+        <p className="mt-2 rounded-[6px] border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-950">
+          {audit.blockers.join(' ')}
+        </p>
+      )}
+      <p className="mt-2 text-[11px] leading-relaxed text-[#8C8880]">{audit.next_action}</p>
+      <p className="mt-1 text-[10px] leading-relaxed text-[#A8A49C]">
+        No se hizo consulta live: {audit.live_query_performed ? 'sí' : 'no'}. DENUE documenta establecimientos; vivienda y población siguen por Censo/tabulados INEGI.
+      </p>
+    </div>
   )
 }
