@@ -6,6 +6,7 @@ import { PRECIOS_RANGO } from '@/lib/constants'
 import {
   describeMaterialPriceReference,
   getInegiHousingDistribution,
+  getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
 import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
 import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
@@ -22,11 +23,6 @@ const MATERIAL_LABEL: Record<keyof PreciosMaterial, string> = {
   organico: 'Organico / composta',
 }
 
-const OPERATIONAL_HOUSING_TYPES = [
-  { key: 'casa' as const, label: 'Casa independiente', helper: 'Segmento operativo; sin porcentaje INEGI en los XLSX cargados.' },
-  { key: 'vertical' as const, label: 'Departamento en edificio', helper: 'Segmento operativo; requiere tabulado INEGI por clase de vivienda.' },
-]
-
 export function FuncionariosViviendaRsuModel() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -39,6 +35,7 @@ export function FuncionariosViviendaRsuModel() {
   const resultados = useSimulatorStore(s => s.resultados)
 
   const distribution = getInegiHousingDistribution(zmActiva, municipiosActivos)
+  const operationalSegments = getOperationalHousingSegments(zmActiva, tiposVivienda)
 
   return (
     <section
@@ -94,7 +91,7 @@ export function FuncionariosViviendaRsuModel() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1.15fr]">
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Distribución vivienda INEGI</p>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Hechos vivienda INEGI</p>
           {!distribution ? (
             <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
               Sin tabulado INEGI municipal de vivienda para esta selección. No se inventan porcentajes de casa/departamento.
@@ -111,11 +108,13 @@ export function FuncionariosViviendaRsuModel() {
               </div>
               <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] leading-relaxed text-amber-900">
                 {distribution.note}
+                <p className="mt-2 font-medium">Bloqueo: {distribution.blocker}</p>
+                <p className="mt-1">Siguiente acción: {distribution.nextAction}</p>
               </div>
               <p className="mt-3 text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Segmentos operativos ajustables</p>
               <div className="mt-2 flex flex-wrap gap-3">
-                {OPERATIONAL_HOUSING_TYPES.map(tipo => {
-                  const active = tiposVivienda.includes(tipo.key)
+                {operationalSegments.map(tipo => {
+                  const active = tipo.active
                   return (
                     <button
                       key={tipo.key}
@@ -129,10 +128,34 @@ export function FuncionariosViviendaRsuModel() {
                       )}
                     >
                       <span className="block text-[12px] font-medium">{tipo.label}</span>
+                      <span className="mt-1 block font-mono text-[16px]">{tipo.modelSharePct.toFixed(1)}%</span>
                       <span className="mt-1 block text-[10px] leading-relaxed">{tipo.helper}</span>
+                      <span className="mt-1 block text-[10px] leading-relaxed">Factor operativo {tipo.factor.toFixed(2)}x</span>
                     </button>
                   )
                 })}
+              </div>
+              <div className="mt-3 overflow-hidden rounded-[8px] border border-[#E8E4DC]">
+                <table className="w-full text-left text-[11px]">
+                  <thead className="bg-[#F8F6F1] text-[#8C8880]">
+                    <tr>
+                      <th className="px-3 py-2 font-medium">Segmento</th>
+                      <th className="px-3 py-2 font-medium">Peso usado</th>
+                      <th className="px-3 py-2 font-medium">Fuente del porcentaje</th>
+                      <th className="px-3 py-2 font-medium">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {operationalSegments.map(tipo => (
+                      <tr key={tipo.key} className="border-t border-[#F0EDE5]">
+                        <td className="px-3 py-2 text-[#1C1B18]">{tipo.label}</td>
+                        <td className="px-3 py-2 font-mono text-[#1C1B18]">{tipo.modelSharePct.toFixed(1)}%</td>
+                        <td className="px-3 py-2 text-[#6B6760]">Modelo operativo ALQUIMIA; pendiente tabulado INEGI municipal</td>
+                        <td className="px-3 py-2 text-[#6B6760]">{tipo.active ? 'Activo en escenario' : 'Excluido del escenario'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
               <div className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-2 text-[11px] leading-relaxed text-[#6B6760]">
                 <p>{distribution.source}. {distribution.confidenceLabel}</p>

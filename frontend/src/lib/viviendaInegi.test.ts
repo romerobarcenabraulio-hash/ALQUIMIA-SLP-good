@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   describeMaterialPriceReference,
   getInegiHousingDistribution,
+  getOperationalHousingSegments,
   isInegiLiteralHousingType,
 } from '@/lib/viviendaInegi'
 
@@ -13,8 +14,20 @@ describe('viviendaInegi', () => {
     expect(distribution?.statePopulation2020).toBe(2368467)
     expect(distribution?.stateOccupiedDwellings2020).toBe(668487)
     expect(distribution?.stateAvgOccupants2020).toBe(3.5)
+    expect(distribution?.entityCode).toBe('22')
+    expect(distribution?.blocker).toMatch(/casa\/departamento por municipio/i)
+    expect(distribution?.nextAction).toMatch(/tabulado municipal/i)
     expect(distribution?.categories).toEqual([])
     expect(isInegiLiteralHousingType('residencial')).toBe(false)
+  })
+
+  it('separa pesos operativos de porcentajes oficiales INEGI', () => {
+    const segments = getOperationalHousingSegments('SLP', ['vertical', 'casa'])
+
+    expect(segments).toHaveLength(2)
+    expect(segments.every(segment => segment.isInegiOfficialPct === false)).toBe(true)
+    expect(segments.map(segment => segment.label)).toContain('Casa independiente')
+    expect(segments[0].helper).toMatch(/no es porcentaje oficial INEGI/i)
   })
 
   it('reporta empty cuando no hay distribucion municipal cargada', () => {
