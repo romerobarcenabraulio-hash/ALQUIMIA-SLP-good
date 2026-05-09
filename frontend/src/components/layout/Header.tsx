@@ -1,6 +1,7 @@
 'use client'
 
 import * as Tooltip from '@radix-ui/react-tooltip'
+import Link from 'next/link'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { useEffect, useRef, useState } from 'react'
@@ -173,7 +174,9 @@ export function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-14 py-1.5 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
         <div className="flex flex-col gap-0.5 sm:flex-row sm:items-center sm:gap-3 shrink-0 min-w-0 max-w-full">
           <div className="flex items-center gap-3 shrink-0">
-            <span className="font-serif text-[20px] text-[#3B6D11] font-semibold tracking-tight">ALQUIMIA</span>
+            <Link href="/" className="font-serif text-[20px] text-[#3B6D11] font-semibold tracking-tight hover:text-[#2D5409]">
+              ALQUIMIA
+            </Link>
             <span className="hidden sm:block text-[#E8E4DC]">|</span>
             {pathname === '/simulator' && seleccion ? (
               <span className="hidden sm:inline text-[11px] text-[#6B6760] max-w-[min(100%,20rem)] truncate" title={`CVE ${seleccion.claveInegi}`}>

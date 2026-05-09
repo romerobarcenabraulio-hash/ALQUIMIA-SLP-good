@@ -37,12 +37,23 @@ import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControls
 import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
+import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
+
+const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
+  module_id: 'source_traceability',
+  label: 'Bibliografía y cálculos',
+  audience_mode: 'city_team',
+  decision: 'Verificar qué afirmación sostiene cada número del simulador.',
+  evidence: 'Matriz de trazabilidad de fuentes, fórmulas, estado de verificación y acción correctiva.',
+  status: 'ready',
+  next_action: 'Cerrar pendientes de fuente antes de usar el escenario como soporte público formal.',
+}
 
 function SimulatorSimulationRibbon() {
   const cityContext = useSimulatorStore(s => s.cityContext)
@@ -119,6 +130,11 @@ export default function SimulatorPage() {
   const onInteract = () => { interacciones.current++ }
   const isOrganizationJourney = portalEntry === 'organization'
   const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
+  const portalJourneyWithTraceability = useMemo(() => {
+    if (audience !== 'functionary') return portalJourney
+    if (portalJourney.some(module => module.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return portalJourney
+    return [...portalJourney, SOURCE_TRACEABILITY_MODULE]
+  }, [audience, portalJourney])
 
   // Fase 22.0 — Gateway obligatorio: sin audiencia no se carga ningún módulo.
   if (!audience) {
@@ -152,13 +168,12 @@ export default function SimulatorPage() {
             <>
               {audience === 'functionary' && <FuncionariosViviendaRsuModel />}
               <DecisionModuleShell
-                modules={portalJourney}
+                modules={portalJourneyWithTraceability}
                 loading={portalJourneyLoading}
                 error={portalError}
                 audience={portalEntry}
                 renderModule={module => renderDecisionModule(module, isOrganizationJourney, audience)}
               />
-              <ReferenciasCalculos />
             </>
           )}
 
@@ -263,6 +278,7 @@ function renderDecisionModule(
     case 'infrastructure_operations':
       return (
         <>
+          <ImplementacionEspacioTiempo />
           <ProgresionPlanMunicipalTiempo />
           <CentrosAcopio />
           <Logistica />
@@ -286,6 +302,8 @@ function renderDecisionModule(
           <LaunchChecklist />
         </>
       )
+    case 'source_traceability':
+      return <ReferenciasCalculos />
     default:
       return <ModuleEmpty module={module} />
   }

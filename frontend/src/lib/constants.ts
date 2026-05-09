@@ -25,7 +25,7 @@ export const PRECIOS_DEFAULTS: PreciosMaterial = {
   pet:      5.50,
   hdpe:     8.50,
   papel:    2.50,
-  vidrio:   2.30,
+  vidrio:   1.30,
   aluminio: 15.10,
   organico: 0.30, // $300 MXN/ton (composta básica — corregido, era $1,100 incorrecto)
 }

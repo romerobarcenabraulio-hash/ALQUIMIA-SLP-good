@@ -7,6 +7,7 @@ import { ZMS } from '@/lib/constants'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getMadurezMensajeMultiAncla, getMunicipioMadurezVista, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import type { FuenteTipo, ResultadosCalculados } from '@/types'
+import { getMunicipalNarrative } from '@/data/municipalNarratives'
 
 const GENTILICIO_POR_TERRITORIO: Record<string, string> = {
   SLP: 'potosinos',
@@ -118,6 +119,7 @@ export function SectionHero() {
   const rsuAnual = rsuDia * 365
   const costoPublicoAnual = resultados ? resultados.opexAnual + resultados.ahorroDisposicion : 0
   const saludPublicaAnual = resultados?.ahorroSalud ?? 0
+  const narrative = getMunicipalNarrative(zmActiva, municipiosActivos)
 
   // Provenance de los KPIs del header — viene del snapshot cuando disponible
   const pobKpi  = snapshotDatos?.kpis.find(k => k.kpi_id === 'poblacion_total')
@@ -179,6 +181,12 @@ export function SectionHero() {
           <strong className="font-medium text-[#2D5409]">{madurezUnMunicipio.nombre}</strong>.
         </p>
       )}
+      <div className="mb-6 max-w-3xl rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura municipal</p>
+        <h2 className="mt-1 font-serif text-[18px] text-[#1C1B18]">{narrative.title}</h2>
+        <p className="mt-2 text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
+        <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
+      </div>
       {municipiosActivos.length > 1 && (
         <p className="text-[12px] text-[#5A6347] max-w-2xl mb-6 leading-relaxed border-l-[3px] border-[#8CAA7A] pl-3">
           {getMadurezMensajeMultiAncla(municipiosActivos.length)}

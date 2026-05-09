@@ -1,4 +1,5 @@
-import type { PreciosMaterial, TipoVivienda } from '@/types'
+import type { TipoVivienda } from '@/types'
+export { describeMaterialPriceReference } from '@/data/materialPriceResearch'
 
 export type InegiHousingCategoryKey = 'casa_independiente' | 'departamento_edificio'
 
@@ -77,43 +78,4 @@ export function getHousingCategoryByType(
   tipo: TipoVivienda,
 ): InegiHousingCategory | null {
   return distribution?.categories.find(c => c.operationalType === tipo) ?? null
-}
-
-const PRICE_SOURCE_NOTES: Record<keyof PreciosMaterial, { base: number; note: string }> = {
-  pet: {
-    base: 5.50,
-    note: 'Base SLP: Capitulo San Luis tabla de valorizacion y Recicladoras_por_Giro.xlsx; actualizar con cotizacion de comprador ancla.',
-  },
-  hdpe: {
-    base: 8.50,
-    note: 'Parametro de sensibilidad del modelo; no hay fuente documental cerrada en Capitulo SLP para HDPE separado.',
-  },
-  papel: {
-    base: 2.50,
-    note: 'Base SLP: Capitulo San Luis y Recicladoras_por_Giro.xlsx; comprador/capacidad papel-carton requiere validacion local.',
-  },
-  vidrio: {
-    base: 2.30,
-    note: 'Base Capitulo SLP $2.30/kg; anexos de recicladoras traen valores distintos, por eso requiere conciliacion y cotizacion local.',
-  },
-  aluminio: {
-    base: 15.10,
-    note: 'Base Capitulo SLP y hoja Aluminio de Recicladoras_por_Giro.xlsx; validar contra fundidora o comprador ancla.',
-  },
-  organico: {
-    base: 0.30,
-    note: 'Escenario conservador del simulador; el capitulo documenta composta a granel como mercado local por confirmar.',
-  },
-}
-
-export function describeMaterialPriceReference(
-  material: keyof PreciosMaterial,
-  value: number,
-): string {
-  const source = PRICE_SOURCE_NOTES[material]
-  const tolerance = Math.max(0.35, source.base * 0.18)
-  if (Math.abs(value - source.base) <= tolerance) {
-    return `${source.note} No es cotizacion live ni precio oficial.`
-  }
-  return `Precio manual del escenario. ${source.note} Documentar cotizacion local antes de presupuesto.`
 }

@@ -176,7 +176,9 @@ export default function LandingPage() {
       <header className="bg-[#FDFCFA]/90 backdrop-blur-sm border-b border-[#E8E4DC] sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 min-h-14 py-2 flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
           <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3 min-w-0">
-            <span className="font-serif text-[20px] text-[#3B6D11] font-semibold shrink-0">ALQUIMIA</span>
+            <Link href="/" className="font-serif text-[20px] text-[#3B6D11] font-semibold shrink-0 hover:text-[#2D5409]">
+              ALQUIMIA
+            </Link>
             <span className="text-[10px] leading-snug text-[#8C8880] max-w-[17rem]">
               Herramienta técnica para planeación municipal de circularidad
             </span>
@@ -199,26 +201,33 @@ export default function LandingPage() {
             Programa municipal de separación en cinco fracciones
           </p>
 
-          <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] tracking-[-0.025em] text-[#1C1B18] mb-7">
-            La Zona Metropolitana de San Luis Potosí genera entre {fmt.num0(rsuZm.min)} y {fmt.num0(rsuZm.max)} toneladas diarias de residuos sólidos urbanos según el marco demográfico del simulador (población ZM de referencia × {rsuZm.kgPerCapita} kg/hab·día); hoy, la mayor parte termina en disposición final.
+          <h1 className="font-serif text-[36px] sm:text-[48px] leading-[1.07] text-[#1C1B18] mb-7">
+            ¿Sabes cuánto le cuesta a San Luis Potosí no separar sus residuos?
           </h1>
 
           <p className="text-[16px] text-[#1C1B18] leading-[1.7] mb-5">
-            El esquema actual desaprovecha valor económico recuperable y mantiene presión financiera sobre el municipio. ALQUIMIA permite simular un programa municipal de separación obligatoria en cinco fracciones —orgánicos, papel/cartón, plásticos, vidrio y metales— con trazabilidad jurídica y operativa.
+            No solo cuesta dinero. También cuesta salud pública, tiempo, infraestructura, espacio en rellenos sanitarios y
+            oportunidades económicas que hoy terminan enterradas. Con una generación de referencia de {rsuZm.kgPerCapita} kg/hab·día,
+            la Zona Metropolitana de San Luis Potosí se mueve entre {fmt.num0(rsuZm.min)} y {fmt.num0(rsuZm.max)} toneladas diarias
+            de residuos sólidos urbanos; ese dato debe leerse como escenario técnico, no como estadística oficial.
           </p>
 
           <blockquote className="border-l-4 border-[#3B6D11] pl-5 my-7">
             <p className="font-serif text-[22px] text-[#1C1B18] leading-[1.4] italic">
-              El siguiente paso es la validación política y jurídica en Cabildo. ALQUIMIA organiza la evidencia técnica para sustentar esa decisión.
+              ALQUIMIA no sustituye al municipio: organiza evidencia para que ciudadanía, funcionarios y empresas entiendan qué se pierde, qué se puede recuperar y qué falta verificar.
             </p>
           </blockquote>
 
           <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-5">
-            El modelo integra reglamento vigente, precios de mercado, rutas de recolección y capacidad de centros de acopio. Con ello, el municipio puede presentar a Cabildo un expediente técnico con cronograma, costos, metas de captura y supuestos verificables.
+            Tirar la basura parece una acción pequeña, casi automática. Detrás de esa bolsa hay personas, camiones, rutas,
+            rellenos sanitarios, recolectores de base, operadores privados y autoridades municipales. Cuando todo llega mezclado,
+            separar se vuelve más caro, más riesgoso y menos eficiente.
           </p>
 
           <p className="text-[16px] text-[#6B6760] leading-[1.7] mb-8">
-            Con un programa de separación en 5 fracciones, un municipio mediano puede formalizar entre 80 y 120 empleos, capturar ingresos adicionales por venta de materiales separados y reducir entre 15% y 40% el volumen enviado a relleno — todo modelado, documentado y con respaldo en la legislación aplicable.
+            La propuesta de ALQUIMIA es convertir la separación desde vivienda, oficina, hotel, comercio y empresa en una práctica
+            estructurada, medible y trazable. Primero educación y diagnóstico; luego operación, costos, fuentes, rutas y propuestas
+            de política pública que cada municipio debe revisar conforme a su propia historia y madurez.
           </p>
 
           {/* Stats con contexto */}

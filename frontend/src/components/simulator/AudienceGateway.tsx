@@ -34,8 +34,8 @@ const CARDS: AudienceCard[] = [
     id: 'citizen',
     icon: HeartHandshake,
     kicker: 'Ciudadano · Educación',
-    title: '¿Por qué es mi problema?',
-    promise: 'Convierte la generación de tu colonia en evidencia accionable: cuánto generas, qué pierde el municipio y cómo tu separación cambia la huella ambiental.',
+    title: '¿Qué pasa con lo que tiro?',
+    promise: 'Entiende cuánto genera tu vivienda, qué se puede separar y por qué una bolsa mezclada termina costando dinero, salud pública y espacio de relleno.',
     modules: ['Baseline RSU de tu ciudad', 'Composición y vivienda', 'Huella ambiental personal'],
     cta: 'Continuar como ciudadano',
   },
@@ -43,8 +43,8 @@ const CARDS: AudienceCard[] = [
     id: 'functionary',
     icon: Landmark,
     kicker: 'Funcionario público · Decisión',
-    title: '¿Cómo planeo el cambio?',
-    promise: 'Entra a la sala de mando institucional: marco legal y cumplimiento, logística PER, mapas de implementación y comparador de escenarios con trazabilidad municipal vigente.',
+    title: '¿Cómo planeo el cambio sin inventar datos?',
+    promise: 'Entra a la sala de mando institucional: vivienda INEGI, generación ajustable, operación PER, reglamento municipal y matriz de fuentes por cálculo.',
     modules: ['Marco legal y diagnóstico', 'PER y advertencias educativas', 'Comparador de escenarios y exportables'],
     cta: 'Continuar como funcionario',
   },
@@ -97,10 +97,11 @@ export function AudienceGateway() {
           id="audience-gateway-title"
           className="mt-3 font-serif text-[34px] leading-tight text-[#1C1B18] sm:text-[42px]"
         >
-          Antes de simular, dinos quién eres
+          Elige desde dónde quieres leer el problema
         </h1>
         <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-[#6B6760]">
-          Cada audiencia ve solo lo que necesita decidir. La narrativa, los módulos visibles y el lenguaje cambian según tu rol; nada es genérico.
+          La misma ciudad se entiende distinto si eres habitante, funcionario o empresa. ALQUIMIA cambia módulos,
+          supuestos y lenguaje para que cada decisión tenga datos, fuentes y límites claros.
         </p>
       </header>
 
@@ -159,6 +160,29 @@ export function AudienceGateway() {
       <footer className="mt-8 max-w-3xl text-[12px] text-[#A8A49C]">
         Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador.
       </footer>
+      <div className="mt-8 grid gap-3 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 sm:grid-cols-3">
+        <EducationFact
+          title="Lo que cuesta no separar"
+          body="No solo se pierde material: aumentan viajes, relleno, exposición sanitaria y horas de recuperación manual."
+        />
+        <EducationFact
+          title="Qué pasa después del camión"
+          body="La recolección lleva los residuos a transferencia, valorización o disposición final; si llegan mezclados, todo se vuelve más caro."
+        />
+        <EducationFact
+          title="Por qué importa el origen"
+          body="Separar desde casa, oficina o comercio mejora la pureza del material y reduce el trabajo riesgoso de separación posterior."
+        />
+      </div>
     </section>
+  )
+}
+
+function EducationFact({ title, body }: { title: string; body: string }) {
+  return (
+    <div>
+      <p className="font-serif text-[16px] text-[#1C1B18]">{title}</p>
+      <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">{body}</p>
+    </div>
   )
 }

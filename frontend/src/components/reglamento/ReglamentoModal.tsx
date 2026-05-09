@@ -80,6 +80,8 @@ export function ReglamentoModal({
   const textoPropuesto       = ciudadData?.adendoPropuesto ?? adendo?.adendoPropuesto ?? ''
   const adendoEstaLocalizado = Boolean(ciudadData?.adendoPropuesto)
   const efectoOp             = adendo?.efectoOperativo ?? ''
+  const archivosLocales      = registro?.archivo_local ?? []
+  const pdfPrimario          = archivosLocales.find(path => path.toLowerCase().endsWith('.pdf'))
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -152,41 +154,65 @@ export function ReglamentoModal({
         {/* ── Cuerpo: 2 columnas ────────────────────────────────────── */}
         <div className="flex flex-1 min-h-0 divide-x divide-[#E8E4DC]">
 
-          {/* Panel izquierdo: Texto vigente */}
-          <div className="flex flex-col w-[42%] min-w-0">
+          {/* Panel izquierdo: fuente primaria con vista previa */}
+          <div className="flex flex-col w-[54%] min-w-0">
             <div className="shrink-0 px-5 py-3 border-b border-[#E8E4DC] bg-[#FAF8F5]">
-              <p className="text-[10px] uppercase tracking-widest text-[#A8A49C]">Reglamento vigente · {nombreMunicipio}</p>
-              {ciudadData && (
-                <p className="text-[11px] text-[#6B6760] mt-1 leading-snug">
-                  {ciudadData.nombreReglamento} · {ciudadData.anio} · <span className="font-mono">{ciudadData.numeroArticulo}</span>
-                </p>
-              )}
+              <p className="text-[10px] uppercase tracking-widest text-[#A8A49C]">Vista previa de fuente · {nombreMunicipio}</p>
+              <p className="text-[11px] text-[#6B6760] mt-1 leading-snug">
+                Usa el visor para leer el reglamento localizado. La propuesta de la derecha no sustituye la fuente ni certifica vigencia.
+              </p>
             </div>
             <div className="flex-1 overflow-y-auto px-5 py-5">
-              {!ciudadData ? (
-                <p className="text-[13px] text-[#A8A49C] text-center py-8">
-                  Sin texto verificado para {nombreMunicipio} en este adendo.
-                </p>
-              ) : esNoExiste ? (
-                <div className="rounded-[10px] bg-[#FEF7E7] border border-[#FCD34D] p-4">
-                  <p className="text-[13px] font-medium text-[#8B5A00] mb-2">
-                    {textoVigente.startsWith('[NO EXISTE]')
-                      ? `Artículo equivalente no existe en el reglamento vigente de ${nombreMunicipio}`
-                      : 'PDF del reglamento pendiente de carga'}
-                  </p>
-                  <p className="text-[12px] text-[#6B6760] leading-relaxed">
-                    {textoVigente.replace(/^\[NO EXISTE\]\s*/, '').replace(/^\[NO DISPONIBLE.*?\]\s*/, '')}
-                  </p>
-                </div>
+              {pdfPrimario ? (
+                <iframe
+                  title={`Reglamento municipal ${nombreMunicipio}`}
+                  src={pdfPrimario}
+                  className="h-[58vh] min-h-[420px] w-full rounded-[10px] border border-[#E8E4DC] bg-white"
+                />
               ) : (
-                <pre className="text-[13px] text-[#3A3832] leading-[1.75] whitespace-pre-wrap font-mono">
-                  {textoVigente}
-                </pre>
+                <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+                  <p className="text-[13px] font-medium text-[#1C1B18]">Sin PDF local embebible</p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+                    Este municipio tiene archivo no PDF o URL externa. Abre la fuente oficial desde la cabecera y usa la nota de lectura
+                    para ubicar artículos, transitorios o anexos.
+                  </p>
+                  {archivosLocales.length > 0 && (
+                    <ul className="mt-3 space-y-1 text-[11px] text-[#6B6760]">
+                      {archivosLocales.map(path => (
+                        <li key={path} className="font-mono">{path}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
               )}
+              <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+                <p className="text-[10px] uppercase tracking-widest text-[#A8A49C]">Dónde leer y qué buscar</p>
+                {ciudadData && (
+                  <p className="mt-2 text-[12px] text-[#6B6760] leading-relaxed">
+                    {ciudadData.nombreReglamento} · {ciudadData.anio} · <span className="font-mono">{ciudadData.numeroArticulo}</span>.
+                  </p>
+                )}
+                <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+                  {registro?.hint_ancla_adendo ?? 'Busca definiciones, obligaciones, atribuciones municipales, fiscalización y artículos transitorios.'}
+                </p>
+                {registro?.articulos_clave?.length ? (
+                  <p className="mt-2 text-[11px] leading-relaxed text-[#8C8880]">
+                    Claves de lectura: {registro.articulos_clave.join(' · ')}
+                  </p>
+                ) : null}
+                {ciudadData && !esNoExiste && textoVigente && (
+                  <details className="mt-3">
+                    <summary className="cursor-pointer text-[11px] font-medium text-[#3B6D11]">Ver extracto identificado</summary>
+                    <pre className="mt-2 whitespace-pre-wrap rounded-[8px] bg-white p-3 font-mono text-[11px] leading-relaxed text-[#3A3832]">
+                      {textoVigente}
+                    </pre>
+                  </details>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Panel derecho: Adendo propuesto — texto grande y prominente */}
+          {/* Panel derecho: propuesta expositiva */}
           <div className="flex flex-col flex-1 min-w-0">
             <div className="shrink-0 px-5 py-3 border-b border-[#E8E4DC] bg-[#EAF3DE]/40">
               <div className="flex flex-wrap items-center gap-2">

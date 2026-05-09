@@ -7,6 +7,7 @@ import {
   describeMaterialPriceReference,
   getInegiHousingDistribution,
 } from '@/lib/viviendaInegi'
+import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
 import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
 import type { PreciosMaterial } from '@/types'
 
@@ -176,6 +177,9 @@ export function FuncionariosViviendaRsuModel() {
                   />
                   <p className="mt-1 text-[10px] leading-snug text-[#A8A49C]">
                     {describeMaterialPriceReference(material, precios[material])}
+                  </p>
+                  <p className="mt-1 text-[10px] leading-snug text-[#8C8880]">
+                    Mediana investigada ${MATERIAL_PRICE_RESEARCH[material].median.toFixed(2)}/kg · ancla documental ${MATERIAL_PRICE_RESEARCH[material].recommended.toFixed(2)}/kg · {MATERIAL_PRICE_RESEARCH[material].sourceCount} referencias.
                   </p>
                 </div>
               )

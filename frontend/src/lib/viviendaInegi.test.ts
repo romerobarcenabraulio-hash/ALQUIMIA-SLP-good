@@ -26,5 +26,6 @@ describe('viviendaInegi', () => {
     expect(describeMaterialPriceReference('pet', 5.5)).toMatch(/Capitulo San Luis/)
     expect(describeMaterialPriceReference('pet', 5.5)).not.toMatch(/CDMX|QRO|MTY/)
     expect(describeMaterialPriceReference('pet', 12)).toMatch(/manual/)
+    expect(describeMaterialPriceReference('vidrio', 1.3)).toMatch(/Ancla corregida/)
   })
 })

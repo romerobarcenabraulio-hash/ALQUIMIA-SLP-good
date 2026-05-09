@@ -27,6 +27,7 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
     'infrastructure_operations',
     'inspeccion_predios',
     'scenarios_export',
+    'source_traceability',
   ],
   // Empresario — perfil organización + trazabilidad + reporte.
   entrepreneur: [
