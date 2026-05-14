@@ -6,15 +6,16 @@
 
 | Campo | Valor |
 |-------|--------|
-| **Foco actual** | _(rama, PR o objetivo del día)_ |
-| **Última sincronización** | _(fecha)_ |
+| **Foco actual** | Sync código Ágora/dossier + briefs editoriales simulator + artefactos `fuentes de calculo`; ver plan `planeacion_ejecucion/PLAN_CICLO_SINCRONIZACION_CONSULTORIA_UI_2026-05.md`. |
+| **Última sincronización** | 2026-05-14 |
 | **Bloqueantes** | _(vacío = ninguno)_ |
 
 ## 2. Siguiente paso
 
 | # | Ítem | Notas |
 |---|------|------|
-| 1 | _(rellenar)_ | |
+| 1 | Push `main` tras PR verde CI; verificar RELEASE_OPS contra api + Vercel. | |
+| 2 | Consolidar matriz TS desde `fuentes de calculo/` (mezcla SEMARNAT, precios, kg/cápita). | |
 
 ---
 
