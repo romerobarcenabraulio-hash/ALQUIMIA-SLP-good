@@ -58,4 +58,4 @@ LIGHTHOUSE_URL=http://127.0.0.1:3001/simulator npm run audit:lighthouse
 
 ## Bitácora y §6.3 (Accessibility + LCP)
 
-Los scores finales se **append** en `planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md` con fecha, URL medida y comando o enlace al job CI (ver checklist “Release serio” R6). No inventar números: copiar el resumen que imprime `npm run audit:lighthouse:ci` o el fragmento JSON de Lighthouse.
+Los scores finales se **append** en `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md` con fecha, URL medida y comando o enlace al job CI (ver checklist “Release serio” R6). No inventar números: copiar el resumen que imprime `npm run audit:lighthouse:ci` o el fragmento JSON de Lighthouse.

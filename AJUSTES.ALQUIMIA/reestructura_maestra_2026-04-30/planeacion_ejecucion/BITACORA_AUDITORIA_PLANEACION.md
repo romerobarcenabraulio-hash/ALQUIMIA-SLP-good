@@ -2218,7 +2218,7 @@ Esta norma complementa `COLA_Y_ROLES_AGENTES.md` (puntero de fase) y no sustituy
 ## Navigator — Puerta formal Fase 23 y STANDBY operativo (2026-05-05)
 
 **Performativa (PIS):** `INFORM`  
-**Spec:** `cursor-rules/NAVIGATOR.md` · Blueprint `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/23_integridad_geoespacial_y_capas.md`
+**Spec:** `cursor-rules/NAVIGATOR.md` · Blueprint `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/23_integridad_geoespacial_y_capas.md`
 
 ### Estado Navigator
 
@@ -2619,7 +2619,7 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 
 **Performativa:** `PROPOSE` → CSA aprobó como Q-011 en cola  
 **Riesgo:** Bajo · solo copy condicional, clases Tailwind y React; sin tocar API, motor de cálculo, legal interno ni geografía  
-**Blueprint:** `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/PRES-1_pulido_presentacion_institucional.md`
+**Blueprint:** `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/PRES-1_pulido_presentacion_institucional.md`
 
 ### Observaciones Aesthete
 
@@ -2670,7 +2670,7 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 
 ## Ejecutor · **PRES-1 / Q-011** · PR A → B → C (pulido presentación) — 2026-05-06
 
-**Spec:** `PRES-1_pulido_presentacion_institucional.md` · Decisiones Planner aplicadas: cifras Opción **A**, CTA **"Ver escenario de referencia"**, KPIs ciudadano sin baseline **atenuados** (`opacity-40`, `pointer-events-none`, tooltip Radix).
+**Spec:** `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/PRES-1_pulido_presentacion_institucional.md` · Decisiones Planner aplicadas: cifras Opción **A**, CTA **"Ver escenario de referencia"**, KPIs ciudadano sin baseline **atenuados** (`opacity-40`, `pointer-events-none`, tooltip Radix).
 
 
 | PR    | Archivos                                                                                         | Entrega                                                                                                                                                                                                                                                                                                                                    |

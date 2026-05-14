@@ -3,7 +3,7 @@
  *
  * NOTA LEGAL (CLC · Q-010 · 2026-05-06): estos textos son la capa de disclaimer de la plataforma.
  * No constituyen términos de uso ni aviso de privacidad; esos instrumentos son documentos separados
- * pendientes de elaboración antes del release público. Ver bitácora BITACORA_AUDITORIA_PLANEACION.md.
+ * pendientes de elaboración antes del release público. Ver `planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md` bajo `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/`.
  */
 
 export const SIMULATION_BANNER_TITLE = 'Simulación — no oficial'

@@ -110,4 +110,4 @@ Cada archivo de esta carpeta debe poder entregarse a un agente codificador sin e
 
 Para implementar, el agente debe leer `15_backlog_fases_11_a_15.md` como mapa rector, `16_roadmap_granular_10_1_a_17.md` como contrato operativo y `17_gobernanza_calidad_riesgo_y_dod.md` como regla de aceptacion. No debe tomar una fase grande completa si puede cerrarla por subfases verificables.
 
-Orquestacion multi-agente (CSA): usar `COLA_Y_ROLES_AGENTES.md` en la raiz del repositorio. Fases **23–25** (geo, release gate, tokens) estan especificadas en esta carpeta y se leen despues de `22_6` segun el orden de lectura.
+Orquestacion: usar `COLA_Y_ROLES_AGENTES.md` en la raiz del repositorio (stub liviano). Las especificaciones **22_0 … 30** y el material multi-agente de la semana 1–8 mayo 2026 estan archivadas en `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` (ver `README_ARCHIVO.md` alli). La bitacora de planeacion viva continua en `planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md`. Para despliegue y healthchecks ver `RELEASE_OPS_2026-05.md` en esta carpeta.
