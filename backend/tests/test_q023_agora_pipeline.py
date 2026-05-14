@@ -11,7 +11,9 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 import app.agora.pipeline as agora_pipeline
+from app.agora.prompts import prompt_iniciativa_reforma, prompt_reporte_ejecutivo
 from app.agora.router import router
+from app.agora.schemas import PlanRequest
 from app.main import app as main_app
 from app.legal.agora_export_disclaimers import AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER
 
@@ -96,3 +98,42 @@ def test_zip_contains_seven_files_min_words(fake_runner, client_mini):
 def test_main_app_registers_agora_route():
     routes = [getattr(r, "path", "") for r in main_app.routes]
     assert any(p == "/api/v1/agora/generate-plan" for p in routes)
+
+
+def test_q023_prompts_incluyen_protocolo_municipal_por_caso():
+    req = PlanRequest(
+        municipio="Zona Metropolitana de San Luis Potosí",
+        estado="San Luis Potosí",
+        poblacion=1_243_980,
+        generacion_rsu_dia=1_030.0,
+        ingreso_estimado_anual_mxn=257_400_000.0,
+        escenario="moderado",
+    )
+
+    prompt = prompt_reporte_ejecutivo(req)
+
+    assert "PROTOCOLO MUNICIPAL POR CASO" in prompt
+    assert "Nunca la trates como municipio" in prompt
+    assert "Cada municipio debe conservar su propio reglamento" in prompt
+    assert "Capítulo San Luis" in prompt and "no es fuente única de verdad" in prompt
+    assert "fuente_verificada" in prompt
+    assert "supuesto_editable" in prompt
+    assert "estimacion_modelo" in prompt
+    assert "pendiente_fuente" in prompt
+
+
+def test_q023_iniciativa_no_solicita_dictamen_esperado():
+    req = PlanRequest(
+        municipio="Querétaro",
+        estado="Querétaro",
+        poblacion=1_049_777,
+        generacion_rsu_dia=664.5,
+        ingreso_estimado_anual_mxn=169_800_000.0,
+        escenario="conservador",
+    )
+
+    prompt = prompt_iniciativa_reforma(req)
+
+    assert "dictamen esperado" not in prompt.lower()
+    assert "revisión técnica y jurídica esperada" in prompt
+    assert "propuesta expositiva sujeta a revisión competente" in prompt

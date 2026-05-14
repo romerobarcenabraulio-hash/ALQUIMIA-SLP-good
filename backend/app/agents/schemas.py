@@ -285,6 +285,115 @@ class EvidencePack(BaseModel):
         return any(kpi_id in i.kpi_ids for i in self.items)
 
 
+# ─── Municipal Reasoning Dossier ─────────────────────────────────────────────
+
+class DossierStatus(str, Enum):
+    ready = "ready"
+    needs_verification = "needs_verification"
+    blocked = "blocked"
+
+
+class ClaimClassification(str, Enum):
+    fuente_verificada = "fuente_verificada"
+    supuesto_editable = "supuesto_editable"
+    estimacion_modelo = "estimacion_modelo"
+    pendiente_fuente = "pendiente_fuente"
+    contradiccion_detectada = "contradiccion_detectada"
+
+
+class MunicipalReasoningClaim(BaseModel):
+    claim_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    municipio_id: str
+    claim: str
+    classification: ClaimClassification
+    source: str
+    confidence: float = Field(ge=0.0, le=1.0, default=0.5)
+    decision_use: str
+    limitation: str
+
+
+class SourceEpistemologyReport(BaseModel):
+    """Qué sabemos, cómo lo sabemos y qué sigue sin poder afirmarse."""
+    municipio_id: str
+    verified_sources: List[str] = Field(default_factory=list)
+    model_estimates: List[str] = Field(default_factory=list)
+    editable_assumptions: List[str] = Field(default_factory=list)
+    pending_sources: List[str] = Field(default_factory=list)
+    contradictions: List[str] = Field(default_factory=list)
+    next_verification_action: str
+
+    def has_blocking_gap(self) -> bool:
+        return bool(self.pending_sources or self.contradictions)
+
+
+class CriticalObjection(BaseModel):
+    objection_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    municipio_id: str
+    objection: str
+    severity: str
+    affected_claim: str
+    corrective_action: str
+
+
+class CriticalObjectionReport(BaseModel):
+    """Ataque interno al expediente antes de redactar."""
+    objections: List[CriticalObjection] = Field(default_factory=list)
+
+    def critical_count(self) -> int:
+        return len([o for o in self.objections if o.severity == "critical"])
+
+
+class OperationalWave(BaseModel):
+    wave_id: str
+    municipio_id: str
+    justification: str
+    routes_or_zones: List[str] = Field(default_factory=list)
+    capacity_requirement: str
+    responsible_role: str
+    timing: str
+    assumptions: List[str] = Field(default_factory=list)
+    blockers: List[str] = Field(default_factory=list)
+
+
+class OperationalLogisticsDossier(BaseModel):
+    status: DossierStatus
+    waves: List[OperationalWave] = Field(default_factory=list)
+    route_logic: str
+    capacity_logic: str
+    evidence_required: List[str] = Field(default_factory=list)
+    next_action: str
+
+
+class ESGPublicValueAssessment(BaseModel):
+    environmental: List[str] = Field(default_factory=list)
+    social: List[str] = Field(default_factory=list)
+    governance: List[str] = Field(default_factory=list)
+    standards_alignment: List[str] = Field(default_factory=list)
+    limitations: List[str] = Field(default_factory=list)
+
+
+class MunicipalReasoningDossier(BaseModel):
+    """Output maestro: documentos, hoja de ruta y narrativa derivan de aquí."""
+    dossier_id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    status: DossierStatus
+    zm: str
+    municipios: List[str]
+    thesis: str
+    municipal_maturity: Dict[str, str] = Field(default_factory=dict)
+    source_epistemology: List[SourceEpistemologyReport] = Field(default_factory=list)
+    claims: List[MunicipalReasoningClaim] = Field(default_factory=list)
+    critical_objections: CriticalObjectionReport = Field(default_factory=CriticalObjectionReport)
+    logistics: OperationalLogisticsDossier
+    esg_public_value: ESGPublicValueAssessment
+    blocked_claims: List[str] = Field(default_factory=list)
+    enabled_decisions: List[str] = Field(default_factory=list)
+    next_actions: List[str] = Field(default_factory=list)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def is_ready(self) -> bool:
+        return self.status == DossierStatus.ready and self.critical_objections.critical_count() == 0
+
+
 # ─── DraftTable / DraftFigure / DraftAnnex ───────────────────────────────────
 
 class DraftTable(BaseModel):
@@ -449,6 +558,7 @@ class DraftBundle(BaseModel):
     claim_ledger:   Optional[ClaimLedger] = None
     interpretation: Optional[InterpretationMemo] = None
     logistics:      Optional[LogisticsBlueprint] = None
+    municipal_reasoning_dossier: Optional[MunicipalReasoningDossier] = None
     created_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     def tiene_anexo_fuentes(self) -> bool:

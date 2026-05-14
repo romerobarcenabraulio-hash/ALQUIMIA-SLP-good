@@ -42,6 +42,7 @@ from app.agents.schemas import (
     EvidenceItem,
     EvidenceTipo,
     ExportBundle,
+    MunicipalReasoningDossier,
     ScenarioBundle,
     SourceStatus,
     ValidationReport,
@@ -98,6 +99,7 @@ class PlanOutput:
     export_bundle:      Optional[ExportBundle] = field(default=None)
     document_plan_obj:  Optional[DocumentPlan] = field(default=None)
     validation_summary: Optional[ValidationReport] = field(default=None)
+    municipal_reasoning_dossier: Optional[MunicipalReasoningDossier] = field(default=None)
     docs_drive_ids:     dict = field(default_factory=dict)
 
     # ── Legacy (compatibilidad con router y tests anteriores) ─────────────────
@@ -195,6 +197,15 @@ async def run_agora(
         for warning in plan_input.operations_summary.get("warnings", []):
             bundle.warnings.append(warning)
 
+    # ── 0B. MunicipalReasoningDossier ────────────────────────────────────────
+    # El expediente razonado es insumo previo a documentos. Los agentes redactan
+    # desde este contrato, no desde intuiciones ni prosa suelta.
+    from app.agents.dossier import build_municipal_reasoning_dossier
+
+    municipal_reasoning_dossier = build_municipal_reasoning_dossier(bundle)
+    bundle.inputs_usuario["municipal_reasoning_dossier"] = municipal_reasoning_dossier.model_dump(mode="json")
+    output.municipal_reasoning_dossier = municipal_reasoning_dossier
+
     # ── 1. DocumentPlan ───────────────────────────────────────────────────────
     await report(8, f"Director — Construyendo DocumentPlan para ZM {bundle.zm}...")
     document_plan = build_document_plan(bundle)
@@ -204,6 +215,7 @@ async def run_agora(
     # ── 2. DraftBundle vacío desde DocumentPlan ───────────────────────────────
     await report(12, "Director — Inicializando DraftBundle...")
     draft_bundle = _init_draft_bundle(bundle, document_plan)
+    draft_bundle.municipal_reasoning_dossier = municipal_reasoning_dossier
 
     # ── 3. Agentes con AgentContext ───────────────────────────────────────────
     # Cada agente recibe el spec más relevante para su rol
@@ -570,66 +582,71 @@ def _get_template_text(agent_name: str, p: PlanInput) -> str:
         "arquitecto": f"""# DIAGNÓSTICO REGLAMENTARIO — {p.municipio.upper()}
 
 ## 1. Situación actual
-El municipio de {p.municipio} cuenta con un reglamento de limpia que no contempla
-la separación diferenciada obligatoria en fuente, en contravención con la LGPGIR.
+El municipio de {p.municipio} requiere revisión de su reglamento de limpia o
+instrumento equivalente antes de proponer obligaciones, sanciones o reformas.
+La ZM {p.zm} sólo sirve como lectura territorial y no sustituye al municipio.
 
 ## 2. Brechas identificadas
-- Sin obligatoriedad de separación en fuente
-- Sin esquema tarifario diferenciado por tipo de residuo
-- Sin marco de concesión para centros de acopio privados
-- Sin protocolos de formalización de pepenadores
+- Reglamento municipal: pendiente de fuente verificable en este fallback.
+- Sancionalidad: pendiente de validación jurídica municipal.
+- Operación, bitácora, inspección y capacidad: pendientes de evidencia municipal.
 
 ## 3. Marco legal de referencia
-- LGPGIR (Ley General para la Prevención y Gestión Integral de los Residuos)
-- NOM-083-SEMARNAT-2003
-- Ley de Ingresos Municipal vigente
+- LGPGIR y NOM aplicables sólo como marco general de referencia.
+- Reglamento municipal vigente: pendiente de fuente oficial o manifest validado.
+
+## 4. Bloqueos y siguiente acción
+No redactar reforma, sanción firme ni dictamen hasta validar reglamento, fuente,
+brecha crítica y competencia municipal.
 
 Generado por ÁGORA GOV · {p.zm} · Plataforma ALQUIMIA""",
 
         "ghostwriter": f"""# INICIATIVA DE REFORMA REGLAMENTARIA — {p.municipio.upper()}
 
 ## Exposición de motivos
-El presente proyecto busca las bases jurídicas para ALQUIMIA.
+El presente borrador es una propuesta expositiva sujeta a revisión competente.
 El simulador proyecta una TIR de {kpis.get('tir', '—')}%
 y VPN de ${kpis.get('vpn', 0):,.0f} MXN (estimaciones del modelo).
 
 ## Artículos propuestos
 
-**Artículo 1.** Se establece la obligación de separar los RSU en fracciones diferenciadas.
+**Artículo 1.** Pendiente de redacción por jurista municipal tras validar
+reglamento, competencia, fuente oficial y madurez operativa.
 
-**Artículo 2.** El concesionario deberá facilitar la operación de centros de acopio.
+**Artículo 2.** Cualquier obligación sobre centros de acopio, concesionario,
+inspección o sanción queda bloqueada si no existe fuente jurídica municipal y
+evidencia operativa suficiente.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 
         "comparador": f"""# BENCHMARK LATAM — {p.municipio.upper()}
 
-## Ciudades comparadas
+## Comparables
 
-| Ciudad | Programa | Año inicio | Captura año 3 | Fuente |
-|--------|----------|------------|---------------|--------|
-| Bogotá | UAESP separación en origen | 2012 | 40% | UAESP 2015 |
-| Curitiba | Câmbio Verde | 1989 | 65% | IPPUC 2018 |
-| Medellín | ECO-URBAM | 2018 | 22% | EPM 2020 |
+| Caso comparable | Condición habilitante | Diferencia crítica | Fuente |
+|------------------|-----------------------|--------------------|--------|
+| Pendiente de fuente verificable | Pendiente | Pendiente | pendiente_fuente |
 
 ## Posicionamiento de {p.municipio}
-Con el plan ALQUIMIA, {p.municipio} se posicionaría en el percentil 70 de ciudades
-latinoamericanas (el simulador estima captura del 70% en año 3).
+No se puede posicionar al municipio frente a ciudades latinoamericanas sin
+fuentes comparables, metodología y condición habilitante. Este fallback conserva
+la comparación como pendiente, no como conclusión.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 
         "mapeador": f"""# MAPEO DE STAKEHOLDERS — {p.municipio.upper()}
 
 ## Actores de alto poder e influencia (prioridad 1)
-- **Presidencia Municipal**: agenda de gobierno, período de gestión vigente
-- **Secretaría de Servicios Públicos**: control operativo del servicio de limpia
-- **Concesionario de limpia**: posición inicial neutral-resistente
+- **Presidencia Municipal**: rol probable de decisión; requiere confirmación local.
+- **Servicios Públicos o área equivalente**: posible responsable operativo; nombre institucional pendiente de fuente.
+- **Operador o concesionario**: sólo incluir si existe contrato o fuente verificable.
 
 ## Actores a convertir (prioridad 2)
-- **Regidores de Hacienda y Servicios Públicos**: requieren evidencia de ROI
-- **Organizaciones ambientales**: aliados naturales
+- **Cabildo y comisiones aplicables**: requieren evidencia técnica, jurídica y financiera.
+- **Ciudadanía y recicladores de base**: pendientes de mapeo con fuente municipal.
 
 ## Riesgos y mitigaciones
-- Sindicato de trabajadores: mitigación vía cláusula de reconversión laboral
+- No comunicar nombres, contratos, colonias ni conflictos sin fuente verificable.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 

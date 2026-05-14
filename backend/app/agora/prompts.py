@@ -35,11 +35,23 @@ def _bloque_contexto(req: PlanRequest) -> str:
 - Escenario de trayectoria: {req.escenario}
 - Paquete sectorial: {req.sector_pack_id}
 
+PROTOCOLO MUNICIPAL POR CASO:
+- Si el ámbito de referencia es una zona metropolitana, úsala sólo como lectura territorial. Nunca la trates como municipio, cabildo, reglamento municipal único ni fuente de sancionalidad.
+- Cada municipio debe conservar su propio reglamento, fuente, madurez, historia operativa, brecha y siguiente acción.
+- No copies conclusiones de San Luis Potosí, Querétaro, Monterrey, Guadalajara ni otro caso hacia el municipio activo sin fuente aplicable.
+- Capítulo San Luis o cualquier documento histórico del proyecto puede orientar contexto, pero no es fuente única de verdad para cifras, precios, obligaciones o vigencia jurídica.
+- Si el municipio ya tiene sancionalidad cubierta, enfoca la propuesta en evidencia, inspección, bitácora, trazabilidad y operación; no inventes sanciones nuevas.
+- Separa derrama base por venta de materiales, ahorro público por disposición evitada y externalidades ampliadas.
+- Mantén separado RSU municipal de residuos peligrosos, especiales, de manejo especial o regulados.
+- Cada cifra o afirmación material debe clasificarse como fuente_verificada, supuesto_editable, estimacion_modelo o pendiente_fuente.
+
 RESTRICCIONES:
 - Redacta en español, estilo formal institucional mexicano (informe a presidencia municipal / cabildo).
 - Referencia marco legal real: LGPGIR, LGEEPA y NOM-083-SEMARNAT-2003 / NOM-161-SEMARNAT-2011
   solo como marco normativo de referencia general; no afirmes datos estadísticos locales no provistos arriba.
 - NO inventes tasas, encuestas INEGI específicas ni cifras de desempeño nacional/metropolitano no dadas en el contexto.
+- NO inventes colonias, funcionarios, concesionarios, contratos, costos por tonelada ni programas locales no provistos.
+- NO presentes el resultado como dictamen, documento oficial, presupuesto aprobado, sanción firme o acto de autoridad.
 - Extensión solicitada: entre 400 y 800 palabras, en prosa con subtítulos markdown (##).
 - OBLIGATORIO: el documento debe comenzar EXACTAMENTE con el siguiente bloque de aviso antes de
   cualquier otro contenido, sin modificarlo:
@@ -61,7 +73,7 @@ Elabora el documento "Marco Legal Municipal" orientado al servicio de limpia y m
 2. Rol del Reglamento de limpia o equivalente municipal y ordenanzas relacionadas (sin citar texto inexistente; indica típicamente qué debe contener una reforma tipo).
 3. Artículos o figuras típicamente aplicables a separación en origen, recolección diferenciada y centros de acopio (descripción cualitativa).
 4. Ámbitos de coordinación estado-municipio y riesgos de ilegalidad por omisión del servicio.
-5. Cierre con "Próximos pasos institucionales" alineados al escenario dado.
+5. Cierre con "Próximos pasos institucionales" alineados al escenario dado y con pendientes de verificación por municipio.
 
 Salida únicamente como markdown bien formateado (# título principal, luego ## secciones)."""
     )
@@ -79,11 +91,11 @@ Redacta un borrador tipo "iniciativa de adendo / iniciativa reglamentaria" para 
 
 1. Exponiendo motivos (sin datos inventados más allá de los parámetros recibidos).
 2. Objeto del adendo en materia de RSU y centros de acopio públicos/concesionados.
-3. Dos o tres puntos de dictamen esperado (comités, estudios jurídicos, consulta ciudadana mencionada de forma procesal).
+3. Dos o tres puntos de revisión técnica y jurídica esperada (comités, estudios jurídicos, consulta ciudadana mencionada de forma procesal).
 4. Transitorios sugeridos (plazos razonables, sin fechas específicas inventadas más allá del horizonte 36 meses como referencia de política únicamente si lo deseas como propuesta cualitativa).
 5. Marco de vigilancia ciudadana mencionándose rendición de cuentas sin crear obligaciones ilegales.
 
-Salida sólo markdown estructural."""
+Salida sólo markdown estructural. Repite que es propuesta expositiva sujeta a revisión competente."""
     )
 
 
@@ -103,7 +115,7 @@ Describe un esquema jurídico-financiero de referencia para el primer centro de 
 4. KPIs administrativos mínimos (tonelaje, pureza declarada por el modelo, seguridad industrial).
 5. Anexos esperados técnico-jurídicos (sin inventar estudios locales).
 
-Markdown, tono consejo técnico a la tesorería jurídica municipal."""
+Markdown, tono consejo técnico a la tesorería jurídica municipal. No lo presentes como contrato listo para firma."""
     )
 
 
@@ -122,6 +134,7 @@ Desarrolla un plan tipo fases 0 a 3 distribuidas en hasta 36 meses con:
 3. Operación diferenciada y escala territorial (fase 2–3 combinadas cualitativamente).
 4. Tabla textual de hitos esperados mes aproximado (solo como ilustración, sin calendarios exactos ficticios específicos a días corridos locales).
 5. Indicadores de seguimiento vinculados al escenario (conservador/moderado/acelerado).
+6. Riesgos de capacidad, evidencia y fuente que podrían cambiar la ruta.
 
 Sólo markdown, sin bullets numerados hasta seis niveles."""
     )
@@ -137,7 +150,7 @@ TAREA — DOC-5 · Benchmark LATAM comparativo
 
 Construye una comparativa de tres municipios/ciudades de América Latina similares en tamaño (sin inventar cifras de producción específicas que no están en este contexto; usa sólo orden de magnitud cualitativa o parámetro del cliente para anclaje).
 
-Para cada ciudad: nombre, modelo de política de residuos descrito cualitativamente, lección institucional. Concluye con transferibilidad cautelosa al municipio del contexto usando solo los datos recibidos arriba.
+Para cada ciudad: nombre, modelo de política de residuos descrito cualitativamente, lección institucional y condición que sí/no se parece al municipio activo. Concluye con transferibilidad cautelosa al municipio del contexto usando solo los datos recibidos arriba.
 
 Markdown; no afirmes resultados KPI numéricos de esas ciudades si no están en el contexto (usa formulaciones como "literatura de referencia típica" con cuidado)."""
     )
@@ -151,7 +164,7 @@ def prompt_stakeholders(req: PlanRequest) -> str:
 
 TAREA — DOC-6 · Mapeo de stakeholders
 
-Entrega una matriz en prosa markdown con subtítulos: presidencia municipal, cabildo, secretaría de servicios / ecología típica, concesionario o operador, sector productivo cercano, población y recicladores de base formalizados. Para cada grupo: rol, información mínima requerida, riesgos de comunicación institucución–ciudadanía sin dramatización.
+Entrega una matriz en prosa markdown con subtítulos: presidencia municipal, cabildo, secretaría de servicios / ecología típica, concesionario u operador si está identificado, sector productivo cercano, población y recicladores de base formalizados si existe fuente. Para cada grupo: rol, información mínima requerida, riesgos de comunicación institución–ciudadanía sin dramatización.
 
 Markdown con ## por grupo."""
     )
@@ -172,6 +185,7 @@ Producción de memorando ejecutivo ciudadano-presidente municipal que:
 3. Una lectura económica de alto nivel alineada a ingreso anual declarado MXN sin deducir cifras adicionales.
 4. Una frase sobre riesgo reputacional institucional prudente.
 5. Decide tres acciones tácticas próximos 120 días (sin fecha invención día/mes locales).
+6. Distingue derrama base, ahorro público y externalidades si las menciona.
 
 Markdown conciso, sin repeticiones redundantes más allá del límite 400–650 palabras aprox."""
     )

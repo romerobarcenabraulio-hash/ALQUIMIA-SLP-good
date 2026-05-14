@@ -37,6 +37,7 @@ from __future__ import annotations
 import asyncio
 import pytest
 import pytest_asyncio
+from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 from app.agents.agora import AgentContext, PlanInput, PlanOutput, run_agora
@@ -265,6 +266,105 @@ class TestRuntime:
             "Si el spec exige una tabla, el prompt debe mencionarla explícitamente."
         )
 
+    def test_prompt_builder_inyecta_inteligencia_municipal_por_caso(self):
+        """Cada agente debe recibir protocolo municipal, no sólo un nombre de ciudad."""
+        spec = make_spec(audiencia=["Presidencia municipal"])
+        bundle = ScenarioBundle(
+            zm="ZM SLP",
+            municipios_activos=["slp", "sol"],
+            horizonte_anios=3,
+            legal_municipal={
+                "slp": {
+                    "reglamento": "Reglamento de Aseo Público para el Municipio de San Luis Potosí",
+                    "version": "2017",
+                    "fuente": "manifest municipal",
+                    "verificado": False,
+                    "agora_bloqueado": True,
+                    "brecha_critica": "pendiente de validación jurídica",
+                },
+                "sol": {
+                    "reglamento": "Reglamento de Ecología y Aseo de Soledad",
+                    "version": "vigente por verificar",
+                    "fuente": "manifest municipal",
+                    "verificado": True,
+                    "agora_bloqueado": False,
+                    "brecha_critica": "operación y evidencia",
+                },
+            },
+            inputs_usuario={
+                "municipio_profiles": [
+                    {
+                        "municipio_id": "slp",
+                        "madurez": "media-alta",
+                        "resumen": "requiere pasar de diagnóstico a operación",
+                    }
+                ],
+                "coverage_statuses": [
+                    {"municipio_id": "sol", "status": "localizado", "agora_bloqueado": False}
+                ],
+            },
+        )
+        prompt = build_agent_prompt("ghostwriter", spec, bundle)
+        text = prompt.full_prompt()
+
+        assert "Protocolo de inteligencia municipal por caso" in text
+        assert "La zona metropolitana coordina una lectura territorial" in text
+        assert "Cada municipio activo es un caso distinto" in text
+        assert "No uses Capítulo San Luis" in text
+        assert "slp:" in text and "sol:" in text
+        assert "contexto_municipal_usado" in text
+        assert "observacion_por_municipio" in text
+        assert "bloqueos_y_siguiente_accion" in text
+
+    def test_prompt_builder_exige_expediente_municipal_razonado(self):
+        """Los agentes deben construir expediente, no prosa suelta."""
+        spec = make_spec(audiencia=["Cabildo"])
+        bundle = ScenarioBundle(
+            zm="ZM SLP",
+            municipios_activos=["slp"],
+            horizonte_anios=3,
+            inputs_usuario={
+                "operations_summary": {
+                    "status": "pendiente",
+                    "routes": "sin rutas verificadas",
+                    "capacity": "sin capacidad validada",
+                    "warnings": ["Sin LogisticsBlueprint"],
+                }
+            },
+        )
+        prompt = build_agent_prompt("director", spec, bundle)
+        text = prompt.full_prompt()
+
+        for marker in [
+            "Contrato de expediente municipal razonado",
+            "problema_real_del_municipio",
+            "evidencia_que_lo_sostiene",
+            "no_sabemos_todavia",
+            "hipotesis_de_trabajo",
+            "contradicciones_detectadas",
+            "madurez_y_capacidad_municipal",
+            "clasificacion_de_salida",
+            "ruta_logistica_justificada",
+            "bloqueos_por_fuente_insuficiente",
+            "decision_publica_habilitada",
+            "mesa_razonamiento_municipal",
+            "ruta_logistica_y_capacidad",
+            "Sin LogisticsBlueprint",
+        ]:
+            assert marker in text
+
+    def test_prompts_de_agentes_no_usan_contexto_viejo_como_verdad(self):
+        """Los prompts sistema no deben ordenar copiar SLP ni hardcodear ciudades."""
+        prompts_dir = Path(__file__).resolve().parents[1] / "app" / "agents" / "prompts"
+        combined = "\n".join(path.read_text(encoding="utf-8") for path in prompts_dir.glob("*_system.md"))
+
+        assert "Google Drive" not in combined
+        assert "plantilla maestra" not in combined
+        assert "LENGUAJE POR CIUDAD" not in combined
+        assert "Querétaro:" not in combined
+        assert "Monterrey:" not in combined
+        assert "Protocolo de caso municipal" in combined
+
     def test_redactor_no_recibe_planinput_suelto(self):
         """
         _call_agent_with_context recibe AgentContext, no PlanInput suelto.
@@ -291,6 +391,24 @@ class TestRuntime:
         )
         assert context.bundle.zm == "SLP"
         assert context.agent_name == "ghostwriter"
+
+    def test_fallback_templates_no_inventan_benchmarks_ni_operadores(self):
+        """Los templates fallback deben bloquear lo no verificado en vez de inventarlo."""
+        from app.agents.agora import _get_template_text
+
+        plan = make_plan_input("SLP", "slp")
+        comparador = _get_template_text("comparador", plan)
+        mapeador = _get_template_text("mapeador", plan)
+        arquitecto = _get_template_text("arquitecto", plan)
+
+        assert "Bogotá" not in comparador
+        assert "Curitiba" not in comparador
+        assert "Medellín" not in comparador
+        assert "pendiente_fuente" in comparador
+        assert "No se puede posicionar" in comparador
+        assert "posición inicial neutral-resistente" not in mapeador
+        assert "Sindicato de trabajadores" not in mapeador
+        assert "pendiente de fuente" in arquitecto.lower()
 
 
 # ─── Grupo DraftBundle ────────────────────────────────────────────────────────
