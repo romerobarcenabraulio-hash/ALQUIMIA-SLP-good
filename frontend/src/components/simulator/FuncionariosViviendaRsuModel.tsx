@@ -2,14 +2,14 @@
 
 import { Database, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { PRECIOS_RANGO } from '@/lib/constants'
+import { COMPOSICION_RSU_DETALLE, PRECIOS_RANGO } from '@/lib/constants'
 import {
   describeMaterialPriceReference,
   getInegiHousingDistribution,
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
 import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
-import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
+import { cn, fmt, MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
 import type { PreciosMaterial } from '@/types'
 
 const MATERIALS: Array<keyof PreciosMaterial> = ['pet', 'hdpe', 'papel', 'vidrio', 'aluminio', 'organico']
@@ -22,6 +22,51 @@ const MATERIAL_LABEL: Record<keyof PreciosMaterial, string> = {
   aluminio: MATERIAL_LABELS.aluminio,
   organico: 'Organico / composta',
 }
+
+const RSU_COMPOSITION = [
+  {
+    key: 'organico',
+    label: MATERIAL_LABELS.organico,
+    pct: COMPOSICION_RSU_DETALLE.organico.pct * 100,
+    note: 'Fracción orgánica: restos de comida y jardín; es la principal fuente de metano si llega mezclada al relleno.',
+    color: MATERIAL_COLORS.organico,
+  },
+  {
+    key: 'papel',
+    label: MATERIAL_LABELS.papel,
+    pct: COMPOSICION_RSU_DETALLE.papel.pct * 100,
+    note: 'Papel y cartón recuperable cuando llega seco y separado; el precio depende de pureza y comprador local.',
+    color: MATERIAL_COLORS.papel,
+  },
+  {
+    key: 'plastico',
+    label: MATERIAL_LABELS.plastico,
+    pct: COMPOSICION_RSU_DETALLE.plastico.pct * 100,
+    note: 'Plásticos: el modelo separa PET/HDPE vía precios; no asume que todo plástico tiene el mismo valor.',
+    color: MATERIAL_COLORS.plastico,
+  },
+  {
+    key: 'vidrio',
+    label: MATERIAL_LABELS.vidrio,
+    pct: COMPOSICION_RSU_DETALLE.vidrio.pct * 100,
+    note: 'Vidrio: alto peso y precio bajo; su viabilidad depende de logística y comprador documentado.',
+    color: MATERIAL_COLORS.vidrio,
+  },
+  {
+    key: 'metales',
+    label: 'Metales',
+    pct: COMPOSICION_RSU_DETALLE.metales.pct * 100,
+    note: 'Metales: el aluminio es solo una parte; se valora con precio propio y merma editable.',
+    color: MATERIAL_COLORS.aluminio,
+  },
+  {
+    key: 'otros',
+    label: MATERIAL_LABELS.otros,
+    pct: COMPOSICION_RSU_DETALLE.otros.pct * 100,
+    note: 'Rechazo: material sin valorización en este escenario; se mantiene como disposición final.',
+    color: MATERIAL_COLORS.otros,
+  },
+]
 
 export function FuncionariosViviendaRsuModel() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -40,9 +85,7 @@ export function FuncionariosViviendaRsuModel() {
   const ocupantesPorViviendaEscenario = useSimulatorStore(s => s.ocupantesPorViviendaEscenario)
   const setOcupantesPorViviendaEscenario = useSimulatorStore(s => s.setOcupantesPorViviendaEscenario)
   const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
-  const capturaPctPorMaterial = useSimulatorStore(s => s.capturaPctPorMaterial)
   const mermaPctPorMaterial = useSimulatorStore(s => s.mermaPctPorMaterial)
-  const setCapturaMaterialPct = useSimulatorStore(s => s.setCapturaMaterialPct)
   const setMermaMaterialPct = useSimulatorStore(s => s.setMermaMaterialPct)
   const costoDisposicionActivo = useSimulatorStore(s => s.costoDisposicionActivo)
   const setCostoDisposicionActivo = useSimulatorStore(s => s.setCostoDisposicionActivo)
@@ -65,6 +108,17 @@ export function FuncionariosViviendaRsuModel() {
   const viviendasNoCondominio = viviendasActivas * viviendaNoCondominioPct / 100
   const capturaBasePct = pctCapturaPorAño[Math.max(0, Math.min(horizonte - 1, pctCapturaPorAño.length - 1))] ?? 70
   const pagoEvitableAnual = resultados ? resultados.ahorroDisposicion / Math.max(1, horizonte) : 0
+  const poblacionAplicada = resultados?.pobActiva ?? viviendasActivas * ocupantesEscenario
+  const toneladasCapturadasDia = resultados
+    ? Object.values(resultados.volCapturablePorMat).reduce((sum, value) => sum + value, 0)
+    : 0
+
+  const materialMixRows = MATERIALS.map(material => {
+    const grossTonDia = getMaterialGrossTonDia(material, resultados?.rsuTotalTonDia ?? 0)
+    const capturableTonDia = getMaterialCapturableTonDia(material, resultados?.volCapturablePorMat ?? null)
+    const mixPct = resultados && resultados.rsuTotalTonDia > 0 ? grossTonDia / resultados.rsuTotalTonDia * 100 : getMaterialReferencePct(material)
+    return { material, grossTonDia, capturableTonDia, mixPct }
+  })
 
   return (
     <section
@@ -83,6 +137,12 @@ export function FuncionariosViviendaRsuModel() {
             y costo por tonelada dispuesta. El header y los módulos inferiores se recalculan con estos supuestos; no se
             presentan como estadística oficial ni presupuesto aprobado.
           </p>
+          <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#1C1B18]">
+            Lectura de captura: del 100% del RSU doméstico modelado, este horizonte usa una captura global de{' '}
+            <strong>{capturaBasePct.toFixed(0)}%</strong>, aplicada a <strong>{fmt.num0(poblacionAplicada)}</strong> personas
+            y equivalente a <strong>{toneladasCapturadasDia.toFixed(1)} t/día</strong> valorizables después de merma. El mix por
+            material permanece fijo como referencia documental; lo editable por fracción es la merma operativa.
+          </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-[999px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1 text-[11px] text-[#3B6D11]">
           <Database size={13} aria-hidden />
@@ -92,9 +152,9 @@ export function FuncionariosViviendaRsuModel() {
 
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <MetricCard label="RSU activo" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="t/día recalculadas" />
-        <MetricCard label="Emisiones evitables" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="CO₂e/año del escenario" />
-        <MetricCard label="Pago evitable por entierro" value={resultados ? fmt.mxnM(pagoEvitableAnual) : '—'} helper={costoDisposicionActivo ? `captura × $${costoDisposicionPorTon}/t; sin OPEX` : 'supuesto de comisión apagado'} />
-        <MetricCard label="Salud pública" value={resultados ? fmt.mxnM(resultados.ahorroSalud) : '—'} helper="PM2.5, IRA y ahorro poblacional estimado" />
+        <MetricCard label="Emisiones evitables" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="estimación modelo · CO₂e/año" />
+        <MetricCard label="Pago evitable por entierro" value={resultados ? fmt.mxnM(pagoEvitableAnual) : '—'} helper={costoDisposicionActivo ? `captura × $${costoDisposicionPorTon}/t; sin costo operativo` : 'supuesto de comisión apagado'} />
+        <MetricCard label="Salud pública" value={resultados ? fmt.mxnM(resultados.ahorroSalud) : '—'} helper="estimación modelo · PM2.5 e IRA" />
       </div>
 
       <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.85fr]">
@@ -118,6 +178,35 @@ export function FuncionariosViviendaRsuModel() {
           <p className="mt-1 text-[10px] text-[#A8A49C]">
             Fuente: matriz Bibliografía y cálculos. Fórmula: población activa × kg/hab/día ÷ 1000; el slider es supuesto editable.
           </p>
+          <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-3" data-testid="rsu-composition-under-percapita">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Composición RSU de referencia</p>
+                <h3 className="mt-1 font-serif text-[16px] text-[#1C1B18]">Qué representa cada tonelada modelada</h3>
+              </div>
+              <span className="rounded-full border border-[#E8E4DC] bg-white px-2.5 py-1 text-[10px] text-[#6B6760]">
+                estimación_modelo · fuente en matriz
+              </span>
+            </div>
+            <p className="mt-2 text-[11px] leading-relaxed text-[#6B6760]">
+              Estos porcentajes son una referencia documental para RSU municipal. No son medición oficial del municipio activo:
+              sirven para explicar cómo se reparte el 100% del residuo antes de aplicar captura, merma y precio por material.
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {RSU_COMPOSITION.map(item => (
+                <div key={item.key} className="rounded-[8px] border border-[#EEEAE2] bg-white px-3 py-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-medium text-[#1C1B18]">{item.label}</span>
+                    <span className="font-mono text-[13px]" style={{ color: item.color }}>{item.pct.toFixed(item.pct % 1 ? 1 : 0)}%</span>
+                  </div>
+                  <div className="mt-2 h-1.5 rounded-full bg-[#E2DED6]">
+                    <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: item.color }} />
+                  </div>
+                  <p className="mt-2 text-[10px] leading-snug text-[#8C8880]">{item.note}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
 
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
@@ -162,61 +251,6 @@ export function FuncionariosViviendaRsuModel() {
                 <MiniFact label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
                 <MiniFact label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
                 <MiniFact label="Ocupantes/vivienda" value={distribution.stateAvgOccupants2020.toFixed(1)} />
-              </div>
-              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                <ScenarioSlider
-                  id="vivienda-condominio"
-                  label="Vivienda en propiedad de condominio"
-                  value={viviendaCondominioPct}
-                  suffix="%"
-                  min={0}
-                  max={100}
-                  step={5}
-                  onChange={setViviendaCondominioPct}
-                  helper="Supuesto operativo: vivienda vertical, condominios o conjuntos con administración común."
-                />
-                <ScenarioSlider
-                  id="vivienda-condominio-depto"
-                  label="Dentro de condominio: departamento"
-                  value={viviendaCondominioDepartamentoPct}
-                  suffix="%"
-                  min={0}
-                  max={100}
-                  step={5}
-                  onChange={setViviendaCondominioDepartamentoPct}
-                  helper={`El resto (${viviendaCondominioCasaPct.toFixed(0)}%) se modela como casa habitacion dentro de condominio.`}
-                />
-                <ScenarioSlider
-                  id="vivienda-no-condominio"
-                  label="Vivienda no sujeta a condominio"
-                  value={viviendaNoCondominioPct}
-                  suffix="%"
-                  min={0}
-                  max={100}
-                  step={5}
-                  onChange={setViviendaNoCondominioPct}
-                  helper="Complemento operativo: casa independiente o vivienda con entrega directa a calle."
-                />
-                <ScenarioSlider
-                  id="ocupantes-vivienda"
-                  label="Ocupantes por vivienda del escenario"
-                  value={ocupantesEscenario}
-                  suffix=""
-                  min={1}
-                  max={6}
-                  step={0.1}
-                  onChange={setOcupantesPorViviendaEscenario}
-                  helper={`INEGI 2020 estima ${ocupantesBase.toFixed(1)} ocupantes/vivienda; moverlo cambia población modelada y RSU.`}
-                />
-                <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
-                  <p className="font-medium text-[#1C1B18]">Viviendas por porcentaje</p>
-                  <p className="mt-1">Condominio: {fmt.num0(viviendasCondominio)} viviendas; de ellas {fmt.num0(viviendasCondoDepartamento)} deptos y {fmt.num0(viviendasCondoCasa)} casas.</p>
-                  <p className="mt-1">No condominio: {fmt.num0(viviendasNoCondominio)} viviendas modeladas.</p>
-                </div>
-                <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
-                  <p className="font-medium text-[#1C1B18]">Clasificación de cifra</p>
-                  <p className="mt-1">INEGI: fuente verificada para población, viviendas y ocupantes promedio. Condominio/no condominio: supuesto editable del escenario hasta contar con tabulado local específico.</p>
-                </div>
               </div>
               <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] leading-relaxed text-amber-900">
                 {distribution.note}
@@ -275,6 +309,61 @@ export function FuncionariosViviendaRsuModel() {
               </div>
             </>
           )}
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <ScenarioSlider
+              id="vivienda-condominio"
+              label="Vivienda en propiedad de condominio"
+              value={viviendaCondominioPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaCondominioPct}
+              helper="Supuesto operativo: vivienda vertical, condominios o conjuntos con administración común."
+            />
+            <ScenarioSlider
+              id="vivienda-condominio-depto"
+              label="Dentro de condominio: departamento"
+              value={viviendaCondominioDepartamentoPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaCondominioDepartamentoPct}
+              helper={`El resto (${viviendaCondominioCasaPct.toFixed(0)}%) se modela como casa habitacion dentro de condominio.`}
+            />
+            <ScenarioSlider
+              id="vivienda-no-condominio"
+              label="Vivienda no sujeta a condominio"
+              value={viviendaNoCondominioPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaNoCondominioPct}
+              helper="Complemento operativo: casa independiente o vivienda con entrega directa a calle."
+            />
+            <ScenarioSlider
+              id="ocupantes-vivienda"
+              label="Ocupantes por vivienda del escenario"
+              value={ocupantesEscenario}
+              suffix=""
+              min={1}
+              max={6}
+              step={0.1}
+              onChange={setOcupantesPorViviendaEscenario}
+              helper={`INEGI 2020 estima ${ocupantesBase.toFixed(1)} ocupantes/vivienda; moverlo cambia población modelada y RSU.`}
+            />
+            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+              <p className="font-medium text-[#1C1B18]">Viviendas por porcentaje</p>
+              <p className="mt-1">Condominio: {fmt.num0(viviendasCondominio)} viviendas; de ellas {fmt.num0(viviendasCondoDepartamento)} deptos y {fmt.num0(viviendasCondoCasa)} casas.</p>
+              <p className="mt-1">No condominio: {fmt.num0(viviendasNoCondominio)} viviendas modeladas.</p>
+            </div>
+            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+              <p className="font-medium text-[#1C1B18]">Clasificación de cifra</p>
+              <p className="mt-1">INEGI: fuente verificada para población, viviendas y ocupantes promedio. Condominio/no condominio: supuesto editable del escenario hasta contar con tabulado local específico.</p>
+            </div>
+          </div>
         </div>
 
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
@@ -289,9 +378,19 @@ export function FuncionariosViviendaRsuModel() {
             </div>
           </div>
 
+          <div className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] p-3" data-testid="captura-global-summary">
+            <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Captura global aplicada</p>
+            <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+              Del 100% del RSU modelado, se aplica <strong className="text-[#1C1B18]">{capturaBasePct.toFixed(0)}%</strong> de captura
+              al horizonte actual: <strong className="text-[#1C1B18]">{toneladasCapturadasDia.toFixed(1)} t/día</strong> usadas para
+              valorización después de mermas. La composición por material queda fija; cada material solo ajusta merma y precio.
+            </p>
+          </div>
+
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {MATERIALS.map(material => {
               const range = PRECIOS_RANGO[material]
+              const mixRow = materialMixRows.find(row => row.material === material)
               return (
                 <div key={material} className="rounded-[8px] border border-[#F0EDE5] bg-[#FDFCFA] px-3 py-3">
                   <div className="flex items-center justify-between gap-3">
@@ -310,17 +409,14 @@ export function FuncionariosViviendaRsuModel() {
                     onChange={event => setPrecio(material, Number(event.target.value))}
                     className="mt-2 h-2 w-full cursor-pointer accent-[#3B6D11]"
                   />
-                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                    <CompactSlider
-                      id={`captura-${material}`}
-                      label="Captura"
-                      value={capturaPctPorMaterial[material] ?? capturaBasePct}
-                      suffix="%"
-                      min={0}
-                      max={100}
-                      step={5}
-                      onChange={value => setCapturaMaterialPct(material, value)}
-                    />
+                  <div className="mt-3 grid gap-2 sm:grid-cols-[0.9fr_1.1fr]">
+                    <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-2 py-2 text-[10px] leading-snug text-[#6B6760]">
+                      <span className="block uppercase tracking-[0.06em] text-[#A8A49C]">Mix fijo</span>
+                      <span className="mt-1 block font-mono text-[12px] text-[#1C1B18]">
+                        {(mixRow?.mixPct ?? 0).toFixed(1)}% · {(mixRow?.grossTonDia ?? 0).toFixed(1)} t/día
+                      </span>
+                      <span className="mt-1 block text-[#8C8880]">Capturable: {(mixRow?.capturableTonDia ?? 0).toFixed(1)} t/día</span>
+                    </div>
                     <CompactSlider
                       id={`merma-${material}`}
                       label="Merma"
@@ -382,18 +478,45 @@ export function FuncionariosViviendaRsuModel() {
             />
             <p className="mt-2 text-[10px] leading-relaxed text-[#8C8880]">
               Cálculo: toneladas capturadas que dejarían de enterrarse × ${costoDisposicionPorTon.toFixed(0)}/t. Esto mide pago evitable
-              por disposición, no OPEX del programa ni presupuesto aprobado.
+              por disposición, no costo operativo del programa ni presupuesto aprobado.
             </p>
           </div>
         </div>
       </div>
 
       <p className="mt-3 text-[10px] leading-relaxed text-[#A8A49C]">
-        Anexo de cálculo: RSU activo = viviendas activas × ocupantes del escenario × generación per cápita; pago evitable =
-        toneladas capturadas no enterradas × comisión por tonelada; salud = PM2.5, casos IRA y ahorro poblacional estimado.
+        Anexo de cálculo: RSU activo = viviendas activas × ocupantes del escenario × generación per cápita; mezcla material =
+        RSU activo × composición de referencia; captura global = mezcla material × {capturaBasePct.toFixed(0)}%; valorizable =
+        captura global × (1 − merma); pago evitable = toneladas capturadas no enterradas × comisión por tonelada.
       </p>
     </section>
   )
+}
+
+function getMaterialReferencePct(material: keyof PreciosMaterial) {
+  if (material === 'pet') return COMPOSICION_RSU_DETALLE.plastico.pct * COMPOSICION_RSU_DETALLE.plastico.petPct * 100
+  if (material === 'hdpe') return COMPOSICION_RSU_DETALLE.plastico.pct * (1 - COMPOSICION_RSU_DETALLE.plastico.petPct) * 100
+  if (material === 'papel') return COMPOSICION_RSU_DETALLE.papel.pct * 100
+  if (material === 'vidrio') return COMPOSICION_RSU_DETALLE.vidrio.pct * 100
+  if (material === 'aluminio') return COMPOSICION_RSU_DETALLE.metales.pct * COMPOSICION_RSU_DETALLE.metales.aluminioPct * 100
+  return COMPOSICION_RSU_DETALLE.organico.pct * 100
+}
+
+function getMaterialGrossTonDia(material: keyof PreciosMaterial, rsuTotalTonDia: number) {
+  return rsuTotalTonDia * getMaterialReferencePct(material) / 100
+}
+
+function getMaterialCapturableTonDia(
+  material: keyof PreciosMaterial,
+  volCapturablePorMat: Record<string, number> | null,
+) {
+  if (!volCapturablePorMat) return 0
+  if (material === 'pet') return (volCapturablePorMat.plastico ?? 0) * COMPOSICION_RSU_DETALLE.plastico.petPct
+  if (material === 'hdpe') return (volCapturablePorMat.plastico ?? 0) * (1 - COMPOSICION_RSU_DETALLE.plastico.petPct)
+  if (material === 'papel') return volCapturablePorMat.papel ?? 0
+  if (material === 'vidrio') return volCapturablePorMat.vidrio ?? 0
+  if (material === 'aluminio') return volCapturablePorMat.aluminio ?? 0
+  return volCapturablePorMat.organico ?? 0
 }
 
 function ScenarioSlider({

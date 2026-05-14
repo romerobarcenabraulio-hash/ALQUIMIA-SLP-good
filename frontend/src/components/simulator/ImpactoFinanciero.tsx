@@ -46,13 +46,13 @@ export function ImpactoFinanciero() {
       <ContextoModulo
         variante="financiero"
         titulo="¿Cómo está construido el modelo financiero?"
-        cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta CAPEX y OPEX. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
+        cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta inversión inicial y costos operativos. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
         puntos={[
           'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
-          'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y OPEX.',
+          'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y costos operativos.',
           'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, costos operativos +20%).',
           'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
-          'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende del CAPEX de basureros y comunicación.',
+          'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende de inversión inicial, contenedores y comunicación.',
         ]}
         fuente={`Modelo financiero: calculator.ts / Modelo_BASED.xlsx. Precios: ${PRICE_RESEARCH_SOURCE_LABEL}. Crédito carbono: VCS Market 2024 / SEMARNAT SCE.`}
         advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
@@ -81,7 +81,7 @@ export function ImpactoFinanciero() {
         <p className="text-[12px] font-medium text-[#6B6760] mb-4">Supuestos del modelo financiero</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Slider label="WACC (%)" value={wacc} min={12} max={30} step={1} onChange={setWacc}
-            formatValue={v => `${v}%`} source="Modelo CFO certificado" />
+            formatValue={v => `${v}%`} source="Supuesto financiero editable; validar con tesorería o asesor financiero." />
           <Slider label="Tipo de cambio MXN/USD" value={tipoCambio} min={14} max={22} step={0.10}
             onChange={setTipoCambio} formatValue={v => `$${v.toFixed(2)}`} source="Banxico API" />
 
@@ -131,14 +131,14 @@ export function ImpactoFinanciero() {
             variant={r.vpn >= 0 ? 'result' : 'warning'}
             summary={r.vpn >= 0
               ? `Los componentes positivos sostienen un VPN de ${fmt.mxnK(r.vpn)} con TIR ${r.tir.toFixed(1)}%. El proyecto crea valor con la WACC actual (${wacc}%).`
-              : `El VPN proyectado es ${fmt.mxnK(r.vpn)} bajo WACC ${wacc}%. Revisa supuestos de ingresos o reduce CAPEX para regresar a creación de valor.`}
+              : `El VPN proyectado es ${fmt.mxnK(r.vpn)} bajo WACC ${wacc}%. Revisa supuestos de ingresos o reduce inversión inicial para regresar a creación de valor.`}
             evidence={[
               { label: 'TIR', value: `${r.tir.toFixed(1)}%` },
               { label: 'VPN', value: fmt.mxnK(r.vpn) },
               { label: 'WACC', value: `${wacc}%` },
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
             ]}
-            source={{ fuente: 'Venta base = precio_material × volumen_capturado × (1−merma); EBITDA = venta base + supuestos habilitados − OPEX centros − OPEX ruta; VPN y TIR al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios de material, curva de captura y costo de disposición editable.' }}
+            source={{ fuente: 'Venta base = precio_material × volumen_capturado × (1−merma); EBITDA = venta base + supuestos habilitados − costos operativos de centros y rutas; VPN y TIR al WACC del escenario', unidad: 'MXN', incertidumbre: 'Sensible a precios de material, curva de captura y costo de disposición editable.' }}
             nextStep={{ label: 'Lee la sensibilidad (Tornado)' }}
           />
         )}
@@ -158,7 +158,7 @@ export function ImpactoFinanciero() {
               `En 2,000 corridas aleatorias, el TIR cae en el percentil 10 a ${mcPercentiles.p10.toFixed(1)}%, la mediana queda en ${mcPercentiles.p50.toFixed(1)}% y el percentil 90 llega a ${mcPercentiles.p90.toFixed(1)}%. ` +
               (mcPercentiles.p10 >= wacc
                 ? `Incluso el tramo inferior (${mcPercentiles.p10.toFixed(1)}%) mantiene colchón sobre la WACC (${wacc}%). `
-                : `El percentil 10 (${mcPercentiles.p10.toFixed(1)}%) cruza por debajo de la WACC (${wacc}%): revisa capturas de volumen o precios antes de comprometer CAPEX. `) +
+                : `El percentil 10 (${mcPercentiles.p10.toFixed(1)}%) cruza por debajo de la WACC (${wacc}%): revisa capturas de volumen o precios antes de comprometer inversión inicial. `) +
               `Payback base ${r.paybackMeses.toFixed(0)} meses.`
             }
             evidence={[
@@ -208,14 +208,14 @@ export function ImpactoFinanciero() {
           <NarrativeBridge
             kicker="S22 · Lectura del cashflow"
             variant="bridge"
-            summary={`En ${horizonte} años el modelo acumula derrama bruta ${fmt.mxnK(r.ingresosBrutos)} —CAPEX ${fmt.mxnK(r.capexTotal)} y EBITDA acumulado ${fmt.mxnK(r.ebitda)}. La forma del flujo dice si hace falta refinanciamiento temprano o si la captura sostiene la deuda.`}
+            summary={`En ${horizonte} años el modelo acumula derrama bruta ${fmt.mxnK(r.ingresosBrutos)} —inversión inicial ${fmt.mxnK(r.capexTotal)} y EBITDA acumulado ${fmt.mxnK(r.ebitda)}. La forma del flujo dice si hace falta refinanciamiento temprano o si la captura sostiene la deuda.`}
             evidence={[
               { label: 'Horizonte', value: `${horizonte} años` },
               { label: 'Derrama económica estimada por venta de materiales', value: fmt.mxnK(r.ingresosBrutos) },
-              { label: 'CAPEX', value: fmt.mxnK(r.capexTotal) },
+              { label: 'Inversión inicial', value: fmt.mxnK(r.capexTotal) },
               { label: 'EBITDA acumulado', value: fmt.mxnK(r.ebitda) },
             ]}
-            source={{ fuente: 'Flujo anual = derrama_año − OPEX_año − CAPEX en año cero; acumulado corrido con tipo de cambio y precios del escenario', unidad: 'MXN nominal', incertidumbre: 'Trayectoria de captura y plena cobertura de rutas.' }}
+            source={{ fuente: 'Flujo anual = derrama_año − costos_operativos_año − inversión inicial en año cero; acumulado corrido con tipo de cambio y precios del escenario', unidad: 'MXN nominal', incertidumbre: 'Trayectoria de captura y plena cobertura de rutas.' }}
             nextStep={{ label: 'Explora el stress adversarial' }}
           />
         )}

@@ -60,7 +60,7 @@ export function getInegiHousingDistribution(
   municipioIds: string[],
 ): InegiHousingDistribution | null {
   if (municipioIds.length === 1) {
-    return DISTRIBUTIONS[municipioIds[0]] ?? null
+    return DISTRIBUTIONS[municipioIds[0]] ?? DISTRIBUTIONS[zmId] ?? null
   }
   return DISTRIBUTIONS[zmId] ?? null
 }

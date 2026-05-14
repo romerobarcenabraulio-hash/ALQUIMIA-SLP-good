@@ -43,6 +43,14 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByText(/Siguiente acción:/)).toBeTruthy()
     expect(screen.getAllByText(/Casa independiente/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Departamento en edificio/).length).toBeGreaterThan(0)
+    expect(screen.getByTestId('rsu-composition-under-percapita')).toBeTruthy()
+    expect(screen.getByText(/Composición RSU de referencia/)).toBeTruthy()
+    expect(screen.getByText(/Qué representa cada tonelada modelada/)).toBeTruthy()
+    expect(screen.getByText(/estimación_modelo · fuente en matriz/)).toBeTruthy()
+    expect(screen.getByText(/No son medición oficial del municipio activo/i)).toBeTruthy()
+    expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
+    expect(screen.getByText(/Captura global aplicada/)).toBeTruthy()
+    expect(screen.getByText(/La composición por material queda fija/i)).toBeTruthy()
     expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
     expect(screen.getByText(/Dentro de condominio: departamento/)).toBeTruthy()
     expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
@@ -109,7 +117,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getByText(/Pago evitable por entierro/)).toBeTruthy()
-    expect(screen.getByText(/sin OPEX/)).toBeTruthy()
+    expect(screen.getByText(/sin costo operativo/)).toBeTruthy()
     expect(screen.queryByText(/OPEX \+/)).toBeNull()
 
     const initial = useSimulatorStore.getState().resultados?.ahorroDisposicion ?? 0
@@ -121,25 +129,22 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(useSimulatorStore.getState().resultados?.ahorroDisposicion).toBe(0)
   })
 
-  it('captura y merma por material recalculan ingresos', () => {
+  it('mantiene mix fijo por material y la merma recalcula ingresos', () => {
     const { container } = render(<FuncionariosViviendaRsuModel />)
     const before = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
 
-    const capturaPet = container.querySelector<HTMLInputElement>('#captura-pet')
     const mermaPet = container.querySelector<HTMLInputElement>('#merma-pet')
-    expect(capturaPet).toBeTruthy()
+    expect(container.querySelector<HTMLInputElement>('#captura-pet')).toBeNull()
     expect(mermaPet).toBeTruthy()
-
-    fireEvent.change(capturaPet!, { target: { value: '20' } })
-    const afterCapture = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
-    expect(afterCapture).toBeLessThan(before)
+    expect(screen.getAllByText(/Mix fijo/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Capturable:/).length).toBeGreaterThan(0)
 
     fireEvent.change(mermaPet!, { target: { value: '50' } })
     const afterMerma = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
-    expect(afterMerma).toBeLessThan(afterCapture)
+    expect(afterMerma).toBeLessThan(before)
   })
 
-  it('sin datos INEGI muestra warning y no inventa porcentajes', () => {
+  it('sin datos INEGI municipal no oculta supuestos editables ni inventa porcentajes', () => {
     useSimulatorStore.setState({
       zmActiva: 'EXT',
       municipiosActivos: ['ext'],
@@ -150,6 +155,9 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getAllByText(/Sin tabulado INEGI municipal/).length).toBe(1)
+    expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
+    expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
+    expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
   })
 
   it('renderiza anexo final con fórmulas y bibliografía de cálculos', () => {

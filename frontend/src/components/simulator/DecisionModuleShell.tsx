@@ -7,6 +7,7 @@ import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import type { DecisionModule, PortalEntry } from '@/types'
 
 interface DecisionModuleShellProps {
@@ -125,6 +126,11 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
 
           <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
             <DecisionHeader module={activeModule} />
+            {audienceSelected === 'functionary' && (
+              <div className="mt-4">
+                <ModuleEditorialBrief moduleId={activeModule.module_id} />
+              </div>
+            )}
             {activeModule.status === 'blocked' ? (
               <div className="mt-4 rounded-[8px] border border-amber-300 bg-amber-50 p-4">
                 <p className="inline-flex items-center gap-2 text-[12px] font-semibold text-amber-900">

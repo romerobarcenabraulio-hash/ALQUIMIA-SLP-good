@@ -37,7 +37,7 @@ const CARDS: AudienceCard[] = [
     kicker: 'Ciudadano · Educación',
     title: '¿Qué pasa con lo que tiro?',
     promise: 'Entiende cuánto genera tu vivienda, qué se puede separar y por qué una bolsa mezclada termina costando dinero, salud pública y espacio de relleno.',
-    modules: ['Baseline RSU de tu ciudad', 'Composición y vivienda', 'Huella ambiental personal'],
+    modules: ['Problema RSU de tu ciudad', 'Composición y vivienda', 'Huella ambiental personal'],
     cta: 'Continuar como ciudadano',
   },
   {
@@ -69,7 +69,7 @@ export function AudienceGateway() {
   const citizenModules = useMemo(() => {
     const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
     return [
-      aplicarSustitucionesTerritorio('Baseline RSU de tu ciudad', etiqueta),
+      aplicarSustitucionesTerritorio('Problema RSU de tu ciudad', etiqueta),
       'Composición y vivienda',
       'Huella ambiental personal',
     ]

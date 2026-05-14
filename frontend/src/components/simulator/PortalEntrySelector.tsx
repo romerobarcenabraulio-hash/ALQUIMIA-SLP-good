@@ -15,7 +15,7 @@ const entries: Array<{
   {
     id: 'city_plan',
     label: 'Ciudadania / plan de ciudad',
-    description: 'Baseline RSU, municipios, metas y decisiones publicas trazables.',
+    description: 'Problema RSU, municipios, metas y decisiones publicas trazables.',
     icon: Landmark,
   },
   {

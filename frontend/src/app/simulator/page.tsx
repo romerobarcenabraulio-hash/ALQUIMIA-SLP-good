@@ -36,6 +36,7 @@ import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/Progresion
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
+import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
@@ -85,9 +86,9 @@ const FUNCTIONARY_MODULE_LABELS: Record<string, Pick<DecisionModule, 'label' | '
     next_action: 'Usar la evidencia para mejorar cumplimiento y preparar revisión jurídica municipal.',
   },
   scenarios_export: {
-    label: 'Escenarios y salida',
-    decision: 'Comparar escenarios y preparar borradores de trabajo sin carácter oficial.',
-    evidence: 'KPIs, supuestos, exportables y advertencias de validación pendientes.',
+    label: 'Escenarios, derrama y salida',
+    decision: 'Comparar derrama base, sensibilidad financiera y salida ejecutiva sin carácter oficial.',
+    evidence: 'Monte Carlo, waterfall, tornado, KPIs, supuestos, exportables y advertencias de validación pendientes.',
     next_action: 'Revisar matriz de fuentes antes de presentar cifras en sesión pública.',
   },
 }
@@ -318,12 +319,16 @@ function renderDecisionModule(
         </>
       )
     case 'future_goals':
-      return <MetasPlanDerivadasNotice />
+      return (
+        <>
+          <MetasPlanDerivadasNotice />
+          <ImplementacionEspacioTiempo />
+          <ProgresionPlanMunicipalTiempo />
+        </>
+      )
     case 'infrastructure_operations':
       return (
         <>
-          <ImplementacionEspacioTiempo />
-          <ProgresionPlanMunicipalTiempo />
           <CentrosAcopio />
           <Logistica />
           <OperacionPERBitacora />
@@ -338,6 +343,7 @@ function renderDecisionModule(
     case 'scenarios_export':
       return (
         <>
+          <ImpactoFinanciero />
           <ExportarSection />
           <ExportadorReporte />
           <DashboardKPIs />
