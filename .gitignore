@@ -30,6 +30,9 @@ backend/.env.*.local
 # Config local Claude / IDE
 **/.claude/settings.local.json
 
+# Obsidian (vault local bajo AJUSTES.ALQUIMIA; no versionar layout del editor)
+AJUSTES.ALQUIMIA/.obsidian/
+
 # Build output — NO commitear artefactos de build (causan fallos cross-platform en Vercel)
 frontend/.next/
 frontend/out/

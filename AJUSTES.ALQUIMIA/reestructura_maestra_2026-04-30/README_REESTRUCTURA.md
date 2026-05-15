@@ -5,6 +5,18 @@ Uso: carpeta rectora para redisenar ALQUIMIA como plataforma guiada por ciudad, 
 
 ---
 
+## Ubicación De Los Archivos Numerados
+
+Los nombres del **Orden de lectura** no estan todos en esta misma carpeta:
+
+- Pasos **1 a 26** (`00_*.md` … `21_*.md`): `../archivos_ejecutados/<mismo nombre de archivo>`
+- Pasos **27 a 36** de la lista siguiente (`22_0_*.md` … `25_tokens_y_design_as_code.md`): `../archivos_ejecutados/mayo_2026_semana_1_8/<mismo nombre de archivo>`
+- **26–30** (p. ej. reglamentos, selector, declaración empresarial) no entran en esa numeración del índice; si los necesitas, están en la misma carpeta `mayo_2026_semana_1_8/`.
+
+El indice general de esta carpeta en el repo es `../README.md`.
+
+---
+
 ## Orden De Lectura
 
 1. `00_resumen_ejecutivo_reestructura.md`
