@@ -6,16 +6,18 @@
 
 | Campo | Valor |
 |-------|--------|
-| **Foco actual** | **Post-runtime:** si runtime quedó cerrado, **Fase A — deuda GOV/Hub/CI** (prompts **29–32**) en [`cursor-rules/PLAN_Y_PROMPTS_AGENTES_EPICO_SIGUIENTE.md`](PLAN_Y_PROMPTS_AGENTES_EPICO_SIGUIENTE.md). Épico anterior capa social técnica en repo (Restore 2026-05-14). |
-| **Última sincronización** | 2026-05-14 |
+| **Foco actual** | **Ventana estable (post 29–32):** verificación humana CI Actions en `main`, smoke deploy frontend (`/hub` Q-023, JSON PR3), y evidencia prod pendiente para **FASE GOV** ítems 8–10 (no declarar GOV cerrada hasta Auditor). Detalle: [`PLAN_Y_PROMPTS_AGENTES_EPICO_SIGUIENTE.md`](cursor-rules/PLAN_Y_PROMPTS_AGENTES_EPICO_SIGUIENTE.md). |
+| **Última sincronización** | 2026-05-15 |
 | **Rama épico activo (Fase B)** | _Vacío hasta CSA elija **una** después de Fase A · opciones: **B1** ciudadano‑social · **B2** observabilidad · **B3** Playwright smoke_ |
 | **Bloqueantes** | _(vacío = ninguno)_ |
+
+**Foco próxima semana (una línea):** ventana estable — confirmar CI green en `main`, smoke URLs staging/prod (`/hub`, JSON PR3), y dejar evidencia Auditor para ítems GOV 8–10 antes de declarar cierre institucional.
 
 ## 2. Siguiente paso
 
 | # | Ítem | Notas |
 |---|------|------|
-| 1 | **Prompt 29** CSA → inventario tabla; luego **30 / 31 / 32** según salida 29 | Ver plan agentes épico siguiente |
+| 1 | **Prompt 29** CSA → inventario tabla; luego **30 / 31 / 32** según salida 29 | **30–32 avanzados en repo** (Q-023 alineado, infra smoke, COLA); 29 si falta tabla CSA — ver Restore 2026-05-15 |
 | 2 | Escribir campo **Rama épico activo (Fase B)** con **B1**, **B2** o **B3** antes de prompts **33–35** | Una sola rama activa |
 | 3 | viernes **Prompt 36** ritual COLA + Restore | 15 minutos |
 | 4 | (Backlog datamart) Consolidar matriz TS desde `fuentes de calculo/` cuando Fase A estable | No bloquea Prompts 29 |

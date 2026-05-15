@@ -3684,3 +3684,24 @@ Para: Auditor | Navigator | CSA | … (si aplica; si no, "—")
 
 —
 
+### [2026-05-15T16:15Z] Ejecutor/CSA · cierre día prompts 29–32 (subset técnico + bitácora)
+
+**HECHO hoy (trazado código/repo, no sustituye verificación prod):**
+- **30 · Q-023 ZIP:** catálogo alineado a realidad (`hubDocumentosCapitulo` + `hubPaqueteZip`); conteo incluibles SLP=1 vs objetivo 7; banner `hub-q023-zip-status`; Vitest `hubDocumentosCapitulo.test.ts`, `hubPaqueteZip.test.ts`. Ref: `3515b4e1`.
+- **Infra JSON capa social / smoke:** middleware excluye `/data/` (`88b326e2`); route handler `GET /data/social-stats/[filename]` devuelve bundle embebido (`7b123942`); CI Vitest en workflow (`e6ee6267`); docs `cursor-rules/SMOKE_*`, `CHANGELOG_FUENTES_SOCIAL`, `SOURCE_TRACE`.
+- **32 · CI/Restore:** instrucciones ver run verde en GitHub Actions (sin PAT en agente).
+
+**PENDIENTE (humano / prod):**
+- **ZIP Q-023:** ampliar entregables bajo `public/` o aceptar objetivo consultivo hasta catálogo completo; smoke manual `/hub` + ZIP descargado.
+- **CI:** confirmar último job `checks` ✓ en `https://github.com/romerobarcenabraulio-hash/ALQUIMIA-SLP--/actions` rama `main`.
+- **Dominio / frontend:** `https://alquimiaplatform.com` o staging `https://alquimia-slp.vercel.app` — smoke navegador + `curl` JSON `/data/social-stats/slices-20260507a.json` tras deploy.
+- **Prompt 29:** inventario tabla CSA si aún no archivado explícitamente.
+
+**FASE GOV:** sigue **PARCIAL** según `## Auditoría de Cierre — FASE GOV` (2026-05-06): ítems **8–10** requieren evidencia en producción / browser; **no** se afirma cierre total hasta esa verificación.
+
+**Para:** Auditor (Prompt 31 checklist ZIP + copy) · CSA (Actions + dominio) · Navigator (solo si cambia geo visible).
+
+**Ref:** `3515b4e1`, `7b123942`, `88b326e2`, `e6ee6267`; verificación manual URLs arriba (sin secretos).
+
+— *Restore · ALQUIMIA · 2026-05-15*
+
