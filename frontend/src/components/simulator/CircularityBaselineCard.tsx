@@ -17,7 +17,7 @@ export function CircularityBaselineCard() {
   const {
     circularityBaseline,
     circularityBaselineLoading,
-    portalError,
+    cityPortalError,
     zmActiva,
     municipiosActivos,
     cityContext,
@@ -86,13 +86,13 @@ export function CircularityBaselineCard() {
         </div>
       )}
 
-      {!circularityBaselineLoading && portalError && (
+      {!circularityBaselineLoading && cityPortalError && (
         <div className="rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[13px] text-red-800">
-          {portalError}
+          {cityPortalError}
         </div>
       )}
 
-      {!circularityBaselineLoading && !portalError && !circularityBaseline && (
+      {!circularityBaselineLoading && !cityPortalError && !circularityBaseline && (
         <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[13px] text-[#6B6760]">
           Primero elige ciudad o zona metropolitana de trabajo más abajo. Sin esa selección no mostramos referencia inicial ni metas siguientes para no inventar territorio ni cifras.
         </div>

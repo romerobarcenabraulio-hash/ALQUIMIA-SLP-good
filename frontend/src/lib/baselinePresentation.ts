@@ -5,9 +5,10 @@ export function isCircularityBaselineReadyForUi(
   baseline: CircularityBaseline | null,
   zmActiva: string,
 ): boolean {
+  const zmKey = zmActiva.trim().toUpperCase()
   return Boolean(
     baseline &&
-      baseline.city_id === zmActiva &&
+      baseline.city_id.trim().toUpperCase() === zmKey &&
       baseline.official_status === 'estimated_not_official' &&
       baseline.provenance.fuente_nombre &&
       baseline.provenance.fuente_organismo &&

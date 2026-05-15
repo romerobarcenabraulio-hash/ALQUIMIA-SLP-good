@@ -6,6 +6,7 @@ import { Header } from '@/components/layout/Header'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { SectionHero } from '@/components/simulator/SectionHero'
 import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
+import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
 import { DecisionModuleShell } from '@/components/simulator/DecisionModuleShell'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
@@ -116,7 +117,7 @@ function SimulatorSimulationRibbon() {
     [municipiosActivos, zmActiva],
   )
   return (
-    <div className="sticky top-0 z-30 mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 pt-4">
+    <div className="sticky top-0 z-30 mx-auto max-w-[min(96rem,calc(100vw-1.5rem))] px-4 sm:px-6 lg:px-8 pt-4">
       <div
         role="region"
         aria-label={SIMULATION_BANNER_TITLE}
@@ -169,6 +170,7 @@ export default function SimulatorPage() {
   const portalJourney = useSimulatorStore(s => s.portalJourney)
   const portalJourneyLoading = useSimulatorStore(s => s.portalJourneyLoading)
   const portalError = useSimulatorStore(s => s.portalError)
+  const cityPortalError = useSimulatorStore(s => s.cityPortalError)
   const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
   const interacciones = useRef(0)
 
@@ -208,17 +210,18 @@ export default function SimulatorPage() {
   return (
     <div className="min-h-screen" style={{ background: '#F8F6F1' }} onClickCapture={onInteract}>
       <Header />
-      <div className="max-w-7xl mx-auto">
+      <div className="mx-auto w-full max-w-[min(96rem,calc(100vw-1.5rem))]">
         <SimulatorSimulationRibbon />
-        <main className="px-4 sm:px-6 lg:px-8 py-8 max-w-5xl mx-auto">
+        <main className="px-4 sm:px-6 lg:px-8 py-8 max-w-[min(96rem,calc(100vw-1.5rem))] mx-auto w-full">
 
           <CityFirstSelector />
           {audience === 'citizen' && <PlanGlobalControlsBar />}
+          <CircularityBaselineCard />
 
           {!baselineValid ? (
             <BaselineGateBlocked
               loading={circularityBaselineLoading}
-              error={portalError}
+              error={cityPortalError}
               cityId={zmActiva}
             />
           ) : (

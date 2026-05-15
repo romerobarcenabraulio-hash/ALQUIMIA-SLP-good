@@ -56,9 +56,10 @@ type FetchState =
   | { status: 'ok'; fuentes: FuenteStatus[] }
   | { status: 'error'; mensaje: string }
 
-export function FuentesDatos() {
+export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedded' }) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const [state, setState] = useState<FetchState>({ status: 'idle' })
+  const embedded = variant === 'embedded'
 
   useEffect(() => {
     setState({ status: 'loading' })
@@ -77,15 +78,21 @@ export function FuentesDatos() {
   }, [zmActiva])
 
   return (
-    <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S2 — Fuentes de datos</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Bibliografía y cálculos</h2>
-      <ScopeAnclaKicker className="mb-2" />
+    <div data-variant={variant}>
+      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
+        {embedded ? 'S2 — API /data/fuentes' : 'S2 — Fuentes de datos'}
+      </p>
+      {embedded ? (
+        <h3 className="font-serif text-[20px] text-[#1C1B18] mb-2">Estado en vivo de fuentes de datos</h3>
+      ) : (
+        <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Bibliografía y cálculos</h2>
+      )}
+      {!embedded && <ScopeAnclaKicker className="mb-2" />}
       <p className="text-[13px] text-[#6B6760] mb-1">
         Estado real de cada fuente de datos oficial. El simulador prioriza datos
         verificados y etiqueta cada cifra con su tier de confianza.
       </p>
-      <p className="text-[11px] text-[#A8A49C] mb-6">
+      <p className={embedded ? 'text-[11px] text-[#A8A49C] mb-4' : 'text-[11px] text-[#A8A49C] mb-6'}>
         ✓ Oficial — API verificada en esta sesión &nbsp;|&nbsp;
         ✓ Certificado — publicación oficial offline &nbsp;|&nbsp;
         ~ Estimado — modelo o proyección

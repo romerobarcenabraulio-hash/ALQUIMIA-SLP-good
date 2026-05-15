@@ -88,7 +88,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
       )}
 
       {!loading && !error && activeModule && (
-        <div className="grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(240px,290px)_minmax(0,1fr)]">
           <nav aria-label="Modulos de decision" className="grid gap-2 self-start">
             {filteredModules.map(module => {
               const active = module.module_id === activeModule.module_id
@@ -134,11 +134,12 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
             })}
           </nav>
 
-          <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 min-w-0">
-            <div className="sticky top-28 z-20 mb-4 space-y-4 border-b border-[#E8E4DC]/80 bg-[#FDFCFA]/96 pb-3 backdrop-blur-sm">
-              <DecisionHeader module={activeModule} />
+          <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 min-w-0 w-full max-w-none">
+            <div className="sticky top-24 z-20 space-y-3 border-b border-[#E8E4DC]/80 bg-[#FDFCFA]/97 pb-3 backdrop-blur-md lg:top-28">
+              <DecisionHeader module={activeModule} titleOnly={audienceSelected === 'functionary'} />
               {audienceSelected === 'functionary' && <ModuleEditorialBrief moduleId={activeModule.module_id} />}
             </div>
+            {audienceSelected === 'functionary' && <FunctionaryKpiStrip />}
             {activeModule.status === 'blocked' ? (
               <div className="mt-4 rounded-[8px] border border-amber-300 bg-amber-50 p-4">
                 <p className="inline-flex items-center gap-2 text-[12px] font-semibold text-amber-900">
@@ -163,13 +164,15 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
   )
 }
 
-function DecisionHeader({ module }: { module: DecisionModule }) {
+function DecisionHeader({ module, titleOnly = false }: { module: DecisionModule; titleOnly?: boolean }) {
   const blocked = module.status === 'blocked'
   const audienceSelected = useSimulatorStore(s => s.audience)
   const resultados = useSimulatorStore(s => s.resultados)
   const horizonte = useSimulatorStore(s => s.horizonte)
+  const showFunctionaryKpis = audienceSelected === 'functionary' && !titleOnly
+
   return (
-    <header className="border-b border-[#E8E4DC] pb-4">
+    <header className="border-b border-[#E8E4DC] pb-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Que veo</p>
@@ -186,12 +189,14 @@ function DecisionHeader({ module }: { module: DecisionModule }) {
         </span>
       </div>
       {audienceSelected === 'functionary' ? (
-        <div className="mt-4 grid gap-3 md:grid-cols-4">
+        showFunctionaryKpis && (
+        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
           <KpiBlock label="RSU generado diario" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="estimación de escenario" />
           <KpiBlock label="Derrama base/año" value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'} helper="venta de material separado" />
           <KpiBlock label="CO₂e a evitar/año" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="factor ambiental trazado" />
           <KpiBlock label="Empleos directos" value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'} helper="programa + reciclaje" />
         </div>
+        )
       ) : (
         <div className="mt-4 grid gap-3 md:grid-cols-3">
           <InfoBlock label="Que decido" value={module.decision} />
@@ -200,6 +205,22 @@ function DecisionHeader({ module }: { module: DecisionModule }) {
         </div>
       )}
     </header>
+  )
+}
+
+function FunctionaryKpiStrip() {
+  const resultados = useSimulatorStore(s => s.resultados)
+  const horizonte = useSimulatorStore(s => s.horizonte)
+  return (
+    <div className="mb-4 mt-3 rounded-[10px] border border-[#E8E4DC] bg-white/90 px-3 py-3 shadow-[0_1px_0_rgba(28,27,24,0.04)]">
+      <p className="text-[10px] uppercase tracking-[0.08em] text-[#8A857C]">Indicadores del escenario (referencia)</p>
+      <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <KpiBlock label="RSU generado diario" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="estimación de escenario" />
+        <KpiBlock label="Derrama base/año" value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'} helper="venta de material separado" />
+        <KpiBlock label="CO₂e a evitar/año" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="factor ambiental trazado" />
+        <KpiBlock label="Empleos directos" value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'} helper="programa + reciclaje" />
+      </div>
+    </div>
   )
 }
 

@@ -25,31 +25,42 @@ export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
 
   return (
     <section
-      className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-4"
+      className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-4 lg:p-5"
       aria-label={`Lectura ejecutiva: ${brief.title}`}
       data-testid={`module-editorial-brief-${moduleId}`}
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <div>
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="min-w-0 flex-1">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
-          <h3 className="mt-1 font-serif text-[20px] text-[#1C1B18]">{brief.title}</h3>
-          <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#5A6347]">
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <span
+              className="inline-flex rounded-md border border-[#B9C8A6] bg-white/90 px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-[#2F5A0C]"
+              title="Artículo de síntesis · contexto del módulo"
+            >
+              S1
+            </span>
+            <h3 className="font-serif text-[clamp(1.125rem,2vw,1.375rem)] text-[#1C1B18]">{brief.title}</h3>
+          </div>
+          <p className="mt-3 w-full max-w-none text-[13px] leading-relaxed text-[#5A6347] lg:text-[14px] lg:leading-[1.55]">
             {brief.situacion_actual}
           </p>
         </div>
-        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-[#D7E8C0] bg-white px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">
+        <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[#D7E8C0] bg-white px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">
           <BookOpenCheck size={13} aria-hidden />
           Observación técnica
         </span>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        <EditorialCard label="Qué observamos" value={brief.observacion_alquimia} />
-        <EditorialCard label="Qué decisión habilita" value={brief.criterio_decision} />
-        <EditorialCard label="Qué falta verificar" value={brief.siguiente_accion} />
+      <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <EditorialCard sectionId="S16" label="Qué observamos" value={brief.observacion_alquimia} density="compact" />
+        <EditorialCard sectionId="S15" label="Qué decisión habilita" value={brief.criterio_decision} density="compact" />
       </div>
 
-      <div className="mt-3 grid gap-3 md:grid-cols-[1fr_1fr]">
+      <div className="mt-3">
+        <EditorialCard label="Qué falta verificar" value={brief.siguiente_accion} density="comfortable" />
+      </div>
+
+      <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <div className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-3">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">Límite de interpretación</p>
           <p className="mt-1 text-[12px] leading-relaxed text-[#5A6347]">{brief.que_no_significa}</p>
@@ -63,11 +74,27 @@ export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
   )
 }
 
-function EditorialCard({ label, value }: { label: string; value: string }) {
+function EditorialCard({
+  sectionId,
+  label,
+  value,
+  density,
+}: {
+  sectionId?: string
+  label: string
+  value: string
+  density: 'compact' | 'comfortable'
+}) {
+  const body = density === 'compact' ? 'text-[11px] leading-snug' : 'text-[12px] leading-relaxed'
   return (
-    <article className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-3">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">{label}</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-[#1C1B18]">{value}</p>
+    <article className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-2.5 md:px-3 md:py-3">
+      <p className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">
+        {sectionId ? (
+          <span className="font-mono text-[9px] font-semibold tabular-nums text-[#5A7D3A]">{sectionId}</span>
+        ) : null}
+        <span>{label}</span>
+      </p>
+      <p className={`mt-1.5 text-[#1C1B18] ${body}`}>{value}</p>
     </article>
   )
 }

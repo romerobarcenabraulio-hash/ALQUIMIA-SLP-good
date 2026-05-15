@@ -3,15 +3,9 @@
  * S4.6 — Diagnóstico Jurídico Municipal
  *
  * Principio: Una ZM no es un municipio.
- * Muestra el paquete metropolitano de dos capas:
- *
- *  Capa 1 — Municipios individuales:
- *    Cada municipio activo con su propio diagnóstico,
- *    score legal, estrategia de reforma, manifest y alcance municipal.
- *
- *  Capa 2 — Coordinación metropolitana:
- *    Convenio marco, homologación, estándar de datos,
- *    infraestructura compartida y oleadas de implementación.
+ * Flujo principal: municipios activos primero (capa municipal).
+ * Coordinación metropolitana (capa ZM) va en un bloque colapsable al final —
+ * sin pestaña paralela, para no mezclar lectura municipal con opciones de ámbito ZM.
  *
  * Fuente: GET /legal/zm/{zm}/paquete
  * Referencia local: datos de catálogo si no hay API.
@@ -344,7 +338,6 @@ export function DiagnosticoJuridico() {
   const [paquete,  setPaquete]  = useState<PaqueteMetropolitano | null>(null)
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
-  const [tab,      setTab]      = useState<'municipal' | 'metropolitano'>('municipal')
   const [expandido, setExpandido] = useState<string | null>(null)
 
   useEffect(() => {
@@ -488,80 +481,53 @@ export function DiagnosticoJuridico() {
         </div>
       )}
 
-      {/* ── Tabs ────────────────────────────────────────────────────────── */}
-      <div className="flex gap-1 bg-[#F0EDE5] p-1 rounded-[10px]" role="tablist" aria-label="Capas del diagnóstico jurídico">
-        {(['municipal', 'metropolitano'] as const).map(t => (
-          <button
-            key={t}
-            onClick={() => setTab(t)}
-            role="tab"
-            id={`diagnostico-tab-${t}`}
-            aria-controls={`diagnostico-panel-${t}`}
-            aria-selected={tab === t}
-            className={cn(
-              'flex-1 text-[12px] py-1.5 rounded-[8px] font-medium transition-all',
-              tab === t ? 'bg-white text-[#1C1B18] shadow-sm' : 'text-[#6B6760] hover:text-[#1C1B18]'
-            )}
-          >
-            {t === 'municipal' ? `Capa 1 — Municipal (${paquete.total_municipios})` : 'Capa 2 — Coordinación ZM'}
-          </button>
-        ))}
+      {/* ── Capa municipal (siempre visible) ───────────────────────────── */}
+      <div id="diagnostico-panel-municipal" className="space-y-3">
+        {activos.length > 0 && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2">Municipios activos en la simulación</p>
+            <div className="space-y-2">
+              {activos.map(dm => (
+                <TarjetaMunicipio
+                  key={dm.municipio_id}
+                  dm={dm}
+                  isActive={true}
+                  expandido={expandido === dm.municipio_id}
+                  onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {inactivos.length > 0 && (
+          <div>
+            <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2 mt-4">Otros municipios de la ZM</p>
+            <div className="space-y-2">
+              {inactivos.map(dm => (
+                <TarjetaMunicipio
+                  key={dm.municipio_id}
+                  dm={dm}
+                  isActive={false}
+                  expandido={expandido === dm.municipio_id}
+                  onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* ── Capa 1: Municipios ──────────────────────────────────────────── */}
-      {tab === 'municipal' && (
-        <div
-          id="diagnostico-panel-municipal"
-          role="tabpanel"
-          aria-labelledby="diagnostico-tab-municipal"
-          className="space-y-3"
-        >
-          {activos.length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2">Municipios activos en la simulación</p>
-              <div className="space-y-2">
-                {activos.map(dm => (
-                  <TarjetaMunicipio
-                    key={dm.municipio_id}
-                    dm={dm}
-                    isActive={true}
-                    expandido={expandido === dm.municipio_id}
-                    onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-
-          {inactivos.length > 0 && (
-            <div>
-              <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2 mt-4">Otros municipios de la ZM</p>
-              <div className="space-y-2">
-                {inactivos.map(dm => (
-                  <TarjetaMunicipio
-                    key={dm.municipio_id}
-                    dm={dm}
-                    isActive={false}
-                    expandido={expandido === dm.municipio_id}
-                    onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
-                  />
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ── Capa 2: Coordinación metropolitana ─────────────────────────── */}
-      {tab === 'metropolitano' && (
-        <div
-          id="diagnostico-panel-metropolitano"
-          role="tabpanel"
-          aria-labelledby="diagnostico-tab-metropolitano"
-        >
+      {/* ── Coordinación ZM: colapsable (sin pestaña) ─────────────────── */}
+      <details className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
+        <summary className="cursor-pointer text-[12px] font-semibold text-[#6B6760] outline-none hover:text-[#1C1B18]">
+          Coordinación metropolitana (solo lectura){' '}
+          <span className="font-normal text-[#A8A49C]">— convenios e infra compartida; no sustituye reglamento municipal</span>
+        </summary>
+        <div id="diagnostico-panel-metropolitano" className="mt-3 border-t border-[#EDE9E2] pt-3">
           <CoordinacionMetro p={paquete} />
         </div>
-      )}
+      </details>
 
       <p className="text-[10px] text-[#A8A49C]">Motor Jurídico v1.5 · ZM ≠ municipio</p>
     </div>

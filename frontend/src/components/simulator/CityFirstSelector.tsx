@@ -14,7 +14,7 @@ export function CityFirstSelector() {
     zmActiva,
     applyMunicipioCatalog,
     cityContextLoading,
-    portalError,
+    cityPortalError,
     municipiosActivos,
     seleccionMunicipioCatalog,
   } = useSimulatorStore()
@@ -189,9 +189,9 @@ export function CityFirstSelector() {
         <p className="mt-3 text-[12px] text-[#8A857C]">Cargando contexto de la ciudad...</p>
       )}
 
-      {!cityContextLoading && portalError && (
+      {!cityContextLoading && cityPortalError && (
         <div className="mt-3 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-800">
-          {portalError}
+          {cityPortalError}
         </div>
       )}
     </section>

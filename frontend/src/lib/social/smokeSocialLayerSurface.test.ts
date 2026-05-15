@@ -59,4 +59,12 @@ describe('smokeSocialLayerSurface (capa social)', () => {
     expect(pr5).toContain('NEXT_PUBLIC_CITIZEN_UI')
     expect(pr5).toContain('isSocialContextExportUiEnabled')
   })
+
+  it('export PR5 (Markdown) se monta solo en Bibliografía y cálculos, no en el panel sociodemográfico', () => {
+    const panel = readSrc('components/simulator/SocialDemographicContextPanel.tsx')
+    expect(panel).not.toContain('SocialContextExportPreviewSection')
+    const ref = readSrc('components/simulator/ReferenciasCalculos.tsx')
+    expect(ref).toContain('SocialContextExportPreviewSection')
+    expect(ref).toContain('moduleAnchor="source_traceability"')
+  })
 })

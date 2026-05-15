@@ -9,7 +9,6 @@ import {
 } from '@/lib/socialContextPlaceholder'
 import { SOCIAL_PR2_DEFERRED_NOTES } from '@/lib/social/pr2DeferredScopeNotes'
 import { SocialAssumptionsLog } from '@/components/simulator/SocialAssumptionsLog'
-import { SocialContextExportPreviewSection } from '@/components/simulator/SocialContextExportPreviewSection'
 import { SocialOfficialStatsSection } from '@/components/simulator/SocialOfficialStatsSection'
 import { SocialQuantitativeVizSection } from '@/components/simulator/SocialQuantitativeVizSection'
 import { OfficialSourcesReadingDisclosure } from '@/components/simulator/OfficialSourcesReadingDisclosure'
@@ -63,7 +62,7 @@ export function SocialDemographicContextPanel({
       <h3 id="social-demographic-context-title" className="mt-1 font-serif text-[20px] text-[#1C1B18]">
         Marco de lectura sociodemográfica
       </h3>
-      <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
+      <p className="mt-2 max-w-none text-[12px] leading-relaxed text-[#6B6760] xl:text-[13px]">
         Cada indicador sociodemográfico debe declarar su{' '}
         <span className="font-medium text-[#1C1B18]">alcance geográfico inequívoco</span> y cómo llegó el dato. En esta versión
         el simulador no integra series demográficas externas: solo el andamiaje de estados y fuentes.{' '}
@@ -73,7 +72,7 @@ export function SocialDemographicContextPanel({
         : no extrapolar a sanción, consulta ciudadana ni legitimación sin base documental por territorio.
       </p>
 
-      <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+      <dl className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
           <dt className="text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">Alcance geográfico declarado</dt>
           <dd
@@ -94,7 +93,7 @@ export function SocialDemographicContextPanel({
             {DATO_LABEL[block.dato]}
           </dd>
         </div>
-        <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3 sm:col-span-2">
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3 sm:col-span-2 xl:col-span-3">
           <dt className="text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">Fuente declarada</dt>
           <dd
             className="mt-1 text-[13px] text-[#1C1B18]"
@@ -168,12 +167,6 @@ export function SocialDemographicContextPanel({
       <SocialAssumptionsLog persistence={assumptionsPersistence} />
 
       <SocialContextHandoffPanel
-        block={block}
-        moduleAnchor={moduleAnchor}
-        persistence={assumptionsPersistence}
-      />
-
-      <SocialContextExportPreviewSection
         block={block}
         moduleAnchor={moduleAnchor}
         persistence={assumptionsPersistence}

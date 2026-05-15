@@ -33,6 +33,9 @@ describe('ModuleEditorialBrief', () => {
 
       expect(screen.getByTestId(`module-editorial-brief-${moduleId}`)).toBeTruthy()
       expect(screen.getByText(/Lectura ejecutiva del módulo/)).toBeTruthy()
+      expect(screen.getByText('S1')).toBeTruthy()
+      expect(screen.getByText('S16')).toBeTruthy()
+      expect(screen.getByText('S15')).toBeTruthy()
       expect(screen.getByText(/Qué observamos/)).toBeTruthy()
       expect(screen.getByText(/Qué decisión habilita/)).toBeTruthy()
       expect(screen.getByText(/Qué falta verificar/)).toBeTruthy()

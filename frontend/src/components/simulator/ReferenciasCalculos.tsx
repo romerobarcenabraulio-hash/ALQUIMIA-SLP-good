@@ -1,9 +1,13 @@
 'use client'
 
 import type React from 'react'
+import { useMemo } from 'react'
 import { BookOpenCheck, ClipboardCheck } from 'lucide-react'
 import { SOURCE_VERIFICATION_MATRIX, SOURCE_VERIFICATION_STATUS_LABEL } from '@/data/sourceVerificationMatrix'
 import type { SourceVerificationStatus } from '@/data/sourceVerificationMatrix'
+import { FuentesDatos } from '@/components/simulator/FuentesDatos'
+import { SocialContextExportPreviewSection } from '@/components/simulator/SocialContextExportPreviewSection'
+import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 
@@ -19,6 +23,12 @@ export function ReferenciasCalculos() {
   const genPercapita = useSimulatorStore(s => s.genPercapita)
   const precios = useSimulatorStore(s => s.precios)
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+
+  const socialBlock = useMemo(
+    () => buildSociodemographicScaffoldBlock(municipiosActivos),
+    [municipiosActivos],
+  )
 
   const counts = SOURCE_VERIFICATION_MATRIX.reduce<Record<SourceVerificationStatus, number>>(
     (acc, row) => ({ ...acc, [row.status]: acc[row.status] + 1 }),
@@ -108,6 +118,17 @@ export function ReferenciasCalculos() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      <SocialContextExportPreviewSection
+        block={socialBlock}
+        moduleAnchor="source_traceability"
+        persistence="local"
+        className="mt-8"
+      />
+
+      <div className="mt-8 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4" data-testid="fuentes-datos-bibliografia">
+        <FuentesDatos variant="embedded" />
       </div>
     </section>
   )

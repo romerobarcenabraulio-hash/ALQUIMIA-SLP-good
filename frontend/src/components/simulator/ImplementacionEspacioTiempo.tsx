@@ -25,6 +25,17 @@ const SOURCE = {
   explanation: 'Calendario propuesto con colonias piloto no oficiales; requiere validacion local.',
 }
 
+/** Evita crash en UI si el backend omite listas esperadas. */
+function normalizeTerritorialPlanResponse(raw: TerritorialImplementationPlan): TerritorialImplementationPlan {
+  return {
+    ...raw,
+    warnings: Array.isArray(raw.warnings) ? raw.warnings : [],
+    zones: Array.isArray(raw.zones) ? raw.zones : [],
+    blockers: Array.isArray(raw.blockers) ? raw.blockers : [],
+    calculation_annex: Array.isArray(raw.calculation_annex) ? raw.calculation_annex : [],
+  }
+}
+
 export function ImplementacionEspacioTiempo() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -44,22 +55,39 @@ export function ImplementacionEspacioTiempo() {
     mixCAs.P * CA_CONFIG.P.capTonDia +
     mixCAs.M * CA_CONFIG.M.capTonDia +
     mixCAs.G * CA_CONFIG.G.capTonDia
-  ), [mixCAs])
+  ), [mixCAs.P, mixCAs.M, mixCAs.G])
 
   const normalizedHorizon = horizonte <= 3 ? 3 : horizonte <= 5 ? 5 : 7
   const targetCapture = pctCapturaPorAño[Math.max(0, normalizedHorizon - 1)] ?? pctCapturaPorAño[pctCapturaPorAño.length - 1] ?? 70
+
+  /** Evita bucles de fetch cuando el store entrega nuevas referencias de objeto con los mismos números. */
+  const municipiosKey = useMemo(() => municipiosActivos.join('|'), [municipiosActivos])
+  const baselineCapture = circularityBaseline?.current_circularity_pct ?? 0
+  const baselineRsuEst = circularityBaseline?.rsu_total_ton_day_est ?? 0
+  const rsuFromMotor = resultados?.rsuTotalTonDia
 
   const payload: TerritorialPlanRequest = useMemo(() => ({
     city_id: zmActiva,
     municipios: blockedDemo ? [] : municipiosActivos,
     horizon_years: normalizedHorizon,
     start_month: mesInicio,
-    current_capture_pct: circularityBaseline?.current_circularity_pct ?? 0,
+    current_capture_pct: baselineCapture,
     target_capture_pct: targetCapture,
-    rsu_total_ton_day: resultados?.rsuTotalTonDia ?? circularityBaseline?.rsu_total_ton_day_est ?? 0,
+    rsu_total_ton_day: rsuFromMotor ?? baselineRsuEst,
     available_capacity_ton_day: availableCapacity,
     source: SOURCE,
-  }), [availableCapacity, blockedDemo, circularityBaseline, mesInicio, municipiosActivos, normalizedHorizon, resultados, targetCapture, zmActiva])
+  }), [
+    availableCapacity,
+    baselineCapture,
+    baselineRsuEst,
+    blockedDemo,
+    mesInicio,
+    municipiosKey,
+    normalizedHorizon,
+    rsuFromMotor,
+    targetCapture,
+    zmActiva,
+  ])
 
   useEffect(() => {
     let cancelled = false
@@ -69,7 +97,7 @@ export function ImplementacionEspacioTiempo() {
     })
     buildTerritorialPlan(payload)
       .then(data => {
-        if (!cancelled) setPlan(data)
+        if (!cancelled) setPlan(normalizeTerritorialPlanResponse(data))
       })
       .catch((err: Error) => {
         if (!cancelled) {
@@ -485,7 +513,7 @@ function PlanState({ plan }: { plan: TerritorialImplementationPlan }) {
                 <div>
                   <p className="text-[11px] font-semibold text-[#1C1B18]">Colonias piloto propuestas</p>
                   <ul className="mt-1 space-y-1 text-[12px] text-[#6B6760]">
-                    {zone.colonias.map(colony => (
+                    {(zone.colonias ?? []).map(colony => (
                       <li key={`${zone.zone_id}-${colony.name}`}>
                         {colony.name} · {colony.official_status}
                       </li>

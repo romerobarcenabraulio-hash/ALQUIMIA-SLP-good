@@ -113,7 +113,10 @@ interface SimulatorStore extends SimulatorState {
   portalJourneyLoading: boolean
   cityContextLoading: boolean
   circularityBaselineLoading: boolean
+  /** Error al cargar journey (`/city/journey/steps`). */
   portalError: string | null
+  /** Error al cargar contexto/baseline municipal — no debe ocultar el shell de módulos. */
+  cityPortalError: string | null
   /** Módulo activo en `DecisionModuleShell` (no persistido; UI). */
   activeDecisionModuleId: string | null
 
@@ -250,6 +253,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         cityContextLoading: false,
         circularityBaselineLoading: false,
         portalError: null,
+        cityPortalError: null,
         activeDecisionModuleId: null,
 
         setActiveDecisionModuleId: moduleId => {
@@ -262,6 +266,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             portalJourney: [],
             portalJourneyLoading: true,
             portalError: null,
+            cityPortalError: null,
             activeDecisionModuleId: null,
           })
           try {
@@ -287,6 +292,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             portalJourney: [],
             portalJourneyLoading: true,
             portalError: null,
+            cityPortalError: null,
             activeDecisionModuleId: null,
           })
           try {
@@ -310,18 +316,18 @@ export const useSimulatorStore = create<SimulatorStore>()(
             portalJourney: [],
             portalJourneyLoading: false,
             portalError: null,
+            cityPortalError: null,
             activeDecisionModuleId: null,
           })
         },
 
         fetchCityPortalData: async (cityId) => {
           const requestedCity = cityId.toUpperCase()
+          if (get().zmActiva.toUpperCase() !== requestedCity) return
           set({
-            cityContext: null,
-            circularityBaseline: null,
             cityContextLoading: true,
             circularityBaselineLoading: true,
-            portalError: null,
+            cityPortalError: null,
           })
           try {
             const [context, baseline] = await Promise.all([
@@ -334,13 +340,14 @@ export const useSimulatorStore = create<SimulatorStore>()(
               circularityBaseline: baseline,
               cityContextLoading: false,
               circularityBaselineLoading: false,
+              cityPortalError: null,
             })
           } catch (err) {
             if (get().zmActiva.toUpperCase() !== requestedCity) return
             set({
               cityContextLoading: false,
               circularityBaselineLoading: false,
-              portalError: err instanceof Error ? err.message : 'Datos de ciudad no disponibles',
+              cityPortalError: err instanceof Error ? err.message : 'Datos de ciudad no disponibles',
             })
           }
         },
@@ -375,6 +382,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             cityContextLoading:  true,
             circularityBaselineLoading: true,
             portalError:         null,
+            cityPortalError:     null,
             seleccionMunicipioCatalog: null,
           })
           get().recalcular()
@@ -390,7 +398,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const genKg =
             row.poblacion > 0 ? (row.generacion_rsu_dia * 1000) / row.poblacion : 0.688
           const sel = catalogRowToSeleccion(row)
-          if (get().zmActiva !== zmId) {
+          if (get().zmActiva.toUpperCase() !== zmId.toUpperCase()) {
             get().setZM(zmId)
           }
           set({

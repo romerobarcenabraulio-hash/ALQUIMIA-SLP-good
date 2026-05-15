@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import { useShallow } from 'zustand/react/shallow'
 import {
   CartesianGrid,
   Legend,
@@ -31,12 +32,18 @@ function hitosTraceFuente(zmId: string, catalogLabel: string | null): string {
   return `ALQUIMIA · hitos ZM ${zmId} (catálogo territorial de referencia).`
 }
 
+function tooltipNum(v: unknown, digits: number): string {
+  return typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : '—'
+}
+
 export function ProgresionPlanMunicipalTiempo() {
-  const state = useSimulatorStore(s => ({
-    horizonte: s.horizonte,
-    presetTrayectoria: s.presetTrayectoria,
-    genPercapita: s.genPercapita,
-  }))
+  const { horizonte, presetTrayectoria, genPercapita } = useSimulatorStore(
+    useShallow(s => ({
+      horizonte: s.horizonte,
+      presetTrayectoria: s.presetTrayectoria,
+      genPercapita: s.genPercapita,
+    })),
+  )
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const hitosBundle = useMemo(() => getHitosForZm(zmActiva), [zmActiva])
   const resultados = useSimulatorStore(s => s.resultados)
@@ -51,11 +58,11 @@ export function ProgresionPlanMunicipalTiempo() {
       resultadosSinPrograma,
       { baselineCircularityPct: baselinePct },
     )
-  }, [resultados, resultadosSinPrograma, baselinePct, zmActiva])
+  }, [resultados, resultadosSinPrograma, baselinePct, zmActiva, horizonte])
 
   const filasHitos = useMemo(
-    () => buildHitosResumenRows(state.horizonte, hitosBundle.hitos),
-    [state.horizonte, hitosBundle.hitos],
+    () => buildHitosResumenRows(horizonte, hitosBundle.hitos),
+    [horizonte, hitosBundle.hitos],
   )
 
   const chartData = useMemo(
@@ -105,8 +112,8 @@ export function ProgresionPlanMunicipalTiempo() {
         <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760] max-w-3xl">
           Lectura ejecutiva: infraestructura, economía circular material y cobeneficios públicos en el mismo eje temporal.
-          Las series se recalculan automáticamente con municipio, horizonte ({state.horizonte}a) y generación per cápita (
-          {state.genPercapita.toFixed(2)} kg/hab/día). Trayectoria de captura: preset {state.presetTrayectoria}.
+          Las series se recalculan automáticamente con municipio, horizonte ({horizonte}a) y generación per cápita (
+          {genPercapita.toFixed(2)} kg/hab/día). Trayectoria de captura: preset {presetTrayectoria}.
         </p>
       </header>
 
@@ -200,7 +207,7 @@ export function ProgresionPlanMunicipalTiempo() {
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#A8A49C' }} />
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E8E4DC' }}
-                formatter={(value: number, name: string) => [value.toFixed(1), name]}
+                formatter={(value: number | string, name: string) => [tooltipNum(value, 1), name]}
                 labelFormatter={(m) => `Mes ${m} · ${chartData.find(d => d.mes === m)?.etiqueta ?? ''}`}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -255,10 +262,12 @@ export function ProgresionPlanMunicipalTiempo() {
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: '#A8A49C' }} />
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E8E4DC' }}
-                formatter={(value: number, name: string) => {
-                  if (name === 'Derrama base acum. (MXN M)' || name === 'Ingreso valoriz. (MXN M)') return [fmt.mxnM(value * 1e6), name]
-                  if (name === 'Tons capturadas / mes') return [`${value.toFixed(1)} t`, name]
-                  return [`${value.toFixed(1)}%`, name]
+                formatter={(value: number | string, name: string) => {
+                  const n = typeof value === 'number' ? value : Number.NaN
+                  if (name === 'Derrama base acum. (MXN M)' || name === 'Ingreso valoriz. (MXN M)')
+                    return [Number.isFinite(n) ? fmt.mxnM(n * 1e6) : '—', name]
+                  if (name === 'Tons capturadas / mes') return [`${tooltipNum(value, 1)} t`, name]
+                  return [`${tooltipNum(value, 1)}%`, name]
                 }}
                 labelFormatter={(m) => `Mes ${m} · ${chartData.find(d => d.mes === m)?.etiqueta ?? ''}`}
               />
@@ -316,9 +325,12 @@ export function ProgresionPlanMunicipalTiempo() {
               <YAxis yAxisId="salud" orientation="right" tick={{ fontSize: 9, fill: '#A8A49C' }} label={{ value: 'MXN M', angle: 90, position: 'insideRight', fontSize: 9, fill: '#8A857C' }} />
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E8E4DC' }}
-                formatter={(value: number, name: string) =>
-                  name === 'Ahorro salud acum.' ? [fmt.mxnM(value * 1e6), name] : [`${value.toFixed(2)} kt`, name]
-                }
+                formatter={(value: number | string, name: string) => {
+                  const n = typeof value === 'number' ? value : Number.NaN
+                  return name === 'Ahorro salud acum.'
+                    ? [Number.isFinite(n) ? fmt.mxnM(n * 1e6) : '—', name]
+                    : [`${tooltipNum(value, 2)} kt`, name]
+                }}
                 labelFormatter={(m) => `Mes ${m} · ${chartData.find(d => d.mes === m)?.etiqueta ?? ''}`}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
@@ -354,7 +366,7 @@ export function ProgresionPlanMunicipalTiempo() {
               <YAxis domain={[0, 100]} tick={{ fontSize: 9, fill: '#A8A49C' }} />
               <Tooltip
                 contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E8E4DC' }}
-                formatter={(value: number) => [`${value.toFixed(1)}%`, '']}
+                formatter={(value: number | string) => [`${tooltipNum(value, 1)}%`, '']}
                 labelFormatter={(m) => `Mes ${m} · ${chartData.find(d => d.mes === m)?.etiqueta ?? ''}`}
               />
               <Legend wrapperStyle={{ fontSize: 11 }} />
