@@ -61,10 +61,10 @@ export function SocialQuantitativeVizSection() {
       className="mt-6 border-t border-[#E8E4DC] pt-6"
       aria-label="Visualización cuantitativa ligera sociodemográfica (PR4)"
     >
-      <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">PR4 · Cuantitativo ligero</p>
-      <h3 className="mt-1 font-serif text-[18px] text-[#1C1B18]">
+      <p className="text-[10px] uppercase tracking-[0.08em] text-[#6B6760]">PR4 · Cuantitativo ligero</p>
+      <h4 className="mt-1 font-serif text-[18px] text-[#1C1B18]">
         Tabla y barras: cada serie con su propio tabulado territorial
-      </h3>
+      </h4>
       <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
         Hasta {SOCIAL_QUANT_VIZ_MAX_SERIES} series en pantalla con columnas <strong>Ámbito</strong> y{' '}
         <strong>Vintage</strong> obligatorias. Los cocientes derivados sólo con lista blanca Auditor y sólo si numerador
@@ -97,7 +97,7 @@ export function SocialQuantitativeVizSection() {
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <SocialStatsDenseVirtualTable rows={rows} />
         <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-2">
-          <p className="mb-1 px-1 text-[10px] font-medium uppercase tracking-wide text-[#8A857C]">
+          <p className="mb-1 px-1 text-[10px] font-medium uppercase tracking-wide text-[#6B6760]">
             Barras (una por serie declarada)
           </p>
           <p className="mb-2 px-1 text-[10px] leading-snug text-[#6B6760]">

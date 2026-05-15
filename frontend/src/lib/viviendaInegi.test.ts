@@ -30,8 +30,11 @@ describe('viviendaInegi', () => {
     expect(segments[0].helper).toMatch(/no es porcentaje oficial INEGI/i)
   })
 
-  it('reporta empty cuando no hay distribucion municipal cargada', () => {
-    expect(getInegiHousingDistribution('QRO', ['qro'])).toBeNull()
+  it('con un solo municipio sin tabulado municipal devuelve hechos estatales y categories vacías (no null)', () => {
+    const d = getInegiHousingDistribution('QRO', ['qro'])
+    expect(d).not.toBeNull()
+    expect(d?.categories).toEqual([])
+    expect(d?.blocker).toMatch(/casa\/departamento por municipio/i)
     expect(getInegiHousingDistribution('EXT', ['ext'])).toBeNull()
   })
 

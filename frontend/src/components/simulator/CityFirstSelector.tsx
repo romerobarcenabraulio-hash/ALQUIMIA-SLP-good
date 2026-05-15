@@ -1,36 +1,24 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { MapPin } from 'lucide-react'
-import { getCityOptions, getEstadosMx, getInegiMunicipalSourceAudit, getMunicipiosMx } from '@/lib/api'
-import { ZMS, alquimiaHideGdlFromUi, GDL_ZM_SELECTOR_FOOTNOTE } from '@/lib/constants'
+import { getEstadosMx, getInegiMunicipalSourceAudit, getMunicipiosMx } from '@/lib/api'
+import { ZMS } from '@/lib/constants'
+import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
-import type { CityOption, EstadoMxOption, InegiMunicipalSourceAudit, MunicipioContext, MunicipioMxApi } from '@/types'
+import type { EstadoMxOption, InegiMunicipalSourceAudit, MunicipioMxApi } from '@/types'
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-
-/** Evita que sufijos técnicos de catálogo lleguen al nombre público del botón ZM. */
-function labelZmPublica(raw: string): string {
-  const legacyCatalogSuffix = new RegExp(String.raw`\s*\([^)]*${'semi'}${'lla'}[^)]*\)\s*$`, 'iu')
-  return raw.replace(legacyCatalogSuffix, '').trim()
-}
 
 export function CityFirstSelector() {
-  const [gdlBlockedOpen, setGdlBlockedOpen] = useState(false)
   const {
     zmActiva,
-    setZM,
     applyMunicipioCatalog,
-    cityContext,
     cityContextLoading,
     portalError,
     municipiosActivos,
-    setMunicipiosPrograma,
     seleccionMunicipioCatalog,
   } = useSimulatorStore()
 
-  const [options, setOptions] = useState<CityOption[]>([])
   const [estados, setEstados] = useState<EstadoMxOption[]>([])
   const [estadoId, setEstadoId] = useState<string>('')
   const [municipiosApi, setMunicipiosApi] = useState<MunicipioMxApi[]>([])
@@ -43,41 +31,29 @@ export function CityFirstSelector() {
   const [inegiAuditError, setInegiAuditError] = useState<string | null>(null)
 
   const zm = useMemo(() => ZMS.find(z => z.id === zmActiva), [zmActiva])
-
-  const municipiosChips = useMemo((): MunicipioContext[] => {
-    if (cityContext?.municipios?.length) return cityContext.municipios
-    if (!zm) return []
-    return zm.municipios.map(m => ({
-      municipio_id: m.id,
-      nombre: m.nombre,
-      estado: zm.estado,
-      legal_scope: 'municipio',
-      jurisdiction_scope: 'Municipality',
-    }))
-  }, [cityContext, zm])
-
-  const allZmSelected =
-    zm != null &&
-    municipiosActivos.length === zm.municipios.length &&
-    zm.municipios.every(m => municipiosActivos.includes(m.id))
+  const lecturaTerritorio = useMemo(
+    () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
+    [municipiosActivos, zmActiva],
+  )
 
   useEffect(() => {
     let active = true
-    Promise.all([getCityOptions(), getEstadosMx()])
-      .then(([cities, eds]) => {
+    getEstadosMx()
+      .then((eds) => {
         if (!active) return
-        setOptions(cities)
         setEstados(eds)
         setError(null)
       })
       .catch(err => {
         if (!active) return
-        setError(err instanceof Error ? err.message : 'Ciudades no disponibles')
+        setError(err instanceof Error ? err.message : 'Catálogo de entidades no disponible')
       })
       .finally(() => {
         if (active) setLoading(false)
       })
-    return () => { active = false }
+    return () => {
+      active = false
+    }
   }, [])
 
   useEffect(() => {
@@ -186,97 +162,27 @@ export function CityFirstSelector() {
               error={inegiAuditError}
             />
           )}
-        </div>
-      )}
-
-      {!loading && !error && options.length === 0 && estados.length === 0 && (
-        <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[12px] text-[#8A857C]">
-          No hay ciudades habilitadas en el contrato actual.
-        </div>
-      )}
-
-      {!loading && !error && options.length > 0 && (
-        <details className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
-          <summary className="cursor-pointer text-[12px] font-medium text-[#3B6D11]">
-            Opciones metropolitanas avanzadas
-          </summary>
-          <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-            Úsalas solo para simular coordinación territorial. La responsabilidad legal y operativa sigue siendo municipal.
-          </p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            {options.map(option => (
-              <button
-                key={option.city_id}
-                type="button"
-                onClick={() => {
-                  if (option.city_id === 'GDL' && !alquimiaHideGdlFromUi()) {
-                    setGdlBlockedOpen(true)
-                    return
-                  }
-                  setZM(option.city_id)
-                }}
-                className={cn(
-                  'inline-flex items-center gap-2 rounded-[8px] border px-4 py-2 text-[12px] font-medium transition-colors',
-                  zmActiva === option.city_id
-                    ? 'border-[#3B6D11] bg-[#3B6D11] text-white'
-                    : 'border-[#E8E4DC] bg-white text-[#6B6760] hover:bg-[#F0EDE5]',
-                )}
-              >
-                <MapPin size={14} aria-hidden="true" />
-                {labelZmPublica(option.nombre)}
-              </button>
-            ))}
-          </div>
-
-          {municipiosChips.length > 0 && zm && (
-            <div className="mt-4 border-t border-[#E8E4DC] pt-3">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
-                Subconjunto municipal del escenario
+          {municipiosActivos.length > 0 && zm && seleccionMunicipioCatalog && (
+            <div className="space-y-2 pt-2 border-t border-[#E8E4DC]/80">
+              <p className="text-[11px] leading-relaxed text-[#6B6760]">
+                <span className="font-semibold text-[#1C1B18]">Alcance de lectura: </span>
+                {lecturaTerritorio}
+                {' · '}
+                <span className="text-[#5A574E]">
+                  Referencia territorial <span className="font-mono text-[11px]">{zmActiva}</span> sólo ordena población y modelo;
+                  obligaciones legales y operativas siguen siendo municipales.
+                </span>
               </p>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMunicipiosPrograma(zm.municipios.map(m => m.id))}
-                  className={cn(
-                    'rounded-[6px] border px-3 py-1.5 text-[11px] font-medium transition-colors',
-                    allZmSelected
-                      ? 'border-[#3B6D11] bg-[#EAF3DE] text-[#23470A]'
-                      : 'border-[#E8E4DC] bg-white text-[#6B6760] hover:bg-[#F0EDE5]',
-                  )}
-                >
-                  ZM completa
-                </button>
-                {municipiosChips.map(municipio => {
-                  const alone =
-                    municipiosActivos.length === 1 && municipiosActivos[0] === municipio.municipio_id
-                  return (
-                    <button
-                      key={municipio.municipio_id}
-                      type="button"
-                      onClick={() => setMunicipiosPrograma([municipio.municipio_id])}
-                      className={cn(
-                        'rounded-[6px] border px-3 py-1.5 text-[11px] text-left transition-colors max-w-[220px]',
-                        alone
-                          ? 'border-[#3B6D11] bg-[#3B6D11] text-white'
-                          : 'border-[#E8E4DC] bg-white text-[#6B6760] hover:border-[#C8C2B8]',
-                      )}
-                    >
-                      <span className="font-medium">{municipio.nombre}</span>
-                      <span className={cn('block text-[9px] mt-0.5', alone ? 'text-white/85' : 'text-[#A8A49C]')}>
-                        Municipio propio · no sustituible por ZM
-                      </span>
-                    </button>
-                  )
-                })}
-              </div>
-              {zm && municipiosActivos.length > 0 && (
-                <div className="mt-3">
-                  <MunicipioMadurezBanner municipiosActivos={municipiosActivos} />
-                </div>
-              )}
+              <MunicipioMadurezBanner municipiosActivos={municipiosActivos} />
             </div>
           )}
-        </details>
+        </div>
+      )}
+
+      {!loading && !error && estados.length === 0 && (
+        <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[12px] text-[#8A857C]">
+          No hay entidades federativas cargadas desde el servidor. Revisa conectividad o contrato API.
+        </div>
       )}
 
       {cityContextLoading && (
@@ -288,21 +194,6 @@ export function CityFirstSelector() {
           {portalError}
         </div>
       )}
-
-      {alquimiaHideGdlFromUi() && (
-        <p className="mt-4 text-[11px] leading-relaxed text-[#A8A49C]">{GDL_ZM_SELECTOR_FOOTNOTE}</p>
-      )}
-
-      <Dialog open={gdlBlockedOpen} onOpenChange={setGdlBlockedOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>ZM Guadalajara</DialogTitle>
-            <DialogDescription>
-              Fuentes municipales en revisión — la ZM no sustituye el análisis por municipio ni vuelve oficial una propuesta.
-            </DialogDescription>
-          </DialogHeader>
-        </DialogContent>
-      </Dialog>
     </section>
   )
 }

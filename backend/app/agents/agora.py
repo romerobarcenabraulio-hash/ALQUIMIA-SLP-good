@@ -490,8 +490,14 @@ async def _call_agent_with_context(
 
     if use_llm:
         try:
+            # El rol (*_system.md) debe combinarse con el contrato documental +
+            # protocolo municipal y expediente (system_context del prompt_builder);
+            # sin esto el modelo no recibe MunicipalReasoningDossier ni reglas duras.
+            combined_system = (
+                f"{system_prompt}\n\n---\n\n{agent_prompt.system_context}"
+            )
             text = await _call_anthropic_text(
-                context.agent_name, system_prompt, agent_prompt.user_context
+                context.agent_name, combined_system, agent_prompt.user_context
             )
             _store_agent_output(context.agent_name, text, output)
             _store_in_draft_bundle(context, text, is_fallback=False)

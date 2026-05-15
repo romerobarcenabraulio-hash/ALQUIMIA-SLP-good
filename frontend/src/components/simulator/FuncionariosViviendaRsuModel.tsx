@@ -1,6 +1,6 @@
 'use client'
 
-import { Database, Info } from 'lucide-react'
+import { Database, ChevronDown, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { COMPOSICION_RSU_DETALLE, PRECIOS_RANGO } from '@/lib/constants'
 import {
@@ -9,6 +9,7 @@ import {
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
 import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
+import { OfficialSourcesReadingDisclosure } from '@/components/simulator/OfficialSourcesReadingDisclosure'
 import { cn, fmt, MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
 import type { PreciosMaterial } from '@/types'
 
@@ -67,6 +68,11 @@ const RSU_COMPOSITION = [
     color: MATERIAL_COLORS.otros,
   },
 ]
+
+/** Fracciones explícitas plásticos (matriz modelo §2.1) — para texto UI, coincide con calculator. */
+const PCT_PLASTICO_DEL_RSUTOTAL = COMPOSICION_RSU_DETALLE.plastico.pct * 100
+const PCT_PET_DEL_PLASTICO = COMPOSICION_RSU_DETALLE.plastico.petPct * 100
+const PCT_HDPE_DEL_PLASTICO = (1 - COMPOSICION_RSU_DETALLE.plastico.petPct) * 100
 
 export function FuncionariosViviendaRsuModel() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -132,16 +138,9 @@ export function FuncionariosViviendaRsuModel() {
           <h2 id="funcionarios-vivienda-rsu-title" className="mt-1 font-serif text-[24px] text-[#1C1B18]">
             Distribución de vivienda, generación y costo público
           </h2>
-          <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
-            Ajusta generación per cápita, vivienda en condominio/no condominio, ocupantes por vivienda, precios de materiales
-            y costo por tonelada dispuesta. El header y los módulos inferiores se recalculan con estos supuestos; no se
-            presentan como estadística oficial ni presupuesto aprobado.
-          </p>
-          <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#1C1B18]">
-            Lectura de captura: del 100% del RSU doméstico modelado, este horizonte usa una captura global de{' '}
-            <strong>{capturaBasePct.toFixed(0)}%</strong>, aplicada a <strong>{fmt.num0(poblacionAplicada)}</strong> personas
-            y equivalente a <strong>{toneladasCapturadasDia.toFixed(1)} t/día</strong> valorizables después de merma. El mix por
-            material permanece fijo como referencia documental; lo editable por fracción es la merma operativa.
+          <p className="mt-2 max-w-3xl text-[12px] text-[#5A574E]">
+            Ajustes en bloque inferior: mismo panel para composición RSU, jerarquía de plásticos y precios. Supuestos
+            editables — no estadística oficial.
           </p>
         </div>
         <div className="inline-flex items-center gap-2 rounded-[999px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1 text-[11px] text-[#3B6D11]">
@@ -150,6 +149,25 @@ export function FuncionariosViviendaRsuModel() {
         </div>
       </div>
 
+      <details className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2 open:pb-3">
+        <summary className="cursor-pointer text-[12px] font-semibold text-[#3B6D11]">
+          Captura global y lectura del horizonte
+        </summary>
+        <div className="mt-2 space-y-2 text-[11px] leading-relaxed text-[#6B6760]">
+          <p>
+            Del 100% del RSU doméstico modelado, el horizonte actual aplica una captura global de{' '}
+            <strong className="text-[#1C1B18]">{capturaBasePct.toFixed(0)}%</strong> sobre{' '}
+            <strong className="text-[#1C1B18]">{fmt.num0(poblacionAplicada)}</strong> personas, equivalente a{' '}
+            <strong className="text-[#1C1B18]">{toneladasCapturadasDia.toFixed(1)} t/día</strong> valorizables después de
+            merma. El mix documental por fracción permanece fijo; por material solo se edita merma y precio.
+          </p>
+          <p>
+            El header y los módulos inferiores se recalculan con estos supuestos; no constituyen presupuesto aprobado ni
+            medición de campo.
+          </p>
+        </div>
+      </details>
+
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <MetricCard label="RSU activo" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="t/día recalculadas" />
         <MetricCard label="Emisiones evitables" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="estimación modelo · CO₂e/año" />
@@ -157,7 +175,12 @@ export function FuncionariosViviendaRsuModel() {
         <MetricCard label="Salud pública" value={resultados ? fmt.mxnM(resultados.ahorroSalud) : '—'} helper="estimación modelo · PM2.5 e IRA" />
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_0.85fr]">
+      <div className="mt-4 space-y-4 rounded-[12px] border border-[#B9C8A6] bg-white p-4" data-testid="rsu-zona-unica">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Zona RSU única</p>
+          <h3 className="mt-0.5 font-serif text-[17px] text-[#1C1B18]">Generación, composición y horizonte</h3>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-[1fr_0.85fr]">
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
           <div className="flex items-center justify-between gap-3">
             <label htmlFor="funcionario-gen-percapita" className="text-[12px] font-medium text-[#6B6760]">
@@ -206,6 +229,14 @@ export function FuncionariosViviendaRsuModel() {
                 </div>
               ))}
             </div>
+            <p className="mt-3 rounded-[8px] border border-[#D7E8C0] bg-[#F6FAEF] px-3 py-2 text-[11px] leading-relaxed text-[#3D4F2E]">
+              <strong>Jerarquía de plásticos (modelo, matriz 2.1):</strong> la fracción agregada &quot;plásticos&quot; es{' '}
+              <span className="font-mono">{PCT_PLASTICO_DEL_RSUTOTAL.toFixed(0)}%</span> del tonelaje total de referencia del
+              simulador. Dentro de esa fracción, el motor distribuye{' '}
+              <span className="font-mono">{PCT_PET_DEL_PLASTICO.toFixed(0)}%</span> a PET y{' '}
+              <span className="font-mono">{PCT_HDPE_DEL_PLASTICO.toFixed(0)}%</span> a HDPE para ingresos y mermas por material;
+              es reparto económico del modelo, no composición municipal medida en campo.
+            </p>
           </div>
         </div>
 
@@ -235,142 +266,11 @@ export function FuncionariosViviendaRsuModel() {
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-[1fr_1.15fr]">
-        <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Hechos vivienda INEGI</p>
-          {!distribution ? (
-            <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
-              Sin tabulado INEGI municipal de vivienda para esta selección. No se inventan porcentajes de casa/departamento.
-            </div>
-          ) : (
-            <>
-              <p className="mt-1 text-[12px] text-[#6B6760]">
-                {distribution.geographyLabel}. {distribution.retrievedLabel}
-              </p>
-              <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                <MiniFact label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
-                <MiniFact label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
-                <MiniFact label="Ocupantes/vivienda" value={distribution.stateAvgOccupants2020.toFixed(1)} />
-              </div>
-              <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] leading-relaxed text-amber-900">
-                {distribution.note}
-                <p className="mt-2 font-medium">Bloqueo: {distribution.blocker}</p>
-                <p className="mt-1">Siguiente acción: {distribution.nextAction}</p>
-              </div>
-              <p className="mt-3 text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Segmentos operativos ajustables</p>
-              <div className="mt-2 flex flex-wrap gap-3">
-                {operationalSegments.map(tipo => {
-                  const active = tipo.active
-                  return (
-                    <button
-                      key={tipo.key}
-                      type="button"
-                      onClick={() => toggleTipoVivienda(tipo.key)}
-                      className={cn(
-                        'min-w-[165px] rounded-[10px] border px-4 py-3 text-left transition-colors',
-                        active
-                          ? 'border-[#3B6D11]/35 bg-[#EAF3DE] text-[#23470A]'
-                          : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#A8A49C]',
-                      )}
-                    >
-                      <span className="block text-[12px] font-medium">{tipo.label}</span>
-                      <span className="mt-1 block font-mono text-[16px]">{tipo.modelSharePct.toFixed(1)}%</span>
-                      <span className="mt-1 block text-[10px] leading-relaxed">{tipo.helper}</span>
-                      <span className="mt-1 block text-[10px] leading-relaxed">Factor operativo {tipo.factor.toFixed(2)}x</span>
-                    </button>
-                  )
-                })}
-              </div>
-              <div className="mt-3 overflow-hidden rounded-[8px] border border-[#E8E4DC]">
-                <table className="w-full text-left text-[11px]">
-                  <thead className="bg-[#F8F6F1] text-[#8C8880]">
-                    <tr>
-                      <th className="px-3 py-2 font-medium">Segmento</th>
-                      <th className="px-3 py-2 font-medium">Peso usado</th>
-                      <th className="px-3 py-2 font-medium">Fuente del porcentaje</th>
-                      <th className="px-3 py-2 font-medium">Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {operationalSegments.map(tipo => (
-                      <tr key={tipo.key} className="border-t border-[#F0EDE5]">
-                        <td className="px-3 py-2 text-[#1C1B18]">{tipo.label}</td>
-                        <td className="px-3 py-2 font-mono text-[#1C1B18]">{tipo.modelSharePct.toFixed(1)}%</td>
-                        <td className="px-3 py-2 text-[#6B6760]">Modelo operativo ALQUIMIA; pendiente tabulado INEGI municipal</td>
-                        <td className="px-3 py-2 text-[#6B6760]">{tipo.active ? 'Activo en escenario' : 'Excluido del escenario'}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <div className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-2 text-[11px] leading-relaxed text-[#6B6760]">
-                <p>{distribution.source}. {distribution.confidenceLabel}</p>
-                <p className="mt-1">{distribution.note}</p>
-              </div>
-            </>
-          )}
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
-            <ScenarioSlider
-              id="vivienda-condominio"
-              label="Vivienda en propiedad de condominio"
-              value={viviendaCondominioPct}
-              suffix="%"
-              min={0}
-              max={100}
-              step={5}
-              onChange={setViviendaCondominioPct}
-              helper="Supuesto operativo: vivienda vertical, condominios o conjuntos con administración común."
-            />
-            <ScenarioSlider
-              id="vivienda-condominio-depto"
-              label="Dentro de condominio: departamento"
-              value={viviendaCondominioDepartamentoPct}
-              suffix="%"
-              min={0}
-              max={100}
-              step={5}
-              onChange={setViviendaCondominioDepartamentoPct}
-              helper={`El resto (${viviendaCondominioCasaPct.toFixed(0)}%) se modela como casa habitacion dentro de condominio.`}
-            />
-            <ScenarioSlider
-              id="vivienda-no-condominio"
-              label="Vivienda no sujeta a condominio"
-              value={viviendaNoCondominioPct}
-              suffix="%"
-              min={0}
-              max={100}
-              step={5}
-              onChange={setViviendaNoCondominioPct}
-              helper="Complemento operativo: casa independiente o vivienda con entrega directa a calle."
-            />
-            <ScenarioSlider
-              id="ocupantes-vivienda"
-              label="Ocupantes por vivienda del escenario"
-              value={ocupantesEscenario}
-              suffix=""
-              min={1}
-              max={6}
-              step={0.1}
-              onChange={setOcupantesPorViviendaEscenario}
-              helper={`INEGI 2020 estima ${ocupantesBase.toFixed(1)} ocupantes/vivienda; moverlo cambia población modelada y RSU.`}
-            />
-            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
-              <p className="font-medium text-[#1C1B18]">Viviendas por porcentaje</p>
-              <p className="mt-1">Condominio: {fmt.num0(viviendasCondominio)} viviendas; de ellas {fmt.num0(viviendasCondoDepartamento)} deptos y {fmt.num0(viviendasCondoCasa)} casas.</p>
-              <p className="mt-1">No condominio: {fmt.num0(viviendasNoCondominio)} viviendas modeladas.</p>
-            </div>
-            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
-              <p className="font-medium text-[#1C1B18]">Clasificación de cifra</p>
-              <p className="mt-1">INEGI: fuente verificada para población, viviendas y ocupantes promedio. Condominio/no condominio: supuesto editable del escenario hasta contar con tabulado local específico.</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+        <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FBFAF8] p-4">
           <div className="flex items-start gap-2">
             <Info size={14} className="mt-0.5 text-[#D4881E]" aria-hidden />
             <div>
-              <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Precios de residuos</p>
+              <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Precios, merma y captura aplicada</p>
               <p className="mt-1 text-[12px] text-[#6B6760]">
                 Cada precio recalcula ingresos y viabilidad. La fuente visible es documental; si falta cotización local,
                 el valor queda como supuesto de escenario.
@@ -482,6 +382,171 @@ export function FuncionariosViviendaRsuModel() {
             </p>
           </div>
         </div>
+      </div>
+
+      <div className="mt-4 space-y-3 rounded-[10px] border border-[#E8E4DC] bg-white p-4" data-testid="vivienda-accordion-shell">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Vivienda y entorno municipal</p>
+          <p className="font-serif text-[17px] text-[#1C1B18]">INEGI y supuestos operativos</p>
+          <p className="mt-1 text-[11px] text-[#6B6760]">Abre cada bloque sólo cuando lo necesitas; mismos datos y controles.</p>
+          <OfficialSourcesReadingDisclosure className="mt-3" variant="compact" />
+        </div>
+
+        <details open className="group rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[12px] font-semibold text-[#3B6D11]">
+            Hechos municipales INEGI
+            <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180 text-[#6B6760]" aria-hidden />
+          </summary>
+          <div className="mt-3 space-y-3 border-t border-[#EDE9E2] pt-3">
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Hechos vivienda INEGI</p>
+          {!distribution ? (
+            <div className="mt-2 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] text-amber-900">
+              Sin tabulado INEGI municipal de vivienda para esta selección. No se inventan porcentajes de casa/departamento.
+            </div>
+          ) : (
+            <>
+              <p className="mt-1 text-[12px] text-[#6B6760]">
+                {distribution.geographyLabel}. {distribution.retrievedLabel}
+              </p>
+              <div className="mt-3 grid gap-2 sm:grid-cols-3">
+                <MiniFact label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
+                <MiniFact label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
+                <MiniFact label="Ocupantes/vivienda" value={distribution.stateAvgOccupants2020.toFixed(1)} />
+              </div>
+              <div className="mt-3 rounded-[8px] border border-amber-200 bg-amber-50 p-3 text-[12px] leading-relaxed text-amber-900">
+                {distribution.note}
+                <p className="mt-2 font-medium">Bloqueo: {distribution.blocker}</p>
+                <p className="mt-1">Siguiente acción: {distribution.nextAction}</p>
+              </div>
+              <p className="mt-3 text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Segmentos operativos ajustables</p>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {operationalSegments.map(tipo => {
+                  const active = tipo.active
+                  return (
+                    <button
+                      key={tipo.key}
+                      type="button"
+                      onClick={() => toggleTipoVivienda(tipo.key)}
+                      className={cn(
+                        'min-w-[165px] rounded-[10px] border px-4 py-3 text-left transition-colors',
+                        active
+                          ? 'border-[#3B6D11]/35 bg-[#EAF3DE] text-[#23470A]'
+                          : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#A8A49C]',
+                      )}
+                    >
+                      <span className="block text-[12px] font-medium">{tipo.label}</span>
+                      <span className="mt-1 block font-mono text-[16px]">{tipo.modelSharePct.toFixed(1)}%</span>
+                      <span className="mt-1 block text-[10px] leading-relaxed">{tipo.helper}</span>
+                      <span className="mt-1 block text-[10px] leading-relaxed">Factor operativo {tipo.factor.toFixed(2)}x</span>
+                    </button>
+                  )
+                })}
+              </div>
+              <div className="mt-3 overflow-hidden rounded-[8px] border border-[#E8E4DC]">
+                <table className="w-full text-left text-[11px]">
+                  <thead className="bg-[#F8F6F1] text-[#8C8880]">
+                    <tr>
+                      <th className="px-3 py-2 font-medium">Segmento</th>
+                      <th className="px-3 py-2 font-medium">Peso usado</th>
+                      <th className="px-3 py-2 font-medium">Fuente del porcentaje</th>
+                      <th className="px-3 py-2 font-medium">Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {operationalSegments.map(tipo => (
+                      <tr key={tipo.key} className="border-t border-[#F0EDE5]">
+                        <td className="px-3 py-2 text-[#1C1B18]">{tipo.label}</td>
+                        <td className="px-3 py-2 font-mono text-[#1C1B18]">{tipo.modelSharePct.toFixed(1)}%</td>
+                        <td className="px-3 py-2 text-[#6B6760]">Modelo operativo ALQUIMIA; pendiente tabulado INEGI municipal</td>
+                        <td className="px-3 py-2 text-[#6B6760]">{tipo.active ? 'Activo en escenario' : 'Excluido del escenario'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-2 text-[11px] leading-relaxed text-[#6B6760]">
+                <p>{distribution.source}. {distribution.confidenceLabel}</p>
+                <p className="mt-1">{distribution.note}</p>
+              </div>
+            </>
+          )}
+          </div>
+        </details>
+
+        <details className="group rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[12px] font-semibold text-[#3B6D11]">
+            Supuestos de distribución condominio / ocupantes
+            <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180 text-[#6B6760]" aria-hidden />
+          </summary>
+          <div className="mt-3 border-t border-[#EDE9E2] pt-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <ScenarioSlider
+              id="vivienda-condominio"
+              label="Vivienda en propiedad de condominio"
+              value={viviendaCondominioPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaCondominioPct}
+              helper="Supuesto operativo: vivienda vertical, condominios o conjuntos con administración común."
+            />
+            <ScenarioSlider
+              id="vivienda-condominio-depto"
+              label="Dentro de condominio: departamento"
+              value={viviendaCondominioDepartamentoPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaCondominioDepartamentoPct}
+              helper={`El resto (${viviendaCondominioCasaPct.toFixed(0)}%) se modela como casa habitacion dentro de condominio.`}
+            />
+            <ScenarioSlider
+              id="vivienda-no-condominio"
+              label="Vivienda no sujeta a condominio"
+              value={viviendaNoCondominioPct}
+              suffix="%"
+              min={0}
+              max={100}
+              step={5}
+              onChange={setViviendaNoCondominioPct}
+              helper="Complemento operativo: casa independiente o vivienda con entrega directa a calle."
+            />
+            <ScenarioSlider
+              id="ocupantes-vivienda"
+              label="Ocupantes por vivienda del escenario"
+              value={ocupantesEscenario}
+              suffix=""
+              min={1}
+              max={6}
+              step={0.1}
+              onChange={setOcupantesPorViviendaEscenario}
+              helper={`INEGI 2020 estima ${ocupantesBase.toFixed(1)} ocupantes/vivienda; moverlo cambia población modelada y RSU.`}
+            />
+          </div>
+          </div>
+        </details>
+
+        <details className="group rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 [&_summary::-webkit-details-marker]:hidden">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[12px] font-semibold text-[#3B6D11]">
+            Derivados del escenario
+            <ChevronDown className="size-4 shrink-0 transition group-open:rotate-180 text-[#6B6760]" aria-hidden />
+          </summary>
+          <div className="mt-3 border-t border-[#EDE9E2] pt-3">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+              <p className="font-medium text-[#1C1B18]">Viviendas por porcentaje</p>
+              <p className="mt-1">Condominio: {fmt.num0(viviendasCondominio)} viviendas; de ellas {fmt.num0(viviendasCondoDepartamento)} deptos y {fmt.num0(viviendasCondoCasa)} casas.</p>
+              <p className="mt-1">No condominio: {fmt.num0(viviendasNoCondominio)} viviendas modeladas.</p>
+            </div>
+            <div className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]">
+              <p className="font-medium text-[#1C1B18]">Clasificación de cifra</p>
+              <p className="mt-1">INEGI: fuente verificada para población, viviendas y ocupantes promedio. Condominio/no condominio: supuesto editable del escenario hasta contar con tabulado local específico.</p>
+            </div>
+          </div>
+          </div>
+        </details>
       </div>
 
       <p className="mt-3 text-[10px] leading-relaxed text-[#A8A49C]">

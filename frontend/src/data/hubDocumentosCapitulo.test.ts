@@ -12,7 +12,22 @@ import {
   HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO,
   conteoDocumentosIncluiblesEnZip,
   documentosHubIncluiblesEnZip,
+  type HubDocumentoCapitulo,
 } from '@/data/hubDocumentosCapitulo'
+
+describe('hubDocumentosCapitulo · Q-023 invariantes catálogo', () => {
+  it('ningún documento en estado «disponible» sin publicRelPath real (Auditor Prompt 31)', () => {
+    const todos: HubDocumentoCapitulo[] = [
+      ...HUB_DOCUMENTOS_CAPITULO.SLP,
+      ...HUB_DOCUMENTOS_CAPITULO.QRO,
+      ...HUB_DOCUMENTOS_CAPITULO.MTY,
+    ]
+    const malos = todos.filter(
+      d => d.estadoEntrega === 'disponible' && !d.publicRelPath?.trim(),
+    )
+    expect(malos, JSON.stringify(malos.map(d => d.id))).toEqual([])
+  })
+})
 
 describe('hubDocumentosCapitulo · Q-023 conteo ZIP', () => {
   it('objetivo Q-023 documentado es 7', () => {

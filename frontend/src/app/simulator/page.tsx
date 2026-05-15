@@ -34,9 +34,12 @@ import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
+import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulatorBar'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
+import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
 import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
+import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
 import type { Audience, DecisionModule } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
@@ -62,10 +65,13 @@ const FUNCTIONARY_MODULE_LABELS: Record<string, Pick<DecisionModule, 'label' | '
     next_action: 'Ajustar vivienda, generación, precios y costo de disposición antes de revisar marco jurídico.',
   },
   municipal_context: {
-    label: 'Marco jurídico municipal',
-    decision: 'Revisar qué puede hacer cada municipio con su reglamento vigente y qué requiere reforma.',
-    evidence: 'Diagnóstico legal por municipio, fuentes localizadas y propuesta expositiva no oficial.',
-    next_action: 'Validar fuente municipal competente antes de usar sanciones o documentos oficiales.',
+    label: 'Contexto sociodemográfico y marco legal municipal',
+    decision:
+      'Integrar lectura sociodemográfica de referencia (KPIs con trazabilidad, sin acto jurídico) con el marco jurídico local: qué puede ejecutarse con reglamento vigente y qué requiere reforma.',
+    evidence:
+      'Panel de contexto social, indicadores versionados, diagnóstico legal por municipio y fuentes localizadas.',
+    next_action:
+      'Revisar alcance geográfico y advertencias antes de citar cifras; validar fuente municipal competente antes de sanciones o documentos oficiales.',
   },
   future_goals: {
     label: 'Metas futuras / Gantt-PERT',
@@ -163,6 +169,7 @@ export default function SimulatorPage() {
   const portalJourney = useSimulatorStore(s => s.portalJourney)
   const portalJourneyLoading = useSimulatorStore(s => s.portalJourneyLoading)
   const portalError = useSimulatorStore(s => s.portalError)
+  const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
   const interacciones = useRef(0)
 
   useEffect(() => { recalcular() }, [recalcular])
@@ -181,6 +188,12 @@ export default function SimulatorPage() {
     if (enriched.some(module => module.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return enriched
     return [...enriched, SOURCE_TRACEABILITY_MODULE]
   }, [audience, portalJourney])
+
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const sociodemographicBlock = useMemo(
+    () => buildSociodemographicScaffoldBlock(municipiosActivos),
+    [municipiosActivos],
+  )
 
   // Fase 22.0 — Gateway obligatorio: sin audiencia no se carga ningún módulo.
   if (!audience) {
@@ -210,13 +223,20 @@ export default function SimulatorPage() {
             />
           ) : (
             <>
-              {audience === 'functionary' && <FuncionariosViviendaRsuModel />}
+              {audience === 'functionary' && (
+                <>
+                  <PropuestasSimulatorBar />
+                  {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
+                </>
+              )}
               <DecisionModuleShell
                 modules={portalJourneyWithTraceability}
                 loading={portalJourneyLoading}
                 error={portalError}
                 audience={portalEntry}
-                renderModule={module => renderDecisionModule(module, isOrganizationJourney, audience)}
+                renderModule={module =>
+                  renderDecisionModule(module, isOrganizationJourney, audience, sociodemographicBlock)
+                }
               />
             </>
           )}
@@ -235,6 +255,7 @@ function renderDecisionModule(
   module: DecisionModule,
   isOrganizationJourney: boolean,
   audience: Audience | null,
+  sociodemographicBlock: ReturnType<typeof buildSociodemographicScaffoldBlock>,
 ) {
   // Empresario — journey organization
   if (isOrganizationJourney || audience === 'entrepreneur') {
@@ -276,6 +297,7 @@ function renderDecisionModule(
       case 'municipal_context':
         return (
           <>
+            <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
             <MarcoLegal mode="citizen" />
             <CoberturaNacional />
           </>
@@ -314,6 +336,7 @@ function renderDecisionModule(
     case 'municipal_context':
       return (
         <>
+          <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
           <MarcoLegal mode="functionary" />
           <CoberturaNacional />
         </>

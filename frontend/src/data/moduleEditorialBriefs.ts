@@ -52,10 +52,11 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'municipal_context':
       return {
         moduleId,
-        title: 'Lectura ejecutiva del marco jurídico municipal',
+        title: 'Lectura ejecutiva del contexto territorial y marco jurídico',
         situacion_actual: normativa ?? `${territorio} requiere lectura municipal del reglamento aplicable antes de convertir el programa en obligaciones locales.`,
         observacion_alquimia: `${scope} La brecha no suele estar en que falten principios federales, sino en traducirlos a reglas municipales operables: separación, contenedores, rutas, evidencia y responsabilidades.`,
-        criterio_decision: 'El equipo debe identificar qué puede ejecutarse con el reglamento actual y qué requiere reforma, lineamiento, anexo técnico o revisión jurídica competente.',
+        criterio_decision:
+          'El equipo debe alinear indicadores sociodemográficos de referencia con el reglamento: qué puede ejecutarse hoy y qué requiere reforma, lineamiento o revisión jurídica competente.',
         que_no_significa: 'No es resolución de autoridad, acto administrativo ni validación jurídica definitiva.',
         siguiente_accion: 'Abrir la fuente municipal, revisar artículos relevantes y separar propuesta expositiva de documento aprobable.',
         fuente_o_evidencia: 'Reglamento municipal localizado, manifest de fuente, diagnóstico legal y mapa de inserción normativa.',

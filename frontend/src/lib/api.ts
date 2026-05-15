@@ -1,3 +1,4 @@
+/** PR1 sociodemografia: envelope tipado en `@/types/socialDemographicContext`; sin fetch dedicado hasta contrato backend. */
 import type {
   PackageStatus,
   PerOperationsPlan,

@@ -33,6 +33,8 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getByTestId('funcionarios-vivienda-rsu-model')).toBeTruthy()
+    expect(screen.getByTestId('rsu-zona-unica')).toBeTruthy()
+    expect(screen.getByTestId('vivienda-accordion-shell')).toBeTruthy()
     expect(screen.getByText(/Distribución de vivienda, generación y costo público/)).toBeTruthy()
     expect(screen.getAllByText(/INEGI Censo 2020/).length).toBeGreaterThan(0)
     expect(screen.getByText(/Población estatal 2020/)).toBeTruthy()

@@ -229,17 +229,26 @@ export function Header() {
                 </button>
               </div>
             )}
-            <button
-              type="button"
-              onClick={() =>
-                guardarEscenario(
-                  `Escenario ${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`,
-                )
-              }
-              className="hidden sm:block text-[12px] text-[#3B6D11] border border-[#3B6D11] px-3 py-1.5 rounded-[6px] hover:bg-[#EAF3DE] transition-colors"
-            >
-              Guardar escenario
-            </button>
+            {pathname === '/simulator' && audience === 'functionary' ? (
+              <Link
+                href="/simulator#propuestas-simulador"
+                className="hidden sm:inline-block text-[12px] font-medium text-[#3B6D11] border border-[#3B6D11] px-3 py-1.5 rounded-[6px] hover:bg-[#EAF3DE] transition-colors"
+              >
+                3 propuestas
+              </Link>
+            ) : pathname === '/simulator' && audience !== 'functionary' ? (
+              <button
+                type="button"
+                onClick={() =>
+                  guardarEscenario(
+                    `Propuesta rápida ${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}`,
+                  )
+                }
+                className="hidden sm:block text-[12px] text-[#3B6D11] border border-[#3B6D11] px-3 py-1.5 rounded-[6px] hover:bg-[#EAF3DE] transition-colors"
+              >
+                Guardar escenario (A)
+              </button>
+            ) : null}
             <span title={exportTitle} className="inline-flex">
               <button
                 type="button"

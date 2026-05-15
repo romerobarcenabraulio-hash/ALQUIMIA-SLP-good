@@ -1025,7 +1025,18 @@ export interface EscenarioGuardado {
   inputs:       Partial<SimulatorState>
   resultados:   Partial<ResultadosCalculados>
   snapshotDatos?: SnapshotDatos  // Fase 2.5: trazabilidad de datos al guardar
+  /** CAPEX medio anualizado + OPEX anual según modelo; sólo lectura comparativa interna del simulador. */
+  costoModeloPromedioAnualMxn?: number
 }
+
+/** Hasta 3 propuestas guardadas lado a lado (persist Zustand). */
+export type PropuestaSlotIndex = 0 | 1 | 2
+
+export type PropuestaSlotTupla = readonly [
+  EscenarioGuardado | null,
+  EscenarioGuardado | null,
+  EscenarioGuardado | null,
+]
 
 // ─── Fase 5 — Marketplace / Precolocación ────────────────────────────────────
 

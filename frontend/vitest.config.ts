@@ -10,6 +10,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
+    setupFiles: [path.join(dir, 'vitest.setup.ts')],
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
   },
 })

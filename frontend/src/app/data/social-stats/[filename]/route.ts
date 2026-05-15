@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import {
   SOCIAL_STATS_BUNDLE_EMBEDDED,
-  SOCIAL_STATS_BUILD_ID,
+  SOCIAL_STATS_SLICES_FILENAME,
 } from '@/data/socialStats/embeddedBundle'
 
 /**
@@ -14,8 +14,7 @@ export async function GET(
   context: { params: Promise<{ filename: string }> },
 ): Promise<NextResponse> {
   const { filename } = await context.params
-  const expected = `slices-${SOCIAL_STATS_BUILD_ID}.json`
-  if (filename !== expected) {
+  if (filename !== SOCIAL_STATS_SLICES_FILENAME) {
     return new NextResponse(null, { status: 404 })
   }
   return NextResponse.json(SOCIAL_STATS_BUNDLE_EMBEDDED, {

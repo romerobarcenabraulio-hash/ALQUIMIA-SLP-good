@@ -29,8 +29,17 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
   const activeModule = useMemo(
     () => filteredModules.find(module => module.module_id === activeModuleId) ?? filteredModules[0] ?? null,
-    [activeModuleId, filteredModules]
+    [activeModuleId, filteredModules],
   )
+
+  const setActiveDecisionModuleId = useSimulatorStore(s => s.setActiveDecisionModuleId)
+
+  useEffect(() => {
+    setActiveDecisionModuleId(activeModule?.module_id ?? null)
+    return () => {
+      setActiveDecisionModuleId(null)
+    }
+  }, [activeModule?.module_id, setActiveDecisionModuleId])
 
   useEffect(() => {
     if (!filteredModules.length) {
@@ -60,7 +69,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
                 : audience === 'organization'
                   ? 'Empresa / institucion (portal tecnico)'
                   : 'Ciudadania / plan de ciudad (portal tecnico)'}
-          . Cada modulo abre una parte del expediente municipal: problema, marco jurídico, ruta temporal, operación,
+          . Cada modulo abre una parte del expediente municipal: problema, contexto sociodemográfico, marco jurídico, ruta temporal, operación,
           estrategia administrativa, salida y matriz de fuentes.
         </p>
         <ScopeAnclaKicker className="mt-3 border-l-[3px] border-[#8CAA7A] pl-3" />
@@ -89,6 +98,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
                   key={module.module_id}
                   type="button"
                   onClick={() => setActiveModuleId(module.module_id)}
+                  aria-current={active ? 'true' : undefined}
                   className={cn(
                     'rounded-[8px] border px-3 py-3 text-left transition-colors',
                     active
@@ -124,13 +134,11 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
             })}
           </nav>
 
-          <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-            <DecisionHeader module={activeModule} />
-            {audienceSelected === 'functionary' && (
-              <div className="mt-4">
-                <ModuleEditorialBrief moduleId={activeModule.module_id} />
-              </div>
-            )}
+          <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 min-w-0">
+            <div className="sticky top-28 z-20 mb-4 space-y-4 border-b border-[#E8E4DC]/80 bg-[#FDFCFA]/96 pb-3 backdrop-blur-sm">
+              <DecisionHeader module={activeModule} />
+              {audienceSelected === 'functionary' && <ModuleEditorialBrief moduleId={activeModule.module_id} />}
+            </div>
             {activeModule.status === 'blocked' ? (
               <div className="mt-4 rounded-[8px] border border-amber-300 bg-amber-50 p-4">
                 <p className="inline-flex items-center gap-2 text-[12px] font-semibold text-amber-900">
@@ -165,7 +173,7 @@ function DecisionHeader({ module }: { module: DecisionModule }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Que veo</p>
-          <h3 className="mt-1 font-serif text-[24px] text-[#1C1B18]">{module.label}</h3>
+          <h2 className="mt-1 font-serif text-[24px] text-[#1C1B18]">{module.label}</h2>
         </div>
         <span
           className={cn(

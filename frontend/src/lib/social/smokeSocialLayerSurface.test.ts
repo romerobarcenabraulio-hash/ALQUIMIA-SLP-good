@@ -49,7 +49,7 @@ describe('smokeSocialLayerSurface (capa social)', () => {
   it('ruta GET /data/social-stats/slices-<BUILD_ID>.json sirve el bundle embebido', () => {
     const route = readSrc('app/data/social-stats/[filename]/route.ts')
     expect(route).toContain('SOCIAL_STATS_BUNDLE_EMBEDDED')
-    expect(route).toContain('SOCIAL_STATS_BUILD_ID')
+    expect(route).toContain('SOCIAL_STATS_SLICES_FILENAME')
     expect(route).toContain('NextResponse.json')
   })
 

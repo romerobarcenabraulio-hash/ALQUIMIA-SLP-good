@@ -1,11 +1,31 @@
 import { create } from 'zustand'
 import { devtools, persist } from 'zustand/middleware'
-import type { SimulatorState, ResultadosCalculados, EscenarioGuardado, SnapshotDatos, MarketSummary, MacroImpactSummary, ReasoningGraph, MunicipioProfile, CoverageStatus, OperationsSummary, PortalEntry, CityContext, CircularityBaseline, DecisionModule, Audience, MunicipioMxApi, SeleccionMunicipioCatalog } from '@/types'
+import type {
+  Audience,
+  CircularityBaseline,
+  CityContext,
+  CoverageStatus,
+  DecisionModule,
+  EscenarioGuardado,
+  MacroImpactSummary,
+  MarketSummary,
+  MunicipioMxApi,
+  MunicipioProfile,
+  OperationsSummary,
+  PortalEntry,
+  PropuestaSlotTupla,
+  ReasoningGraph,
+  ResultadosCalculados,
+  SeleccionMunicipioCatalog,
+  SimulatorState,
+  SnapshotDatos,
+} from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } from '@/lib/constants'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
+import { migrateSimulatorPersistedState, propuestaSlotsVacios } from '@/store/simulatorPersistMigrate'
 
 const PRESET_PLAN_FIJADO = 'Realista' as const
 
@@ -57,11 +77,13 @@ function catalogRowToSeleccion(row: MunicipioMxApi): SeleccionMunicipioCatalog {
   }
 }
 
+const PERSIST_VERSION = 2
+
 interface SimulatorStore extends SimulatorState {
   resultados: ResultadosCalculados | null
   /** Contrafactual mismo estado pero captura 0% y sin CAs — para KPIs antes/después en UI. */
   resultadosSinPrograma: ResultadosCalculados | null
-  escenarios: EscenarioGuardado[]
+  propuestaSlots: PropuestaSlotTupla
   isCalculating: boolean
   generatingPlan: boolean
   generationProgress: number
@@ -92,6 +114,8 @@ interface SimulatorStore extends SimulatorState {
   cityContextLoading: boolean
   circularityBaselineLoading: boolean
   portalError: string | null
+  /** Módulo activo en `DecisionModuleShell` (no persistido; UI). */
+  activeDecisionModuleId: string | null
 
   // Actions
   setPortalEntry:      (entry: PortalEntry) => Promise<void>
@@ -129,6 +153,9 @@ interface SimulatorStore extends SimulatorState {
   setCapCamion:        (v: number) => void
   setMesInicio:        (v: number) => void
   recalcular:          () => void
+  guardarPropuestaEnSlot: (slot: 0 | 1 | 2, nombre?: string) => void
+  cargarPropuestaDesdeSlot: (slot: 0 | 1 | 2) => void
+  limpiarPropuestaSlot: (slot: 0 | 1 | 2) => void
   guardarEscenario:    (nombre: string) => void
   cargarEscenario:     (id: string) => void
   setGeneratingPlan:      (v: boolean, progress?: number, step?: string) => void
@@ -143,6 +170,7 @@ interface SimulatorStore extends SimulatorState {
   setReasoningGraph:      (g: ReasoningGraph | null) => void
   setNationalCoverage:    (profiles: MunicipioProfile[] | null, coverage: CoverageStatus[] | null) => void
   setOperationsSummary:   (s: OperationsSummary | null) => void
+  setActiveDecisionModuleId: (moduleId: string | null) => void
 }
 
 const defaultState: SimulatorState = {
@@ -199,7 +227,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         ...defaultState,
         resultados: null,
         resultadosSinPrograma: null,
-        escenarios: [],
+        propuestaSlots: propuestaSlotsVacios(),
         isCalculating: false,
         generatingPlan: false,
         generationProgress: 0,
@@ -222,9 +250,20 @@ export const useSimulatorStore = create<SimulatorStore>()(
         cityContextLoading: false,
         circularityBaselineLoading: false,
         portalError: null,
+        activeDecisionModuleId: null,
+
+        setActiveDecisionModuleId: moduleId => {
+          set({ activeDecisionModuleId: moduleId })
+        },
 
         setPortalEntry: async (entry) => {
-          set({ portalEntry: entry, portalJourney: [], portalJourneyLoading: true, portalError: null })
+          set({
+            portalEntry: entry,
+            portalJourney: [],
+            portalJourneyLoading: true,
+            portalError: null,
+            activeDecisionModuleId: null,
+          })
           try {
             const journey = await getPortalJourney(entry)
             if (get().portalEntry === entry) set({ portalJourney: journey, portalJourneyLoading: false })
@@ -242,7 +281,14 @@ export const useSimulatorStore = create<SimulatorStore>()(
         setAudience: async (audience) => {
           writeAudienceLiteralKey(audience)
           const entry = AUDIENCE_TO_PORTAL[audience]
-          set({ audience, portalEntry: entry, portalJourney: [], portalJourneyLoading: true, portalError: null })
+          set({
+            audience,
+            portalEntry: entry,
+            portalJourney: [],
+            portalJourneyLoading: true,
+            portalError: null,
+            activeDecisionModuleId: null,
+          })
           try {
             const journey = await getPortalJourney(entry)
             if (get().audience === audience) {
@@ -264,6 +310,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             portalJourney: [],
             portalJourneyLoading: false,
             portalError: null,
+            activeDecisionModuleId: null,
           })
         },
 
@@ -501,41 +548,102 @@ export const useSimulatorStore = create<SimulatorStore>()(
           }
         },
 
-        guardarEscenario: (nombre) => {
+        guardarPropuestaEnSlot: (slot, nombreOpcional) => {
           const s = get()
+          const r = s.resultados
+          const horizonteGuardado = Math.max(1, s.horizonte)
+          let costoModeloPromedioAnualMxn: number | undefined
+          if (r) {
+            costoModeloPromedioAnualMxn = (r.capexTotal ?? 0) / horizonteGuardado + (r.opexAnual ?? 0)
+          }
+          const nombre =
+            nombreOpcional ??
+            `${horizonteGuardado}a · ${new Date().toLocaleString('es-MX', {
+              hour: '2-digit',
+              minute: '2-digit',
+              day: '2-digit',
+              month: 'short',
+            })}`
           const esc: EscenarioGuardado = {
-            id:   Date.now().toString(),
+            id: `${Date.now()}-${slot}`,
             nombre,
-            zm:   s.zmActiva,
+            zm: s.zmActiva,
             fecha: new Date().toISOString(),
             inputs: {
-              zmActiva: s.zmActiva, horizonte: s.horizonte, precios: { ...s.precios },
-              pctCapturaPorAño: [...s.pctCapturaPorAño], mixCAs: { ...s.mixCAs },
+              zmActiva: s.zmActiva,
+              horizonte: s.horizonte,
+              genPercapita: s.genPercapita,
+              precios: { ...s.precios },
+              pctCapturaPorAño: [...s.pctCapturaPorAño],
+              mixCAs: { ...s.mixCAs },
+              tiposVivienda: [...s.tiposVivienda],
+              presetTrayectoria: s.presetTrayectoria,
+              mermaLogPct: s.mermaLogPct,
+              costoDisposicionActivo: s.costoDisposicionActivo,
+              costoDisposicionPorTon: s.costoDisposicionPorTon,
+              viviendaCondominioPct: s.viviendaCondominioPct,
+              viviendaCondominioDepartamentoPct: s.viviendaCondominioDepartamentoPct,
+              ocupantesPorViviendaEscenario: s.ocupantesPorViviendaEscenario,
+              capturaPctPorMaterial: { ...s.capturaPctPorMaterial },
+              mermaPctPorMaterial: { ...s.mermaPctPorMaterial },
+              rechazoPorMat: { ...s.rechazoPorMat },
+              municipiosActivos: [...s.municipiosActivos],
+              seleccionMunicipioCatalog: s.seleccionMunicipioCatalog,
             },
-            // Fase 2.5: incluir snapshot en el escenario guardado para trazabilidad
             snapshotDatos: s.snapshotDatos ?? undefined,
-            resultados: s.resultados ? {
-              ingresosBrutos:           s.resultados.ingresosBrutos,
-              ebitda:                   s.resultados.ebitda,
-              tir:                      s.resultados.tir,
-              vpn:                      s.resultados.vpn,
-              // CO2e separado para evitar confusión anual vs horizonte
-              co2eEvitadasAnualTon:     s.resultados.co2eEvitadasAnualTon,      // año final — KPI header
-              co2eEvitadasHorizonteTon: s.resultados.co2eEvitadasHorizonteTon,  // acumulado horizonte
-              co2eEvitadasTon:          s.resultados.co2eEvitadasTon,           // alias horizonte
-              paybackMeses:             s.resultados.paybackMeses,
-              empleosTotalesDirectos:   s.resultados.empleosTotalesDirectos,
-            } : {},
+            costoModeloPromedioAnualMxn,
+            resultados: r
+              ? {
+                  ingresosBrutos: s.resultados!.ingresosBrutos,
+                  ebitda: s.resultados!.ebitda,
+                  tir: s.resultados!.tir,
+                  vpn: s.resultados!.vpn,
+                  co2eEvitadasAnualTon: s.resultados!.co2eEvitadasAnualTon,
+                  co2eEvitadasHorizonteTon: s.resultados!.co2eEvitadasHorizonteTon,
+                  co2eEvitadasTon: s.resultados!.co2eEvitadasTon,
+                  paybackMeses: s.resultados!.paybackMeses,
+                  empleosTotalesDirectos: s.resultados!.empleosTotalesDirectos,
+                  opexAnual: s.resultados!.opexAnual,
+                  capexTotal: s.resultados!.capexTotal,
+                }
+              : {},
           }
-          set({ escenarios: [...s.escenarios, esc] })
+          const next = [...get().propuestaSlots] as [EscenarioGuardado | null, EscenarioGuardado | null, EscenarioGuardado | null]
+          next[slot] = esc
+          set({ propuestaSlots: next })
+        },
+
+        cargarPropuestaDesdeSlot: (slot) => {
+          const esc = get().propuestaSlots[slot]
+          if (!esc?.inputs) return
+          const inc = esc.inputs as Partial<SimulatorState>
+          set({
+            ...inc,
+            municipiosActivos: Array.isArray(inc.municipiosActivos)
+              ? [...inc.municipiosActivos]
+              : get().municipiosActivos,
+            tiposVivienda: Array.isArray(inc.tiposVivienda) ? [...inc.tiposVivienda] : get().tiposVivienda,
+            pctCapturaPorAño: Array.isArray(inc.pctCapturaPorAño)
+              ? [...inc.pctCapturaPorAño]
+              : get().pctCapturaPorAño,
+            precios: inc.precios ? { ...inc.precios } : get().precios,
+          })
+          get().recalcular()
+        },
+
+        limpiarPropuestaSlot: (slot) => {
+          const next = [...get().propuestaSlots] as [EscenarioGuardado | null, EscenarioGuardado | null, EscenarioGuardado | null]
+          next[slot] = null
+          set({ propuestaSlots: next })
+        },
+
+        guardarEscenario: (nombre) => {
+          get().guardarPropuestaEnSlot(0, nombre)
         },
 
         cargarEscenario: (id) => {
-          const esc = get().escenarios.find(e => e.id === id)
-          if (esc?.inputs) {
-            set({ ...(esc.inputs as Partial<SimulatorState>) })
-            get().recalcular()
-          }
+          const idx = get().propuestaSlots.findIndex(p => p?.id === id)
+          if (idx >= 0) get().cargarPropuestaDesdeSlot(idx as 0 | 1 | 2)
         },
 
         setGeneratingPlan: (v, progress, step) => {
@@ -609,12 +717,21 @@ export const useSimulatorStore = create<SimulatorStore>()(
           }
         },
       }),
-      { name: 'alquimia-simulator', partialize: (s) => ({ escenarios: s.escenarios, audience: s.audience }),
+      {
+        name: 'alquimia-simulator',
+        version: PERSIST_VERSION,
+        migrate: (persisted, _fromVersion) => migrateSimulatorPersistedState(persisted),
+        partialize: (s) => ({
+          audience: s.audience,
+          propuestaSlots: s.propuestaSlots,
+        }),
         onRehydrateStorage: () => (partial, error) => {
           if (error || typeof window === 'undefined') return
           const literal = readAudienceLiteralKey()
           if (literal) {
-            queueMicrotask(() => { useSimulatorStore.setState({ audience: literal }) })
+            queueMicrotask(() => {
+              useSimulatorStore.setState({ audience: literal })
+            })
             return
           }
           const fromPersist =
