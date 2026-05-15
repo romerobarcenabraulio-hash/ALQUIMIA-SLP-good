@@ -1,0 +1,136 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`PR4 visualización ligera > pie de metadatos accesible — snapshot estable 1`] = `
+<footer
+  aria-label="Metadatos de series sociodemográficas (PR4)"
+  data-testid="social-pr4-metadata-footer"
+  role="contentinfo"
+>
+  <p
+    class="text-[10px] font-semibold uppercase tracking-wide text-[#6B6760]"
+  >
+    Metadatos por serie (lectura obligatoria)
+  </p>
+  <dl
+    class="mt-2 space-y-2 text-[10px] leading-snug text-[#6B6760]"
+  >
+    <div
+      class="rounded-[6px] border border-[#F0EDE5] bg-[#FAFAF8] px-2 py-1.5"
+    >
+      <dt
+        class="font-medium text-[#1C1B18]"
+      >
+        a · Serie A
+      </dt>
+      <dd
+        class="mt-1"
+      >
+        <span
+          class="sr-only"
+        >
+          Ámbito territorial según modelo PR3:
+        </span>
+        <span
+          data-meta-field="geoLevel"
+        >
+          municipio
+        </span>
+        <span
+          aria-hidden="true"
+          class="mx-1 text-[#C8C2B8]"
+        >
+          |
+        </span>
+        <span
+          class="sr-only"
+        >
+          Vintage o cohorte:
+        </span>
+        <span
+          data-meta-field="vintageLabel"
+        >
+          2020
+        </span>
+        <span
+          aria-hidden="true"
+          class="mx-1 text-[#C8C2B8]"
+        >
+          |
+        </span>
+        <span
+          class="sr-only"
+        >
+          Identificador de fuente:
+        </span>
+        <span
+          class="font-mono"
+          data-meta-field="sourceId"
+        >
+          INEGI_DEMO
+        </span>
+      </dd>
+    </div>
+    <div
+      class="rounded-[6px] border border-[#F0EDE5] bg-[#FAFAF8] px-2 py-1.5"
+    >
+      <dt
+        class="font-medium text-[#1C1B18]"
+      >
+        ratio_x · Derivado bloqueado
+      </dt>
+      <dd
+        class="mt-1"
+      >
+        <span
+          class="sr-only"
+        >
+          Ámbito territorial según modelo PR3:
+        </span>
+        <span
+          data-meta-field="geoLevel"
+        >
+          Sin dato integrado
+        </span>
+        <span
+          aria-hidden="true"
+          class="mx-1 text-[#C8C2B8]"
+        >
+          |
+        </span>
+        <span
+          class="sr-only"
+        >
+          Vintage o cohorte:
+        </span>
+        <span
+          data-meta-field="vintageLabel"
+        >
+          —
+        </span>
+        <span
+          aria-hidden="true"
+          class="mx-1 text-[#C8C2B8]"
+        >
+          |
+        </span>
+        <span
+          class="sr-only"
+        >
+          Identificador de fuente:
+        </span>
+        <span
+          class="font-mono"
+          data-meta-field="sourceId"
+        >
+          —
+        </span>
+      </dd>
+      <p
+        class="mt-1 text-amber-900"
+      >
+        Comparación bloqueada (Auditor): prueba PR4.
+      </p>
+    </div>
+  </dl>
+</footer>
+`;
