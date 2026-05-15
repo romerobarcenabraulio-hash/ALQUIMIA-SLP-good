@@ -1,5 +1,8 @@
+import os
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from typing import Optional
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env")
@@ -17,6 +20,8 @@ class Settings(BaseSettings):
     SERPER_API_KEY:   Optional[str] = None
     MAPBOX_TOKEN:     Optional[str] = None
     ANTHROPIC_API_KEY: Optional[str] = None
+    # INEGI: el runtime también lee INEGI_DENUE_TOKEN / DENUE_API_TOKEN vía resolve_inegi_api_token().
+    INEGI_API_TOKEN: Optional[str] = None
     # ID vigente en la API Messages (Haiku rápido; el slug antiguo claude-3-5-haiku-20241022 puede dar 404).
     ANTHROPIC_MODEL: str = "claude-haiku-4-5-20251001"
 
@@ -38,3 +43,16 @@ class Settings(BaseSettings):
     GOOGLE_SERVICE_ACCOUNT_FILE: Optional[str] = None
 
 settings = Settings()
+
+
+def resolve_inegi_api_token() -> str:
+    """Token del portal de desarrolladores INEGI (sin exponer al cliente).
+
+    Orden: variables de entorno INEGI_API_TOKEN → INEGI_DENUE_TOKEN → DENUE_API_TOKEN;
+    si ninguna está en el entorno, usa `settings.INEGI_API_TOKEN` (p. ej. desde `.env`).
+    """
+    for key in ("INEGI_API_TOKEN", "INEGI_DENUE_TOKEN", "DENUE_API_TOKEN"):
+        raw = os.environ.get(key)
+        if raw is not None and str(raw).strip():
+            return str(raw).strip()
+    return (settings.INEGI_API_TOKEN or "").strip()

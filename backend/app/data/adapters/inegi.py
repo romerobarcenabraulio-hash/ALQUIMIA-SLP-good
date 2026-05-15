@@ -3,15 +3,14 @@ Adapter: INEGI — Población y viviendas.
 
 Fuente primaria: INEGI Censo de Población y Vivienda 2020.
 Datos de Censo son publicaciones oficiales — no live API.
-La API de indicadores INEGI (api.inegi.org.mx) requiere token para uso
-intensivo; el endpoint de indicadores básicos es accesible sin token pero
-con rate limiting.
+La API de indicadores INEGI requiere token para uso intensivo; regístralo como
+`INEGI_API_TOKEN` en el backend (ver `resolve_inegi_api_token` en `app.config`).
+Este adapter aún entrega valores Censo 2020 desde catálogo interno; las llamadas HTTP
+a INEGI pueden añadirse por ZM/indicador cuando CSA defina IDs oficiales.
 
-Estrategia:
-  1. Intentar API INEGI indicadores (sin token, datos oficiales 2020).
-  2. Si falla → usar valores del Censo 2020 hard-codeados con tipo=certificado
-     (fuente: publicación oficial INEGI, no live API — diferencia importante).
-  3. NUNCA retornar tipo=oficial si la API no respondió en esta sesión.
+Estrategia actual:
+  1. Valores del Censo 2020 integrados (tipo=certificado; no API en tiempo real).
+  2. NUNCA retornar tipo=oficial como si fuera respuesta live si no hubo consulta API en la misma petición.
 
 Poblaciones base Censo 2020 (fuente: INEGI, publicadas 2021):
   SLP ZM: 1,243,980 hab (suma 4 municipios)

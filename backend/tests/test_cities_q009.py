@@ -47,6 +47,8 @@ def test_cities_estados_endpoint():
 def test_inegi_source_audit_without_denue_token_is_domain_blocked(monkeypatch):
     monkeypatch.delenv("INEGI_DENUE_TOKEN", raising=False)
     monkeypatch.delenv("DENUE_API_TOKEN", raising=False)
+    monkeypatch.delenv("INEGI_API_TOKEN", raising=False)
+    monkeypatch.setattr("app.city.api_v1.resolve_inegi_api_token", lambda: "")
 
     r = client.get("/api/v1/cities/24028/inegi-source")
     assert r.status_code == 200
@@ -56,12 +58,12 @@ def test_inegi_source_audit_without_denue_token_is_domain_blocked(monkeypatch):
     assert payload["denue_status"] == "blocked_missing_token"
     assert payload["live_query_performed"] is False
     assert payload["blockers"]
-    assert "INEGI_DENUE_TOKEN" in payload["next_action"]
+    assert "INEGI_API_TOKEN" in payload["next_action"]
     assert "api_denue" in payload["denue_api_url"]
 
 
 def test_inegi_source_audit_with_token_is_configured_not_live(monkeypatch):
-    monkeypatch.setenv("INEGI_DENUE_TOKEN", "token-de-prueba")
+    monkeypatch.setattr("app.city.api_v1.resolve_inegi_api_token", lambda: "token-de-prueba")
 
     r = client.get("/api/v1/cities/24028/inegi-source")
     assert r.status_code == 200

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import os
-
 from fastapi import APIRouter, HTTPException, Query
 
+from app.config import resolve_inegi_api_token
 from app.city.municipios_mx import get_municipio_mx_by_clave, list_estados_distinct, list_municipios_mx
 from app.city.schemas import EstadoMxOption, InegiMunicipalSourceAudit, MunicipioMxApi
 
@@ -58,9 +57,13 @@ async def get_inegi_municipal_source(clave_inegi: str) -> InegiMunicipalSourceAu
     if row is None:
         raise HTTPException(status_code=404, detail="CVE INEGI municipal no existe en el catálogo ALQUIMIA")
 
-    token = (os.getenv("INEGI_DENUE_TOKEN") or os.getenv("DENUE_API_TOKEN") or "").strip()
+    token = resolve_inegi_api_token()
     denue_ready = bool(token)
-    blockers = [] if denue_ready else ["INEGI_DENUE_TOKEN no configurado; no se consulta DENUE en vivo."]
+    blockers = (
+        []
+        if denue_ready
+        else ["INEGI_API_TOKEN (o INEGI_DENUE_TOKEN / DENUE_API_TOKEN) no configurado; no se consulta DENUE en vivo."]
+    )
     warnings = [
         "DENUE describe establecimientos; no sustituye Censo de Población y Vivienda ni tabulados de vivienda.",
         "La respuesta declara disponibilidad de fuente; live_query_performed=false porque no se hacen llamadas silenciosas.",
@@ -84,6 +87,6 @@ async def get_inegi_municipal_source(clave_inegi: str) -> InegiMunicipalSourceAu
         next_action=(
             "Token DENUE configurado; habilitar consulta explícita por usuario antes de traer establecimientos."
             if denue_ready
-            else "Configura INEGI_DENUE_TOKEN en backend y agrega una acción explícita de consulta DENUE por municipio."
+            else "Configura INEGI_API_TOKEN en el backend (o INEGI_DENUE_TOKEN) y agrega una acción explícita de consulta DENUE por municipio."
         ),
     )
