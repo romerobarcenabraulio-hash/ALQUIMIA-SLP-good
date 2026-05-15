@@ -10,7 +10,7 @@ Documento vivo que **sustituye/amplía** el plan corto de delegación por roles.
 
 ### 1.1 Hygiene antes del push
 
-- **Revertir** o sacar del diff cualquier cambio en [`AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/`](AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/) que no sea entrega deliberada (texto archivado no debe mutar con el código).
+- **Revertir** o sacar del diff cualquier cambio bajo [`AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/`](AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/) o [`AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/`](AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/) que no sea entrega deliberada (texto archivado no debe mutar con el código).
 - Excluir del commit: `listado de observaciones.docx`, lock `~$...`, binarios de Word salvo decisión explícita.
 - Agrupar el trabajo real en commits temáticos (backend Ágora/dossier vs frontend simulador vs docs), luego `git push origin main` (o rama acordada + PR).
 

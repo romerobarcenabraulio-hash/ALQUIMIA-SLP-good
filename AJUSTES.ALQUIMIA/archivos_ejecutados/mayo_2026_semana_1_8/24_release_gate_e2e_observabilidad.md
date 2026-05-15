@@ -1,6 +1,6 @@
 # 24 · Release gate: E2E, observabilidad y presupuestos de rendimiento
 
-**Propósito:** cerrar la brecha entre “tests unitarios + export estático” y **confianza operativa** antes de producción. Complementa `21_pulido_final_release.md` (en `archivos_ejecutados/`) y **`17_1_publicacion_y_control_de_acceso.md`** sin duplicar Auth/DNS.
+**Propósito:** cerrar la brecha entre “tests unitarios + export estático” y **confianza operativa** antes de producción. Complementa `21_pulido_final_release.md` (en `archivos_ejecutados/reestructura_blueprints/`) y **`17_1_publicacion_y_control_de_acceso.md`** sin duplicar Auth/DNS.
 
 ---
 

@@ -6,7 +6,7 @@ Fecha: 2026-04-30
 
 Se crea carpeta `planeacion_ejecucion/` para coordinar trabajo paralelo de CODEX y CODEX 2.
 
-Regla permanente: los blueprints rectores `README_REESTRUCTURA.md` y `00_*.md` a `17_*.md` son constitucion del proyecto. No deben moverse a `archivos_ejecutados/`. Solo las ordenes operativas consumidas, como `ORDEN_CODEX.md` y `ORDEN_CODEX_2.md`, pueden moverse a `archivos_ejecutados/` cuando hayan sido ejecutadas y auditadas.
+Regla permanente: los blueprints numerados del **00** al **21** (archivos `NN_*.md` en esa serie) son el corpus constitucional archivado en `AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/`. El indice `README_REESTRUCTURA.md` y la planeacion **viva** viven en `reestructura_maestra_2026-04-30/` (no confundir archivo con trabajo en curso). Las ordenes operativas consumidas, como `ORDEN_CODEX.md` y `ORDEN_CODEX_2.md`, quedan archivadas bajo `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` cuando ya fueron ejecutadas y auditadas.
 
 ## Estado real observado
 
@@ -2460,7 +2460,7 @@ Remediación del ítem **5** cerrada (**PASS**). **6–7** siguen en **FAIL** pa
 
 ## CSA — Tarea operativa · Release serio (staging/prod, dominio, gate 24, §6.3) — 2026-05-05
 
-**Performativa:** `REQUEST` · sincronizar equipos (Ejecutor / Auditor / CSA / humano) sobre el paquete **“release serio”** alineado con `**17_1_publicacion_y_control_de_acceso.md`**, `**24_release_gate_e2e_observabilidad.md`** y `**21_pulido_final_release.md**` (`AJUSTES.ALQUIMIA/archivos_ejecutados/` y `reestructura_maestra_2026-04-30/`).
+**Performativa:** `REQUEST` · sincronizar equipos (Ejecutor / Auditor / CSA / humano) sobre el paquete **“release serio”** alineado con `**17_1_publicacion_y_control_de_acceso.md`**, `**24_release_gate_e2e_observabilidad.md`** y `**21_pulido_final_release.md**` (`AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/` · `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` donde aplique · y `reestructura_maestra_2026-04-30/`).
 
 **Estado:** **ABIERTO** — pendiente ejecución y append de evidencias (URLs, DNS, CI/E2E, Lighthouse).
 
@@ -2587,7 +2587,7 @@ No se “pega el URL del proyecto dentro del hosting” como único paso: Vercel
 
 **UX gates (Q-003-UX):** Retirada la franja «Gate obligatorio Fase 10.1» en `BaselineGateBlocked`; mensajes orientados a la acción (p. ej. selección de ciudad). Navegación modular y entrada portal sin rótulos «Fase 10.x» (`DecisionModuleShell`, `PortalEntrySelector`). Textos visibles sin «gate» en `FloatingCTA` y en la tarjeta funcionario de `AudienceGateway`. La lógica de bloqueo por baseline no cambia.
 
-**Landing 17.1:** `frontend/src/app/page.tsx` — hero de consultoría en circularidad municipal, CTA dual **demo guiada** (`/simulator`) vs **cuenta institucional** (`/login`), sección **trazabilidad / registro de actividad / privacidad** alineada al blueprint **17.1** (`archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md`).
+**Landing 17.1:** `frontend/src/app/page.tsx` — hero de consultoría en circularidad municipal, CTA dual **demo guiada** (`/simulator`) vs **cuenta institucional** (`/login`), sección **trazabilidad / registro de actividad / privacidad** alineada al blueprint **17.1** (`archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md`).
 
 **23 / 23.1 capa geo:** sin iniciar; sin orden CSA/Navigator.
 
@@ -3638,3 +3638,49 @@ FASE GOV: PARCIALMENTE CERRADA
 **Verificación requerida para cierre operativo:** pruebas backend/frontend locales, commit/push a `main` y revisión de GitHub Actions del commit resultante.
 
 — *Reconciliación Codex · ALQUIMIA*
+
+---
+
+## Restore
+
+**Fecha de corte institucional:** 2026-05-14
+
+**Qué es esto:** punto de reinicio explícito de la **bitácora como canal único de comunicación entre agentes** (Planner, Auditor, Navigator, Ejecutor, Aesthete, CSA). Lo anterior en este archivo sigue siendo histórico; **a partir de este encabezado** toda acción sustantiva que afecte alcance, copy público, geo/jurisdicción, build o decisiones de merge **debe** dejar al menos una entrada appendeada debajo, con el formato mínimo acordado.
+
+**Regla breve:** si el trabajo cerró con PR, commit o cambio de mandato, no se considera “comunicado al resto de agentes” hasta que exista una línea aquí con **rol + referencia (PR/commit/ruta) + resumen de 2 líneas**.
+
+**Formato sugerido de cada append (copiar y rellenar):**
+
+```text
+[YYYY-MM-DDThh:mmZ] Rol | ref: <PR# o commit o rama>
+Resumen: <qué se hizo / qué queda bloqueado>
+Para: Auditor | Navigator | CSA | … (si aplica; si no, "—")
+---
+```
+
+**Puntero:** `COLA_Y_ROLES_AGENTES.md` en la raíz del repo indica turnos; la **bitácora viva** para memoria compartida entre agentes es **este archivo** desde la fecha de corte anterior.
+
+**Primera entrada Restore (semilla):** se crea esta sección para reactivar el hábito; siguientes entradas van **debajo** de este párrafo.
+
+---
+
+### [2026-05-14] Restore · bitácora reactivada (CSA/Ejecutor archivo)
+
+**Resumen:** se añade la sección **Restore** en `BITACORA_AUDITORIA_PLANEACION.md`; a partir de aquí los agentes retoman append obligatorio para sincronización de conocimiento y acciones.
+
+**Ref:** commit post-restore pendiente · rutas relacionadas `cursor-rules/PROMPTS_*`, capa social simulador (PR2–PR5 según merges).
+
+— *Restore · ALQUIMIA*
+
+---
+
+### [2026-05-14] CSA/Ejecutor agente · verificación build · capa social cerrada repo
+
+**Resumen:** Tras solicitud «todo implementado y up and running», verificación automatizada local en `frontend/`: `npx tsc --noEmit` (exit 0), `npx vitest run` (85 tests PASS), `npm run build` Next.js 16.2.4 (exit 0). Capa sociodemográfica PR1–PR5 presente (`SocialDemographicContextPanel`, `SocialOfficialStatsSection`, preview export PR5, bundle `embeddedBundle` + `public/data/social-stats/`, docs `SOURCE_TRACE.md`, smoke `cursor-rules/SMOKE_SOCIAL_LAYER.md`, changelog `fuentes de calculo/CHANGELOG_FUENTES_SOCIAL.md`).
+
+**Para:** CSA/Ejecutor humano — desplegar candidato staging o producción según RELEASE_OPS; ejecutar smoke humano `cursor-rules/SMOKE_SOCIAL_LAYER.md` contra URL real; pegar aquí `<commit-hash>` y URL verificadas. Navigator — sólo revisión puntual si el deploy expone nueva ruta/geo.
+
+**Ref:** Pendiente hasta push CI — sustituir por hash de `main` tras merge/deploy.
+
+—
+

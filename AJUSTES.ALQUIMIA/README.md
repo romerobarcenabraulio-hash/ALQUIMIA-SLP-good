@@ -15,7 +15,9 @@ Punto de entrada para documentación operativa fuera del código fuente. El rest
 
 ## Archivo (referencia histórica)
 
-- **Blueprints numerados 00–21:** [`archivos_ejecutados/`](archivos_ejecutados/) (archivos sueltos en la raíz de esa carpeta).
+Índice de la carpeta: [`archivos_ejecutados/README.md`](archivos_ejecutados/README.md).
+
+- **Blueprints numerados 00–21:** [`archivos_ejecutados/reestructura_blueprints/`](archivos_ejecutados/reestructura_blueprints/).
 - **Corrida mayo 2026 (22_0 … 30, definiciones de agentes, prompts, QA, capturas):** [`archivos_ejecutados/mayo_2026_semana_1_8/`](archivos_ejecutados/mayo_2026_semana_1_8/) — lee [`README_ARCHIVO.md`](archivos_ejecutados/mayo_2026_semana_1_8/README_ARCHIVO.md).
 
 La regla de no tocar el archivo salvo entrega deliberada está en el plan de ciclo enlazado arriba.

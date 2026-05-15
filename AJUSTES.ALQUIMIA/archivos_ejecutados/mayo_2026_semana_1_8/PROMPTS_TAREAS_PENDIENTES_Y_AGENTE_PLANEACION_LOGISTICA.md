@@ -9,7 +9,7 @@
 
 El plugin Vercel **no sustituye** escribir la UI en el repo: la **landing / páginas** siguen viviendo en `frontend/` (Next.js). Lo que Vercel hace es **construir y servir** ese código cuando conectas el repo y defines **Root Directory** (`frontend`), variables y dominio.
 
-**Si la “página” que falta es la de 17.1** (hero, CTAs demo vs institucional, aviso de privacidad/actividad): eso es **Q-003 · Ejecutor** según `archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md`, no un prompt mágico del plugin.
+**Si la “página” que falta es la de 17.1** (hero, CTAs demo vs institucional, aviso de privacidad/actividad): eso es **Q-003 · Ejecutor** según `archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md`, no un prompt mágico del plugin.
 
 ---
 
@@ -37,7 +37,7 @@ Entrega: PR + pytest nuevo o extendido (nombre sugerido test_fase22_audience.py)
 
 ```text
 Operas como EJECUTOR según cursor-rules/EJECUTOR.md.
-Fuente: AJUSTES.ALQUIMIA/archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md + checklist Release serio R1–R3 en BITACORA (append CSA).
+Fuente: AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md + checklist Release serio R1–R3 en BITACORA (append CSA).
 Objetivo: (1) Frontend desplegable en Vercel con Root Directory frontend/, NEXT_PUBLIC_API_URL acorde entorno. (2) Backend en runtime estable con TLS y /health. (3) Auth según spec (p. ej. Supabase): middleware rutas sensibles front + JWT en FastAPI en rutas acordadas. (4) Landing 17.1: mensaje consultoría, CTA demo vs institucional, aviso trazabilidad/privacidad.
 Entrega: .env.example actualizado, README deploy corto, sin secretos en repo; append en bitácora con URLs staging/prod.
 ```
@@ -156,7 +156,7 @@ Si falta información crítica: listá “BLOQUEANTES DE ENTRADA” antes de sim
 ```text
 Operas como EJECUTOR según cursor-rules/EJECUTOR.md.
 
-Fuentes: archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md + 27_selector_estado_municipio_y_generacion_universal.md (solo ítem botón Home) + checklist Release R1–R3 en BITACORA.
+Fuentes: archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md + 27_selector_estado_municipio_y_generacion_universal.md (solo ítem botón Home) + checklist Release R1–R3 en BITACORA.
 
 Paquete completo Q-003:
 
@@ -306,9 +306,9 @@ Archivos para revisar (pedir al agente que los lea):
 - frontend/src/components/simulator/MarcoLegal.tsx
 - frontend/src/components/simulator/AdvertenciasGateLegal.tsx
 - frontend/src/components/simulator/DiagnosticoJuridico.tsx
-- AJUSTES.ALQUIMIA/archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md
-- AJUSTES.ALQUIMIA/archivos_ejecutados/03_marco_legal_expositivo.md
-- AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/26_reglamentos_fuente_primaria_y_documentacion.md
+- AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md
+- AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/03_marco_legal_expositivo.md
+- AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/26_reglamentos_fuente_primaria_y_documentacion.md
 
 Cobertura obligatoria:
 1. Disclaimers en UI y documentos exportados.

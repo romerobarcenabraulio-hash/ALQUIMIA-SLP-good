@@ -116,6 +116,6 @@ Contexto del proyecto:
 ## Notas de uso
 
 - Abrir en **chat nuevo** con el prompt sistema.
-- Proporcionar al agente acceso a: `archivos_ejecutados/17_1_publicacion_y_control_de_acceso.md`, `archivos_ejecutados/03_marco_legal_expositivo.md`, `26_reglamentos_fuente_primaria_y_documentacion.md` y el texto actual del MarcoLegal / DiagnosticoJuridico del simulador.
+- Proporcionar al agente acceso a: `archivos_ejecutados/reestructura_blueprints/17_1_publicacion_y_control_de_acceso.md`, `archivos_ejecutados/reestructura_blueprints/03_marco_legal_expositivo.md`, `26_reglamentos_fuente_primaria_y_documentacion.md` y el texto actual del MarcoLegal / DiagnosticoJuridico del simulador.
 - Sus entregables van a `planeacion_ejecucion/JURIDICO_[tema]_[fecha].md`.
 - El Auditor firma los entregables antes de que se consideren válidos.
