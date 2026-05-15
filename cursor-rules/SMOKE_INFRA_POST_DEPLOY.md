@@ -2,9 +2,10 @@
 
 **Rol:** Ejecutor. **Entrada:** `BASE_URL` absoluta entregada por CSA (sin barra final). **Salida:** tabla `endpoint | esperado | observado` archivada en el hilo de release.
 
-## Middleware
+## Middleware y ruta estable PR3
 
-Las rutas bajo **`/data/`** (p. ej. `/data/social-stats/slices-*.json`) **no** pasan por `middleware.ts` — el matcher excluye ese prefijo para servir estáticos desde `frontend/public/data/` con **200** en producción.
+- Las rutas bajo **`/data/**`** no entran en el gate de `middleware.ts` (`matcher` excluye `data/`).
+- **`GET /data/social-stats/slices-<buildId>.json`** lo sirve además **`src/app/data/social-stats/[filename]/route.ts`** (mismo cuerpo que `SOCIAL_STATS_BUNDLE_EMBEDDED`), por si el archivo en `public/` no llega al despliegue.
 
 Sustituir solo el valor de `BASE_URL` una vez:
 
