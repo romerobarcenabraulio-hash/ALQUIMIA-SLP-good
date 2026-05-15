@@ -1,5 +1,5 @@
 archivo,estado,calidad,riesgo_principal,requiere_codigo,reemplaza_fase_anterior,prioridad,siguiente_accion
-../../reestructura_maestra_2026-04-30/README_REESTRUCTURA.md,listo,blueprint rector,"uso indebido de historicos como verdad primaria",no,no,alta,"leer antes de cualquier fase"
+../reestructura_blueprints/README_REESTRUCTURA.md,listo,blueprint rector,"uso indebido de historicos como verdad primaria",no,no,alta,"leer antes de cualquier fase"
 ../reestructura_blueprints/00_resumen_ejecutivo_reestructura.md,listo,blueprint ejecutable,"mantener scroll largo como experiencia primaria",si,transversal,alta,"usar como contrato de producto"
 ../reestructura_blueprints/01_mapa_experiencia_usuario.md,listo,blueprint ejecutable,"tabs decorativos sin cambio de flujo o sin entrada empresarial",si,transversal,alta,"implementar PortalEntry + CityEntry + CircularityBaseline + DecisionModuleShell"
 ../reestructura_blueprints/02_modelo_fases_institucionales.md,listo,blueprint ejecutable,"fases narrativas sin evidencia",si,legal/operacion,alta,"conectar fases a datos y documentos"

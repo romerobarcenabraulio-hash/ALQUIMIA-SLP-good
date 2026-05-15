@@ -1,7 +1,7 @@
 # Reestructura Maestra ALQUIMIA
 
 Fecha: 30 de abril de 2026  
-Uso: carpeta rectora para redisenar ALQUIMIA como plataforma guiada por ciudad, decisiones publicas, fases institucionales, trazabilidad y documentos defendibles.
+Uso: indice del **corpus archivado** de reestructura (véanse los `.md` numerados **00–21** en esta misma carpeta). La planeacion **en curso** vive en `reestructura_maestra_2026-04-30/`.
 
 ---
 
@@ -9,11 +9,11 @@ Uso: carpeta rectora para redisenar ALQUIMIA como plataforma guiada por ciudad, 
 
 Los nombres del **Orden de lectura** no estan todos en esta misma carpeta:
 
-- Pasos **1 a 26** (`00_*.md` … `21_*.md`): `../archivos_ejecutados/reestructura_blueprints/<mismo nombre de archivo>`
-- Pasos **27 a 36** de la lista siguiente (`22_0_*.md` … `25_tokens_y_design_as_code.md`): `../archivos_ejecutados/mayo_2026_semana_1_8/<mismo nombre de archivo>`
-- **26–30** (p. ej. reglamentos, selector, declaración empresarial) no entran en esa numeración del índice; si los necesitas, están en la misma carpeta `mayo_2026_semana_1_8/`.
+- Pasos **1 a 26** (`00_*.md` … `21_*.md`): **esta carpeta** (`reestructura_blueprints/`), junto a este README.
+- Pasos **27 a 36** de la lista siguiente (`22_0_*.md` … `25_tokens_y_design_as_code.md`): carpeta [`../mayo_2026_semana_1_8/`](../mayo_2026_semana_1_8/) (mismo nombre de archivo que en el índice).
+- **26–30** (p. ej. reglamentos, selector, declaración empresarial) no entran en esa numeración del índice; si los necesitas, están en la misma carpeta [`../mayo_2026_semana_1_8/`](../mayo_2026_semana_1_8/).
 
-El indice general de esta carpeta en el repo es `../README.md`.
+Indice **`AJUSTES.ALQUIMIA`** del repo: [`../../README.md`](../../README.md).
 
 ---
 
@@ -120,6 +120,6 @@ ALQUIMIA genera simulaciones, propuestas y documentos expositivos. No emite dict
 
 Cada archivo de esta carpeta debe poder entregarse a un agente codificador sin explicacion verbal adicional. Si un archivo necesita que el usuario explique "lo que quiso decir", el archivo no esta listo.
 
-Para implementar, el agente debe leer `15_backlog_fases_11_a_15.md` como mapa rector, `16_roadmap_granular_10_1_a_17.md` como contrato operativo y `17_gobernanza_calidad_riesgo_y_dod.md` como regla de aceptacion (los tres viven en `../archivos_ejecutados/reestructura_blueprints/` junto al resto de blueprints **00–21**). No debe tomar una fase grande completa si puede cerrarla por subfases verificables.
+Para implementar, el agente debe leer `15_backlog_fases_11_a_15.md` como mapa rector, `16_roadmap_granular_10_1_a_17.md` como contrato operativo y `17_gobernanza_calidad_riesgo_y_dod.md` como regla de aceptacion (los tres estan **en esta misma carpeta**). No debe tomar una fase grande completa si puede cerrarla por subfases verificables.
 
-Orquestacion: usar `COLA_Y_ROLES_AGENTES.md` en la raiz del repositorio (stub liviano). Las especificaciones **22_0 … 30** y el material multi-agente de la semana 1–8 mayo 2026 estan archivadas en `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` (ver `README_ARCHIVO.md` alli). La bitacora de planeacion viva continua en `planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md`. Para despliegue y healthchecks ver `RELEASE_OPS_2026-05.md` en esta carpeta.
+Orquestacion: usar `COLA_Y_ROLES_AGENTES.md` en la raiz del repositorio (stub liviano). Las especificaciones **22_0 … 30** y el material multi-agente de la semana 1–8 mayo 2026 están en `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` (ver `README_ARCHIVO.md` alli). La bitacora de planeacion viva continua en [`../../reestructura_maestra_2026-04-30/planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md`](../../reestructura_maestra_2026-04-30/planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md). Para despliegue y healthchecks ver [`../../reestructura_maestra_2026-04-30/RELEASE_OPS_2026-05.md`](../../reestructura_maestra_2026-04-30/RELEASE_OPS_2026-05.md).

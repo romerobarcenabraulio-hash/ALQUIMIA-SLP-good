@@ -10,14 +10,16 @@ Punto de entrada para documentación operativa fuera del código fuente. El rest
 | Bitácora de planeación | [`reestructura_maestra_2026-04-30/planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md`](reestructura_maestra_2026-04-30/planeacion_ejecucion/BITACORA_AUDITORIA_PLANEACION.md) |
 | Plan ciclo consultoría / UI | [`reestructura_maestra_2026-04-30/planeacion_ejecucion/PLAN_CICLO_SINCRONIZACION_CONSULTORIA_UI_2026-05.md`](reestructura_maestra_2026-04-30/planeacion_ejecucion/PLAN_CICLO_SINCRONIZACION_CONSULTORIA_UI_2026-05.md) |
 | Release y healthchecks | [`reestructura_maestra_2026-04-30/RELEASE_OPS_2026-05.md`](reestructura_maestra_2026-04-30/RELEASE_OPS_2026-05.md) |
-| Índice de lectura de la reestructura | [`reestructura_maestra_2026-04-30/README_REESTRUCTURA.md`](reestructura_maestra_2026-04-30/README_REESTRUCTURA.md) |
+| Qué está **en ejecución** (lista de esta carpeta) | [`reestructura_maestra_2026-04-30/README.md`](reestructura_maestra_2026-04-30/README.md) |
 | Reglas Cursor (canon técnico) | [`cursor-rules/`](../cursor-rules/) |
 
 ## Archivo (referencia histórica)
 
-Índice de la carpeta: [`archivos_ejecutados/README.md`](archivos_ejecutados/README.md).
+Índice de lectura + blueprints **00–21** (corpus cerrado): [`archivos_ejecutados/reestructura_blueprints/README_REESTRUCTURA.md`](archivos_ejecutados/reestructura_blueprints/README_REESTRUCTURA.md).
 
-- **Blueprints numerados 00–21:** [`archivos_ejecutados/reestructura_blueprints/`](archivos_ejecutados/reestructura_blueprints/).
+Resumen ramas del archivo: [`archivos_ejecutados/README.md`](archivos_ejecutados/README.md).
+
+- **Archivos `.md` numerados 00–21** (blueprints): [`archivos_ejecutados/reestructura_blueprints/`](archivos_ejecutados/reestructura_blueprints/) (el README de orden de lectura está en esa misma carpeta).
 - **Corrida mayo 2026 (22_0 … 30, definiciones de agentes, prompts, QA, capturas):** [`archivos_ejecutados/mayo_2026_semana_1_8/`](archivos_ejecutados/mayo_2026_semana_1_8/) — lee [`README_ARCHIVO.md`](archivos_ejecutados/mayo_2026_semana_1_8/README_ARCHIVO.md).
 
 La regla de no tocar el archivo salvo entrega deliberada está en el plan de ciclo enlazado arriba.

@@ -29,7 +29,7 @@ Endurecer descargas y persistencia documental contra `package_id` malicioso, pat
 - `frontend/src/components/simulator/CircularityBaselineCard.tsx`
 - `backend/app/city/**`
 - `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/00_*.md` a `17_*.md`
-- `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/README_REESTRUCTURA.md`
+- `AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/README_REESTRUCTURA.md`
 - `AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/CONTROL_REESTRUCTURA.csv`
 
 Los blueprints 00-17 son constitucion del proyecto. No moverlos, no archivarlos, no marcarlos como ejecutados.

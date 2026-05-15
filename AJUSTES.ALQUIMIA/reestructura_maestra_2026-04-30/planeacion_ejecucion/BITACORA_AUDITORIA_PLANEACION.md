@@ -6,7 +6,7 @@ Fecha: 2026-04-30
 
 Se crea carpeta `planeacion_ejecucion/` para coordinar trabajo paralelo de CODEX y CODEX 2.
 
-Regla permanente: los blueprints numerados del **00** al **21** (archivos `NN_*.md` en esa serie) son el corpus constitucional archivado en `AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/`. El indice `README_REESTRUCTURA.md` y la planeacion **viva** viven en `reestructura_maestra_2026-04-30/` (no confundir archivo con trabajo en curso). Las ordenes operativas consumidas, como `ORDEN_CODEX.md` y `ORDEN_CODEX_2.md`, quedan archivadas bajo `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` cuando ya fueron ejecutadas y auditadas.
+Regla permanente: los blueprints numerados del **00** al **21** (archivos `NN_*.md` en esa serie) y el indice `README_REESTRUCTURA.md` del corpus estan archivados en `AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/`. La planeacion **viva** (`BITACORA_AUDITORIA_PLANEACION.md`, `PLAN_CICLO_*`, `RELEASE_OPS_*`) vive en `reestructura_maestra_2026-04-30/`. Las ordenes operativas consumidas, como `ORDEN_CODEX.md` y `ORDEN_CODEX_2.md`, quedan archivadas bajo `AJUSTES.ALQUIMIA/archivos_ejecutados/mayo_2026_semana_1_8/` cuando ya fueron ejecutadas y auditadas.
 
 ## Estado real observado
 

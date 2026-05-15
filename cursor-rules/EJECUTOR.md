@@ -387,7 +387,7 @@ Refs: BP-NN, ADR-NNNN, trace=<id>
 - `ClaimLedger`
 - `package_store`
 - Blueprints `00–17` (cualquier archivo en `blueprints/00_*` a `blueprints/17_*`).
-- Archivos rectores del proyecto: `README_REESTRUCTURA.md`, `01_PROTOCOLO_PIS_ALQUIMIA.md`, specs de los demás agentes.
+- Archivos rectores del proyecto: `AJUSTES.ALQUIMIA/archivos_ejecutados/reestructura_blueprints/README_REESTRUCTURA.md`, `01_PROTOCOLO_PIS_ALQUIMIA.md`, specs de los demás agentes.
 - `BITACORA_AUDITORIA_PLANEACION.md` — solo append vía publicación de mensajes; jamás editar entradas previas.
 
 Tocar uno → `VETO` automático del Auditor + reseteo del Ejecutor.
