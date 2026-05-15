@@ -3705,3 +3705,24 @@ Para: Auditor | Navigator | CSA | … (si aplica; si no, "—")
 
 — *Restore · ALQUIMIA · 2026-05-15*
 
+### [2026-05-15] Ejecutor · verificación deploy Vercel + build local (sin secretos)
+
+**URL verificada (curl, entorno agente):** `https://alquimia-slp.vercel.app` (staging/preview habitual; producción puede ser otro dominio según CSA).
+
+**Build local (`frontend/`):** `npx tsc --noEmit` → OK · `npm run build` → OK (Next 16, rutas incl. `ƒ /data/social-stats/[filename]`). `npm run lint` → **falla** (34 errores ESLint/React Compiler en varios TSX; **no** está en job `checks` de `.github/workflows/ci.yml` — backlog calidad si se exige lint en CI).
+
+**HTTP smoke (reproducible):**
+- `GET /` → 200
+- `GET /simulator` con `-L` → 200 (tras gate `/acceso` si aplica)
+- `GET /hub` → 307; con `-L` → 200
+- `GET /data/social-stats/slices-20260507a.json` → **404** en esta URL al momento de la prueba (despliegue puede no llevar aún route handler `7b123942` / promote; re-validar tras deploy)
+- Backend referencia: `GET https://alquimia-slp.onrender.com/health` → 200
+
+**Variables:** no se copian valores aquí; coherencia `NEXT_PUBLIC_API_URL` vs Render — verificar en dashboard Vercel (humano).
+
+**Corregido en esta pasada:** ningún código nuevo; sólo evidencia. **Pendiente humano:** consola browser 2 min flujo feliz; confirmar último deployment Vercel verde en dashboard; promover commit con JSON route si 404 persiste.
+
+**Ref:** HEAD local `e5c1d927` (bitácora COLA); commits técnicos previos `7b123942`, `88b326e2` para JSON público.
+
+— *Restore · ALQUIMIA*
+
