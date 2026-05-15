@@ -1,5 +1,9 @@
 import type { HubDocumentoCapitulo, ZmHubKey } from '@/data/hubDocumentosCapitulo'
-import { HUB_DOCUMENTOS_CAPITULO } from '@/data/hubDocumentosCapitulo'
+import {
+  HUB_DOCUMENTOS_CAPITULO,
+  HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO,
+  documentosHubIncluiblesEnZip,
+} from '@/data/hubDocumentosCapitulo'
 import type { ReglamentoFuente } from '@/data/reglamentos'
 import { reglamentoFuentePorMunicipio, REGLAMENTOS_FUENTE } from '@/data/reglamentos'
 
@@ -32,6 +36,8 @@ export function readmePaqueteMarkdown(
   md += `\n## Supuestos consolidados\n\n`
   md += `| Ítem | Valor |\n|------|-------|\n`
   md += `| ZM seleccionada | ${capitulo} |\n`
+  const incluibles = documentosHubIncluiblesEnZip(docs)
+  md += `| Documentos con archivo en \`public/\` elegibles ZIP | ${incluibles.length} (objetivo consultivo Q-023: ≥${HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO} cuando el paquete esté completo) |\n`
   md += `| Documentos en ZIP | sólo blobs bajo \\\`public/\\\` marcados disponibles y con fetch HTTP 200 |\n`
   md += `| Artefactos faltantes | listados como "En elaboración" en tabla superior |\n`
   md += `\n---\n*Fin README autogenerado.*\n`
@@ -71,8 +77,7 @@ export async function generarPaqueteZipHub(zm: string): Promise<Blob> {
   const base =
     typeof window !== 'undefined' ? window.location.origin : ''
 
-  for (const doc of docs) {
-    if (doc.estadoEntrega !== 'disponible' || !doc.publicRelPath) continue
+  for (const doc of documentosHubIncluiblesEnZip(docs)) {
     const url = `${base}/${doc.publicRelPath}`
     try {
       const res = await fetch(url, { cache: 'no-store' })

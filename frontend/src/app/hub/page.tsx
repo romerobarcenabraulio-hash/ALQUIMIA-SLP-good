@@ -1,10 +1,15 @@
 'use client'
-import { useEffect, useState, Suspense } from 'react'
+import { useEffect, useState, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { Header } from '@/components/layout/Header'
 import { cn } from '@/lib/utils'
-import { documentosHub, type HubDocumentoCapitulo } from '@/data/hubDocumentosCapitulo'
+import {
+  documentosHub,
+  type HubDocumentoCapitulo,
+  HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO,
+  conteoDocumentosIncluiblesEnZip,
+} from '@/data/hubDocumentosCapitulo'
 import { descargarBlob, generarPaqueteZipHub } from '@/lib/hubPaqueteZip'
 import {
   getJobStatus,
@@ -189,6 +194,11 @@ function HubContent() {
 
   const usePackageAssets = !!jobParam && assets !== null
   const catalogoCapitulo = documentosHub(zmActiva)
+  const nDocsZipListos = useMemo(
+    () => conteoDocumentosIncluiblesEnZip(catalogoCapitulo),
+    [catalogoCapitulo],
+  )
+  const cumpleQ023Zip = nDocsZipListos >= HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO
   const tiposCatalogo    = ['Todos', ...Array.from(new Set(catalogoCapitulo.map(d => d.tipo))).sort()]
   const docsCapituloFiltrados =
     filtroTipo === 'Todos'
@@ -550,6 +560,22 @@ function HubContent() {
             {zipPaqueteError && (
               <p className="mb-4 text-[11px] text-[#C0392B]" role="alert">{zipPaqueteError}</p>
             )}
+
+            <div
+              className={cn(
+                'mb-4 rounded-[10px] border px-4 py-3 text-[11px] leading-relaxed',
+                cumpleQ023Zip
+                  ? 'border-[#B8D4A8] bg-[#F4FAF0] text-[#3B5F23]'
+                  : 'border-[#E8E0D0] bg-[#FAFAF8] text-[#6B6760]',
+              )}
+              role="status"
+              data-testid="hub-q023-zip-status"
+            >
+              <strong className="text-[#1C1B18]">ÁGORA Q-023 · ZIP capítulo ({zmActiva}).</strong>{' '}
+              Documentos con archivo en <span className="font-mono">public/</span> incluibles en el ZIP:{' '}
+              <strong>{nDocsZipListos}</strong> (objetivo consultivo ≥{HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO}:{' '}
+              {cumpleQ023Zip ? 'sí' : 'no — mayoría en elaboración; README lista el inventario completo'}).
+            </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">
               {tiposCatalogo.map(t => (

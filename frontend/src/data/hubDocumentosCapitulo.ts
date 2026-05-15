@@ -17,6 +17,26 @@ export interface HubDocumentoCapitulo {
   publicRelPath?: string
 }
 
+/**
+ * Objetivo de negocio histórico ÁGORA Q-023 (documentos listos en ZIP).
+ * El catálogo real puede ir por debajo; la UI y el README deben declararlo sin dramatismo.
+ */
+export const HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO = 7
+
+/** Filas del catálogo que pueden entrar al ZIP capítulo (mismo criterio que `generarPaqueteZipHub`). */
+export function documentosHubIncluiblesEnZip(
+  docs: HubDocumentoCapitulo[],
+): (HubDocumentoCapitulo & { publicRelPath: string })[] {
+  return docs.filter(
+    (d): d is HubDocumentoCapitulo & { publicRelPath: string } =>
+      d.estadoEntrega === 'disponible' && Boolean(d.publicRelPath?.trim()),
+  )
+}
+
+export function conteoDocumentosIncluiblesEnZip(docs: HubDocumentoCapitulo[]): number {
+  return documentosHubIncluiblesEnZip(docs).length
+}
+
 const SLP_17_1_ACCESO: HubDocumentoCapitulo[] = [
   {
     id: 'slp-marco-publicacion-acceso',
