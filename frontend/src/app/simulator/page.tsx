@@ -1,5 +1,6 @@
 'use client'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { Header } from '@/components/layout/Header'
@@ -31,14 +32,11 @@ import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import { FloatingCTA } from '@/components/simulator/FloatingCTA'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
-import { ProgresionPlanMunicipalTiempo } from '@/components/simulator/ProgresionPlanMunicipalTiempo'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulatorBar'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
-import { ImplementacionEspacioTiempo } from '@/components/simulator/ImplementacionEspacioTiempo'
 import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
 import type { Audience, DecisionModule } from '@/types'
@@ -47,6 +45,22 @@ import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
+
+const FutureGoalsModule = dynamic(
+  () =>
+    import('@/components/simulator/FutureGoalsModule')
+      .then(m => ({ default: m.FutureGoalsModule }))
+      .catch(() => ({
+        default: function FutureGoalsLoadFailed() {
+          return (
+            <p className="rounded-[8px] border border-red-200 bg-red-50 p-4 text-[12px] text-red-800">
+              No se pudo cargar el módulo Metas futuras. Recarga la página (Cmd+Shift+R) e inténtalo de nuevo.
+            </p>
+          )
+        },
+      })),
+  { ssr: false, loading: () => <p className="text-[12px] text-[#6B6760]">Preparando Metas futuras…</p> },
+)
 
 const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
   module_id: 'source_traceability',
@@ -172,7 +186,6 @@ export default function SimulatorPage() {
   const portalError = useSimulatorStore(s => s.portalError)
   const cityPortalError = useSimulatorStore(s => s.cityPortalError)
   const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
-  const interacciones = useRef(0)
 
   useEffect(() => { recalcular() }, [recalcular])
   // Fase 22: ya NO auto-seleccionamos audiencia. El gateway debe ser explícito.
@@ -181,7 +194,6 @@ export default function SimulatorPage() {
     void fetchCityPortalData(zmActiva)
   }, [audience, fetchCityPortalData, zmActiva])
 
-  const onInteract = () => { interacciones.current++ }
   const isOrganizationJourney = portalEntry === 'organization'
   const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
   const portalJourneyWithTraceability = useMemo(() => {
@@ -208,7 +220,7 @@ export default function SimulatorPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }} onClickCapture={onInteract}>
+    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
       <Header />
       <div className="mx-auto w-full max-w-[min(96rem,calc(100vw-1.5rem))]">
         <SimulatorSimulationRibbon />
@@ -249,7 +261,6 @@ export default function SimulatorPage() {
 
       <GeneraPlanConfirmModal />
       <GenerarPlanModal />
-      <FloatingCTA interaccionesRef={interacciones} />
     </div>
   )
 }
@@ -345,13 +356,7 @@ function renderDecisionModule(
         </>
       )
     case 'future_goals':
-      return (
-        <>
-          <MetasPlanDerivadasNotice />
-          <ImplementacionEspacioTiempo />
-          <ProgresionPlanMunicipalTiempo />
-        </>
-      )
+      return <FutureGoalsModule notice={<MetasPlanDerivadasNotice />} />
     case 'infrastructure_operations':
       return (
         <>

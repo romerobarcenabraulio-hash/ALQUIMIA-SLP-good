@@ -22,7 +22,12 @@ describe('simulator functionary surface', () => {
     const pageSource = readFrontend('src/app/simulator/page.tsx')
 
     expect(pageSource).toContain("case 'future_goals':")
-    expect(pageSource).toMatch(/case 'future_goals':[\s\S]*<ImplementacionEspacioTiempo \/>[\s\S]*<ProgresionPlanMunicipalTiempo \/>/)
+    expect(pageSource).toMatch(/case 'future_goals':[\s\S]*<FutureGoalsModule/)
+    expect(pageSource).toContain('const FutureGoalsModule = dynamic(')
+    const futureGoals = readFrontend('src/components/simulator/FutureGoalsModule.tsx')
+    expect(futureGoals).toContain('future-goals-arm')
+    expect(futureGoals).toContain('PERT y oleadas')
+    expect(readFrontend('src/components/simulator/ProgresionPlanMunicipalTiempo.tsx')).not.toContain('ResponsiveContainer')
     expect(pageSource).toMatch(/case 'scenarios_export':[\s\S]*<ImpactoFinanciero \/>/)
     expect(pageSource).toContain("label: 'Bibliografía y cálculos'")
     expect(pageSource).not.toContain('Trazabilidad de datos')

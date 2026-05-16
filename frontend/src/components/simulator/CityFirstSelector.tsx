@@ -8,6 +8,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import type { EstadoMxOption, InegiMunicipalSourceAudit, MunicipioMxApi } from '@/types'
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
+import { ReglamentoCargaCiudadPanel } from '@/components/simulator/ReglamentoCargaCiudadPanel'
 
 export function CityFirstSelector() {
   const {
@@ -174,6 +175,11 @@ export function CityFirstSelector() {
                 </span>
               </p>
               <MunicipioMadurezBanner municipiosActivos={municipiosActivos} />
+            </div>
+          )}
+          {municipiosActivos.length > 0 && (
+            <div className="pt-3 border-t border-[#E8E4DC]/80">
+              <ReglamentoCargaCiudadPanel />
             </div>
           )}
         </div>

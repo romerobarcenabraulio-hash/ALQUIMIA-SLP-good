@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState, startTransition } from 'react'
-import { AlertTriangle, CalendarDays, Calculator, Info, KeyRound, Leaf, Lock, RefreshCw } from 'lucide-react'
+import { AlertTriangle, CalendarDays, Calculator, Info, Lock, RefreshCw } from 'lucide-react'
 import { buildTerritorialPlan } from '@/lib/api'
 import {
   getHitosForZm,
@@ -9,7 +9,7 @@ import {
   kpisAcumulados,
   type Hito,
 } from '@/data/hitosTimeline'
-import { hitoPosition, pertExpectedDays } from '@/lib/pertUtils'
+import { pertExpectedDays } from '@/lib/pertUtils'
 import { CA_CONFIG } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { TerritorialImplementationPlan, TerritorialPlanRequest } from '@/types'
@@ -50,6 +50,7 @@ export function ImplementacionEspacioTiempo() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [blockedDemo, setBlockedDemo] = useState(false)
+  const [territorialFetchTick, setTerritorialFetchTick] = useState(0)
 
   const availableCapacity = useMemo(() => (
     mixCAs.P * CA_CONFIG.P.capTonDia +
@@ -89,8 +90,22 @@ export function ImplementacionEspacioTiempo() {
     zmActiva,
   ])
 
+  const canFetchTerritorialPlan =
+    blockedDemo || (municipiosActivos.length > 0 && (rsuFromMotor ?? baselineRsuEst) > 0)
+
+  const payloadKey = useMemo(() => JSON.stringify(payload), [payload])
+
   useEffect(() => {
+    if (territorialFetchTick === 0) return
     let cancelled = false
+    if (!canFetchTerritorialPlan) {
+      setPlan(null)
+      setError(null)
+      setLoading(false)
+      return () => {
+        cancelled = true
+      }
+    }
     startTransition(() => {
       setLoading(true)
       setError(null)
@@ -108,8 +123,12 @@ export function ImplementacionEspacioTiempo() {
       .finally(() => {
         if (!cancelled) setLoading(false)
       })
-    return () => { cancelled = true }
-  }, [payload])
+    return () => {
+      cancelled = true
+    }
+  }, [territorialFetchTick, payloadKey, canFetchTerritorialPlan, payload])
+
+  const empleoBasePert = resultados?.empleosTotalesDirectos ?? 0
 
   return (
     <section className="space-y-5">
@@ -161,86 +180,126 @@ export function ImplementacionEspacioTiempo() {
         </label>
       </details>
 
-      {loading && <LoadingState />}
-      {error && (
-        <>
-          <ErrorState message={error} />
-          <NarrativeBridge
-            variant="warning"
-            audience="functionary"
-            kicker="Territorial · error de cómputo"
-            summary={`No se obtuvo plan para ${zmActiva} con horizonte ${normalizedHorizon} años, meta de captura objetivo ${targetCapture}% y ${municipiosActivos.length} municipio(s) en la solicitud${blockedDemo ? ' (ejercicio sin municipios en la solicitud)' : ''}. El servicio respondió: ${error}`}
-            evidence={[
-              { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
-              { label: 'RSU modelo', value: `${payload.rsu_total_ton_day.toFixed(2)} ton/día` },
-              { label: 'Mes inicio', value: String(mesInicio) },
-            ]}
-            nextStep={{
-              label: 'Revisar municipios y horizonte',
-              helper: 'Ajusta el conjunto municipal o desactiva el modo de capacitación sin municipios y vuelve a intentar.',
-            }}
-          />
-        </>
-      )}
-      {!loading && !error && !plan && <EmptyState />}
-      {!loading && !error && plan?.status === 'blocked' && (
-        <>
-          <BlockedState plan={plan} />
-          <NarrativeBridge
-            variant="warning"
-            audience="functionary"
-            kicker="Territorial · bloqueo"
-            summary={`La ruta para ${zmActiva} quedó bloqueada (${plan.blockers.length} restricción(es)). Capacidad declarada de centros: ${availableCapacity.toFixed(1)} ton/día; municipios activos en el modelo: ${municipiosActivos.length}. Siguiente paso sugerido: ${plan.next_action}`}
-            evidence={[
-              { label: 'Bloqueos', value: String(plan.blockers.length) },
-              { label: 'Meta captura', value: `${targetCapture}%` },
-              { label: 'Horizonte', value: `${normalizedHorizon} años` },
-            ]}
-            nextStep={{
-              label: 'Seguir la acción del plan',
-              helper: plan.next_action,
-            }}
-          />
-        </>
-      )}
-      {!loading && !error && plan && plan.status !== 'blocked' && (
-        <>
-          <PlanState plan={plan} />
-          <TimelineHitosEspacioTiempo
-            empleoBase={resultados?.empleosTotalesDirectos ?? 0}
-            zmId={zmActiva}
-          />
-          <NarrativeBridge
-            variant="result"
-            audience="functionary"
-            kicker="Territorial · lectura institucional"
-            summary={`${zmActiva}: ${plan.zones.length} oleada(s) territorial(es), capacidad instalada modelada ${availableCapacity.toFixed(1)} ton/día y captura objetivo ${targetCapture}%. ${plan.decision_help_text} ${plan.warnings.length ? `Advertencias activas: ${plan.warnings.length}.` : ''}`}
-            evidence={plan.zones[0]
-              ? [
-                  { label: 'Zona 1 meta parcial', value: `${plan.zones[0].target_capture_pct.toFixed(1)}%` },
-                  { label: 'Zona 1 ton/día', value: `${plan.zones[0].estimated_capture_ton_day.toFixed(1)} ton/día` },
-                  { label: 'Oleadas', value: String(plan.zones.length) },
-                  { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
-                ]
-              : [
-                  { label: 'Oleadas', value: String(plan.zones.length) },
-                  { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
-                  { label: 'Meta captura', value: `${targetCapture}%` },
-                ]}
-            nextStep={{
-              label: 'Documentar decisión en operaciones',
-              helper: plan.timeline_help_text,
-            }}
-          />
-        </>
-      )}
+      <TimelineHitosEspacioTiempo empleoBase={empleoBasePert} zmId={zmActiva} horizonteAnios={horizonte} />
+
+      <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-4">
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Oleadas territoriales (servicio)</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+          Complementa el PERT de arriba con zonas y colonias piloto desde el API. El cálculo no se dispara solo al abrir el módulo: usa el
+          botón para evitar saturar la pestaña. Si el servicio no responde, el PERT y las gráficas siguen disponibles en la otra pestaña.
+        </p>
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={!canFetchTerritorialPlan || loading}
+            onClick={() => setTerritorialFetchTick(t => t + 1)}
+            className="rounded-[8px] border border-[#3B6D11]/50 bg-white px-3 py-2 text-[12px] font-medium text-[#23470A] hover:bg-[#EAF3DE] disabled:cursor-not-allowed disabled:opacity-50"
+            data-testid="territorial-plan-fetch"
+          >
+            {loading ? 'Calculando oleadas…' : 'Calcular oleadas territoriales'}
+          </button>
+          {territorialFetchTick > 0 && plan && !loading && !error && (
+            <span className="text-[11px] text-[#6B6760]">Última respuesta del servicio cargada.</span>
+          )}
+        </div>
+        {!canFetchTerritorialPlan && !blockedDemo && (
+          <p className="mt-3 rounded-[6px] border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-950">
+            Selecciona al menos un municipio activo y asegura RSU modelado &gt; 0 para calcular oleadas territoriales.
+          </p>
+        )}
+        {loading && (
+          <div className="mt-3">
+            <LoadingState />
+          </div>
+        )}
+        {error && (
+          <div className="mt-3 space-y-3">
+            <ErrorState message={error} />
+            <NarrativeBridge
+              variant="warning"
+              audience="functionary"
+              kicker="Territorial · error de cómputo"
+              summary={`No se obtuvo plan para ${zmActiva} con horizonte ${normalizedHorizon} años, meta de captura objetivo ${targetCapture}% y ${municipiosActivos.length} municipio(s) en la solicitud${blockedDemo ? ' (ejercicio sin municipios en la solicitud)' : ''}. El servicio respondió: ${error}`}
+              evidence={[
+                { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
+                { label: 'RSU modelo', value: `${payload.rsu_total_ton_day.toFixed(2)} ton/día` },
+                { label: 'Mes inicio', value: String(mesInicio) },
+              ]}
+              nextStep={{
+                label: 'Revisar municipios y horizonte',
+                helper: 'Ajusta el conjunto municipal o desactiva el modo de capacitación sin municipios y vuelve a intentar.',
+              }}
+            />
+          </div>
+        )}
+        {!loading && !error && canFetchTerritorialPlan && !plan && (
+          <div className="mt-3">
+            <EmptyState />
+          </div>
+        )}
+        {!loading && !error && plan?.status === 'blocked' && (
+          <div className="mt-3 space-y-3">
+            <BlockedState plan={plan} />
+            <NarrativeBridge
+              variant="warning"
+              audience="functionary"
+              kicker="Territorial · bloqueo"
+              summary={`La ruta para ${zmActiva} quedó bloqueada (${(plan.blockers ?? []).length} restricción(es)). Capacidad declarada de centros: ${availableCapacity.toFixed(1)} ton/día; municipios activos en el modelo: ${municipiosActivos.length}. Siguiente paso sugerido: ${plan.next_action}`}
+              evidence={[
+                { label: 'Bloqueos', value: String((plan.blockers ?? []).length) },
+                { label: 'Meta captura', value: `${targetCapture}%` },
+                { label: 'Horizonte', value: `${normalizedHorizon} años` },
+              ]}
+              nextStep={{
+                label: 'Seguir la acción del plan',
+                helper: plan.next_action,
+              }}
+            />
+          </div>
+        )}
+        {!loading && !error && plan && plan.status !== 'blocked' && (
+          <div className="mt-3 space-y-3">
+            <PlanState plan={plan} />
+            <NarrativeBridge
+              variant="result"
+              audience="functionary"
+              kicker="Territorial · lectura institucional"
+              summary={`${zmActiva}: ${(plan.zones ?? []).length} oleada(s) territorial(es), capacidad instalada modelada ${availableCapacity.toFixed(1)} ton/día y captura objetivo ${targetCapture}%. ${plan.decision_help_text} ${(plan.warnings ?? []).length ? `Advertencias activas: ${(plan.warnings ?? []).length}.` : ''}`}
+              evidence={(plan.zones ?? [])[0]
+                ? [
+                    { label: 'Zona 1 meta parcial', value: `${plan.zones[0].target_capture_pct.toFixed(1)}%` },
+                    { label: 'Zona 1 ton/día', value: `${plan.zones[0].estimated_capture_ton_day.toFixed(1)} ton/día` },
+                    { label: 'Oleadas', value: String(plan.zones.length) },
+                    { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
+                  ]
+                : [
+                    { label: 'Oleadas', value: String(plan.zones.length) },
+                    { label: 'Capacidad CA', value: `${availableCapacity.toFixed(1)} ton/día` },
+                    { label: 'Meta captura', value: `${targetCapture}%` },
+                  ]}
+              nextStep={{
+                label: 'Documentar decisión en operaciones',
+                helper: plan.timeline_help_text,
+              }}
+            />
+          </div>
+        )}
+      </div>
     </section>
   )
 }
 
 const TIMELINE_FRAC_MARKS = [0, 1 / 4, 1 / 2, 3 / 4, 1] as const
 
-function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; zmId: string }) {
+function TimelineHitosEspacioTiempo({
+  empleoBase,
+  zmId,
+  horizonteAnios,
+}: {
+  empleoBase: number
+  zmId: string
+  horizonteAnios: number
+}) {
   const maxD = HORIZONTE_DIAS_MESES_36
   const [diaActual, setDiaActual] = useState(maxD / 2)
   const { hitos } = useMemo(() => getHitosForZm(zmId), [zmId])
@@ -268,11 +327,16 @@ function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; 
   const diaRounded = Math.round(diaActual)
 
   return (
-    <div className="rounded-[8px] border border-[#E0D9CE] bg-[#FDFCF9] p-4 shadow-sm">
+    <div
+      className="rounded-[8px] border border-[#E0D9CE] bg-[#FDFCF9] p-4 shadow-sm"
+      data-testid="pert-hitos-timeline"
+      id="pert-hitos-timeline"
+    >
       <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C]">Línea tiempo programa (referencia)</p>
       <h3 className="mt-1 font-serif text-[17px] text-[#1C1B18]">Hitos PERT y avance acumulado</h3>
       <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
-        Eje Día 0 → Mes 36 (equiv. {maxD} días de referencia). Los hitos muestran fecha esperada; la banda pesimista/optimista queda implicita en el catalogo PERT.
+        Horizonte del plan en pantalla: {horizonteAnios} años. Eje Día 0 → Mes 36 (equiv. {maxD} días de referencia). Los hitos
+        muestran fecha esperada; la banda pesimista/optimista queda implícita en el catálogo PERT.
       </p>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-[1fr,minmax(260px,32%)]">
@@ -302,76 +366,39 @@ function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; 
             aria-valuemax={maxD}
             aria-valuenow={Math.round(diaActual)}
           />
-          <div className="relative mt-2 min-h-[120px] pb-7 pt-1">
-            <div className="absolute left-0 right-0 top-[52px] h-[2px] rounded-full bg-[#D4CEC4]" />
-            {TIMELINE_FRAC_MARKS.map((frac, idx) => {
-              const leftPct = frac * 100
-              return (
-                <span
-                  key={`tick-${idx}`}
-                  className="absolute top-[44px] w-px -translate-x-1/2 bg-[#9A948A]"
-                  style={{ left: `${leftPct}%`, height: 16 }}
-                  aria-hidden
-                />
-              )
-            })}
-            <div className="absolute left-0 right-0 top-[68px] h-4">
+          <div className="mt-3 space-y-3">
+            <div className="h-2 overflow-hidden rounded-full bg-[#E8E4DC]">
+              <div
+                className="h-full rounded-full bg-[#3B6D11]/45 transition-[width]"
+                style={{ width: `${Math.min(100, Math.max(0, (diaActual / maxD) * 100))}%` }}
+              />
+            </div>
+            <div className="flex justify-between text-[10px] text-[#8A857C]">
               {TIMELINE_FRAC_MARKS.map((frac, idx) => (
-                <span
-                  key={`lbl-${idx}`}
-                  className="absolute -translate-x-1/2 whitespace-nowrap text-[10px] text-[#8A857C]"
-                  style={{ left: `${frac * 100}%` }}
-                >
-                  {mesLabel(frac)}
-                </span>
+                <span key={`lbl-${idx}`}>{mesLabel(frac)}</span>
               ))}
             </div>
-
-            {hitos.map((hito, i) => {
-              const x = hitoPosition(hito, maxD) * 100
-              const row = i % 2
-              const top = 8 + row * 30
-              const isSel = selectedId === hito.id
-              const tExpected = pertExpectedDays(hito)
-              const alcanzadoEnModelo = tExpected <= diaRounded
-              return (
-                <button
-                  key={hito.id}
-                  type="button"
-                  onClick={() => setSelectedId(hito.id)}
-                  className={cn(
-                    'absolute flex max-w-[min(180px,34vw)] -translate-x-1/2 items-center gap-1 rounded-full border px-2 py-0.5 text-left text-[10px] font-medium leading-tight shadow-sm transition-colors',
-                    hito.es_pico_estacional
-                      ? 'border-emerald-400/80 bg-emerald-50/95 text-emerald-950 hover:bg-emerald-100'
-                      : 'border-[#C8C2B8] bg-white text-[#1C1B18] hover:border-[#3B6D11]/50',
-                    hito.es_gate_clave && !hito.es_pico_estacional && 'ring-1 ring-amber-400/70',
-                    isSel && 'ring-2 ring-[#3B6D11]',
-                  )}
-                  style={{ left: `${x}%`, top }}
-                  aria-pressed={isSel}
-                  title={`PERT ~${tExpected.toFixed(0)} d · ${alcanzadoEnModelo ? 'incluido en KPI acumulado' : 'pendiente en el modelo'}`}
-                >
-                  {hito.es_gate_clave && (
-                    <KeyRound className="h-3 w-3 shrink-0 text-amber-700" aria-hidden />
-                  )}
-                  {hito.es_pico_estacional && (
-                    <Leaf className="h-3 w-3 shrink-0 text-emerald-700" aria-hidden />
-                  )}
-                  <span className="truncate">{hito.nombre_corto}</span>
-                  <span
-                    className={cn(
-                      'shrink-0 rounded px-1 py-px text-[8px] font-semibold uppercase tracking-wide',
-                      alcanzadoEnModelo ? 'bg-[#EAF3DE] text-[#23470A]' : 'bg-[#F4F1EB] text-[#8A857C]',
-                    )}
-                  >
-                    {alcanzadoEnModelo ? 'Modelo' : 'Pte.'}
-                  </span>
-                </button>
-              )
-            })}
+            <label htmlFor="timeline-hito-select" className="block text-[12px] font-medium text-[#1C1B18]">
+              Hito del programa
+            </label>
+            <select
+              id="timeline-hito-select"
+              value={selectedId ?? ''}
+              onChange={e => setSelectedId(e.target.value)}
+              className="w-full rounded-[6px] border border-[#E8E4DC] bg-white px-2 py-2 text-[12px] text-[#1C1B18]"
+            >
+              {hitos.map(hito => {
+                const tExpected = pertExpectedDays(hito)
+                const alcanzadoEnModelo = tExpected <= diaRounded
+                return (
+                  <option key={hito.id} value={hito.id}>
+                    {hito.nombre_corto} · PERT ~{tExpected.toFixed(0)}d · {alcanzadoEnModelo ? 'Modelo' : 'Pte.'}
+                  </option>
+                )
+              })}
+            </select>
           </div>
         </div>
-
         <aside className="rounded-[8px] border border-[#E8E4DC] bg-white p-3 text-[12px] text-[#6B6760]">
           {selected ? (
             <>
@@ -380,10 +407,10 @@ function TimelineHitosEspacioTiempo({ empleoBase, zmId }: { empleoBase: number; 
               <p className="mt-2 leading-relaxed">{selected.descripcion_ciudadano}</p>
               <p className="mt-3 text-[11px] font-semibold text-[#1C1B18]">KPIs asociados (delta del hito)</p>
               <ul className="mt-2 space-y-1 font-mono text-[11px]">
-                <li>Empleos: {selected.kpis.empleos_delta >= 0 ? '+' : ''}{selected.kpis.empleos_delta}</li>
-                <li>Pepenadores: {selected.kpis.pepenadores_delta >= 0 ? '+' : ''}{selected.kpis.pepenadores_delta}</li>
-                <li>Captura: {selected.kpis.captura_pct_pts >= 0 ? '+' : ''}{selected.kpis.captura_pct_pts} pts</li>
-                <li>CO₂e: {selected.kpis.co2e_evitado_ton_delta >= 0 ? '+' : ''}{selected.kpis.co2e_evitado_ton_delta} t</li>
+                <li>Empleos: {selected.kpis?.empleos_delta != null && selected.kpis.empleos_delta >= 0 ? '+' : ''}{selected.kpis?.empleos_delta ?? 0}</li>
+                <li>Pepenadores: {selected.kpis?.pepenadores_delta != null && selected.kpis.pepenadores_delta >= 0 ? '+' : ''}{selected.kpis?.pepenadores_delta ?? 0}</li>
+                <li>Captura: {selected.kpis?.captura_pct_pts != null && selected.kpis.captura_pct_pts >= 0 ? '+' : ''}{selected.kpis?.captura_pct_pts ?? 0} pts</li>
+                <li>CO₂e: {selected.kpis?.co2e_evitado_ton_delta != null && selected.kpis.co2e_evitado_ton_delta >= 0 ? '+' : ''}{selected.kpis?.co2e_evitado_ton_delta ?? 0} t</li>
               </ul>
             </>
           ) : (
@@ -445,25 +472,29 @@ function ErrorState({ message }: { message: string }) {
 }
 
 function BlockedState({ plan }: { plan: TerritorialImplementationPlan }) {
+  const blockers = Array.isArray(plan.blockers) ? plan.blockers : []
   return (
-    <div className="rounded-[8px] border border-amber-300 bg-amber-50 p-4">
+    <section className="rounded-[8px] border border-amber-300 bg-amber-50 p-4">
       <p className="text-[12px] font-semibold text-amber-900">
         <Lock className="mr-2 inline h-4 w-4" />
         Ruta territorial bloqueada
       </p>
-      {plan.blockers.map(blocker => (
+      {blockers.map(blocker => (
         <p key={blocker} className="mt-2 text-[12px] text-amber-800">{blocker}</p>
       ))}
       <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Acción siguiente</p>
       <p className="mt-1 text-[12px] text-[#6B6760]">{plan.next_action}</p>
-    </div>
+    </section>
   )
 }
 
 function PlanState({ plan }: { plan: TerritorialImplementationPlan }) {
+  const warnings = Array.isArray(plan.warnings) ? plan.warnings : []
+  const zones = Array.isArray(plan.zones) ? plan.zones : []
+  const annex = Array.isArray(plan.calculation_annex) ? plan.calculation_annex : []
   return (
     <div className="space-y-4">
-      {plan.warnings.map(warning => (
+      {warnings.map(warning => (
         <div key={warning} className="rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-900">
           <AlertTriangle className="mr-2 inline h-4 w-4" />
           {warning}
@@ -490,7 +521,7 @@ function PlanState({ plan }: { plan: TerritorialImplementationPlan }) {
           Timeline territorial
         </p>
         <div className="mt-4 space-y-3">
-          {plan.zones.map(zone => (
+          {zones.map(zone => (
             <div key={zone.zone_id} className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -539,7 +570,7 @@ function PlanState({ plan }: { plan: TerritorialImplementationPlan }) {
           Anexo de cálculos
         </p>
         <div className="mt-3 space-y-3">
-          {plan.calculation_annex.map(item => (
+          {annex.map(item => (
             <div key={item.calculation_name} className="rounded-[6px] bg-[#F8F6F1] p-3 text-[12px] text-[#6B6760]">
               <p className="font-semibold text-[#1C1B18]">{item.calculation_name}</p>
               <p className="mt-1">Fórmula: <span className="font-mono">{item.formula}</span></p>

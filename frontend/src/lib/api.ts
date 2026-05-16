@@ -45,6 +45,7 @@ import type {
   EstadoMxOption,
   InegiMunicipalSourceAudit,
   MunicipioMxApi,
+  MunicipalLegalSourceManifest,
 } from '@/types'
 import type { AgoraPlanGenerateBody } from '@/lib/agoraPlanPayload'
 import { withRequestId } from '@/lib/requestId'
@@ -133,6 +134,25 @@ export function triggerBrowserDownload(blob: Blob, filename: string) {
 
 export async function backendFetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
   return fetch(input, withRequestId(init))
+}
+
+/** GET /legal/{municipio}/source-manifest — 404 si no hay reglamento en repositorio backend. */
+export async function getLegalSourceManifest(municipioId: string): Promise<MunicipalLegalSourceManifest | null> {
+  const mid = municipioId.trim().toLowerCase()
+  const res = await backendFetch(`${getApiUrl()}/legal/${encodeURIComponent(mid)}/source-manifest`)
+  if (res.status === 404) return null
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`
+    try {
+      const t = await res.text()
+      const j = JSON.parse(t) as { detail?: unknown }
+      if (typeof j.detail === 'string') detail = j.detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`Manifiesto legal (${mid}): ${detail}`)
+  }
+  return res.json() as Promise<MunicipalLegalSourceManifest>
 }
 
 export { fetchWithRetry, fetchWithRetry as apiFetch }

@@ -19,6 +19,7 @@ import { withRequestId } from '@/lib/requestId'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
   PaqueteMetropolitano, DiagnosticoMunicipal, ReformEstrategia,
+  SeleccionMunicipioCatalog,
 } from '@/types'
 
 // ─── Helpers visuales ─────────────────────────────────────────────────────────
@@ -59,6 +60,63 @@ const CONVENIO_BADGE: Record<string, { label: string; color: string }> = {
   borrador:   { label: 'Borrador', color: 'text-[#D4881E]' },
   pendiente:  { label: 'Pendiente', color: '#6B6760' },
   no_existe:  { label: 'No existe', color: 'text-[#C0392B]' },
+}
+
+function nombreActivo(
+  mid: string,
+  dm: DiagnosticoMunicipal | undefined,
+  catalog: SeleccionMunicipioCatalog | null,
+) {
+  if (dm?.municipio_nombre) return dm.municipio_nombre
+  if (catalog?.municipioSimulatorId === mid) return catalog.nombre
+  return mid.toUpperCase()
+}
+
+function TarjetaReglamentoPendiente({
+  municipioId,
+  municipioNombre,
+  sinPaquete,
+  manifestNextAction,
+}: {
+  municipioId: string
+  municipioNombre: string
+  sinPaquete: boolean
+  manifestNextAction?: string
+}) {
+  return (
+    <div className="rounded-[12px] border border-[#D4881E]/35 bg-[#FEF7E7]/70 p-4 ring-2 ring-[#3B6D11]/15">
+      <p className="text-[13px] font-medium text-[#1C1B18]">{municipioNombre}</p>
+      <p className="font-mono text-[11px] text-[#A8A49C] mt-0.5">{municipioId}</p>
+      <p className="mt-2 text-[11px] leading-relaxed text-[#6B6760]">
+        {sinPaquete
+          ? (
+              <>
+                Este municipio no aparece en el paquete legal del backend (sin fila en{' '}
+                <span className="font-mono text-[10px]">paquete_municipal</span>
+                : reglamento no catalogado en repositorio). La matriz de diagnóstico jurídico permanece oculta hasta incorporar la fuente.
+              </>
+            )
+          : (
+              <>
+                La fuente del reglamento está en estado{' '}
+                <span className="font-mono text-[10px]">no_disponible</span>
+                {' '}(sin URL oficial localizada / ingest incompleta). Complete la localización antes de usar el diagnóstico completo.
+              </>
+            )}
+      </p>
+      {manifestNextAction && (
+        <p className="mt-2 text-[11px] text-[#1C1B18]">
+          <span className="font-medium">Acción siguiente (manifiesto): </span>
+          <span className="text-[#6B6760]">{manifestNextAction}</span>
+        </p>
+      )}
+      <p className="mt-2 text-[11px]">
+        <a href="#panel-reglamento-ciudad" className="text-[#1A5FA8] underline underline-offset-2">
+          Ver panel «Reglamento municipal» e instrucciones para agentes
+        </a>
+      </p>
+    </div>
+  )
 }
 
 function diagnosticoTituloTeaser() {
@@ -333,7 +391,8 @@ function CoordinacionMetro({ p }: { p: PaqueteMetropolitano }) {
 // ─── Componente principal ─────────────────────────────────────────────────────
 
 export function DiagnosticoJuridico() {
-  const { zmActiva, municipiosActivos, setAgoraLegalBloqueado } = useSimulatorStore()
+  const { zmActiva, municipiosActivos, seleccionMunicipioCatalog, setAgoraLegalBloqueado }
+    = useSimulatorStore()
 
   const [paquete,  setPaquete]  = useState<PaqueteMetropolitano | null>(null)
   const [loading,  setLoading]  = useState(true)
@@ -353,13 +412,15 @@ export function DiagnosticoJuridico() {
       .then(data => {
         const p = data as PaqueteMetropolitano
         setPaquete(p)
-        // Alcance municipal: restringir sanciones/documentos oficiales cuando falte
-        // revisión competente, sin impedir educación, análisis ni propuestas.
-        const activosBloqueados = p.paquete_municipal.some(
+        const faltaReglamentoOCatalogo = municipiosActivos.some((mid) => {
+          const dm = p.paquete_municipal.find(x => x.municipio_id === mid)
+          return !dm || dm.diagnostic.source_manifest.ingest_status === 'no_disponible'
+        })
+        const activosBloqueadosRevision = p.paquete_municipal.some(
           dm => municipiosActivos.includes(dm.municipio_id)
-            && (!dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document)
+            && (!dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document),
         )
-        setAgoraLegalBloqueado(activosBloqueados)
+        setAgoraLegalBloqueado(faltaReglamentoOCatalogo || activosBloqueadosRevision)
       })
       .catch(() => {
         // Sin API legal no hay fuente municipal validada: restringir sanciones/documentos oficiales.
@@ -403,8 +464,13 @@ export function DiagnosticoJuridico() {
     )
   }
 
-  const activos    = paquete.paquete_municipal.filter(dm => municipiosActivos.includes(dm.municipio_id))
-  const inactivos  = paquete.paquete_municipal.filter(dm => !municipiosActivos.includes(dm.municipio_id))
+  const diagnosticables = municipiosActivos
+    .map(mid => paquete.paquete_municipal.find(x => x.municipio_id === mid))
+    .filter((dm): dm is DiagnosticoMunicipal =>
+      dm != null && dm.diagnostic.source_manifest.ingest_status !== 'no_disponible',
+    )
+
+  const inactivos = paquete.paquete_municipal.filter(dm => !municipiosActivos.includes(dm.municipio_id))
   const legalBloqueados = paquete.paquete_municipal.filter(
     dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document
   )
@@ -463,13 +529,13 @@ export function DiagnosticoJuridico() {
       </div>
 
       {/* ── Aviso global si hay municipios activos con restricciones ────── */}
-      {activos.some(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document) && (
+      {diagnosticables.some(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document) && (
         <div className="bg-[#F3EAF5] border border-[#7B3FA0]/30 rounded-[12px] p-4">
           <p className="text-[12px] font-medium text-[#7B3FA0] mb-1">
             Sanciones y documentos oficiales restringidos por municipio
           </p>
           <div className="flex flex-wrap gap-1 mt-1">
-            {activos.filter(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document).map(dm => (
+            {diagnosticables.filter(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document).map(dm => (
               <span key={dm.municipio_id} className="text-[11px] bg-white/60 text-[#7B3FA0] px-2 py-0.5 rounded-full border border-[#7B3FA0]/20">
                 {dm.municipio_nombre}
               </span>
@@ -483,19 +549,35 @@ export function DiagnosticoJuridico() {
 
       {/* ── Capa municipal (siempre visible) ───────────────────────────── */}
       <div id="diagnostico-panel-municipal" className="space-y-3">
-        {activos.length > 0 && (
+        {municipiosActivos.length > 0 && (
           <div>
             <p className="text-[10px] uppercase tracking-wide text-[#A8A49C] mb-2">Municipios activos en la simulación</p>
             <div className="space-y-2">
-              {activos.map(dm => (
-                <TarjetaMunicipio
-                  key={dm.municipio_id}
-                  dm={dm}
-                  isActive={true}
-                  expandido={expandido === dm.municipio_id}
-                  onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
-                />
-              ))}
+              {municipiosActivos.map((mid) => {
+                const dm = paquete.paquete_municipal.find(x => x.municipio_id === mid)
+                const bloqueadoReglamento = !dm || dm.diagnostic.source_manifest.ingest_status === 'no_disponible'
+                const nombre = nombreActivo(mid, dm, seleccionMunicipioCatalog)
+                if (bloqueadoReglamento) {
+                  return (
+                    <TarjetaReglamentoPendiente
+                      key={mid}
+                      municipioId={mid}
+                      municipioNombre={nombre}
+                      sinPaquete={!dm}
+                      manifestNextAction={dm?.diagnostic.source_manifest.next_action}
+                    />
+                  )
+                }
+                return (
+                  <TarjetaMunicipio
+                    key={mid}
+                    dm={dm}
+                    isActive={true}
+                    expandido={expandido === dm.municipio_id}
+                    onToggle={() => setExpandido(expandido === dm.municipio_id ? null : dm.municipio_id)}
+                  />
+                )
+              })}
             </div>
           </div>
         )}

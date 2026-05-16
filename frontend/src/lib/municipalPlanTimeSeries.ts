@@ -20,7 +20,8 @@ function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }
 
-function sumVolTonDia(vol: AñoResultados['volTonDia']): number {
+function sumVolTonDia(vol: AñoResultados['volTonDia'] | null | undefined): number {
+  if (vol == null || typeof vol !== 'object') return 0
   return Object.values(vol).reduce((s, v) => s + (v ?? 0), 0)
 }
 
@@ -141,7 +142,7 @@ export function buildMunicipalPlanTimeSeries(
 ): PuntoMesPlanMunicipal[] {
   const H = Math.max(1, state.horizonte)
   const totalMeses = H * 12
-  const serie = resultados.serieAnual
+  const serie = Array.isArray(resultados.serieAnual) ? resultados.serieAnual : []
   const despliegue = buildDespliegueOperativoSeries(H, PRESET_FIJADO)
   const { hitos } = getHitosForZm(state.zmActiva)
 
