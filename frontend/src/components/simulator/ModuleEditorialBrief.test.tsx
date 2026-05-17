@@ -10,6 +10,7 @@ const FUNCTIONARY_MODULES = [
   'municipal_context',
   'future_goals',
   'infrastructure_operations',
+  'market_traceability',
   'inspeccion_predios',
   'scenarios_export',
   'source_traceability',

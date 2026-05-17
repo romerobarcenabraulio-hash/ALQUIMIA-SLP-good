@@ -89,7 +89,26 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
 
       {!loading && !error && activeModule && (
         <div className="grid gap-4 xl:grid-cols-[minmax(240px,290px)_minmax(0,1fr)]">
-          <nav aria-label="Modulos de decision" className="grid gap-2 self-start">
+          <div className="space-y-2 self-start">
+            <div className="xl:hidden">
+              <label htmlFor="decision-module-select" className="mb-1 block text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
+                Módulo
+              </label>
+              <select
+                id="decision-module-select"
+                value={activeModule.module_id}
+                onChange={e => setActiveModuleId(e.target.value)}
+                className="w-full rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2.5 text-[13px] text-[#1C1B18] focus:border-[#3B6D11] focus:outline-none focus:ring-1 focus:ring-[#3B6D11]"
+              >
+                {filteredModules.map(module => (
+                  <option key={module.module_id} value={module.module_id}>
+                    {module.label}
+                    {module.status === 'blocked' ? ' — requiere acción' : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <nav aria-label="Modulos de decision" className="hidden gap-2 xl:grid">
             {filteredModules.map(module => {
               const active = module.module_id === activeModule.module_id
               const blocked = module.status === 'blocked'
@@ -133,6 +152,7 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
               )
             })}
           </nav>
+          </div>
 
           <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 min-w-0 w-full max-w-none">
             <div className="sticky top-24 z-20 space-y-3 border-b border-[#E8E4DC]/80 bg-[#FDFCFA]/97 pb-3 backdrop-blur-md lg:top-28">
