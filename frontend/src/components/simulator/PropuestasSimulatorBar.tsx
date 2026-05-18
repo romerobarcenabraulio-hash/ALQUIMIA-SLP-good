@@ -31,22 +31,16 @@ export function PropuestasSimulatorBar() {
   return (
     <section
       id="propuestas-simulador"
-      className="rounded-[12px] border border-[#D7E8C0] bg-[#FDFCFA] px-4 py-4 mb-6 scroll-mt-[120px]"
+      className="rounded-[12px] border border-[#D7E8C0] bg-[#FDFCFA] px-4 py-3 mb-2 scroll-mt-[120px]"
       aria-labelledby="propuestas-simulator-title"
     >
-      <h2 id="propuestas-simulator-title" className="font-serif text-[22px] text-[#1C1B18]">
-        Guardar hasta 3 propuestas
-      </h2>
-      <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-        Ajusta generación, vivienda, horizonte y materiales aquí debajo y luego congela el estado en uno de los tres
-        espacios. <span className="font-medium text-[#1C1B18]">Activar</span> recupera ese escenario en los sliders;
-        cada propuesta debe volver a cargarse después de navegar sólo mediante este panel.
-      </p>
-      <p className="mt-2 text-[11px] leading-relaxed text-[#8C8880]">
-        Comparación «menor costo modelo»: CAPEX medio anualizado + OPEX anual del simulador (no incluye todas las
-        partidas públicas locales). Lectura técnico-educativa, no orden de obra ni recomendación de cabildo.
-      </p>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
+      <div className="flex items-center justify-between gap-2 mb-2">
+        <h2 id="propuestas-simulator-title" className="text-[13px] font-semibold text-[#1C1B18]">
+          Propuestas de escenario
+        </h2>
+        <span className="text-[10px] text-[#A8A49C]">Guarda hasta 3 · Activar restaura los sliders</span>
+      </div>
+      <div className="mt-2 grid gap-2 md:grid-cols-3">
         {SLOT_LABELS.map((label, slot) => {
           const idx = slot as 0 | 1 | 2
           const esc = slots[slot]
@@ -55,7 +49,7 @@ export function PropuestasSimulatorBar() {
             <div
               key={label}
               className={cn(
-                'rounded-[10px] border bg-white px-3 py-3 flex flex-col gap-2 min-h-[9rem]',
+                'rounded-[10px] border bg-white px-3 py-2.5 flex flex-col gap-1.5 min-h-[6rem]',
                 isWinner ? 'border-[#3B6D11] shadow-[inset_0_0_0_1px_rgba(59,109,17,0.15)]' : 'border-[#E8E4DC]'
               )}
             >

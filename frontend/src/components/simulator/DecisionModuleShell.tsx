@@ -83,8 +83,8 @@ function TopKpiStrip() {
   return (
     <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-[#E8E4DC] border-b border-[#E8E4DC]">
       {kpis.map(k => (
-        <div key={k.label} className="bg-white px-5 py-3 flex items-center gap-3">
-          <div className="w-9 h-9 rounded-[8px] bg-[#F4F2ED] flex items-center justify-center shrink-0">
+        <div key={k.label} className="bg-white px-4 py-2 flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-[7px] bg-[#F4F2ED] flex items-center justify-center shrink-0">
             <k.Icon className={cn('w-4 h-4', k.color)} strokeWidth={1.75} />
           </div>
           <div className="min-w-0">

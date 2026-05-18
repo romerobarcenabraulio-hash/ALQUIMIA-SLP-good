@@ -10,7 +10,7 @@ import type { EstadoMxOption, InegiMunicipalSourceAudit, MunicipioMxApi } from '
 import { MunicipioMadurezBanner } from '@/components/simulator/MunicipioMadurezBanner'
 import { ReglamentoCargaCiudadPanel } from '@/components/simulator/ReglamentoCargaCiudadPanel'
 
-export function CityFirstSelector() {
+export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
   const {
     zmActiva,
     applyMunicipioCatalog,
@@ -98,28 +98,36 @@ export function CityFirstSelector() {
     }
   }
 
+  const Tag = compact ? 'div' : 'section'
+
   return (
-    <section className="section" aria-labelledby="city-first-title">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Ciudad primero</p>
-      <h2 id="city-first-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">Estado y municipio de trabajo</h2>
+    <Tag className={compact ? 'py-3' : 'section'} aria-labelledby="city-first-title">
+      {!compact && (
+        <>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Ciudad primero</p>
+          <h2 id="city-first-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">Estado y municipio de trabajo</h2>
+        </>
+      )}
 
       {loading && (
-        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[12px] text-[#6B6760]">
+        <div className={cn('rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] text-[12px] text-[#6B6760]', compact ? 'px-3 py-2' : 'px-4 py-3')}>
           Cargando catálogo municipal…
         </div>
       )}
 
       {!loading && error && (
-        <div className="rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-800">
+        <div className={cn('rounded-[8px] border border-red-200 bg-red-50 text-[12px] text-red-800', compact ? 'px-3 py-2' : 'px-4 py-3')}>
           {error}
         </div>
       )}
 
       {!loading && !error && estados.length > 0 && (
-        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-4 space-y-3">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
-            Catálogo INEGI Estado–Municipio
-          </p>
+        <div className={cn('rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] space-y-3', compact ? 'px-3 py-3' : 'px-4 py-4')}>
+          {!compact && (
+            <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
+              Catálogo INEGI Estado–Municipio
+            </p>
+          )}
           <div className="flex flex-col sm:flex-row gap-3">
             <label className="flex-1 flex flex-col gap-1 text-[11px] text-[#6B6760]">
               Estado
@@ -158,29 +166,41 @@ export function CityFirstSelector() {
               Datos estimados — en proceso de validación oficial
             </p>
           )}
+          {/* INEGI audit — collapsed by default in compact mode */}
           {(inegiAuditLoading || inegiAudit || inegiAuditError) && (
-            <InegiSourceStatusCard
-              audit={inegiAudit}
-              loading={inegiAuditLoading}
-              error={inegiAuditError}
-            />
+            compact ? (
+              <details className="text-[11px]">
+                <summary className="cursor-pointer text-[#6B6760] hover:text-[#1C1B18]">Auditoría INEGI</summary>
+                <div className="mt-2">
+                  <InegiSourceStatusCard audit={inegiAudit} loading={inegiAuditLoading} error={inegiAuditError} />
+                </div>
+              </details>
+            ) : (
+              <InegiSourceStatusCard audit={inegiAudit} loading={inegiAuditLoading} error={inegiAuditError} />
+            )
           )}
           {municipiosActivos.length > 0 && zm && seleccionMunicipioCatalog && (
             <div className="space-y-2 pt-2 border-t border-[#E8E4DC]/80">
-              <p className="text-[11px] leading-relaxed text-[#6B6760]">
-                <span className="font-semibold text-[#1C1B18]">Alcance de lectura: </span>
-                {lecturaTerritorio}
-                {' · '}
-                <span className="text-[#5A574E]">
-                  Referencia territorial <span className="font-mono text-[11px]">{zmActiva}</span> sólo ordena población y modelo;
-                  obligaciones legales y operativas siguen siendo municipales.
-                </span>
-              </p>
+              {compact ? (
+                <p className="text-[11px] text-[#6B6760]">
+                  <span className="font-medium text-[#1C1B18]">Alcance: </span>{lecturaTerritorio}
+                </p>
+              ) : (
+                <p className="text-[11px] leading-relaxed text-[#6B6760]">
+                  <span className="font-semibold text-[#1C1B18]">Alcance de lectura: </span>
+                  {lecturaTerritorio}
+                  {' · '}
+                  <span className="text-[#5A574E]">
+                    Referencia territorial <span className="font-mono text-[11px]">{zmActiva}</span> sólo ordena población y modelo;
+                    obligaciones legales y operativas siguen siendo municipales.
+                  </span>
+                </p>
+              )}
               <MunicipioMadurezBanner municipiosActivos={municipiosActivos} />
             </div>
           )}
           {municipiosActivos.length > 0 && (
-            <div className="pt-3 border-t border-[#E8E4DC]/80">
+            <div className={compact ? 'pt-2 border-t border-[#E8E4DC]/80' : 'pt-3 border-t border-[#E8E4DC]/80'}>
               <ReglamentoCargaCiudadPanel />
             </div>
           )}
@@ -198,11 +218,11 @@ export function CityFirstSelector() {
       )}
 
       {!cityContextLoading && cityPortalError && (
-        <div className="mt-3 rounded-[8px] border border-red-200 bg-red-50 px-4 py-3 text-[12px] text-red-800">
+        <div className={cn('mt-2 rounded-[8px] border border-red-200 bg-red-50 text-[12px] text-red-800', compact ? 'px-3 py-2' : 'px-4 py-3')}>
           {cityPortalError}
         </div>
       )}
-    </section>
+    </Tag>
   )
 }
 

@@ -9,7 +9,6 @@ import { Lock, TrendingUp, Leaf, Heart, Users, Truck } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
 
 // ── RSU composition (national reference, SEMARNAT/DBGIR) ─────────────────────
@@ -110,178 +109,95 @@ export function CityBaselineStack() {
         </span>
       </div>
 
-      {/* ── Row 1: KPIs + Composición donut ─────────────────────────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* ── Row 1: KPIs + Trayectoria + Donut en la misma franja ──────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
-        {/* Section 1 — KPIs de volumen */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <SectionHeader n={1} title="Volumen y derrama estimados" sub="Escenario municipal · modelo de simulación" />
+        {/* Col 1 — KPIs de volumen */}
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <SectionHeader n={1} title="Volumen y derrama" sub="Escenario municipal · simulación" />
 
           {/* Hero RSU */}
-          <div className="mb-4 rounded-[10px] bg-[#F4FAEC] border border-[#D7E8C0] px-4 py-3">
+          <div className="mb-3 rounded-[10px] bg-[#F4FAEC] border border-[#D7E8C0] px-4 py-2.5">
             <div className="flex items-end gap-3">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.06em] text-[#5A9438] mb-0.5">RSU generado diario</p>
-                <p className="font-mono text-[36px] font-semibold text-[#1C1B18] leading-none">
+                <p className="font-mono text-[30px] font-semibold text-[#1C1B18] leading-none">
                   {r ? fmt.kgd(r.rsuTotalTonDia) : '—'}
                 </p>
               </div>
-              <Truck className="w-8 h-8 text-[#8CAA7A] mb-1" strokeWidth={1.5} />
+              <Truck className="w-6 h-6 text-[#8CAA7A] mb-0.5" strokeWidth={1.5} />
             </div>
-            <p className="text-[11px] text-[#6B6760] mt-1.5">estimación escenario · no cifra oficial</p>
           </div>
 
           {/* Sub KPIs */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <KpiCard
-              icon={TrendingUp}
-              label="Derrama anual"
-              value={r ? fmt.mxnM(r.ingresosBrutos / Math.max(1, horizonte)) : '—'}
-              sub="costo económico total"
-              accent="#3B6D11"
-            />
-            <KpiCard
-              icon={Leaf}
-              label="CO₂ evitado/año"
-              value={r ? `${(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K tCO₂e` : '—'}
-              sub="equivalente anual"
-              accent="#1A5FA8"
-            />
-            <KpiCard
-              icon={Heart}
-              label="Ahorro salud pública"
-              value={r ? fmt.mxnM(r.ahorroSalud) : '—'}
-              sub="anual estimado"
-              accent="#C0392B"
-            />
-            <KpiCard
-              icon={Users}
-              label="Empleos directos"
-              value={r ? fmt.num0(r.empleosTotalesDirectos) : '—'}
-              sub="en el programa"
-              accent="#5A4A2A"
-            />
+          <div className="grid grid-cols-2 gap-2">
+            <KpiCard icon={TrendingUp} label="Derrama anual" value={r ? fmt.mxnM(r.ingresosBrutos / Math.max(1, horizonte)) : '—'} sub="valorización" accent="#3B6D11" />
+            <KpiCard icon={Leaf} label="CO₂ evitado/año" value={r ? `${(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K tCO₂e` : '—'} sub="equivalente" accent="#1A5FA8" />
+            <KpiCard icon={Heart} label="Ahorro salud" value={r ? fmt.mxnM(r.ahorroSalud) : '—'} sub="anual est." accent="#C0392B" />
+            <KpiCard icon={Users} label="Empleos" value={r ? fmt.num0(r.empleosTotalesDirectos) : '—'} sub="directos" accent="#5A4A2A" />
           </div>
 
-          {/* Sin programa comparison */}
           {r && resultadosSinPrograma && (
-            <div className="mt-3 rounded-[8px] bg-[#FEF7E7] border border-[#F5D98A] px-3 py-2 text-[11px] text-[#6B4800]">
-              Sin programa: {fmt.kgd(resultadosSinPrograma.rsuTotalTonDia)} · derrama{' '}
-              {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}
+            <div className="mt-2 rounded-[8px] bg-[#FEF7E7] border border-[#F5D98A] px-3 py-1.5 text-[10px] text-[#6B4800]">
+              Sin programa: {fmt.kgd(resultadosSinPrograma.rsuTotalTonDia)} · {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}
             </div>
           )}
         </div>
 
-        {/* Section 2 — Composición RSU donut */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <div className="flex items-start justify-between mb-4">
-            <SectionHeader n={2} title="Composición base del RSU" sub="Referencia documental · no editable" />
-            <span className="flex items-center gap-1 rounded border border-[#E8E4DC] bg-[#F4F2ED] px-2 py-1 text-[9px] text-[#A8A49C] shrink-0">
+        {/* Col 2 — Trayectoria de captura */}
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <div className="flex items-start justify-between mb-3">
+            <SectionHeader n={2} title="Trayectoria de captura" sub={`Perfil moderado · ${horizonte} años`} />
+            <div className="text-right shrink-0">
+              <p className="font-mono text-[24px] text-[#3B6D11] leading-none font-semibold">{capturaFinal.toFixed(0)}%</p>
+              <p className="text-[9px] text-[#A8A49C]">al año {horizonte}</p>
+            </div>
+          </div>
+          <ResponsiveContainer width="100%" height={160}>
+            <LineChart data={trajectoryData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+              <XAxis dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+              <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={32} />
+              <Tooltip formatter={(v: number) => [`${v.toFixed(1)}%`, 'Captura RSU']} labelFormatter={(l: number) => `Año ${l}`} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+              <Line type="monotone" dataKey="captura" stroke="#3B6D11" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: '#3B6D11', stroke: '#fff', strokeWidth: 2 }} />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Col 3 — Composición RSU donut (contexto fijo, va con los sliders visualmente) */}
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <div className="flex items-start justify-between mb-3">
+            <SectionHeader n={3} title="Composición del RSU" sub="Referencia fija · SEMARNAT" />
+            <span className="flex items-center gap-1 rounded border border-[#E8E4DC] bg-[#F4F2ED] px-2 py-0.5 text-[9px] text-[#A8A49C] shrink-0">
               <Lock className="w-2.5 h-2.5" />
-              Fija no editable
+              No editable
             </span>
           </div>
 
-          <div className="flex items-center gap-4">
-            {/* Donut */}
-            <div className="shrink-0" style={{ width: 150, height: 150 }}>
+          <div className="flex items-center gap-3">
+            <div className="shrink-0" style={{ width: 120, height: 120 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <Pie
-                    data={COMPOSICION}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={44}
-                    outerRadius={68}
-                    dataKey="pct"
-                    strokeWidth={2}
-                    stroke="#fff"
-                  >
-                    {COMPOSICION.map((entry, i) => (
-                      <Cell key={i} fill={entry.color} />
-                    ))}
+                  <Pie data={COMPOSICION} cx="50%" cy="50%" innerRadius={34} outerRadius={54} dataKey="pct" strokeWidth={2} stroke="#fff">
+                    {COMPOSICION.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                   </Pie>
-                  <Tooltip
-                    formatter={(v: number) => [`${v}%`, '']}
-                    contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                  />
+                  <Tooltip formatter={(v: number) => [`${v}%`, '']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
                 </PieChart>
               </ResponsiveContainer>
             </div>
-
-            {/* Legend */}
-            <div className="flex-1 space-y-1.5">
+            <div className="flex-1 space-y-1">
               {COMPOSICION.map(item => (
                 <div key={item.name} className="flex items-center justify-between">
                   <div className="flex items-center gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-[2px] shrink-0" style={{ background: item.color }} />
-                    <span className="text-[11px] text-[#4A4740]">{item.name}</span>
+                    <div className="w-2 h-2 rounded-[2px] shrink-0" style={{ background: item.color }} />
+                    <span className="text-[10px] text-[#4A4740]">{item.name}</span>
                   </div>
-                  <span className="font-mono text-[12px] font-medium text-[#1C1B18]">{item.pct}%</span>
+                  <span className="font-mono text-[11px] font-medium text-[#1C1B18]">{item.pct}%</span>
                 </div>
               ))}
-              <p className="text-[9px] text-[#A8A49C] pt-1.5 border-t border-[#F0EDE5]">
-                100% total · fuente: SEMARNAT/DBGIR
-              </p>
             </div>
           </div>
-
-          {/* Note */}
-          <p className="mt-4 text-[10px] text-[#A8A49C] leading-relaxed border-t border-[#F0EDE5] pt-3">
-            Composición basada en referencia nacional. Si tu municipio cuenta con estudio propio,
-            debe reemplazar esta referencia antes de usar el escenario como soporte público oficial.
-          </p>
         </div>
-      </div>
-
-      {/* ── Section 3: Trayectoria de captura ───────────────────────────── */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-        <div className="flex items-start justify-between mb-4">
-          <SectionHeader n={3} title="Trayectoria de captura en el tiempo" sub={`Perfil moderado · horizonte ${horizonte} años`} />
-          <div className="text-right shrink-0">
-            <p className="font-mono text-[30px] text-[#3B6D11] leading-none font-semibold">{capturaFinal.toFixed(0)}%</p>
-            <p className="text-[10px] text-[#A8A49C]">captura al año {horizonte}</p>
-          </div>
-        </div>
-
-        <ResponsiveContainer width="100%" height={190}>
-          <LineChart data={trajectoryData} margin={{ top: 4, right: 24, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-            <XAxis
-              dataKey="año"
-              tick={{ fontSize: 10, fill: '#A8A49C' }}
-              tickLine={false}
-              axisLine={false}
-              label={{ value: 'Año', position: 'insideBottomRight', offset: -6, fontSize: 10, fill: '#A8A49C' }}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: '#A8A49C' }}
-              tickLine={false}
-              axisLine={false}
-              domain={[0, 100]}
-              tickFormatter={(v: number) => `${v}%`}
-              width={36}
-            />
-            <Tooltip
-              formatter={(v: number) => [`${v.toFixed(1)}%`, 'Captura RSU']}
-              labelFormatter={(l: number) => `Año ${l}`}
-              contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="captura"
-              stroke="#3B6D11"
-              strokeWidth={2.5}
-              dot={false}
-              activeDot={{ r: 5, fill: '#3B6D11', stroke: '#fff', strokeWidth: 2 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-
-        <p className="mt-2 text-[10px] text-[#A8A49C]">
-          La curva cambia al ajustar el horizonte de análisis en los controles globales del encabezado.
-          Perfil moderado: equilibra implementación progresiva, costo y viabilidad política.
-        </p>
       </div>
 
       {/* ── Section 4: ¿Qué sí/no se ajusta? + Cadena del modelo ────────── */}
@@ -349,63 +265,49 @@ export function CityBaselineStack() {
         </div>
       </div>
 
-      {/* ── Section 5: Narrativa municipal ──────────────────────────────── */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-        <SectionHeader n={4} title="Lectura municipal" sub="Contexto específico del territorio activo" />
-        <ScopeAnclaKicker className="mb-3 text-[11px]" />
-        <div className="rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-4">
-          <p className="font-serif text-[16px] text-[#1C1B18] mb-1">{narrative.title}</p>
-          <p className="text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
-          <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
+      {/* ── Lectura municipal — colapsado por default ────────────────────── */}
+      <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+        <summary className="cursor-pointer px-5 py-3 text-[12px] font-medium text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none flex items-center gap-2">
+          <ScopeAnclaKicker className="text-[11px] inline" />
+          Lectura municipal · {narrative.title}
+        </summary>
+        <div className="px-5 pb-5 pt-2 border-t border-[#F0EDE5]">
+          <div className="rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-4">
+            <p className="font-serif text-[15px] text-[#1C1B18] mb-1">{narrative.title}</p>
+            <p className="text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
+            <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
+          </div>
         </div>
-      </div>
+      </details>
 
-      {/* ── Section 6: Impacto ambiental expanded ───────────────────────── */}
+      {/* ── Impactos acumulados — colapsado por default ──────────────────── */}
       {r && (
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <SectionHeader n={5} title="Impactos acumulados al horizonte" sub={`Estimados · escenario ${horizonte} años`} />
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
-            {[
-              { label: 'CO₂e/año',        value: fmt.co2(r.co2eEvitadasAnualTon),          color: '#1A5FA8' },
-              { label: 'CO₂e acumulado',  value: fmt.co2(r.co2eEvitadasHorizonteTon),      color: '#1A5FA8' },
-              { label: 'PM2.5 evitado',   value: `${r.pm25EvitadoTon.toFixed(1)} t`,        color: '#5A9438' },
-              { label: 'Biogás',          value: fmt.kwh(r.kwhBiogas),                      color: '#5A4A2A' },
-              { label: 'AVAD evitados',   value: r.avadEvitados.toFixed(0),                  color: '#C0392B' },
-              { label: 'Vida relleno',    value: `+${r.extensionRelleno.toFixed(1)} años`,  color: '#3B6D11' },
-            ].map(item => (
-              <div key={item.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2.5 text-center">
-                <p className="font-mono text-[14px] font-semibold" style={{ color: item.color }}>{item.value}</p>
-                <p className="text-[9px] text-[#A8A49C] mt-0.5 leading-snug">{item.label}</p>
-              </div>
-            ))}
+        <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+          <summary className="cursor-pointer px-5 py-3 text-[12px] font-medium text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none">
+            Impactos acumulados al horizonte · {fmt.mxnM(r.ingresosBrutos)} derrama base
+          </summary>
+          <div className="px-5 pb-5 pt-2 border-t border-[#F0EDE5]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-4">
+              {[
+                { label: 'CO₂e/año',        value: fmt.co2(r.co2eEvitadasAnualTon),         color: '#1A5FA8' },
+                { label: 'CO₂e acumulado',  value: fmt.co2(r.co2eEvitadasHorizonteTon),     color: '#1A5FA8' },
+                { label: 'PM2.5 evitado',   value: `${r.pm25EvitadoTon.toFixed(1)} t`,       color: '#5A9438' },
+                { label: 'Biogás',          value: fmt.kwh(r.kwhBiogas),                     color: '#5A4A2A' },
+                { label: 'AVAD evitados',   value: r.avadEvitados.toFixed(0),                 color: '#C0392B' },
+                { label: 'Vida relleno',    value: `+${r.extensionRelleno.toFixed(1)} años`, color: '#3B6D11' },
+              ].map(item => (
+                <div key={item.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2.5 text-center">
+                  <p className="font-mono text-[14px] font-semibold" style={{ color: item.color }}>{item.value}</p>
+                  <p className="text-[9px] text-[#A8A49C] mt-0.5 leading-snug">{item.label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="rounded-[10px] bg-gradient-to-r from-[#EAF3DE] to-[#EBF3FB] p-4">
+              <p className="text-[11px] uppercase tracking-[0.06em] text-[#3B6D11] mb-1">Derrama base por venta de materiales (horizonte)</p>
+              <p className="font-mono text-[28px] text-[#3B6D11] font-semibold">{fmt.mxnM(r.ingresosBrutos)}</p>
+            </div>
           </div>
-
-          {/* Derrama multiplicadores */}
-          <div className="mt-3 rounded-[10px] bg-gradient-to-r from-[#EAF3DE] to-[#EBF3FB] p-4">
-            <p className="text-[11px] uppercase tracking-[0.06em] text-[#3B6D11] mb-1">
-              Derrama base por venta de materiales (horizonte)
-            </p>
-            <p className="font-mono text-[32px] text-[#3B6D11] font-semibold">{fmt.mxnM(r.ingresosBrutos)}</p>
-            <p className="text-[11px] text-[#6B6760]">
-              solo valorización material · sin externalidades sumadas
-            </p>
-          </div>
-
-          <NarrativeBridge
-            variant="result"
-            audience={audience ?? 'citizen'}
-            kicker="Lectura de resultados"
-            title="Qué implican los números"
-            summary={`Con los supuestos actuales se evitarían ${fmt.co2(r.co2eEvitadasAnualTon)} de CO₂e al año. La derrama por venta de materiales recuperados es ${fmt.mxnM(r.ingresosBrutos)} en el horizonte. El programa genera ${fmt.num0(r.empleosTotalesDirectos)} empleos directos.`}
-            evidence={[
-              { label: 'Derrama base', value: fmt.mxnM(r.ingresosBrutos) },
-              { label: 'CO₂e año',    value: fmt.co2(r.co2eEvitadasAnualTon) },
-              { label: 'Empleos',     value: fmt.num0(r.empleosTotalesDirectos) },
-              { label: 'Ahorro salud', value: fmt.mxnM(r.ahorroSalud) },
-            ]}
-          />
-        </div>
+        </details>
       )}
     </div>
   )

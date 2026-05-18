@@ -155,7 +155,7 @@ export default function SimulatorPage() {
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">
           <main className="px-4 sm:px-6 py-4 w-full">
-            <CityFirstSelector />
+            <CityFirstSelector compact />
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
             <div className="mt-3 space-y-3">

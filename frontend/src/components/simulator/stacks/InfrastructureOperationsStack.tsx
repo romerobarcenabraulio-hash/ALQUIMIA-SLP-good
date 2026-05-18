@@ -133,13 +133,6 @@ export function InfrastructureOperationsStack() {
                     <li className="flex items-start gap-2"><span className="text-[#D4881E] shrink-0">›</span>Confirmar logística municipal de recolección.</li>
                   </ul>
                 </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-[#1A5FA8] mb-2 uppercase tracking-wide">Fuente y evidencia</p>
-                  <ul className="space-y-1.5 text-[#6B6760]">
-                    <li className="flex items-start gap-2"><span className="text-[#1A5FA8] shrink-0">›</span>Estimaciones CA_CORNE_ALQUIMIA (médicas) — supuestos técnicos.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#1A5FA8] shrink-0">›</span>Referencias técnicas y supuestos operativos.</li>
-                  </ul>
-                </div>
               </div>
             </div>
 
