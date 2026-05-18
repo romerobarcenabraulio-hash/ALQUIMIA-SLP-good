@@ -84,16 +84,20 @@ function matrixBorder(prob: MatrixLevel, imp: MatrixLevel): string {
   return '#D7E8C0'
 }
 
-// ── Success distribution (bell-shaped histogram) ──────────────────────────────
+// ── Success distribution (bell-shaped histogram, dynamic mean) ───────────────
 
-function buildSuccessDist() {
-  const data = []
-  const mean = 62
+function buildSuccessDist(mean: number) {
   const std = 10
+  const data = []
   for (let x = 20; x <= 100; x += 5) {
     const z = (x - mean) / std
     const y = Math.round(100 * Math.exp(-0.5 * z * z) / (std * Math.sqrt(2 * Math.PI)) * 500) / 10
-    data.push({ pct: x, freq: y })
+    // Shade region for P(éxito < 50%) — negative values treated as 0 for fill
+    data.push({
+      pct: x,
+      freq: y,
+      freqBelow50: x <= 50 ? y : 0,
+    })
   }
   return data
 }
@@ -104,10 +108,10 @@ export function MarketTraceabilityStack() {
   const { resultados, horizonte } = useSimulatorStore()
   const r = resultados
 
-  const successDist = useMemo(() => buildSuccessDist(), [])
-
   // Derived risk indices (would come from backend in production)
   const successProb  = r ? Math.min(95, Math.max(40, Math.round(55 + r.tir * 0.3))) : 62
+
+  const successDist = useMemo(() => buildSuccessDist(successProb), [successProb])
   const citizenAccept = 74
   const riskTotal    = 38
   const riskLegal    = 32
@@ -243,27 +247,57 @@ export function MarketTraceabilityStack() {
           </ResponsiveContainer>
         </div>
 
-        {/* Success distribution histogram */}
+        {/* Success distribution histogram (dynamic bell curve) */}
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Distribución de probabilidad de éxito</p>
-          <p className="text-[10px] text-[#A8A49C] mb-3">Implementación a {horizonte} años · simulación Monte Carlo</p>
-          <div className="flex items-center justify-end gap-2 mb-2">
-            <span className="text-[10px] text-[#A8A49C]">Media</span>
-            <span className="font-mono text-[18px] font-bold text-[#3B6D11]">{successProb}%</span>
+          <div className="flex items-start justify-between mb-2">
+            <div>
+              <p className="text-[11px] font-semibold text-[#1C1B18]">Distribución de probabilidad de éxito</p>
+              <p className="text-[10px] text-[#A8A49C]">Implementación a {horizonte} años · Monte Carlo · escenario activo</p>
+            </div>
+            <div className="text-right shrink-0 ml-4">
+              <span className="font-mono text-[20px] font-bold text-[#3B6D11]">{successProb}%</span>
+              <p className="text-[9px] text-[#A8A49C]">media</p>
+            </div>
           </div>
+
+          {/* Scenario zone labels */}
+          <div className="flex justify-between text-[9px] text-[#A8A49C] px-1 mb-1">
+            <span className="text-[#C0392B]">← Pesimista</span>
+            <span className="text-[#D4881E]">Realista</span>
+            <span className="text-[#3B6D11]">Ambicioso →</span>
+          </div>
+
           <ResponsiveContainer width="100%" height={160}>
             <AreaChart data={successDist} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
               <XAxis dataKey="pct" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
               <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={28} />
               <Tooltip
-                formatter={(v: number) => [`${v.toFixed(1)}`, 'Frecuencia']}
+                formatter={(v: number, name: string) => [
+                  `${v.toFixed(1)}`,
+                  name === 'freqBelow50' ? 'P(éxito < 50%) — zona de riesgo' : 'Frecuencia',
+                ]}
                 labelFormatter={(l: number) => `${l}% éxito`}
                 contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
               />
-              <Area type="monotone" dataKey="freq" stroke="#3B6D11" fill="#EAF3DE" strokeWidth={2} />
+              {/* Main distribution curve */}
+              <Area type="monotone" dataKey="freq" stroke="#3B6D11" fill="#EAF3DE" strokeWidth={2} fillOpacity={0.6} />
+              {/* Shaded risk zone: P(éxito < 50%) */}
+              <Area type="monotone" dataKey="freqBelow50" stroke="#C0392B" fill="#FDE8E8" strokeWidth={0} fillOpacity={0.7} />
             </AreaChart>
           </ResponsiveContainer>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 mt-2 text-[9px] text-[#6B6760]">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2 rounded-sm bg-[#EAF3DE] border border-[#3B6D11]/40" />
+              <span>Distribución total</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-2 rounded-sm bg-[#FDE8E8] border border-[#C0392B]/40" />
+              <span>P(éxito &lt; 50%) — zona de riesgo</span>
+            </div>
+          </div>
         </div>
       </div>
 

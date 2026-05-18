@@ -83,11 +83,20 @@ export const FASES_INSTITUCIONALES: FaseInstitucional[] = [
 // ─── Presets de trayectoria (§2.6) ────────────────────────────────────────────
 export const PRESETS_TRAYECTORIA: Record<string, PresetTrayectoria> = {
   'Plan SLP Original': { nombre: 'Plan SLP Original', años: [25, 60, 100, 0, 0] },
+  'Pesimista':         { nombre: 'Pesimista',         años: [5, 10, 16, 22, 28] },
   'Conservador':       { nombre: 'Conservador',       años: [15, 35, 55, 80, 100] },
   'Realista':          { nombre: 'Realista',          años: [20, 45, 70, 90, 100] },
   'Agresivo':          { nombre: 'Agresivo',          años: [35, 65, 85, 95, 100] },
   'Acelerado':         { nombre: 'Acelerado',         años: [50, 80, 95, 100, 0] },
 }
+
+// ─── UI labels for trajectory selector ────────────────────────────────────────
+export const TRAJECTORY_UI = [
+  { presetId: 'Agresivo',    label: 'Ambicioso',    color: '#1A5FA8', badge: 'bg-[#EBF3FB] text-[#1A5FA8] border-[#1A5FA8]/30' },
+  { presetId: 'Realista',    label: 'Moderado',     color: '#3B6D11', badge: 'bg-[#EAF3DE] text-[#3B6D11] border-[#3B6D11]/30' },
+  { presetId: 'Conservador', label: 'Conservador',  color: '#D4881E', badge: 'bg-[#FEF7E7] text-[#D4881E] border-[#D4881E]/30' },
+  { presetId: 'Pesimista',   label: 'Pesimista',    color: '#C0392B', badge: 'bg-[#FDE8E8] text-[#C0392B] border-[#C0392B]/30' },
+] as const
 
 // ─── Estacionalidad mensual (§3.4) ────────────────────────────────────────────
 export const ESTACIONALIDAD = [

@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
 import { Truck, Building2, AlertTriangle, TrendingUp, Users, Star } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_CA } from '@/lib/constants'
@@ -26,11 +26,38 @@ const TABS: Array<{ id: TabId; label: string }> = [
 
 const FASE_COLORS = ['#C8E6A4', '#A5C97A', '#7DA84A', '#5A8C2C', '#3B6D11', '#1A4200']
 
+// ── Spatial-temporal deployment data ─────────────────────────────────────────
+
+type FuenteId = 'todos' | 'residencial' | 'comercial' | 'privado' | 'institucional'
+const FUENTES: Array<{ id: FuenteId; label: string }> = [
+  { id: 'todos',          label: 'Todos' },
+  { id: 'residencial',    label: 'Residencial' },
+  { id: 'comercial',      label: 'Comercial' },
+  { id: 'privado',        label: 'Privado / Ind.' },
+  { id: 'institucional',  label: 'Institucional' },
+]
+
+const DESPLIEGUE_ESPACIAL = [
+  { fase: 1, zonas: 'Zona 1',      residencial: 60,  comercial: 0,  privado: 0,  institucional: 0,  total: 15 },
+  { fase: 2, zonas: 'Zona 1–2',    residencial: 60,  comercial: 20, privado: 0,  institucional: 5,  total: 38 },
+  { fase: 3, zonas: 'Zona 1–3',    residencial: 65,  comercial: 40, privado: 10, institucional: 15, total: 58 },
+  { fase: 4, zonas: 'Zona 1–4',    residencial: 70,  comercial: 55, privado: 25, institucional: 25, total: 75 },
+  { fase: 5, zonas: 'ZM completa', residencial: 75,  comercial: 65, privado: 40, institucional: 35, total: 90 },
+]
+
+const SOURCE_COLORS: Record<string, string> = {
+  residencial:   '#3B6D11',
+  comercial:     '#1A5FA8',
+  privado:       '#D4881E',
+  institucional: '#8B6B4A',
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function InfrastructureOperationsStack() {
   const { resultados, horizonte, municipiosActivos, seleccionMunicipioCatalog } = useSimulatorStore()
   const [tab, setTab] = useState<TabId>('infraestructura')
+  const [fuente, setFuente] = useState<FuenteId>('todos')
 
   const municipioLabel = seleccionMunicipioCatalog?.nombre ?? municipiosActivos[0] ?? '—'
   const r = resultados
@@ -229,27 +256,132 @@ export function InfrastructureOperationsStack() {
             </p>
           </div>
 
-          {/* Phase capacity bar chart */}
+          {/* ── Desglose espacio-temporal por fuente ──────────────────── */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+            <div className="px-5 py-3 border-b border-[#F0EDE5] flex flex-wrap items-center gap-3">
+              <div className="flex-1 min-w-0">
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Desglose espacio-temporal por fuente</p>
+                <p className="text-[10px] text-[#A8A49C]">Cobertura (%) por tipo de generador en cada fase de despliegue</p>
+              </div>
+              {/* Source type filter */}
+              <div className="flex gap-1 flex-wrap">
+                {FUENTES.map(f => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setFuente(f.id)}
+                    className={cn(
+                      'px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors',
+                      fuente === f.id
+                        ? 'bg-[#3B6D11] text-white border-[#3B6D11]'
+                        : 'border-[#E8E4DC] text-[#6B6760] hover:border-[#3B6D11]/40 bg-[#FDFCFA]',
+                    )}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Breakdown table */}
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#1C1B18]">Fase</th>
+                    <th className="text-left px-3 py-2.5 font-semibold text-[#1C1B18]">Zonas activas</th>
+                    {(fuente === 'todos' || fuente === 'residencial') && (
+                      <th className="text-right px-3 py-2.5 font-semibold" style={{ color: SOURCE_COLORS.residencial }}>Residencial</th>
+                    )}
+                    {(fuente === 'todos' || fuente === 'comercial') && (
+                      <th className="text-right px-3 py-2.5 font-semibold" style={{ color: SOURCE_COLORS.comercial }}>Comercial</th>
+                    )}
+                    {(fuente === 'todos' || fuente === 'privado') && (
+                      <th className="text-right px-3 py-2.5 font-semibold" style={{ color: SOURCE_COLORS.privado }}>Privado/Ind.</th>
+                    )}
+                    {(fuente === 'todos' || fuente === 'institucional') && (
+                      <th className="text-right px-3 py-2.5 font-semibold" style={{ color: SOURCE_COLORS.institucional }}>Institucional</th>
+                    )}
+                    <th className="text-right px-4 py-2.5 font-semibold text-[#1C1B18]">Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {DESPLIEGUE_ESPACIAL.map((f, i) => (
+                    <tr key={f.fase} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
+                      <td className="px-4 py-2.5">
+                        <span className="inline-flex items-center justify-center w-6 h-6 rounded-full text-white text-[10px] font-bold"
+                          style={{ background: FASE_COLORS[i] ?? '#3B6D11' }}>
+                          F{f.fase}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 text-[#6B6760]">{f.zonas}</td>
+                      {(fuente === 'todos' || fuente === 'residencial') && (
+                        <td className="px-3 py-2.5 text-right font-mono" style={{ color: f.residencial > 0 ? SOURCE_COLORS.residencial : '#A8A49C' }}>
+                          {f.residencial > 0 ? `${f.residencial}%` : '—'}
+                        </td>
+                      )}
+                      {(fuente === 'todos' || fuente === 'comercial') && (
+                        <td className="px-3 py-2.5 text-right font-mono" style={{ color: f.comercial > 0 ? SOURCE_COLORS.comercial : '#A8A49C' }}>
+                          {f.comercial > 0 ? `${f.comercial}%` : '—'}
+                        </td>
+                      )}
+                      {(fuente === 'todos' || fuente === 'privado') && (
+                        <td className="px-3 py-2.5 text-right font-mono" style={{ color: f.privado > 0 ? SOURCE_COLORS.privado : '#A8A49C' }}>
+                          {f.privado > 0 ? `${f.privado}%` : '—'}
+                        </td>
+                      )}
+                      {(fuente === 'todos' || fuente === 'institucional') && (
+                        <td className="px-3 py-2.5 text-right font-mono" style={{ color: f.institucional > 0 ? SOURCE_COLORS.institucional : '#A8A49C' }}>
+                          {f.institucional > 0 ? `${f.institucional}%` : '—'}
+                        </td>
+                      )}
+                      <td className="px-4 py-2.5 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="w-16 h-1.5 bg-[#E8E4DC] rounded-full hidden sm:block">
+                            <div className="h-full rounded-full bg-[#3B6D11]" style={{ width: `${f.total}%` }} />
+                          </div>
+                          <span className="font-mono font-medium text-[#1C1B18]">{f.total}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="px-5 py-2 text-[9px] text-[#A8A49C] border-t border-[#F0EDE5]">
+              Porcentajes representan cobertura estimada del tipo de fuente en esa fase. Valores de referencia — validar con plan operativo municipal.
+            </p>
+          </div>
+
+          {/* Stacked bar chart: source progression by phase */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Volumen despliegue — progresión por fases</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">Capacidad instalada (t/día) acumulada por fase.</p>
+            <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Progresión por tipo de fuente</p>
+            <p className="text-[10px] text-[#A8A49C] mb-4">Cobertura (%) apilada por fase · {fuente === 'todos' ? 'todos los tipos' : FUENTES.find(f => f.id === fuente)?.label}</p>
             <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={faseChartData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+              <BarChart
+                data={DESPLIEGUE_ESPACIAL.map(f => ({ name: `F${f.fase}`, ...f }))}
+                margin={{ top: 4, right: 16, left: 0, bottom: 0 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={36} />
+                <YAxis tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={30} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} />
                 <Tooltip
                   contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                  formatter={(v: number, name: string) => [
-                    name === 'capacidad' ? `${v} t/día` : `${v}%`,
-                    name === 'capacidad' ? 'Capacidad' : 'Cobertura',
-                  ]}
+                  formatter={(v: number, name: string) => [`${v}%`, name]}
                 />
-                <Bar dataKey="capacidad" radius={[3, 3, 0, 0]}>
-                  {faseChartData.map((entry, i) => (
-                    <Cell key={i} fill={entry.optimal ? '#3B6D11' : (FASE_COLORS[i] ?? '#8CAA7A')} />
-                  ))}
-                </Bar>
+                <Legend wrapperStyle={{ fontSize: 10, paddingTop: 6 }} />
+                {(fuente === 'todos' || fuente === 'residencial') && (
+                  <Bar key="residencial" dataKey="residencial" name="Residencial" stackId="a" fill={SOURCE_COLORS.residencial} radius={[0, 0, 0, 0]} />
+                )}
+                {(fuente === 'todos' || fuente === 'comercial') && (
+                  <Bar key="comercial" dataKey="comercial" name="Comercial" stackId="a" fill={SOURCE_COLORS.comercial} />
+                )}
+                {(fuente === 'todos' || fuente === 'privado') && (
+                  <Bar key="privado" dataKey="privado" name="Privado/Ind." stackId="a" fill={SOURCE_COLORS.privado} />
+                )}
+                {(fuente === 'todos' || fuente === 'institucional') && (
+                  <Bar key="institucional" dataKey="institucional" name="Institucional" stackId="a" fill={SOURCE_COLORS.institucional} radius={[3, 3, 0, 0]} />
+                )}
               </BarChart>
             </ResponsiveContainer>
           </div>
