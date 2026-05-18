@@ -900,3 +900,151 @@ export async function getCentrosAcopio(params: {
   if (!res.ok) throw new Error(`Centros de acopio no disponibles: ${res.status}`)
   return res.json()
 }
+
+// ─── Proyecto Vivo ────────────────────────────────────────────────────────────
+
+export interface ProyectoAlerta {
+  tipo:       string
+  severidad:  'info' | 'advertencia' | 'critico'
+  titulo:     string
+  descripcion: string
+  accion:     string | null
+}
+
+export interface RiesgoPolitico {
+  score:         number
+  nivel:         'bajo' | 'medio' | 'alto' | 'desconocido'
+  bloqueadores:  { nombre: string; cargo: string; preocupacion: string | null }[]
+  campeones:     { nombre: string; cargo: string }[]
+  total_actores: number
+}
+
+export interface ProyectoEstado {
+  proyecto_id:               string
+  municipio_id:              string
+  zm:                        string
+  estado:                    string
+  negociacion:               string
+  semanas_activo:            number
+  semanas_objetivo:          number
+  pct_avance:                number
+  semanas_retraso_max:       number
+  actividades_total:         number
+  actividades_completadas:   number
+  criticas_pendientes:       number
+  semaforo:                  'verde' | 'amarillo' | 'rojo'
+  proxima_accion_municipio:  string | null
+  proxima_accion_alquimia:   string | null
+  riesgo_politico:           RiesgoPolitico
+  checkpoint_pendiente:      boolean
+  campeon:                   { nombre: string | null; cargo: string | null; email: string | null }
+  alertas:                   ProyectoAlerta[]
+}
+
+export interface FichaImpacto {
+  municipio:           string
+  periodo:             string
+  semanas_activo:      number
+  pct_avance:          number
+  north_star: {
+    ton_desviadas:       number | null
+    tasa_desvio_pct:     number | null
+    co2e_evitadas_ton:   number | null
+    valor_capturado_mxn: number | null
+    empleos_generados:   number | null
+  }
+  roi_pct:             number | null
+  documentos_entregados: number
+  vs_benchmark:        string | null
+  logros_cabildo:      string[]
+  proximos_pasos:      string[]
+}
+
+export interface StandardScore {
+  nombre:                string
+  codigo:                string
+  score_pct:             number
+  disclosures_cubiertos: number
+  disclosures_total:     number
+  observacion:           string
+  gaps: {
+    campo:       string
+    label:       string
+    descripcion: string
+    prioridad:   string
+    accion:      string
+  }[]
+}
+
+export interface ReadinessReport {
+  municipio_id:    string
+  periodo:         string
+  score_global:    number
+  nivel:           string
+  recomendaciones: string[]
+  estandares: {
+    gri306:  StandardScore
+    sasb:    StandardScore
+    iso9001: StandardScore
+    ods:     StandardScore
+  }
+}
+
+export async function getProyectoEstado(proyectoId: string): Promise<ProyectoEstado> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/proyecto/${proyectoId}/estado`)
+  if (!res.ok) throw new Error(`Proyecto no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getFichaImpacto(proyectoId: string, costoServicio = 0): Promise<FichaImpacto> {
+  const res = await backendFetch(
+    `${getApiUrl()}/api/v1/proyecto/${proyectoId}/ficha-impacto?costo_servicio=${costoServicio}`
+  )
+  if (!res.ok) throw new Error(`Ficha de impacto no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getReadiness(municipioId: string): Promise<ReadinessReport> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/standards/readiness/${municipioId}`)
+  if (!res.ok) throw new Error(`Readiness no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function crearProyecto(payload: {
+  municipio_id:    string
+  zm:              string
+  nombre_cliente:  string
+  email_cliente?:  string
+  negociacion?:    string
+  horizonte_semanas?: number
+  campeon_nombre?: string
+  campeon_cargo?:  string
+  campeon_email?:  string
+}): Promise<{ proyecto_id: string; cliente_id: string; estado: string }> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/proyecto/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Error creando proyecto: ${res.status}`)
+  return res.json()
+}
+
+export async function registrarImpacto(proyectoId: string, payload: {
+  periodo:              string
+  ton_rsu_generadas?:   number
+  ton_rsu_desviadas?:   number
+  co2e_evitadas_ton?:   number
+  ingreso_materiales_mxn?: number
+  ahorro_disposicion_mxn?: number
+  empleos_generados?:   number
+  fuente?:              string
+}): Promise<{ impacto_id: string; tasa_desvio_pct: number | null }> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/proyecto/${proyectoId}/impacto`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Error registrando impacto: ${res.status}`)
+  return res.json()
+}

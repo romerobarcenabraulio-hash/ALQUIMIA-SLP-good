@@ -1,7 +1,104 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { AppShell } from '@/components/layout/AppShell'
 import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
+import Link from 'next/link'
+
+// ── Panel de Proyectos Vivos ──────────────────────────────────────────────────
+
+function AdminProyectosPanel() {
+  const [proyectos, setProyectos] = useState<{
+    id: string; municipio_id: string; zm: string; estado: string;
+    semanas_activo: number; pct_avance: number; is_showcase: boolean; negociacion: string
+  }[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
+    fetch(`${base}/api/v1/proyecto/`)
+      .then(r => r.json())
+      .then(d => setProyectos(d.proyectos || []))
+      .catch(() => setProyectos([]))
+      .finally(() => setLoading(false))
+  }, [])
+
+  const SEMAFORO_DEMO = (pct: number, semanas: number) => {
+    if (semanas > 8 && pct < 20) return 'rojo'
+    if (pct < 50 && semanas > 4)  return 'amarillo'
+    return 'verde'
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <p className="text-[12px] text-[#A8A49C]">
+          Proyectos activos en la plataforma · Consultor vivo
+        </p>
+        <Link
+          href="/proyecto"
+          className="text-[11px] text-[#3B6D11] hover:underline"
+        >
+          + Nuevo proyecto
+        </Link>
+      </div>
+
+      {loading ? (
+        <div className="text-center py-10 text-[#A8A49C] text-[12px]">Cargando proyectos…</div>
+      ) : proyectos.length === 0 ? (
+        <div className="bg-[#FDFCFA] border border-dashed border-[#E8E4DC] rounded-[16px] p-10 text-center">
+          <p className="text-3xl mb-3">🏗️</p>
+          <p className="text-[13px] text-[#6B6760]">No hay proyectos aún.</p>
+          <p className="text-[11px] text-[#A8A49C] mt-1">
+            Se crean automáticamente al cerrar la venta del servicio.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {proyectos.map(p => {
+            const sem = SEMAFORO_DEMO(p.pct_avance, p.semanas_activo)
+            return (
+              <Link
+                key={p.id}
+                href={`/proyecto/${p.municipio_id}?proyecto_id=${p.id}`}
+                className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[16px] p-5 hover:shadow-md transition-shadow block"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2.5 h-2.5 rounded-full ${
+                      sem === 'verde' ? 'bg-emerald-500' : sem === 'amarillo' ? 'bg-amber-400' : 'bg-red-500'
+                    }`} />
+                    <span className="text-[12px] font-bold text-[#1C1B18]">{p.municipio_id}</span>
+                  </div>
+                  {p.is_showcase && (
+                    <span className="text-[9px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
+                      Showcase
+                    </span>
+                  )}
+                </div>
+                <div className="space-y-1.5">
+                  <div className="flex justify-between text-[11px] text-[#6B6760]">
+                    <span>Avance</span>
+                    <span className="font-medium">{p.pct_avance.toFixed(0)}%</span>
+                  </div>
+                  <div className="w-full h-1.5 bg-[#E8E4DC] rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-[#3B6D11] rounded-full transition-all duration-500"
+                      style={{ width: `${p.pct_avance}%` }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-[10px] text-[#A8A49C]">
+                    <span>{p.zm}</span>
+                    <span>{p.semanas_activo} sem · {p.estado}</span>
+                  </div>
+                </div>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
 
 const USUARIOS_MOCK = [
   { id: 1, nombre: 'Arq. Carlos Pérez', email: 'carlos@slp.gob.mx', rol: 'analista', zm: 'SLP', ultimo_acceso: '2025-04-26' },
@@ -16,7 +113,7 @@ const LOGS_MOCK = [
 ]
 
 export default function AdminPage() {
-  const [tab, setTab] = useState<'usuarios' | 'logs' | 'agentes'>('usuarios')
+  const [tab, setTab] = useState<'usuarios' | 'logs' | 'agentes' | 'proyectos'>('usuarios')
 
   return (
     <AppShell>
@@ -32,7 +129,8 @@ export default function AdminPage() {
           {[
             { id: 'usuarios', label: 'Usuarios' },
             { id: 'logs',     label: 'Logs de generación' },
-            { id: 'agentes',  label: 'Estado ÁGORA' },
+            { id: 'agentes',   label: 'Estado ÁGORA' },
+            { id: 'proyectos', label: 'Proyectos Vivos' },
           ].map(t => (
             <button
               key={t.id}
@@ -112,6 +210,10 @@ export default function AdminPage() {
               </tbody>
             </table>
           </div>
+        )}
+
+        {tab === 'proyectos' && (
+          <AdminProyectosPanel />
         )}
 
         {tab === 'agentes' && (

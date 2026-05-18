@@ -39,6 +39,8 @@ from app.agents.dna_loader import load_slp_dna
 from app.survey.router import router as survey_router
 from app.centros_acopio.router import router as centros_acopio_router
 from app.planning.router import router as planning_router
+from app.proyecto.router import router as proyecto_router
+from app.standards.router import router as standards_router
 from app.observability import (
     RequestLoggingMiddleware,
     app_version_from_env,
@@ -206,7 +208,19 @@ app.include_router(agora_router, prefix="/api/v1/agora", tags=["agora"])
 app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
 app.include_router(survey_router, prefix="/api/v1/survey", tags=["survey"])
 app.include_router(centros_acopio_router, prefix="/api/v1/centros-acopio", tags=["centros-acopio"])
-app.include_router(planning_router, prefix="/api/planning", tags=["planning"])
+app.include_router(planning_router,  prefix="/api/planning",      tags=["planning"])
+app.include_router(proyecto_router,  prefix="/api/v1/proyecto",   tags=["proyecto-vivo"])
+app.include_router(standards_router, prefix="/api/v1/standards",  tags=["standards"])
+
+
+@app.on_event("startup")
+async def _create_tables():
+    """Crea tablas en PostgreSQL si están disponibles."""
+    try:
+        from app.db.session import create_all_tables
+        create_all_tables()
+    except Exception as exc:
+        logger.warning("DB startup table creation skipped: %s", exc)
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
