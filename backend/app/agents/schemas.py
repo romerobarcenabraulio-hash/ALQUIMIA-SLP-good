@@ -685,3 +685,211 @@ class PackageRecord(BaseModel):
     n_documents:   int = 0
     n_defendibles: int = 0
     n_bloqueados:  int = 0
+
+
+# ─── Wave 1: ResearchFindings (Agente Investigador) ───────────────────────────
+
+class ResearchItem(BaseModel):
+    """Un resultado individual de investigación web."""
+    query:       str
+    titulo:      str
+    snippet:     str
+    url:         str
+    domain:      str
+    domain_tier: str = "web"   # "inegi" | "banxico" | "gob" | "paper" | "web"
+    fecha:       Optional[str] = None
+    valor_numerico: Optional[float] = None
+    unidad:      Optional[str] = None
+    confianza:   float = Field(ge=0.0, le=1.0, default=0.5)
+
+
+class ResearchFindings(BaseModel):
+    """
+    Output del Agente Investigador.
+    Agrupa hallazgos por categoria para que cada agente consuma solo lo suyo.
+    """
+    zm:          str
+    municipio:   str
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Costos financieros (alimentan CostModel)
+    costos_construccion:  List[ResearchItem] = Field(default_factory=list)
+    costos_terreno:       List[ResearchItem] = Field(default_factory=list)
+    costos_flota:         List[ResearchItem] = Field(default_factory=list)
+    costos_disposicion:   List[ResearchItem] = Field(default_factory=list)
+    precios_materiales:   List[ResearchItem] = Field(default_factory=list)
+
+    # Contexto regulatorio y político
+    reglamentos:          List[ResearchItem] = Field(default_factory=list)
+    noticias_locales:     List[ResearchItem] = Field(default_factory=list)
+    benchmarks_latam:     List[ResearchItem] = Field(default_factory=list)
+    papers_academicos:    List[ResearchItem] = Field(default_factory=list)
+
+    # Metadata de calidad
+    queries_ejecutadas:   int = 0
+    queries_con_resultado: int = 0
+    fuente_serper:        bool = False
+    advertencias:         List[str] = Field(default_factory=list)
+
+    def top_costo(self, categoria: str) -> Optional[ResearchItem]:
+        """Devuelve el item de mayor confianza para una categoria de costos."""
+        items = getattr(self, categoria, [])
+        if not items:
+            return None
+        return max(items, key=lambda x: x.confianza)
+
+
+# ─── Wave 1: CentroAcopio (base de datos) ────────────────────────────────────
+
+class CentroAcopioMaterial(str, Enum):
+    pet       = "pet"
+    hdpe      = "hdpe"
+    carton    = "carton"
+    papel     = "papel"
+    vidrio    = "vidrio"
+    aluminio  = "aluminio"
+    acero     = "acero"
+    organico  = "organico"
+    tetrapak  = "tetrapak"
+    electronico = "electronico"
+    baterias  = "baterias"
+    aceite    = "aceite"
+    textil    = "textil"
+    otro      = "otro"
+
+
+class CentroAcopioTipo(str, Enum):
+    centro_municipal   = "centro_municipal"
+    empresa_recicladora = "empresa_recicladora"
+    punto_verde        = "punto_verde"
+    chatarreria        = "chatarreria"
+    banco_de_residuos  = "banco_de_residuos"
+    otro               = "otro"
+
+
+class CentroAcopio(BaseModel):
+    """Punto de disposición o venta de materiales reciclables."""
+    centro_id:      str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nombre:         str
+    tipo:           CentroAcopioTipo = CentroAcopioTipo.otro
+    direccion:      str
+    municipio:      str
+    estado:         str
+    zm:             Optional[str] = None
+    lat:            Optional[float] = None
+    lon:            Optional[float] = None
+    materiales:     List[CentroAcopioMaterial] = Field(default_factory=list)
+    precio_compra:  Dict[str, float] = Field(
+        default_factory=dict,
+        description="Material → precio de compra en MXN/kg"
+    )
+    telefono:       Optional[str] = None
+    horario:        Optional[str] = None
+    acepta_publico: bool = True
+    acepta_empresa: bool = False
+    fuente:         str = "usuario"   # "places_api" | "denue" | "usuario"
+    verificado:     bool = False
+    score_confianza: float = Field(ge=0.0, le=1.0, default=0.5)
+    created_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# ─── Wave 1: Planning (Gantt / PERT / RACI) ──────────────────────────────────
+
+class PlanningTask(BaseModel):
+    """Tarea individual para Gantt y PERT."""
+    task_id:      str = Field(default_factory=lambda: str(uuid.uuid4()))
+    nombre:       str
+    descripcion:  str = ""
+    responsable:  str
+    inicio_semana: int = Field(ge=1)
+    duracion_semanas: int = Field(ge=1)
+    predecesoras: List[str] = Field(default_factory=list)
+    es_critica:   bool = False
+    costo_mxn:    float = 0.0
+    fuente_costo: str = ""
+    holgura_semanas: int = 0
+
+
+class GanttPlan(BaseModel):
+    """Plan Gantt maestro generado por agentes logísticos."""
+    zm:          str
+    municipio:   str
+    scenario_id: str
+    tasks:       List[PlanningTask] = Field(default_factory=list)
+    horizonte_semanas: int = 52
+    costo_total_mxn: float = 0.0
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    fuente_costos: str = "cost_registry_v1"
+
+    def ruta_critica(self) -> List[PlanningTask]:
+        return [t for t in self.tasks if t.es_critica]
+
+
+class PertNode(BaseModel):
+    """Nodo del diagrama PERT con análisis de tiempo temprano/tardío."""
+    node_id:        str
+    nombre:         str
+    tiempo_esperado: float   # semanas
+    tiempo_temprano: float = 0.0
+    tiempo_tardio:  float = 0.0
+    holgura:        float = 0.0
+    es_critico:     bool = False
+
+
+class PertPlan(BaseModel):
+    """Diagrama PERT con ruta crítica identificada."""
+    zm:          str
+    municipio:   str
+    scenario_id: str
+    nodes:       List[PertNode] = Field(default_factory=list)
+    duracion_total_semanas: float = 0.0
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class RACIRow(BaseModel):
+    """Fila de la matriz RACI con roles y responsabilidades."""
+    proceso:       str
+    responsable:   str          # R
+    aprueba:       str          # A
+    consulta:      List[str] = Field(default_factory=list)   # C
+    informa:       List[str] = Field(default_factory=list)   # I
+    plazo_semanas: Optional[int] = None
+    norma_aplicable: Optional[str] = None
+
+
+class RACIPlan(BaseModel):
+    """Matriz RACI completa para el programa de circularidad."""
+    zm:          str
+    municipio:   str
+    scenario_id: str
+    filas:       List[RACIRow] = Field(default_factory=list)
+    generated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+# ─── Wave 1: SurveyTemplate (encuesta social/demográfica) ────────────────────
+
+class SurveyPregunta(BaseModel):
+    pregunta_id:  str
+    texto:        str
+    tipo:         str   # "opcion_multiple" | "escala_likert" | "abierta" | "numerica"
+    opciones:     List[str] = Field(default_factory=list)
+    obligatoria:  bool = True
+    seccion:      str = ""
+
+
+class SurveyTemplate(BaseModel):
+    """Encuesta social/demográfica generada para módulo de riesgos."""
+    survey_id:    str = Field(default_factory=lambda: str(uuid.uuid4()))
+    titulo:       str
+    descripcion:  str
+    municipio:    str
+    zm:           str
+    riesgos_detectados: List[str] = Field(default_factory=list)
+    preguntas:    List[SurveyPregunta] = Field(default_factory=list)
+    consentimiento: str = "Los datos son anónimos y se usarán exclusivamente para análisis de gestión de residuos."
+    created_at:   datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    version:      str = "1.0"
+
+    def n_secciones(self) -> int:
+        return len({p.seccion for p in self.preguntas if p.seccion})
