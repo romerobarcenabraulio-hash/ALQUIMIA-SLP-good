@@ -36,6 +36,7 @@ from app.empresa.router import router as empresa_router
 from app.city.api_v1 import router as cities_v1_router
 from app.agora.router import router as agora_router
 from app.agents.dna_loader import load_slp_dna
+from app.survey.router import router as survey_router
 from app.observability import (
     RequestLoggingMiddleware,
     app_version_from_env,
@@ -201,6 +202,7 @@ app.include_router(predios_router, tags=["predios"])
 app.include_router(empresa_router)
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["agora"])
 app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
+app.include_router(survey_router, prefix="/api/v1/survey", tags=["survey"])
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
