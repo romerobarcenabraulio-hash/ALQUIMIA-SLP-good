@@ -105,6 +105,9 @@ def _extract_number(text: str) -> Optional[float]:
 def _classify_query(query: str) -> str:
     """Asigna la query a una categoría de ResearchFindings."""
     q = query.lower()
+    # Benchmarks antes de reglamentos (evitar falso positivo con "municipio comparable")
+    if any(w in q for w in ["benchmark", "latam", "america comparable", "municipio comparable"]):
+        return "benchmarks_latam"
     if any(w in q for w in ["construccion", "bodega", "nave", "m2"]):
         return "costos_construccion"
     if any(w in q for w in ["terreno", "predio", "lote"]):
@@ -119,8 +122,6 @@ def _classify_query(query: str) -> str:
         return "reglamentos"
     if any(w in q for w in ["noticia", "noticias", "evento"]):
         return "noticias_locales"
-    if any(w in q for w in ["benchmark", "latam", "america", "municipio comparable"]):
-        return "benchmarks_latam"
     if any(w in q for w in ["estudio", "paper", "investigacion", "academia"]):
         return "papers_academicos"
     return "noticias_locales"
