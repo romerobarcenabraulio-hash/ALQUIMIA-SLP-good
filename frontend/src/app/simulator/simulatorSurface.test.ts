@@ -13,6 +13,7 @@ describe('simulator functionary surface', () => {
       'future_goals',
       'infrastructure_operations',
       'market_traceability',
+      'risk_trends',
       'inspeccion_predios',
       'scenarios_export',
       'source_traceability',
@@ -34,6 +35,7 @@ describe('simulator functionary surface', () => {
       '<ImpactoFinanciero />',
     )
     expect(registrySource).toContain("case 'market_traceability':")
+    expect(registrySource).toContain("case 'risk_trends':")
     expect(readFrontend('src/lib/simulator/functionaryJourneyEnrichment.ts')).toContain(
       "label: 'Bibliografía y cálculos'",
     )

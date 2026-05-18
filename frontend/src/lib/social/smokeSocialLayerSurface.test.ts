@@ -21,10 +21,12 @@ describe('smokeSocialLayerSurface (capa social)', () => {
     expect(AUDIENCE_MODULES.citizen).toContain('municipal_context')
   })
 
-  it('renderDecisionModule monta SocialDemographicContextPanel en municipal_context', () => {
+  it('renderDecisionModule monta MunicipalContextStack en municipal_context (incluye panel sociodemográfico)', () => {
     const registry = readSrc('app/simulator/renderDecisionModule.tsx')
     expect(registry).toContain("case 'municipal_context':")
-    expect(registry).toMatch(/case 'municipal_context':[\s\S]*<SocialDemographicContextPanel/)
+    expect(registry).toMatch(/case 'municipal_context':[\s\S]*<MunicipalContextStack/)
+    const stack = readSrc('components/simulator/stacks/MunicipalContextStack.tsx')
+    expect(stack).toContain('<SocialDemographicContextPanel')
   })
 
   it('panel social expone testids y sección oficial PR3', () => {
