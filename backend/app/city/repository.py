@@ -190,6 +190,14 @@ def journey_for(entry: PortalEntry) -> list[DecisionModule]:
             next_action="Resolver warnings de mercado antes de exportar",
         ),
         DecisionModule(
+            module_id="risk_trends",
+            label="Riesgos y tendencias",
+            audience_mode=UserAudienceMode.city_team,
+            decision="Relacionar riesgos operativos con tendencias agregadas de limpieza, salud pública y calidad de vida urbana",
+            evidence="Municipios activos, lectura consultiva y API de tendencias (ALQUIMIA / proveedor opcional)",
+            next_action="Documentar brechas de riesgo frente a tendencias antes de inspección en campo",
+        ),
+        DecisionModule(
             module_id="inspeccion_predios",
             label="Inspección de predios",
             audience_mode=UserAudienceMode.city_team,

@@ -53,6 +53,7 @@ def test_city_plan_journey_unchanged_for_citizen_and_functionary():
     assert "municipal_context" in citizen_ids
     assert "infrastructure_operations" in functionary_ids
     assert "scenarios_export" in functionary_ids
+    assert "risk_trends" in functionary_ids
 
 
 def test_organization_journey_for_entrepreneur():
