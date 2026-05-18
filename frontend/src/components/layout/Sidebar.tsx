@@ -1,5 +1,6 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -27,7 +28,7 @@ const TOP_NAV = [
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export function Sidebar() {
+export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
   const pathname = usePathname()
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
@@ -80,8 +81,14 @@ export function Sidebar() {
       {/* Divider */}
       <div className="mx-4 border-t border-[#2D4020] my-1" />
 
-      {/* Spacer — module nav lives inside DecisionModuleShell, not here */}
-      <div className="flex-1" />
+      {/* Module nav slot — filled by simulator page, spacer otherwise */}
+      {moduleSection ? (
+        <div className="flex-1 overflow-y-auto border-t border-[#2D4020] mt-1 min-h-0">
+          {moduleSection}
+        </div>
+      ) : (
+        <div className="flex-1" />
+      )}
 
       {/* Bottom section */}
       <div className="px-2 pb-3">

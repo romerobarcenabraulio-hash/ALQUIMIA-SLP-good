@@ -144,21 +144,18 @@ export default function SimulatorPage() {
     )
   }
 
-  const showModuleNav = !portalJourneyLoading && filteredModules.length > 0
+  const moduleNav = filteredModules.length > 0 && !portalJourneyLoading ? (
+    <ModuleNav
+      modules={filteredModules}
+      activeId={activeModuleId ?? ''}
+      onChange={setActiveModuleId}
+      theme="dark"
+    />
+  ) : undefined
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
-      <Sidebar />
-
-      {/* Module nav — sticky left panel, between app sidebar and content */}
-      {showModuleNav && (
-        <ModuleNav
-          modules={filteredModules}
-          activeId={activeModuleId ?? ''}
-          onChange={setActiveModuleId}
-          className="hidden xl:flex flex-col w-[230px] shrink-0 bg-[#F4F2ED] border-r border-[#E8E4DC] overflow-y-auto sticky top-0 h-screen"
-        />
-      )}
+      <Sidebar moduleSection={moduleNav} />
 
       {/* Right: header + scrollable content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

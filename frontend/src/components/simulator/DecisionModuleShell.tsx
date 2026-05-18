@@ -104,21 +104,26 @@ export function ModuleNav({
   activeId,
   onChange,
   className,
+  theme = 'light',
 }: {
   modules: DecisionModule[]
   activeId: string
   onChange: (id: string) => void
   className?: string
+  theme?: 'light' | 'dark'
 }) {
+  const isDark = theme === 'dark'
   return (
     <nav
       aria-label="Módulos de decisión"
-      className={className ?? "bg-[#F4F2ED] border-r border-[#E8E4DC] w-[230px] shrink-0 overflow-y-auto"}
+      className={className ?? (isDark ? '' : 'bg-[#F4F2ED] border-r border-[#E8E4DC] w-[230px] shrink-0 overflow-y-auto')}
     >
-      <div className="px-3 py-4 border-b border-[#E8E4DC]">
-        <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold px-2">Módulos</p>
+      <div className={cn('px-3 py-3', isDark ? 'border-b border-[#2D4020]' : 'border-b border-[#E8E4DC]')}>
+        <p className={cn('text-[9px] uppercase tracking-[0.1em] font-semibold px-1', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
+          Módulos de decisión
+        </p>
       </div>
-      <div className="py-2">
+      <div className="py-1.5">
         {modules.map((m) => {
           const active  = m.module_id === activeId
           const blocked = m.status === 'blocked'
@@ -130,21 +135,31 @@ export function ModuleNav({
               onClick={() => onChange(m.module_id)}
               aria-current={active ? 'true' : undefined}
               className={cn(
-                'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group',
-                active
-                  ? 'bg-[#EAF3DE] border-r-2 border-r-[#3B6D11]'
-                  : 'hover:bg-[#ECEAE5]',
+                'w-full flex items-start gap-2.5 px-3 py-2 text-left transition-colors group',
+                isDark
+                  ? active
+                    ? 'bg-[#2D4020] border-r-2 border-r-[#5A9438]'
+                    : 'hover:bg-[#243320]'
+                  : active
+                    ? 'bg-[#EAF3DE] border-r-2 border-r-[#3B6D11]'
+                    : 'hover:bg-[#ECEAE5]',
               )}
             >
               {/* Number badge */}
               <span
                 className={cn(
                   'mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center font-mono text-[9px] font-semibold transition-colors',
-                  active
-                    ? 'bg-[#3B6D11] text-white'
-                    : blocked
-                      ? 'bg-amber-200 text-amber-900'
-                      : 'bg-[#D8D4CC] text-[#6B6760] group-hover:bg-[#C8C4BC]',
+                  isDark
+                    ? active
+                      ? 'bg-[#5A9438] text-white'
+                      : blocked
+                        ? 'bg-amber-700/60 text-amber-200'
+                        : 'bg-[#2D4020] text-[#6A9A50] group-hover:bg-[#3A5028]'
+                    : active
+                      ? 'bg-[#3B6D11] text-white'
+                      : blocked
+                        ? 'bg-amber-200 text-amber-900'
+                        : 'bg-[#D8D4CC] text-[#6B6760] group-hover:bg-[#C8C4BC]',
                 )}
               >
                 {blocked ? <Lock size={8} /> : num}
@@ -153,19 +168,21 @@ export function ModuleNav({
               <div className="min-w-0 flex-1">
                 <p
                   className={cn(
-                    'text-[12px] font-medium leading-snug',
-                    active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
+                    'text-[11px] font-medium leading-snug',
+                    isDark
+                      ? active ? 'text-white' : 'text-[#8AAD78] group-hover:text-white'
+                      : active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
                   )}
                 >
                   {m.label}
                 </p>
-                <p className="text-[10px] text-[#A8A49C] mt-0.5 leading-tight">
+                <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
                   {blocked ? 'Requiere acción' : m.audience_mode ?? 'Disponible'}
                 </p>
               </div>
 
               {active && !blocked && (
-                <ChevronRight size={13} className="shrink-0 text-[#3B6D11] mt-1" />
+                <ChevronRight size={12} className={cn('shrink-0 mt-1', isDark ? 'text-[#5A9438]' : 'text-[#3B6D11]')} />
               )}
             </button>
           )
