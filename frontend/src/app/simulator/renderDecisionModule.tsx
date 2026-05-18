@@ -2,13 +2,11 @@
 
 import dynamic from 'next/dynamic'
 import type { ReactNode } from 'react'
-import { SectionHero } from '@/components/simulator/SectionHero'
+import { CityBaselineStack } from '@/components/simulator/stacks/CityBaselineStack'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
 import { CentrosAcopio } from '@/components/simulator/CentrosAcopio'
 import { Logistica } from '@/components/simulator/Logistica'
-import { ImpactoAmbiental } from '@/components/simulator/ImpactoAmbiental'
-import { MultiplicadoresEco } from '@/components/simulator/MultiplicadoresEco'
 import { DeclaracionWizard } from '@/components/simulator/DeclaracionWizard'
 import CoberturaNacional from '@/components/simulator/CoberturaNacional'
 import { OperacionPERBitacora } from '@/components/simulator/OperacionPERBitacora'
@@ -78,7 +76,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
   if (audience === 'citizen') {
     switch (module.module_id) {
       case 'city_baseline':
-        return <SectionHero />
+        return <CityBaselineStack />
       case 'municipal_context':
         return (
           <>
@@ -90,12 +88,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       case 'citizen_inputs':
         return <EducacionCiudadana />
       case 'impact_finance':
-        return (
-          <>
-            <ImpactoAmbiental />
-            <MultiplicadoresEco />
-          </>
-        )
+        return <CityBaselineStack />
       default:
         return <ModuleEmpty module={module} />
     }
@@ -103,15 +96,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
 
   switch (module.module_id) {
     case 'city_baseline':
-      return (
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)]">
-          <SectionHero />
-          <div className="grid gap-5">
-            <ImpactoAmbiental />
-            <MultiplicadoresEco />
-          </div>
-        </div>
-      )
+      return <CityBaselineStack />
     case 'municipal_context':
       return (
         <>
