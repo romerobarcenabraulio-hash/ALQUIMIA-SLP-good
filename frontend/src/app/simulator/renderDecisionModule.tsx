@@ -20,6 +20,7 @@ import { ScenariosExportStack } from '@/components/simulator/stacks/ScenariosExp
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
+import { MunicipalContextStack } from '@/components/simulator/stacks/MunicipalContextStack'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -44,6 +45,15 @@ const ReasoningGraphPanel = dynamic(
   {
     ssr: false,
     loading: () => <p className="text-[12px] text-[#6B6760]">Cargando panel de causalidad…</p>,
+  },
+)
+
+const RiskTrendsPanel = dynamic(
+  () =>
+    import('@/components/simulator/RiskTrendsPanel').then(m => ({ default: m.RiskTrendsPanel })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando riesgos y tendencias…</p>,
   },
 )
 
@@ -78,13 +88,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       case 'city_baseline':
         return <CityBaselineStack />
       case 'municipal_context':
-        return (
-          <>
-            <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
-            <MarcoLegal mode="citizen" />
-            <CoberturaNacional />
-          </>
-        )
+        return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} />
       case 'citizen_inputs':
         return <EducacionCiudadana />
       case 'impact_finance':
@@ -98,13 +102,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'city_baseline':
       return <CityBaselineStack />
     case 'municipal_context':
-      return (
-        <>
-          <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
-          <MarcoLegal mode="functionary" />
-          <CoberturaNacional />
-        </>
-      )
+      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} />
     case 'future_goals':
       return <FutureGoalsModule notice={<MetasPlanDerivadasNotice />} />
     case 'infrastructure_operations':
@@ -121,6 +119,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       )
     case 'market_traceability':
       return <ReasoningGraphPanel />
+    case 'risk_trends':
+      return <RiskTrendsPanel />
     case 'inspeccion_predios':
       return <InspeccionForm />
     case 'scenarios_export':
