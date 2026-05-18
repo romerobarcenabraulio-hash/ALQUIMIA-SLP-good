@@ -22,6 +22,7 @@ import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import { MunicipalContextStack } from '@/components/simulator/stacks/MunicipalContextStack'
 import { InfrastructureOperationsStack } from '@/components/simulator/stacks/InfrastructureOperationsStack'
+import { MarketTraceabilityStack } from '@/components/simulator/stacks/MarketTraceabilityStack'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -109,7 +110,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'infrastructure_operations':
       return <InfrastructureOperationsStack />
     case 'market_traceability':
-      return <ReasoningGraphPanel />
+      return <MarketTraceabilityStack />
     case 'risk_trends':
       return <RiskTrendsPanel />
     case 'inspeccion_predios':
