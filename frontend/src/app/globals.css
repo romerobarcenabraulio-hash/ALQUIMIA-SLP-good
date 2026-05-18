@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --ivory-base:    #F8F6F1;
+  --ivory-base:    #F4F2ED;
+  --ivory-surface: #F8F6F1;
   --ivory-card:    #FDFCFA;
   --ivory-border:  #E8E4DC;
   --ivory-hover:   #F0EDE5;
@@ -188,6 +189,89 @@ body {
 /* Section divider */
 .section { padding: 64px 0; }
 .section + .section { border-top: 1px solid var(--ivory-border); }
+
+/* ── App shell helpers ──────────────────────────────────────────────────────── */
+
+/* Dark sidebar backgrounds */
+.bg-sidebar   { background: #1C2B15; }
+.bg-sidebar-active { background: #2D4020; }
+
+/* Module content area */
+.module-content { 
+  background: #fff;
+  border: 1px solid var(--ivory-border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+
+/* KPI tile */
+.kpi-tile {
+  background: #fff;
+  border: 1px solid var(--ivory-border);
+  border-radius: var(--r-md);
+  padding: 12px 16px;
+}
+.kpi-tile .value { 
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.2;
+  color: var(--gray-900);
+}
+.kpi-tile .label { 
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--gray-400);
+}
+
+/* Section page header */
+.page-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--ivory-border);
+  background: #fff;
+}
+.page-header .eyebrow {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gray-400);
+  margin-bottom: 4px;
+}
+.page-header h1 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 26px;
+  color: var(--gray-900);
+  line-height: 1.15;
+}
+
+/* Data table */
+.data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.data-table th {
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--ivory-hover);
+  color: var(--gray-600);
+  font-weight: 500;
+  font-size: 11px;
+  white-space: nowrap;
+  border-bottom: 1px solid var(--ivory-border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--ivory-border);
+  color: var(--gray-900);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: var(--ivory-base); }
+
+/* Badge variants */
+.badge-green  { background: var(--green-50);  color: var(--green-500);  border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; }
+.badge-amber  { background: var(--amber-50);  color: var(--amber-700);  border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; }
+.badge-blue   { background: var(--blue-50);   color: var(--blue-600);   border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; }
+.badge-red    { background: var(--red-50);    color: var(--red-500);    border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; }
+.badge-earth  { background: var(--earth-100); color: var(--earth-500);  border-radius: 20px; padding: 2px 8px; font-size: 10px; font-weight: 500; }
 
 /* Recharts overrides */
 .recharts-cartesian-grid-horizontal line,
