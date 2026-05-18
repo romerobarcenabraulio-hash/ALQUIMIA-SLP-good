@@ -189,94 +189,73 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
         <div className="space-y-4">
           <ScopeAnclaKicker className="text-[11px]" />
 
-          {/* Reading panels */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {/* Executive reading */}
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-[#FDE8E8] flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-3 h-3 text-[#C0392B]" />
-                </div>
-                <p className="text-[11px] font-semibold text-[#1C1B18]">Lectura ejecutiva del módulo</p>
-              </div>
-
-              <div className="mb-3">
-                <p className="text-[10px] font-semibold text-[#C0392B] mb-2 uppercase tracking-wide">¿Qué está mal jurídicamente?</p>
-                <ul className="space-y-1.5">
-                  {[
-                    'Reglamentos desactualizados o sin base técnica.',
-                    'Falta de obligaciones claras para separación en origen.',
-                    'Ausencia de esquemas de trazabilidad y sanciones.',
-                    'Débil corresponsabilidad del generador y del servicio.',
-                  ].map(item => (
-                    <li key={item} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
-                      <span className="text-[#C0392B] mt-0.5 shrink-0">×</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div className="border-t border-[#F0EDE5] pt-3">
-                <p className="text-[10px] font-semibold text-[#3B6D11] mb-2 uppercase tracking-wide">¿Qué buscamos arreglar?</p>
-                <ul className="space-y-1.5">
-                  {[
-                    'Alinear el reglamento con la Ley General y estatal.',
-                    'Incorporar separación, recolección diferenciada y trazabilidad.',
-                    'Establecer obligaciones, incentivos y sanciones proporcionales.',
-                    'Fortalecer la corresponsabilidad de todos los actores.',
-                  ].map(item => (
-                    <li key={item} className="flex items-start gap-2 text-[11px] text-[#5A6347]">
-                      <span className="text-[#3B6D11] mt-0.5 shrink-0">›</span>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            {/* Technical reading */}
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="w-5 h-5 rounded-full bg-[#EAF3DE] flex items-center justify-center shrink-0">
-                  <Scale className="w-3 h-3 text-[#3B6D11]" />
-                </div>
-                <p className="text-[11px] font-semibold text-[#1C1B18]">Lectura técnica</p>
-              </div>
-
-              <div className="space-y-3 text-[11px]">
+          {/* Reading panels — colapsados por default */}
+          <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+            <summary className="cursor-pointer px-5 py-3 text-[12px] font-medium text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none flex items-center gap-2">
+              <AlertTriangle className="w-3.5 h-3.5 text-[#C0392B] shrink-0" />
+              Diagnóstico jurídico — vacíos y ruta de reforma
+            </summary>
+            <div className="border-t border-[#F0EDE5] p-5">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* Executive reading */}
                 <div>
-                  <p className="font-semibold text-[#1C1B18] mb-1">Base legal</p>
-                  <p className="text-[#6B6760] leading-relaxed">
-                    LGPGIR, Ley Ambiental del Estado vigente, Ley de Mejora Regulatoria Estatal y Reglamento municipal vigente.
-                  </p>
+                  <p className="text-[10px] font-semibold text-[#C0392B] mb-2 uppercase tracking-wide">¿Qué está mal jurídicamente?</p>
+                  <ul className="space-y-1.5">
+                    {[
+                      'Reglamentos desactualizados o sin base técnica.',
+                      'Falta de obligaciones claras para separación en origen.',
+                      'Ausencia de esquemas de trazabilidad y sanciones.',
+                      'Débil corresponsabilidad del generador y del servicio.',
+                    ].map(item => (
+                      <li key={item} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
+                        <span className="text-[#C0392B] mt-0.5 shrink-0">×</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className="border-t border-[#F0EDE5] mt-3 pt-3">
+                    <p className="text-[10px] font-semibold text-[#3B6D11] mb-2 uppercase tracking-wide">¿Qué buscamos arreglar?</p>
+                    <ul className="space-y-1.5">
+                      {[
+                        'Alinear el reglamento con la Ley General y estatal.',
+                        'Incorporar separación, recolección diferenciada y trazabilidad.',
+                        'Establecer obligaciones, incentivos y sanciones proporcionales.',
+                        'Fortalecer la corresponsabilidad de todos los actores.',
+                      ].map(item => (
+                        <li key={item} className="flex items-start gap-2 text-[11px] text-[#5A6347]">
+                          <span className="text-[#3B6D11] mt-0.5 shrink-0">›</span>
+                          {item}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-semibold text-[#1C1B18] mb-1">Alcance</p>
-                  <p className="text-[#6B6760] leading-relaxed">
-                    Reforma al reglamento de limpia y gestión de residuos para incorporar principios de economía circular: obligaciones
-                    específicas, trazabilidad, sanciones e instrumentos de corresponsabilidad.
-                  </p>
-                </div>
-                <div className="rounded-[8px] bg-[#FEF7E7] border border-[#F5D98A] px-3 py-2.5">
-                  <p className="font-semibold text-[#6B4800] mb-1">Validación requerida</p>
-                  <p className="text-[#6B6760]">
-                    No sustituye dictamen legal definitivo; requiere validación del área jurídica municipal.
-                  </p>
-                </div>
-                <div className="flex items-center justify-between pt-1">
-                  <span className="text-[#A8A49C]">Nivel de confianza</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-20 h-1.5 bg-[#E8E4DC] rounded-full">
-                      <div className="h-full rounded-full bg-[#3B6D11]" style={{ width: '65%' }} />
-                    </div>
-                    <span className="font-medium text-[#3B6D11]">65%</span>
-                    <span className="text-[#A8A49C]">Medio-alto</span>
+
+                {/* Technical reading */}
+                <div className="space-y-3 text-[11px]">
+                  <div>
+                    <p className="font-semibold text-[#1C1B18] mb-1">Base legal</p>
+                    <p className="text-[#6B6760] leading-relaxed">
+                      LGPGIR, Ley Ambiental del Estado vigente, Ley de Mejora Regulatoria Estatal y Reglamento municipal vigente.
+                    </p>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-[#1C1B18] mb-1">Alcance</p>
+                    <p className="text-[#6B6760] leading-relaxed">
+                      Reforma al reglamento de limpia y gestión de residuos para incorporar principios de economía circular: obligaciones
+                      específicas, trazabilidad, sanciones e instrumentos de corresponsabilidad.
+                    </p>
+                  </div>
+                  <div className="rounded-[8px] bg-[#FEF7E7] border border-[#F5D98A] px-3 py-2.5">
+                    <p className="font-semibold text-[#6B4800] mb-1">Validación requerida</p>
+                    <p className="text-[#6B6760]">
+                      No sustituye dictamen legal definitivo; requiere validación del área jurídica municipal.
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          </details>
 
           {/* Reform roadmap F1-F5 */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">

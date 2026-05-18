@@ -43,20 +43,27 @@ export function ImpactoFinanciero() {
 
   return (
     <div>
-      <ContextoModulo
-        variante="financiero"
-        titulo="¿Cómo está construido el modelo financiero?"
-        cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta inversión inicial y costos operativos. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
-        puntos={[
-          'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
-          'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y costos operativos.',
-          'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, costos operativos +20%).',
-          'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
-          'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende de inversión inicial, contenedores y comunicación.',
-        ]}
-        fuente={`Modelo financiero: calculator.ts / Modelo_BASED.xlsx. Precios: ${PRICE_RESEARCH_SOURCE_LABEL}. Crédito carbono: VCS Market 2024 / SEMARNAT SCE.`}
-        advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
-      />
+      <details className="mb-4 text-[11px] rounded-[10px] border border-[#E8E4DC] overflow-hidden">
+        <summary className="cursor-pointer px-4 py-2.5 text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none">
+          Metodología del modelo financiero
+        </summary>
+        <div className="border-t border-[#F0EDE5]">
+          <ContextoModulo
+            variante="financiero"
+            titulo="¿Cómo está construido el modelo financiero?"
+            cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta inversión inicial y costos operativos. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
+            puntos={[
+              'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
+              'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y costos operativos.',
+              'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, costos operativos +20%).',
+              'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
+              'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende de inversión inicial, contenedores y comunicación.',
+            ]}
+            fuente={`Modelo financiero: calculator.ts / Modelo_BASED.xlsx. Precios: ${PRICE_RESEARCH_SOURCE_LABEL}. Crédito carbono: VCS Market 2024 / SEMARNAT SCE.`}
+            advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
+          />
+        </div>
+      </details>
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S14 — Impacto financiero</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Retorno, derrama y cobertura financiera</h2>
       <ScopeAnclaKicker className="mb-3" />
