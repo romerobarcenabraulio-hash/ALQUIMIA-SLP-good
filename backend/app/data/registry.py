@@ -20,11 +20,12 @@ import asyncio
 from datetime import datetime, timezone
 from typing import Dict, List, Optional
 
-from app.data.adapters.banxico  import BanxicoAdapter
-from app.data.adapters.fallback import FallbackAdapter
-from app.data.adapters.inegi    import InegiAdapter
-from app.data.adapters.semarnat import SemarnatAdapter
-from app.data.adapters.smn      import SmnAdapter
+from app.data.adapters.banxico           import BanxicoAdapter
+from app.data.adapters.banxico_inflacion import BanxicoInflacionAdapter
+from app.data.adapters.fallback          import FallbackAdapter
+from app.data.adapters.inegi             import InegiAdapter
+from app.data.adapters.semarnat          import SemarnatAdapter
+from app.data.adapters.smn               import SmnAdapter
 from app.data.adapters.base     import BaseAdapter
 from app.data.schemas import (
     AdvertenciaKPI, FuenteStatus, FuenteTipo, KPIConProvenance, SnapshotDatos,
@@ -79,6 +80,7 @@ class DataRegistry:
     def __init__(self) -> None:
         self._adapters: List[BaseAdapter] = [
             BanxicoAdapter(),
+            BanxicoInflacionAdapter(),
             InegiAdapter(),
             SemarnatAdapter(),
             SmnAdapter(),

@@ -1,6 +1,8 @@
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, List, Any
 
+from app.schemas.cost_model import NegotiationScheme
+
 class PreciosMaterial(BaseModel):
     pet:      float = 5.50
     hdpe:     float = 8.50
@@ -31,6 +33,13 @@ class ScenarioInput(BaseModel):
     subsidio_federal:      float = 0
     cap_camion_ton:        float = 12
     distancia_relleno:     float = 25
+    # Wave 0: motor financiero trazable
+    negociacion:           NegotiationScheme = NegotiationScheme.municipal_directo
+    cost_overrides:        Optional[Dict[str, float]] = Field(
+        None,
+        description="Mapa concepto → monto_usuario para sobreescribir precargados del registry. "
+                    "Ej: {'terreno_CA_P': 420000}",
+    )
 
 class SimulateResponse(BaseModel):
     pob_activa:            float
@@ -64,3 +73,12 @@ class SimulateResponse(BaseModel):
     # Alimenta el módulo de marketplace para calcular colocación real.
     # None cuando el cálculo se ejecutó offline o la ZM no tiene datos de composición.
     vol_capturable_por_mat_ton_anio: Optional[Dict[str, float]] = None
+    # Wave 0: motor financiero trazable
+    cost_model:              Optional[Any] = Field(
+        None,
+        description="CostModelSummary serializado — desglosa CAPEX/OPEX por actor y confianza",
+    )
+    financial_run_manifest:  Optional[Any] = Field(
+        None,
+        description="FinancialRunManifest — hash determinista del run para trazabilidad",
+    )

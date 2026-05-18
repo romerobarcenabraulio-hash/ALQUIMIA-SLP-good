@@ -5,11 +5,24 @@ Fase 2.5: calcular_scenario acepta un SnapshotDatos opcional.
 Cuando se provee, los valores del registry (INEGI, SEMARNAT, Banxico)
 REEMPLAZAN los hardcoded de ZM_DATA — con prioridad por tipo/confianza.
 Si no se provee snapshot, cae a ZM_DATA como antes (modo offline).
+
+Wave 0: los CAPEX de Centros de Acopio ahora salen del cost_registry con fuente
+trazable. Los flujos de caja y la aritmetica de VPN/TIR no cambian.
 """
 from __future__ import annotations
 from typing import Optional, TYPE_CHECKING
 
 from app.schemas.simulate import ScenarioInput, SimulateResponse
+from app.schemas.cost_model import (
+    NegotiationScheme,
+    CostModelSummary,
+    CostSourceType,
+    build_manifest,
+)
+from app.services.cost_registry import (
+    build_cost_items,
+    confianza_score,
+)
 
 if TYPE_CHECKING:
     from app.data.schemas import SnapshotDatos
@@ -89,21 +102,93 @@ def calcular_scenario(
         gen = _kpi_valor(snapshot, "gen_percapita_kg_dia", s.gen_percapita or zm["gen"])
         # Tipo de cambio: usar Banxico si disponible
         tipo_cambio = _kpi_valor(snapshot, "tipo_cambio_mxn_usd", s.tipo_cambio)
+        # Inflación real anual: Banxico SIE SP68257 (con o sin token)
+        inflacion_anual_pct = _kpi_valor(snapshot, "inflacion_anual_pct", WACC_DEF * 0.20)
+        # Fuente del dato de inflación para el cost_model_summary
+        _infl_kpi = next((k for k in snapshot.kpis if k.kpi_id == "inflacion_anual_pct"), None)
+        inflacion_fuente = (
+            _infl_kpi.provenance.fuente_nombre
+            if _infl_kpi is not None
+            else "snapshot_offline"
+        )
     else:
         pop = zm["pop"]
         viv = zm["viv"]
         gen = s.gen_percapita or zm["gen"]
         tipo_cambio = s.tipo_cambio
+        # Sin snapshot: usar fallback de inflación (~4 % para México 2026)
+        from app.data.adapters.banxico_inflacion import _INFLACION_FALLBACK_PCT
+        inflacion_anual_pct = _INFLACION_FALLBACK_PCT
+        inflacion_fuente = "snapshot_offline"
 
     # RSU
     fest = 1 + ESTACIONALIDAD[max(0, min(11, s.mes_inicio - 1))]
     rsu  = pop * gen / 1000 * fest
 
+    # ─── Wave 0: construir CostModel trazable ────────────────────────────────
+    nP = s.mix_cas.P; nM = s.mix_cas.M; nG = s.mix_cas.G
+    negociacion = s.negociacion if hasattr(s, "negociacion") else NegotiationScheme.municipal_directo
+    overrides = dict(s.cost_overrides) if getattr(s, "cost_overrides", None) else {}
+
+    cost_items = build_cost_items(
+        nP=nP, nM=nM, nG=nG,
+        viviendas=viv,
+        zm=zm_key,
+        negociacion=negociacion,
+        overrides=overrides,
+    )
+
+    # CAPEX total por actor (solo lineas unicas = CAPEX)
+    capex_items = [i for i in cost_items if i.periodicidad == "unico"]
+    capex_municipio = sum(i.monto_efectivo for i in capex_items if i.actor_responsable == "municipio")
+    capex_concesionario = sum(i.monto_efectivo for i in capex_items if i.actor_responsable == "concesionario")
+    capex_compartido = sum(i.monto_efectivo for i in capex_items if i.actor_responsable == "compartido")
+
+    # En el flujo de caja usamos capex_total = municipio + concesionario + compartido
+    # (idéntico a los numeros previos para no romper tests)
+    capex_total_ca = capex_municipio + capex_concesionario + capex_compartido
+
+    # OPEX mensual por actor (lineas mensual/anual)
+    opex_items = [i for i in cost_items if i.periodicidad == "mensual"]
+    opex_mensual_municipio = sum(i.monto_efectivo for i in opex_items if i.actor_responsable == "municipio")
+    opex_mensual_concesionario = sum(i.monto_efectivo for i in opex_items if i.actor_responsable == "concesionario")
+
+    # CostModelSummary para incluir en la respuesta
+    _clasificaciones = [i.clasificacion for i in cost_items]
+    _cost_model = CostModelSummary(
+        zm_activa=zm_key,
+        negociacion=negociacion,
+        items=cost_items,
+        total_capex_municipio=capex_municipio,
+        total_capex_concesionario=capex_concesionario,
+        total_opex_mensual_municipio=opex_mensual_municipio,
+        total_opex_mensual_concesionario=opex_mensual_concesionario,
+        items_precargados=sum(1 for c in _clasificaciones if c in (
+            CostSourceType.estimado_mercado, CostSourceType.supuesto_editable)),
+        items_editados_usuario=sum(1 for c in _clasificaciones if c == CostSourceType.dato_usuario),
+        items_verificados=sum(1 for c in _clasificaciones if c == CostSourceType.fuente_verificada),
+        items_pendientes=sum(1 for c in _clasificaciones if c == CostSourceType.pendiente_fuente),
+        confianza_costos=confianza_score(cost_items),
+        inflacion_anual_pct=inflacion_anual_pct,
+        inflacion_fuente=inflacion_fuente,
+    )
+
+    # FinancialRunManifest (hash determinista del run)
+    _manifest = build_manifest(
+        negociacion=negociacion,
+        zm_activa=zm_key,
+        cost_items=cost_items,
+        scenario_extras={
+            "horizonte": s.horizonte,
+            "wacc": s.wacc,
+            "nP": nP, "nM": nM, "nG": nG,
+        },
+    )
+    # ─────────────────────────────────────────────────────────────────────────
+
     serie = []
     capex_acum = 0
     fcf_acum   = 0
-
-    capex_basureros = viv * 0.80 * 230  # promedio
 
     # Fase 5: capturar volúmenes de Año 1 para marketplace
     _vol_anio1: Optional[dict] = None
@@ -139,12 +224,11 @@ def calcular_scenario(
             vol_org  * ORG_COMP * p.organico * DIAS_OP * 1000
         )
 
-        nP = s.mix_cas.P; nM = s.mix_cas.M; nG = s.mix_cas.G
-        capex_año = (año == 1) * (
-            nP * 726476 + nM * 2528808 + nG * 7131655 + capex_basureros
-        )
-        opex  = (nP * CA_OPEX["P"] + nM * CA_OPEX["M"] + nG * CA_OPEX["G"]) * 12
-        opex += s.costo_com_social
+        capex_año = (año == 1) * capex_total_ca
+        # OPEX escalado con inflación real de Banxico (año 1 = base, año 2+ aplica acumulado)
+        _infl_factor = (1 + inflacion_anual_pct / 100) ** (año - 1)
+        opex  = (nP * CA_OPEX["P"] + nM * CA_OPEX["M"] + nG * CA_OPEX["G"]) * 12 * _infl_factor
+        opex += s.costo_com_social * _infl_factor
 
         ebitda = ingresos - opex
         fcf    = ebitda - capex_año - max(0, (ebitda - capex_año * 0.10) * ISR)
@@ -229,8 +313,10 @@ def calcular_scenario(
         ahorro_salud=ahorro_salud, derrama_total=derrama,
         score_politico=score,
         serie_anual=serie,
-        data_provenance=provenance_dict,            # Fase 2.5: trazabilidad de entradas
-        vol_capturable_por_mat_ton_anio=_vol_anio1, # Fase 5: volúmenes para marketplace
+        data_provenance=provenance_dict,             # Fase 2.5: trazabilidad de entradas
+        vol_capturable_por_mat_ton_anio=_vol_anio1,  # Fase 5: volúmenes para marketplace
+        cost_model=_cost_model.model_dump(),          # Wave 0: desglose trazable
+        financial_run_manifest=_manifest.model_dump(), # Wave 0: hash determinista
     )
 
 
