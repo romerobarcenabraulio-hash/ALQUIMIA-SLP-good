@@ -37,6 +37,7 @@ from app.city.api_v1 import router as cities_v1_router
 from app.agora.router import router as agora_router
 from app.agents.dna_loader import load_slp_dna
 from app.survey.router import router as survey_router
+from app.centros_acopio.router import router as centros_acopio_router
 from app.observability import (
     RequestLoggingMiddleware,
     app_version_from_env,
@@ -203,6 +204,7 @@ app.include_router(empresa_router)
 app.include_router(agora_router, prefix="/api/v1/agora", tags=["agora"])
 app.include_router(cities_v1_router, prefix="/api/v1", tags=["cities"])
 app.include_router(survey_router, prefix="/api/v1/survey", tags=["survey"])
+app.include_router(centros_acopio_router, prefix="/api/v1/centros-acopio", tags=["centros-acopio"])
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
