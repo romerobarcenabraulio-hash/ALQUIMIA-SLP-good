@@ -130,59 +130,29 @@ export function InfrastructureOperationsStack() {
         <div className="space-y-4">
           <ScopeAnclaKicker className="text-[11px]" />
 
-          {/* Executive reading + Brecha card */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Key finding chip */}
+          <div className="flex items-center gap-2 rounded-[8px] border border-[#FDE8E8] bg-[#FDE8E8]/60 px-4 py-2.5 text-[11px]">
+            <span className="text-[#C0392B] shrink-0">⚠</span>
+            <span className="text-[#7A1212]">
+              Capacidad instalada cubre <strong>{coberturaEst}%</strong> del RSU capturable
+              {brechaOperativa > 0 && <> · brecha de <strong>{brechaOperativa.toFixed(1)} t/día</strong></>}
+            </span>
+            <span className="ml-auto text-[10px] text-[#A8A49C] shrink-0">Ver análisis completo en Consideraciones →</span>
+          </div>
 
-            {/* Lectura ejecutiva */}
-            <div className="lg:col-span-2 rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-4">Lectura ejecutiva de infraestructura y operación</p>
-              <div className="grid grid-cols-2 gap-4 text-[11px]">
-                <div>
-                  <p className="text-[10px] font-semibold text-[#C0392B] mb-2 uppercase tracking-wide">¿Qué observamos?</p>
-                  <ul className="space-y-1.5 text-[#6B6760]">
-                    <li className="flex items-start gap-2"><span className="text-[#C0392B] shrink-0">›</span>La capacidad actual cubre solo el 22% del potencial capturable de RSU.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#C0392B] shrink-0">›</span>Déficit de centros de acopio para volumen estimado en fases 3–5.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#C0392B] shrink-0">›</span>Brecha de infraestructura limita captura y empleo formal.</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-[#3B6D11] mb-2 uppercase tracking-wide">¿Qué decisión habilita?</p>
-                  <ul className="space-y-1.5 text-[#5A6347]">
-                    <li className="flex items-start gap-2"><span className="text-[#3B6D11] shrink-0">›</span>Despliegue progresivo de centros de acopio y recicladoras por fase.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#3B6D11] shrink-0">›</span>Plan de sitios con demanda por zona y flujo para maximizar captura.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#3B6D11] shrink-0">›</span>Generación de empleo formal con {r ? fmt.num0(r.empleosTotalesDirectos) : '—'} puestos directos.</li>
-                  </ul>
-                </div>
-                <div>
-                  <p className="text-[10px] font-semibold text-[#D4881E] mb-2 uppercase tracking-wide">¿Qué falta verificar?</p>
-                  <ul className="space-y-1.5 text-[#6B6760]">
-                    <li className="flex items-start gap-2"><span className="text-[#D4881E] shrink-0">›</span>Validar disponibilidad de predios, permisos y demanda por corriente.</li>
-                    <li className="flex items-start gap-2"><span className="text-[#D4881E] shrink-0">›</span>Confirmar logística municipal de recolección.</li>
-                  </ul>
-                </div>
+          {/* Brecha de capacidad — 4-KPI grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { label: 'Capturable',  value: rsuCapturable > 0 ? `${rsuCapturable.toFixed(1)} t/día` : '—',  color: '#3B6D11', bg: 'bg-[#EAF3DE]' },
+              { label: 'Capacidad',   value: `${capacidadInstalada} t/día`,                                   color: '#1A5FA8', bg: 'bg-[#EBF3FB]' },
+              { label: 'Brecha',      value: brechaOperativa > 0 ? `${brechaOperativa.toFixed(1)} t/día` : 'Sin brecha', color: '#C0392B', bg: 'bg-[#FDE8E8]' },
+              { label: 'Cobertura',   value: `${coberturaEst}%`,                                             color: coberturaEst >= 60 ? '#3B6D11' : '#D4881E', bg: 'bg-[#F4F2ED]' },
+            ].map(item => (
+              <div key={item.label} className={cn('rounded-[10px] px-3 py-2.5', item.bg)}>
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">{item.label}</p>
+                <p className="font-mono text-[16px] font-semibold mt-0.5" style={{ color: item.color }}>{item.value}</p>
               </div>
-            </div>
-
-            {/* Brecha de capacidad */}
-            <div className="rounded-[12px] border border-[#FDE8E8] bg-white p-5">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Brecha de capacidad</p>
-              <div className="space-y-3">
-                {[
-                  { label: 'Capturable',   value: rsuCapturable > 0 ? `${rsuCapturable.toFixed(1)} t/día` : '—',  color: '#3B6D11', bg: 'bg-[#EAF3DE]' },
-                  { label: 'Capacidad',    value: `${capacidadInstalada} t/día`,                                   color: '#1A5FA8', bg: 'bg-[#EBF3FB]' },
-                  { label: 'Brecha',       value: brechaOperativa > 0 ? `${brechaOperativa.toFixed(1)} t/día` : 'Sin brecha', color: '#C0392B', bg: 'bg-[#FDE8E8]' },
-                  { label: 'Cobertura',    value: `${coberturaEst}%`,                                             color: coberturaEst >= 60 ? '#3B6D11' : '#D4881E', bg: 'bg-[#F4F2ED]' },
-                ].map(item => (
-                  <div key={item.label} className={cn('rounded-[8px] px-3 py-2.5', item.bg)}>
-                    <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">{item.label}</p>
-                    <p className="font-mono text-[18px] font-semibold mt-0.5" style={{ color: item.color }}>{item.value}</p>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-[9px] text-[#A8A49C] leading-relaxed">
-                Se requiere aumento significativo de la capacidad con la plaza para cerrar la brecha y alcanzar la cobertura objetivo.
-              </p>
-            </div>
+            ))}
           </div>
 
           {/* Deployment phases table */}

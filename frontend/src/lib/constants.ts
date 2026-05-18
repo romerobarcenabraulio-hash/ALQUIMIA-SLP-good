@@ -12,13 +12,23 @@ export const COMPOSICION_RSU = {
 
 // Ajuste: metales 5% total, aluminio 70% = 3.5%; otros no-aluminio en "otros"
 export const COMPOSICION_RSU_DETALLE = {
-  organico:  { pct: 0.45, biodigestor: 0.30, composta: 0.70 },
-  papel:     { pct: 0.20 },
-  plastico:  { pct: 0.15, petPct: 0.50 },
-  vidrio:    { pct: 0.05 },
-  metales:   { pct: 0.05, aluminioPct: 0.70 },
-  otros:     { pct: 0.10 },
+  organico:  { pct: 0.52, biodigestor: 0.30, composta: 0.70 },
+  papel:     { pct: 0.12 },
+  plastico:  { pct: 0.13, petPct: 0.50 },
+  vidrio:    { pct: 0.04 },
+  metales:   { pct: 0.03, aluminioPct: 0.70 },
+  otros:     { pct: 0.16 },
 } as const
+
+// ─── Composición RSU SEMARNAT — fuente única de visualización ─────────────────
+export const RSU_SEMARNAT = [
+  { key: 'organico',  name: 'Orgánicos',    pct: 52, color: '#5A9438' },
+  { key: 'papel',     name: 'Papel/Cartón', pct: 12, color: '#8BC34A' },
+  { key: 'plastico',  name: 'Plásticos',    pct: 13, color: '#2196F3' },
+  { key: 'vidrio',    name: 'Vidrio',       pct:  4, color: '#00BCD4' },
+  { key: 'metales',   name: 'Metales',      pct:  3, color: '#9E9E9E' },
+  { key: 'otros',     name: 'Otros',        pct: 16, color: '#FF9800' },
+] as const
 
 // ─── Precios commodities (MXN/kg — §2.2) ─────────────────────────────────────
 export const PRECIOS_DEFAULTS: PreciosMaterial = {

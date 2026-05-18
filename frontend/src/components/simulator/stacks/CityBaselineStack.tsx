@@ -8,20 +8,10 @@ import {
 } from 'recharts'
 import { Lock, TrendingUp, Leaf, Heart, Users, Truck } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { PRESETS_TRAYECTORIA, TRAJECTORY_UI } from '@/lib/constants'
+import { PRESETS_TRAYECTORIA, TRAJECTORY_UI, RSU_SEMARNAT } from '@/lib/constants'
 import { fmt, cn } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
-
-// ── RSU composition (national reference, SEMARNAT/DBGIR) ─────────────────────
-const COMPOSICION = [
-  { name: 'Orgánicos',     pct: 52, color: '#5A9438' },
-  { name: 'Papel/Cartón',  pct: 12, color: '#8BC34A' },
-  { name: 'Plásticos',     pct: 13, color: '#2196F3' },
-  { name: 'Vidrio',        pct:  4, color: '#00BCD4' },
-  { name: 'Metales',       pct:  3, color: '#9E9E9E' },
-  { name: 'Otros',         pct: 16, color: '#FF9800' },
-]
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -292,16 +282,16 @@ export function CityBaselineStack() {
                 <div className="shrink-0" style={{ width: 120, height: 120 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={COMPOSICION} cx="50%" cy="50%" innerRadius={34} outerRadius={54} dataKey="pct" strokeWidth={2} stroke="#fff">
-                        {COMPOSICION.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                      <Pie data={[...RSU_SEMARNAT]} cx="50%" cy="50%" innerRadius={34} outerRadius={54} dataKey="pct" strokeWidth={2} stroke="#fff">
+                        {RSU_SEMARNAT.map((entry, i) => <Cell key={i} fill={entry.color} />)}
                       </Pie>
                       <Tooltip formatter={(v: number) => [`${v}%`, '']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
                 <div className="flex-1 space-y-1">
-                  {COMPOSICION.map(item => (
-                    <div key={item.name} className="flex items-center justify-between">
+                  {RSU_SEMARNAT.map(item => (
+                    <div key={item.key} className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-[2px] shrink-0" style={{ background: item.color }} />
                         <span className="text-[10px] text-[#4A4740]">{item.name}</span>

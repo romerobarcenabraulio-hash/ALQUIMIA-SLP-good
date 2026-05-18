@@ -3,9 +3,9 @@
 import { Database, Info } from 'lucide-react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { COMPOSICION_RSU_DETALLE, PRECIOS_RANGO } from '@/lib/constants'
+import { PRECIOS_RANGO, RSU_SEMARNAT } from '@/lib/constants'
 import { getInegiHousingDistribution } from '@/lib/viviendaInegi'
-import { cn, fmt, MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
+import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
 import type { PreciosMaterial } from '@/types'
 
 const MATERIALS: Array<keyof PreciosMaterial> = ['pet', 'hdpe', 'papel', 'vidrio', 'aluminio', 'organico']
@@ -18,51 +18,6 @@ const MATERIAL_LABEL: Record<keyof PreciosMaterial, string> = {
   aluminio: MATERIAL_LABELS.aluminio,
   organico: 'Organico / composta',
 }
-
-const RSU_COMPOSITION = [
-  {
-    key: 'organico',
-    label: MATERIAL_LABELS.organico,
-    pct: COMPOSICION_RSU_DETALLE.organico.pct * 100,
-    note: 'Fracción orgánica: restos de comida y jardín; es la principal fuente de metano si llega mezclada al relleno.',
-    color: MATERIAL_COLORS.organico,
-  },
-  {
-    key: 'papel',
-    label: MATERIAL_LABELS.papel,
-    pct: COMPOSICION_RSU_DETALLE.papel.pct * 100,
-    note: 'Papel y cartón recuperable cuando llega seco y separado; el precio depende de pureza y comprador local.',
-    color: MATERIAL_COLORS.papel,
-  },
-  {
-    key: 'plastico',
-    label: MATERIAL_LABELS.plastico,
-    pct: COMPOSICION_RSU_DETALLE.plastico.pct * 100,
-    note: 'Plásticos: el modelo separa PET/HDPE vía precios; no asume que todo plástico tiene el mismo valor.',
-    color: MATERIAL_COLORS.plastico,
-  },
-  {
-    key: 'vidrio',
-    label: MATERIAL_LABELS.vidrio,
-    pct: COMPOSICION_RSU_DETALLE.vidrio.pct * 100,
-    note: 'Vidrio: alto peso y precio bajo; su viabilidad depende de logística y comprador documentado.',
-    color: MATERIAL_COLORS.vidrio,
-  },
-  {
-    key: 'metales',
-    label: 'Metales',
-    pct: COMPOSICION_RSU_DETALLE.metales.pct * 100,
-    note: 'Metales: el aluminio es solo una parte; se valora con precio propio y merma editable.',
-    color: MATERIAL_COLORS.aluminio,
-  },
-  {
-    key: 'otros',
-    label: MATERIAL_LABELS.otros,
-    pct: COMPOSICION_RSU_DETALLE.otros.pct * 100,
-    note: 'Rechazo: material sin valorización en este escenario; se mantiene como disposición final.',
-    color: MATERIAL_COLORS.otros,
-  },
-]
 
 export function FuncionariosViviendaRsuModel() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -127,21 +82,21 @@ export function FuncionariosViviendaRsuModel() {
       {/* ── 3-column controls ────────────────────────────────────────── */}
       <div className="grid md:grid-cols-3 divide-x divide-[#F0EDE5]">
 
-        {/* Col 1 · Composición RSU — donut + leyenda */}
+        {/* Col 1 · Composición RSU SEMARNAT — donut + leyenda */}
         <div className="px-5 py-4">
-          <p className="text-[11px] font-medium text-[#6B6760] mb-3">Composición RSU base</p>
+          <p className="text-[11px] font-medium text-[#6B6760] mb-3">Composición RSU · SEMARNAT</p>
           <div className="flex items-center gap-3">
             <div className="w-[88px] h-[88px] shrink-0">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={RSU_COMPOSITION}
+                    data={[...RSU_SEMARNAT]}
                     cx="50%" cy="50%"
                     innerRadius={24} outerRadius={40}
                     dataKey="pct"
                     strokeWidth={0}
                   >
-                    {RSU_COMPOSITION.map(item => (
+                    {RSU_SEMARNAT.map(item => (
                       <Cell key={item.key} fill={item.color} />
                     ))}
                   </Pie>
@@ -153,12 +108,12 @@ export function FuncionariosViviendaRsuModel() {
               </ResponsiveContainer>
             </div>
             <div className="flex flex-col gap-1.5 text-[10px] min-w-0">
-              {RSU_COMPOSITION.map(item => (
+              {RSU_SEMARNAT.map(item => (
                 <div key={item.key} className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
-                  <span className="text-[#6B6760] truncate flex-1">{item.label}</span>
+                  <span className="text-[#6B6760] truncate flex-1">{item.name}</span>
                   <span className="font-mono shrink-0 font-medium" style={{ color: item.color }}>
-                    {item.pct.toFixed(0)}%
+                    {item.pct}%
                   </span>
                 </div>
               ))}
