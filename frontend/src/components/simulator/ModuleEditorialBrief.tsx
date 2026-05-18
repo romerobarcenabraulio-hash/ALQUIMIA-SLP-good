@@ -1,6 +1,6 @@
 'use client'
 
-import { BookOpenCheck } from 'lucide-react'
+import { BookOpenCheck, BookOpenText } from 'lucide-react'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import {
   getEtiquetaNarrativaCiudad,
@@ -59,6 +59,22 @@ export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
       <div className="mt-3">
         <EditorialCard label="Qué falta verificar" value={brief.siguiente_accion} density="comfortable" />
       </div>
+
+      {brief.metodologia_editorial && (
+        <div
+          className="mt-4 border-t border-[#D7E8C0] pt-4"
+          aria-label="Metodología y fuentes"
+          data-testid={`editorial-metodologia-${moduleId}`}
+        >
+          <p className="mb-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-[#6B8C4A]">
+            <BookOpenText size={11} aria-hidden />
+            Cómo se calcula · consideraciones metodológicas
+          </p>
+          <p className="text-[12px] leading-[1.65] text-[#4A5041] lg:text-[13px]">
+            {brief.metodologia_editorial}
+          </p>
+        </div>
+      )}
 
       <div className="mt-3 grid gap-3 lg:grid-cols-2">
         <div className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-3">

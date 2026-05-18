@@ -17,7 +17,11 @@ import {
 import { cn, fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
+import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import {
+  getEtiquetaNarrativaCiudad,
+  getMunicipioMadurezVista,
+} from '@/lib/municipioMadurezContexto'
 import type { DecisionModule, PortalEntry } from '@/types'
 
 // ─── Module number mapping ────────────────────────────────────────────────────
@@ -287,9 +291,66 @@ function ModuleHeader({ module }: { module: DecisionModule }) {
   )
 }
 
+// ─── Per-module lectura ejecutiva data ────────────────────────────────────────
+
+type LecturaItem = { header: string; color: string; bullets: string[] }
+type LecturaEjecutiva = { title: string; items: LecturaItem[] }
+
+function getLecturaEjecutiva(moduleId: string): LecturaEjecutiva | null {
+  if (moduleId === 'M04') {
+    return {
+      title: 'Infraestructura y operación',
+      items: [
+        {
+          header: '¿Qué observamos?',
+          color: '#C0392B',
+          bullets: [
+            'La capacidad actual cubre solo el 22% del potencial capturable de RSU.',
+            'Déficit de centros de acopio para el volumen estimado en fases 3–5.',
+            'La brecha de infraestructura limita captura y empleo formal.',
+          ],
+        },
+        {
+          header: '¿Qué decisión habilita?',
+          color: '#3B6D11',
+          bullets: [
+            'Despliegue progresivo de centros de acopio y recicladoras por fase.',
+            'Plan de sitios con demanda por zona y flujo para maximizar captura.',
+            'Generación de empleo formal en corrientes de reciclaje.',
+          ],
+        },
+        {
+          header: '¿Qué falta verificar?',
+          color: '#D4881E',
+          bullets: [
+            'Disponibilidad de predios, permisos y demanda por corriente.',
+            'Logística municipal de recolección confirmada.',
+          ],
+        },
+      ],
+    }
+  }
+  return null
+}
+
 // ─── Right guidance panel ─────────────────────────────────────────────────────
 
-function GuidancePanel({ module }: { module: DecisionModule }) {
+function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId: string }) {
+  const lectura = getLecturaEjecutiva(moduleId)
+
+  // Leer el brief editorial para obtener la narrativa metodológica del módulo activo
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
+  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
+  const brief = getModuleEditorialBrief(moduleId, {
+    territorio,
+    scope,
+    municipio,
+    municipiosCount: municipiosActivos.length,
+  })
+
   return (
     <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
       <div className="px-4 py-4 border-b border-[#E8E4DC]">
@@ -300,8 +361,47 @@ function GuidancePanel({ module }: { module: DecisionModule }) {
       </div>
 
       <div className="p-4 space-y-4 text-[11px]">
-        {module.evidence && (
+        {/* Prosa metodológica — explica qué muestran las gráficas y cómo se calculan */}
+        {brief?.metodologia_editorial && (
           <div>
+            <p className="text-[9px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-2">
+              Cómo se calcula
+            </p>
+            <p className="text-[11px] leading-[1.6] text-[#5A6347]">
+              {brief.metodologia_editorial}
+            </p>
+          </div>
+        )}
+
+        {/* Lectura ejecutiva — colapsada por default, solo para módulos con data */}
+        {lectura && (
+          <details className="rounded-[8px] border border-[#D7E8C0] overflow-hidden">
+            <summary className="cursor-pointer bg-[#F6FAEF] px-3 py-2 text-[11px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between">
+              <span>Lectura ejecutiva · {lectura.title}</span>
+              <span className="text-[9px] text-[#8CAA7A]">▾</span>
+            </summary>
+            <div className="px-3 py-3 space-y-3 border-t border-[#D7E8C0] bg-white">
+              {lectura.items.map(item => (
+                <div key={item.header}>
+                  <p className="text-[9px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: item.color }}>
+                    {item.header}
+                  </p>
+                  <ul className="space-y-1">
+                    {item.bullets.map(b => (
+                      <li key={b} className="flex items-start gap-1.5 text-[10px] text-[#6B6760]">
+                        <span className="shrink-0 mt-0.5" style={{ color: item.color }}>›</span>
+                        <span className="leading-snug">{b}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
+
+        {module.evidence && (
+          <div className={brief?.metodologia_editorial ? 'pt-3 border-t border-[#E8E4DC]' : ''}>
             <p className="font-semibold text-[#1C1B18] mb-1.5">Qué sostiene el análisis</p>
             <p className="text-[#6B6760] leading-relaxed">{module.evidence}</p>
           </div>
@@ -478,12 +578,6 @@ export function DecisionModuleShell({
           {/* Module header */}
           <ModuleHeader module={activeModule} />
 
-          {/* Editorial brief (functionary) */}
-          {audienceSelected === 'functionary' && (
-            <div className="px-6 pt-4 pb-2 border-b border-[#F0EDE5]">
-              <ModuleEditorialBrief moduleId={activeModule.module_id} />
-            </div>
-          )}
 
           {/* Content area — flows naturally, page scrolls */}
           <div className="px-6 py-6" id="decision-shell-title">
@@ -517,7 +611,7 @@ export function DecisionModuleShell({
         </div>
 
         {/* Right guidance panel */}
-        <GuidancePanel module={activeModule} />
+        <GuidancePanel module={activeModule} moduleId={activeModule.module_id} />
       </div>
     </div>
   )
