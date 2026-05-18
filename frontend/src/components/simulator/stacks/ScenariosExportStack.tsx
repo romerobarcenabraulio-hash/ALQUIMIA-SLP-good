@@ -79,19 +79,6 @@ export function ScenariosExportStack() {
         ))}
       </div>
 
-      {/* ── Confidence banner ────────────────────────────────────────── */}
-      <div className="flex items-start gap-3 rounded-[10px] border border-[#FDE8E8] bg-[#FEF7E7] px-4 py-3 text-[11px]">
-        <Shield className="w-4 h-4 text-[#3B6D11] mt-0.5 shrink-0" />
-        <div>
-          <p className="font-semibold text-[#1C1B18]">Resultados probabilísticos basados en modelos y supuestos. No son resultados garantizados.</p>
-          <p className="text-[#6B6760] mt-0.5">La aprobación está sujeta a validaciones de política, legal, técnica y presupuestal.</p>
-        </div>
-        <div className="ml-auto text-right shrink-0">
-          <p className="text-[10px] text-[#A8A49C]">Nivel de confianza</p>
-          <p className="font-mono text-[18px] font-bold text-[#3B6D11]">Alta 82%</p>
-        </div>
-      </div>
-
       {/* ── Tabs ─────────────────────────────────────────────────────── */}
       <nav className="flex flex-wrap gap-1.5 rounded-[10px] border border-[#E8E4DC] bg-[#F4F2ED] p-1.5">
         {TABS.map(item => (

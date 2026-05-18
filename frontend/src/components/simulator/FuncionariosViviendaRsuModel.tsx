@@ -1,6 +1,7 @@
 'use client'
 
 import { Database, Info } from 'lucide-react'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { COMPOSICION_RSU_DETALLE, PRECIOS_RANGO } from '@/lib/constants'
 import { getInegiHousingDistribution } from '@/lib/viviendaInegi'
@@ -126,37 +127,62 @@ export function FuncionariosViviendaRsuModel() {
       {/* ── 3-column controls ────────────────────────────────────────── */}
       <div className="grid md:grid-cols-3 divide-x divide-[#F0EDE5]">
 
-        {/* Col 1 · Generación per cápita */}
+        {/* Col 1 · Composición RSU — donut + leyenda */}
         <div className="px-5 py-4">
-          <div className="flex items-center justify-between gap-2 mb-2">
-            <label htmlFor="funcionario-gen-percapita" className="text-[11px] font-medium text-[#6B6760]">
-              Generación per cápita
-            </label>
-            <span className="font-mono text-[13px] font-semibold text-[#3B6D11]">{genPercapita.toFixed(2)} kg/hab/d</span>
-          </div>
-          <input
-            id="funcionario-gen-percapita"
-            type="range" min={0.65} max={1.55} step={0.05} value={genPercapita}
-            onChange={e => setGenPercapita(Number(e.target.value))}
-            className="h-2 w-full cursor-pointer accent-[#3B6D11]"
-          />
-          <div className="mt-3 grid grid-cols-3 gap-1.5">
-            {RSU_COMPOSITION.map(item => (
-              <div key={item.key} className="rounded-[6px] bg-[#F8F6F1] px-2 py-1.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-[9px] text-[#8C8880] truncate">{item.label}</span>
-                  <span className="font-mono text-[10px] font-medium shrink-0 ml-1" style={{ color: item.color }}>{item.pct.toFixed(0)}%</span>
+          <p className="text-[11px] font-medium text-[#6B6760] mb-3">Composición RSU base</p>
+          <div className="flex items-center gap-3">
+            <div className="w-[88px] h-[88px] shrink-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={RSU_COMPOSITION}
+                    cx="50%" cy="50%"
+                    innerRadius={24} outerRadius={40}
+                    dataKey="pct"
+                    strokeWidth={0}
+                  >
+                    {RSU_COMPOSITION.map(item => (
+                      <Cell key={item.key} fill={item.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    formatter={(v: number) => [`${v.toFixed(0)}%`]}
+                    contentStyle={{ fontSize: 10, padding: '2px 6px', borderRadius: 6 }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="flex flex-col gap-1.5 text-[10px] min-w-0">
+              {RSU_COMPOSITION.map(item => (
+                <div key={item.key} className="flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
+                  <span className="text-[#6B6760] truncate flex-1">{item.label}</span>
+                  <span className="font-mono shrink-0 font-medium" style={{ color: item.color }}>
+                    {item.pct.toFixed(0)}%
+                  </span>
                 </div>
-                <div className="mt-1 h-1 rounded-full bg-[#E2DED6]">
-                  <div className="h-full rounded-full" style={{ width: `${item.pct}%`, background: item.color }} />
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Col 2 · Horizonte + ocupantes */}
+        {/* Col 2 · Gen per cápita + Horizonte + ocupantes */}
         <div className="px-5 py-4 space-y-4">
+          {/* Gen per cápita — moved here from Col 1 */}
+          <div>
+            <div className="flex items-center justify-between gap-2 mb-2">
+              <label htmlFor="funcionario-gen-percapita" className="text-[11px] font-medium text-[#6B6760]">
+                Generación per cápita
+              </label>
+              <span className="font-mono text-[13px] font-semibold text-[#3B6D11]">{genPercapita.toFixed(2)} kg/hab/d</span>
+            </div>
+            <input
+              id="funcionario-gen-percapita"
+              type="range" min={0.65} max={1.55} step={0.05} value={genPercapita}
+              onChange={e => setGenPercapita(Number(e.target.value))}
+              className="h-2 w-full cursor-pointer accent-[#3B6D11]"
+            />
+          </div>
           <div>
             <p className="text-[11px] font-medium text-[#6B6760] mb-2">Horizonte del plan</p>
             <div className="flex gap-2">

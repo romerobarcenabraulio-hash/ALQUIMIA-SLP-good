@@ -155,14 +155,22 @@ export default function SimulatorPage() {
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">
           <main className="px-4 sm:px-6 py-4 w-full">
-            <CityFirstSelector compact />
+            {/* City selector: inside the 2-col grid for functionary, standalone for citizen */}
+            {audience !== 'functionary' && <CityFirstSelector compact />}
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
             <div className="mt-3 space-y-3">
               {audience === 'functionary' && (
-                <div className="space-y-3">
-                  <PropuestasSimulatorBar />
-                  {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
+                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 items-start">
+                  {/* Left: city chip + scenario cards */}
+                  <div className="space-y-2">
+                    <CityFirstSelector compact />
+                    <PropuestasSimulatorBar />
+                  </div>
+                  {/* Right: RSU parameter sliders */}
+                  {activeDecisionModuleId !== 'municipal_context'
+                    ? <FuncionariosViviendaRsuModel />
+                    : <div />}
                 </div>
               )}
               <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
