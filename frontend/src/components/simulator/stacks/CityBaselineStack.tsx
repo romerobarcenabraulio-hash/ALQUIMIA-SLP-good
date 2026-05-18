@@ -267,11 +267,11 @@ export function CityBaselineStack() {
 
       {/* ── Lectura municipal — colapsado por default ────────────────────── */}
       <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-        <summary className="cursor-pointer px-5 py-3 text-[12px] font-medium text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none flex items-center gap-2">
-          <ScopeAnclaKicker className="text-[11px] inline" />
+        <summary className="cursor-pointer px-5 py-3 text-[12px] font-medium text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none">
           Lectura municipal · {narrative.title}
         </summary>
         <div className="px-5 pb-5 pt-2 border-t border-[#F0EDE5]">
+          <ScopeAnclaKicker className="mb-3 text-[11px]" />
           <div className="rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-4">
             <p className="font-serif text-[15px] text-[#1C1B18] mb-1">{narrative.title}</p>
             <p className="text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
