@@ -23,6 +23,7 @@ import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemo
 import { MunicipalContextStack } from '@/components/simulator/stacks/MunicipalContextStack'
 import { InfrastructureOperationsStack } from '@/components/simulator/stacks/InfrastructureOperationsStack'
 import { MarketTraceabilityStack } from '@/components/simulator/stacks/MarketTraceabilityStack'
+import { InspeccionStack } from '@/components/simulator/stacks/InspeccionStack'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -114,7 +115,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'risk_trends':
       return <RiskTrendsPanel />
     case 'inspeccion_predios':
-      return <InspeccionForm />
+      return <InspeccionStack />
     case 'scenarios_export':
       return <ScenariosExportStack />
     case 'source_traceability':
