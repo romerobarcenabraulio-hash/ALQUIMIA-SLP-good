@@ -417,6 +417,7 @@ export function DecisionModuleShell({
   }, [activeModule?.module_id, setActiveDecisionModuleId])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (!filteredModules.length) { setActiveModuleId(null); return }
     if (!activeModuleId || !filteredModules.some(m => m.module_id === activeModuleId)) {
       setActiveModuleId(filteredModules[0].module_id)

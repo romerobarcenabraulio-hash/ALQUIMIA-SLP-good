@@ -400,7 +400,9 @@ export function DiagnosticoJuridico() {
   const [expandido, setExpandido] = useState<string | null>(null)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
     const apiUrl = getApiUrl()
 

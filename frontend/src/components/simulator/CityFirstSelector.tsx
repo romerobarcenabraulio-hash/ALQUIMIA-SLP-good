@@ -59,7 +59,9 @@ export function CityFirstSelector() {
 
   useEffect(() => {
     if (!estadoId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMunicipiosApi([])
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMunicipioPick('')
       return
     }

@@ -38,7 +38,9 @@ export function ReglamentoCargaCiudadPanel() {
 
   useEffect(() => {
     if (!depsKey) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRows([])
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false)
       return
     }

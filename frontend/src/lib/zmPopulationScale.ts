@@ -40,8 +40,8 @@ export function resolveSimulationGeography(
   const snapshot = state.snapshotDatos
   const sel = state.seleccionMunicipioCatalog
 
-  let snapshotPop = allMunicipiosActivos ? snapshotNumber(snapshot, 'poblacion_total') : null
-  let snapshotViv = allMunicipiosActivos ? snapshotNumber(snapshot, 'viviendas_totales') : null
+  const snapshotPop = allMunicipiosActivos ? snapshotNumber(snapshot, 'poblacion_total') : null
+  const snapshotViv = allMunicipiosActivos ? snapshotNumber(snapshot, 'viviendas_totales') : null
   let popActiva = snapshotPop ?? (muniActivos.reduce((s, m) => s + m.pop, 0) || zm.totalPop)
   let vivActivas = snapshotViv ?? (muniActivos.reduce((s, m) => s + m.viv, 0) || zm.totalViv)
 

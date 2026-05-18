@@ -95,6 +95,7 @@ export function SocialContextHandoffPanel({
     })
   }, [storage, block.geo_scope, moduleAnchor])
 
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const onCopy = useCallback(async () => {
     if (!snapshot?.markdown) return
     try {

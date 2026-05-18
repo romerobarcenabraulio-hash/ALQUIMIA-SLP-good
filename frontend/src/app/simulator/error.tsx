@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 
 export default function SimulatorError({
@@ -30,12 +31,12 @@ export default function SimulatorError({
         >
           Reintentar
         </button>
-        <a
+        <Link
           href="/"
           className="rounded-[8px] border border-[#E8E4DC] bg-white px-4 py-2 text-[13px] font-medium text-[#1C1B18] hover:bg-[#F8F6F1]"
         >
           Ir al inicio
-        </a>
+        </Link>
       </div>
     </main>
   )

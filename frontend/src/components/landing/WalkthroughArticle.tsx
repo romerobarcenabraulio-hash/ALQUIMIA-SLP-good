@@ -284,7 +284,7 @@ export function WalkthroughArticle() {
           BLOQUE 1 — QUIÉNES GENERAN
       ════════════════════════════════════════════════════════════ */}
       <Kicker>01 — Quiénes generan los residuos</Kicker>
-      <H2>Los RSU no los genera "la ciudad". Los generamos tú y yo.</H2>
+      <H2>Los RSU no los genera &ldquo;la ciudad&rdquo;. Los generamos tú y yo.</H2>
 
       <p className="text-[15px] text-[#6B6760] leading-[1.7] mb-5">
         El término <em>residuos sólidos urbanos</em> (RSU) es la definición legal de
@@ -406,7 +406,7 @@ export function WalkthroughArticle() {
       <H2>Lo que no separas contamina el aire que respiras y tiene precio en salud pública.</H2>
 
       <p className="text-[15px] text-[#6B6760] leading-[1.7] mb-5">
-        La basura no "desaparece" en el relleno. Los residuos orgánicos sin gestionar
+        La basura no &ldquo;desaparece&rdquo; en el relleno. Los residuos orgánicos sin gestionar
         generan <strong className="text-[#1C1B18]">metano (CH₄)</strong>, un gas de efecto invernadero
         con un potencial de calentamiento <strong className="text-[#1C1B18]">27 veces mayor que el CO₂
         en 100 años</strong> (IPCC AR6, 2021). Los residuos sin separar atraen fauna nociva,
@@ -473,8 +473,8 @@ export function WalkthroughArticle() {
 
       <div className="rounded-[14px] border-l-4 border-[#3B6D11] pl-5 py-2 my-6">
         <p className="font-serif text-[21px] text-[#1C1B18] leading-[1.4] italic">
-          "El problema no es que no haya mercado para el reciclaje. El problema
-          es que la cadena no empieza: nadie separa desde casa."
+          &ldquo;El problema no es que no haya mercado para el reciclaje. El problema
+          es que la cadena no empieza: nadie separa desde casa.&rdquo;
         </p>
       </div>
 

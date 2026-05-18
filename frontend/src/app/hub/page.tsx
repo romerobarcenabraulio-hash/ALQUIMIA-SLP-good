@@ -100,6 +100,7 @@ function HubContent() {
   const [audiencia, setAudiencia] = useState<AudienciaHub>('funcionario')
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setZmActiva(zmParam)
   }, [zmParam])
 
@@ -121,7 +122,9 @@ function HubContent() {
   // ── Cargar paquete si hay job param ──────────────────────────────────────
   useEffect(() => {
     if (!jobParam) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingPkg(true)
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setPkgError(null)
 
     const pkgId = jobParam

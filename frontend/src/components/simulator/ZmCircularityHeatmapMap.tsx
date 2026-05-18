@@ -58,7 +58,10 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
   const [mode, setMode] = useState<HeatMode>('actual')
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? ''
   const modeRef = useRef(mode)
-  modeRef.current = mode
+
+  useEffect(() => {
+    modeRef.current = mode
+  }, [mode])
 
   useEffect(() => {
     let cancelled = false

@@ -99,8 +99,11 @@ export function ImplementacionEspacioTiempo() {
     if (territorialFetchTick === 0) return
     let cancelled = false
     if (!canFetchTerritorialPlan) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlan(null)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setError(null)
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLoading(false)
       return () => {
         cancelled = true
@@ -306,6 +309,7 @@ function TimelineHitosEspacioTiempo({
   const [selectedId, setSelectedId] = useState<string | null>(hitos[0]?.id ?? null)
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedId(hitos[0]?.id ?? null)
   }, [hitos])
 

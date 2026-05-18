@@ -5,7 +5,6 @@ import { usePathname } from 'next/navigation'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import {
-  BarChart2,
   BookOpen,
   FileText,
   Home,

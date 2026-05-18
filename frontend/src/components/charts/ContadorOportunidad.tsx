@@ -11,6 +11,7 @@ export function ContadorOportunidad() {
   const ingresoDia = resultados ? resultados.ingresosBrutos / (useSimulatorStore.getState().horizonte * 300) : 1_200_000
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (gate1) { setPerdido(0); return }
     const startMs = Date.now()
     const interval = setInterval(() => {

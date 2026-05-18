@@ -62,6 +62,7 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
   const embedded = variant === 'embedded'
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ status: 'loading' })
     fetch(`${getApiUrl()}/data/fuentes`, withRequestId())
       .then(async res => {

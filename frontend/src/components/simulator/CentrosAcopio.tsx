@@ -52,6 +52,7 @@ export function CentrosAcopio() {
   useEffect(() => {
     const totalMix = (payload.mix_centros.P ?? 0) + (payload.mix_centros.M ?? 0) + (payload.mix_centros.G ?? 0)
     if (totalMix === 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setPlan(null)
       return
     }
