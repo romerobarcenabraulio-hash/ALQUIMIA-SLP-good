@@ -3,6 +3,7 @@ import { useEffect, useMemo } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { Header } from '@/components/layout/Header'
+import { Sidebar } from '@/components/layout/Sidebar'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
 import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
@@ -113,15 +114,20 @@ export default function SimulatorPage() {
 
   if (!audience) {
     return (
-      <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
-        <Header />
-        <AudienceGateway />
+      <div className="min-h-screen flex" style={{ background: '#F8F6F1' }}>
+        <Sidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <Header />
+          <AudienceGateway />
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
+    <div className="min-h-screen flex" style={{ background: '#F8F6F1' }}>
+      <Sidebar />
+      <div className="flex-1 flex flex-col min-w-0">
       <Header />
       <div className="mx-auto w-full max-w-[min(96rem,calc(100vw-1.5rem))]">
         <SimulatorSimulationRibbon />
@@ -163,6 +169,7 @@ export default function SimulatorPage() {
           )}
 
         </main>
+      </div>
       </div>
 
       <GeneraPlanConfirmModal />
