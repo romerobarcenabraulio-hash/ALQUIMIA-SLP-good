@@ -208,7 +208,15 @@ async def run_agora(
         bundle.inputs_usuario["research_findings"] = plan_input.research_findings
         logger.info("ÁGORA — ResearchFindings recibido pre-calculado.")
     else:
-        await report(5, f"Investigador — Buscando costos y contexto para {plan_input.municipio}...")
+        _investigador_enabled = True
+        try:
+            from app.config import settings as _cfg
+            _investigador_enabled = getattr(_cfg, "INVESTIGADOR_ENABLED", True)
+        except Exception:
+            pass
+
+        if _investigador_enabled:
+            await report(5, f"Investigador — Buscando costos y contexto para {plan_input.municipio}...")
         try:
             from app.agents.research_service import investigate_municipio
             _estado = bundle.zm.split("_")[-1] if "_" in bundle.zm else bundle.zm

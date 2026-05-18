@@ -22,8 +22,17 @@ class Settings(BaseSettings):
     ANTHROPIC_API_KEY: Optional[str] = None
     # INEGI: el runtime también lee INEGI_DENUE_TOKEN / DENUE_API_TOKEN vía resolve_inegi_api_token().
     INEGI_API_TOKEN: Optional[str] = None
-    # ID vigente en la API Messages (Haiku rápido; el slug antiguo claude-3-5-haiku-20241022 puede dar 404).
-    ANTHROPIC_MODEL: str = "claude-haiku-4-5-20251001"
+    # Banxico SIE — token para consultas con rango de fecha (INPC histórico).
+    # Sin token: solo endpoint "oportuno" (tipo cambio). Con token: también INPC anual.
+    # Registro gratuito en: https://www.banxico.org.mx/SieAPIRest/service/v1/token
+    BANXICO_TOKEN:   Optional[str] = None
+    # Modelo para el pipeline legacy (ZIP 7-docs). Haiku = velocidad; Sonnet = calidad.
+    # Cambiar a claude-sonnet-4-6 para calidad máxima (más lento y costoso).
+    ANTHROPIC_MODEL: str = "claude-sonnet-4-6"
+    # Feature flags — deshabilitar en staging si dependencias externas no están listas
+    INVESTIGADOR_ENABLED: bool = True   # Ejecutar Agente Investigador (requiere SERPER_API_KEY)
+    PLACES_SYNC_ENABLED:  bool = False  # Sync Google Places para CentroAcopio (requiere PLACES_API_KEY)
+    GOOGLE_PLACES_API_KEY: str = ""     # API key para Google Places (CentroAcopio)
 
     # Google Drive
     DRIVE_ROOT_ID:     str = "1mVC_ay_qvmT08QZReoKp2X8jTHZiPoMW"

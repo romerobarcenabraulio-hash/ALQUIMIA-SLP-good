@@ -1,5 +1,5 @@
 """
-Fase 3B — validator.py
+Fase 3B + Wave 3 — validator.py
 
 El Validador ataca el paquete antes de que lo ataque alguien externo.
 
@@ -26,6 +26,12 @@ Reglas de degradación (severity=warning → revision o borrador):
 """
 from __future__ import annotations
 
+import hashlib
+import json
+import logging
+from datetime import datetime, timezone
+from typing import List
+
 from app.agents.schemas import (
     DraftDocument,
     DocumentNivel,
@@ -35,6 +41,8 @@ from app.agents.schemas import (
     ValidationIssue,
     ValidationReport,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def validate_document(
@@ -230,4 +238,150 @@ def validate_bundle(
         bundle_id=bundle.scenario_id,
         issues=all_issues,
         passed=len(errores) == 0,
+    )
+
+
+# ─── Wave 3: Loop de revisión ─────────────────────────────────────────────────
+
+class FeedbackItem:
+    """Un item de feedback estructurado del Validador para re-escritura."""
+    def __init__(self, severity: str, section_id: str, message: str, suggested_fix: str):
+        self.severity    = severity      # "error" | "warning"
+        self.section_id  = section_id
+        self.message     = message
+        self.suggested_fix = suggested_fix
+
+    def to_dict(self) -> dict:
+        return {
+            "severity": self.severity,
+            "section_id": self.section_id,
+            "message": self.message,
+            "suggested_fix": self.suggested_fix,
+        }
+
+
+def build_revision_feedback(
+    doc: DraftDocument,
+    bundle: ScenarioBundle,
+) -> List[FeedbackItem]:
+    """
+    Genera feedback estructurado para que un agente re-escriba secciones bloqueadas.
+    Retorna lista vacía si el documento ya es defendible.
+    Solo se llama en el loop de revisión (max 2 iteraciones).
+    """
+    report, status = validate_document(doc, bundle)
+    feedback: List[FeedbackItem] = []
+
+    if status == DocumentStatusLevel.defendible:
+        return feedback
+
+    for issue in report.issues:
+        section_id = issue.section_id or "general"
+        if issue.code == "SIN_AUDIENCIA":
+            feedback.append(FeedbackItem(
+                severity="error", section_id=section_id,
+                message=issue.message,
+                suggested_fix="Declara explícitamente la audiencia al inicio del documento: 'Este documento está dirigido a [cargo/instancia]'.",
+            ))
+        elif issue.code == "SIN_DECISION":
+            feedback.append(FeedbackItem(
+                severity="error", section_id=section_id,
+                message=issue.message,
+                suggested_fix="El documento debe habilitar una decisión concreta. Agrega: 'La decisión que este documento habilita es: [decisión]'.",
+            ))
+        elif issue.code == "SIN_SECCIONES":
+            feedback.append(FeedbackItem(
+                severity="error", section_id=section_id,
+                message=issue.message,
+                suggested_fix="El documento está vacío. Genera al menos las secciones obligatorias del DocumentSpec.",
+            ))
+        elif issue.code == "DATO_ESTIMADO_LENGUAJE_OFICIAL":
+            feedback.append(FeedbackItem(
+                severity="error", section_id=section_id,
+                message=issue.message,
+                suggested_fix="Reemplaza 'dictamen/certificado/sanción firme' por 'se estima / el modelo proyecta / pendiente de verificación oficial'.",
+            ))
+        elif issue.code == "CLAIMS_SIN_EVIDENCIA":
+            feedback.append(FeedbackItem(
+                severity="warning", section_id=section_id,
+                message=issue.message,
+                suggested_fix="Para cada afirmación numérica o de política, agrega la fuente: '(Fuente: [organismo], [fecha])' o etiqueta como supuesto_editable.",
+            ))
+        elif issue.code == "CAPEX_SIN_COMPLIANCE":
+            feedback.append(FeedbackItem(
+                severity="warning", section_id=section_id,
+                message=issue.message,
+                suggested_fix="Agrega una sección 'Marco de Adquisiciones' que declare la ruta de licitación y fuente de financiamiento.",
+            ))
+        else:
+            feedback.append(FeedbackItem(
+                severity=issue.severity, section_id=section_id,
+                message=issue.message,
+                suggested_fix="Revisar y corregir según el issue reportado.",
+            ))
+
+    logger.info(
+        f"Validator feedback: doc={doc.document_id} status={status.value} "
+        f"items={len(feedback)}"
+    )
+    return feedback
+
+
+def format_feedback_for_llm(feedback: List[FeedbackItem]) -> str:
+    """Formatea el feedback como bloque de texto para el prompt de re-escritura."""
+    if not feedback:
+        return "El documento ya es defendible. No se requieren cambios."
+
+    lines = ["## Feedback del Validador — correcciones requeridas\n"]
+    for i, fb in enumerate(feedback, 1):
+        lines.append(f"### Issue {i} [{fb.severity.upper()}] — Sección: {fb.section_id}")
+        lines.append(f"**Problema:** {fb.message}")
+        lines.append(f"**Corrección sugerida:** {fb.suggested_fix}")
+        lines.append("")
+
+    lines.append("---")
+    lines.append("Reescribe únicamente las secciones afectadas. No alteres secciones que ya son correctas.")
+    lines.append("Límite: mantén el tono institucional y las fuentes existentes.")
+    return "\n".join(lines)
+
+
+# ─── Wave 3: Unicidad espacio-tiempo ─────────────────────────────────────────
+
+def build_document_dna(
+    municipio_id: str,
+    scenario_id: str,
+    document_id: str,
+    zm: str,
+) -> str:
+    """
+    Hash SHA-256 corto (12 hex) que identifica unívocamente un documento.
+    Incorpora municipio, scenario_id, document_id, ZM y timestamp UTC.
+    Ningún documento puede reutilizar este hash — es el 'DNA espacio-tiempo'.
+    """
+    ts = datetime.now(timezone.utc).isoformat()
+    payload = json.dumps({
+        "municipio_id": municipio_id,
+        "scenario_id": scenario_id,
+        "document_id": document_id,
+        "zm": zm,
+        "ts": ts,
+    }, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(payload.encode()).hexdigest()[:12]
+
+
+def stamp_document_footer(
+    document: DraftDocument,
+    municipio_id: str,
+    scenario_id: str,
+    zm: str,
+) -> str:
+    """
+    Genera el pie de documento / watermark para PDF.
+    Formato: ALQUIMIA · {municipio} · {zm} · {fecha_utc} · DNA:{hash}
+    """
+    dna = build_document_dna(municipio_id, scenario_id, document.document_id, zm)
+    ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+    return (
+        f"ÁGORA GOV — ALQUIMIA  |  {municipio_id.upper()}  |  ZM {zm}  |  "
+        f"{ts}  |  DNA:{dna}  |  Escenario: {scenario_id[:8]}"
     )
