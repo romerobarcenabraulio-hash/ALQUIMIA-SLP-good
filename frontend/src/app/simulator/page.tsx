@@ -169,14 +169,14 @@ export default function SimulatorPage() {
             <CityFirstSelector />
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
-            <div className="flex flex-col mt-4" style={{ height: 'calc(100vh - 12rem)' }}>
+            <div className="mt-4 space-y-4">
               {audience === 'functionary' && (
-                <div className="mb-4 space-y-3 shrink-0">
+                <div className="space-y-3">
                   <PropuestasSimulatorBar />
                   {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
                 </div>
               )}
-              <div className="flex-1 min-h-0 rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] flex flex-col">
+              <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
                 <DecisionModuleShell
                   modules={filteredModules}
                   activeModule={activeModule}

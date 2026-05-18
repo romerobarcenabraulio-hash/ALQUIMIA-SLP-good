@@ -458,7 +458,7 @@ export function DecisionModuleShell({
 
   // ── Main layout ─────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col flex-1 min-h-0" aria-labelledby="decision-shell-title">
+    <div className="flex flex-col" aria-labelledby="decision-shell-title">
       {/* KPI strip */}
       <TopKpiStrip />
 
@@ -472,7 +472,7 @@ export function DecisionModuleShell({
       )}
 
       {/* Two-column body: content | guidance */}
-      <div className="flex flex-1 min-h-0">
+      <div className="flex">
         {/* Center content */}
         <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
           {/* Module header */}
@@ -485,8 +485,8 @@ export function DecisionModuleShell({
             </div>
           )}
 
-          {/* Content area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6" id="decision-shell-title">
+          {/* Content area — flows naturally, page scrolls */}
+          <div className="px-6 py-6" id="decision-shell-title">
             {activeModule.status === 'blocked' ? (
               <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
                 <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
