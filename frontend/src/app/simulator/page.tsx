@@ -1,7 +1,9 @@
 'use client'
 import { useEffect, useMemo, useState } from 'react'
+import { ChevronDown, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
+import { cn } from '@/lib/utils'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
@@ -13,10 +15,7 @@ import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulat
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
-import {
-  aplicarSustitucionesTerritorio,
-  getEtiquetaNarrativaCiudad,
-} from '@/lib/municipioMadurezContexto'
+import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import {
   enrichFunctionaryModules,
   SOURCE_TRACEABILITY_MODULE,
@@ -25,6 +24,7 @@ import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 
 function SimulatorSimulationRibbon() {
+  const [open, setOpen] = useState(false)
   const cityContext = useSimulatorStore(s => s.cityContext)
   const cityContextLoading = useSimulatorStore(s => s.cityContextLoading)
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -34,44 +34,32 @@ function SimulatorSimulationRibbon() {
     [municipiosActivos, zmActiva],
   )
   return (
-    <div className="sticky top-0 z-30 mx-auto max-w-[min(96rem,calc(100vw-1.5rem))] px-4 sm:px-6 lg:px-8 pt-4">
-      <div
-        role="region"
-        aria-label={SIMULATION_BANNER_TITLE}
-        className="rounded-[12px] border border-[#D4881E]/35 bg-[#FEF7E7] px-4 py-3 shadow-[0_2px_8px_rgba(28,27,24,0.06)]"
+    <div className="shrink-0 border-b border-[#D4881E]/25 bg-[#FEF7E7]" role="region" aria-label={SIMULATION_BANNER_TITLE}>
+      <button
+        type="button"
+        onClick={() => setOpen(p => !p)}
+        className="w-full flex items-center gap-2 px-4 py-2 text-left hover:bg-[#FEF0D0]/50 transition-colors"
       >
-        <p className="text-[12px] font-semibold text-[#1C1B18]">{SIMULATION_BANNER_TITLE}</p>
-        <p className="mt-1 text-[11px] leading-relaxed text-[#6B6760]">{SIMULATION_BANNER_BODY}</p>
-        {municipiosActivos.length > 0 && (
-          <p className="mt-2 text-[11px] font-medium text-[#5C5740]">
-            Alcance de lectura en esta sesión: {territorioLectura}
-            {zmActiva ? ` · ZM ${zmActiva}` : ''}
-          </p>
-        )}
-        {(cityContextLoading || cityContext) && (
-          <details className="mt-2 border-t border-[#D4881E]/20 pt-2">
-            <summary className="cursor-pointer text-[11px] font-medium text-[#8B5A00] underline-offset-2 hover:underline">
-              Detalle de la simulación
-            </summary>
-            <div className="mt-2 rounded-[8px] border border-[#E8E4DC]/80 bg-white/60 px-3 py-2 text-[11px] text-[#6B6760]">
-              {cityContextLoading && (
-                <p>Versión de referencia territorial: sincronizando con el servidor…</p>
-              )}
+        <Info size={13} className="text-[#D4881E] shrink-0" />
+        <span className="text-[11px] font-medium text-[#8B5A00] flex-1 truncate">
+          {SIMULATION_BANNER_TITLE}
+          {territorioLectura ? ` · ${territorioLectura}` : ''}
+        </span>
+        <ChevronDown size={13} className={cn('text-[#D4881E] transition-transform shrink-0', open && 'rotate-180')} />
+      </button>
+      {open && (
+        <div className="px-4 pb-3 space-y-1.5 border-t border-[#D4881E]/15">
+          <p className="text-[11px] leading-relaxed text-[#6B6760] pt-2">{SIMULATION_BANNER_BODY}</p>
+          {(cityContextLoading || cityContext) && (
+            <div className="rounded-[6px] border border-[#E8E4DC]/80 bg-white/60 px-3 py-2 text-[11px] text-[#6B6760]">
+              {cityContextLoading && <p>Versión de referencia territorial: sincronizando…</p>}
               {!cityContextLoading && cityContext && (
-                <>
-                  <p>
-                    Versión declarada del catálogo demográfico-territorial usada en esta sesión:{' '}
-                    <span className="font-medium text-[#1C1B18]">{cityContext.catalog_simulation_epoch}</span>
-                  </p>
-                  <p className="mt-1 text-[10px] text-[#A8A49C]">
-                    Identificador técnico de consistencia entre pantallas; no es acto oficial ni marca de autoridad.
-                  </p>
-                </>
+                <p>Versión catálogo: <span className="font-medium text-[#1C1B18]">{cityContext.catalog_simulation_epoch}</span></p>
               )}
             </div>
-          </details>
-        )}
-      </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -157,19 +145,20 @@ export default function SimulatorPage() {
     <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
       <Sidebar moduleSection={moduleNav} />
 
-      {/* Right: header + scrollable content */}
+      {/* Right: header + compact ribbon + scrollable content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <Header />
 
-        {/* Scrollable content area */}
-        <div className="flex-1 overflow-y-auto">
-          <SimulatorSimulationRibbon />
+        {/* Compact disclaimer ribbon — always visible, outside scroll */}
+        <SimulatorSimulationRibbon />
 
-          <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-[min(96rem,calc(100vw-1.5rem))] mx-auto w-full">
+        {/* Scrollable content — full width, moderate padding */}
+        <div className="flex-1 overflow-y-auto">
+          <main className="px-4 sm:px-6 py-4 w-full">
             <CityFirstSelector />
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
-            <div className="mt-4 space-y-4">
+            <div className="mt-3 space-y-3">
               {audience === 'functionary' && (
                 <div className="space-y-3">
                   <PropuestasSimulatorBar />

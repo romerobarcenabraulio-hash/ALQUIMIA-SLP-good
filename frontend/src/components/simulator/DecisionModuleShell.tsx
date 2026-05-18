@@ -291,7 +291,7 @@ function ModuleHeader({ module }: { module: DecisionModule }) {
 
 function GuidancePanel({ module }: { module: DecisionModule }) {
   return (
-    <aside className="hidden 2xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
+    <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
       <div className="px-4 py-4 border-b border-[#E8E4DC]">
         <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold flex items-center gap-1.5">
           <BookOpen size={11} />
