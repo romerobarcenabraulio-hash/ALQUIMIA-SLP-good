@@ -24,6 +24,8 @@ import { MunicipalContextStack } from '@/components/simulator/stacks/MunicipalCo
 import { InfrastructureOperationsStack } from '@/components/simulator/stacks/InfrastructureOperationsStack'
 import { MarketTraceabilityStack } from '@/components/simulator/stacks/MarketTraceabilityStack'
 import { InspeccionStack } from '@/components/simulator/stacks/InspeccionStack'
+import { useSimulatorStore } from '@/store/simulatorStore'
+import { FASES_CA } from '@/lib/constants'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -126,16 +128,58 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
 }
 
 function MetasPlanDerivadasNotice() {
+  const { resultados, horizonte, municipiosActivos, seleccionMunicipioCatalog } = useSimulatorStore()
+  const r = resultados
+  const municipioLabel = seleccionMunicipioCatalog?.nombre ?? municipiosActivos[0] ?? '—'
+
   return (
-    <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Metas del plan</p>
-      <h2 className="font-serif text-[22px] text-[#1C1B18]">Trayectoria materializada automáticamente</h2>
-      <ScopeAnclaKicker className="mt-2" />
-      <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-        La ruta de captura anual, el despliegue de centros de acopio y los insumos financieros siguen el preset{' '}
-        <span className="font-medium text-[#1C1B18]">Realista</span> del catálogo ALQUIMIA. Solo edita, en la franja global
-        superior, municipio, horizonte temporal y generación per cápita; el resto del simulador permanece en modo lectura operativa.
-      </p>
+    <section className="space-y-4">
+      {/* KPI strip */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+        {[
+          { label: 'Municipio activo',       value: municipioLabel,                                               color: '#1C1B18' },
+          { label: 'Horizonte del plan',      value: `${horizonte} años`,                                         color: '#3B6D11' },
+          { label: 'Cobertura objetivo',      value: '90%',                                                       color: '#3B6D11' },
+          { label: 'Empleo al cierre',        value: r ? `${r.empleosTotalesDirectos.toFixed(0)} puestos` : '—', color: '#5A4A2A' },
+          { label: 'Derrama proyectada',      value: r ? `${(r.ingresosBrutos / 1e6).toFixed(1)} M MXN` : '—',  color: '#1A5FA8' },
+        ].map(item => (
+          <div key={item.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
+            <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] leading-none mb-1">{item.label}</p>
+            <p className="font-mono text-[13px] font-semibold" style={{ color: item.color }}>{item.value}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Header card */}
+      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
+        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-1">Metas futuras / Gantt-PERT</p>
+        <h2 className="font-serif text-[22px] text-[#1C1B18] mb-2">Trayectoria materializada automáticamente</h2>
+        <ScopeAnclaKicker className="mb-3 text-[11px]" />
+        <p className="text-[13px] leading-relaxed text-[#6B6760] mb-4">
+          La ruta de captura anual, el despliegue de centros de acopio y los insumos financieros siguen el preset{' '}
+          <span className="font-medium text-[#1C1B18]">Realista</span> del catálogo ALQUIMIA. Solo edita municipio,
+          horizonte temporal y generación per cápita en los controles globales; el resto permanece en modo lectura operativa.
+        </p>
+
+        {/* Phase overview timeline */}
+        <div className="border-t border-[#F0EDE5] pt-4">
+          <p className="text-[10px] text-[#A8A49C] uppercase tracking-[0.06em] mb-3">Línea de tiempo de fases</p>
+          <div className="flex flex-wrap gap-2">
+            {FASES_CA.slice(0, 5).map((f, i) => {
+              const colors = ['#C8E6A4', '#A5C97A', '#7DA84A', '#5A8C2C', '#3B6D11']
+              return (
+                <div key={f.fase} className="flex items-center gap-1.5 rounded-[7px] border border-[#E8E4DC] bg-white px-3 py-2 text-[10px]">
+                  <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: colors[i] ?? '#3B6D11' }} />
+                  <span className="font-semibold text-[#1C1B18]">F{f.fase}</span>
+                  <span className="text-[#6B6760]">{f.nombre}</span>
+                  <span className="font-mono text-[#A8A49C]">{f.coberturaPct}%</span>
+                  {f.esOptimo && <span className="text-[#3B6D11] font-bold text-[9px]">★</span>}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      </div>
     </section>
   )
 }
