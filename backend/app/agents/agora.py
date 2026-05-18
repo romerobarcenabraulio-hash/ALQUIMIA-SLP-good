@@ -265,24 +265,45 @@ async def run_agora(
     # ── 3. Agentes con AgentContext ───────────────────────────────────────────
     # Cada agente recibe el spec más relevante para su rol
     agent_spec_map = {
-        "arquitecto": DocumentNivel.municipal,
-        "ghostwriter": DocumentNivel.ejecutivo,
-        "comparador":  DocumentNivel.financiero,
-        "mapeador":    DocumentNivel.ejecutivo,
-        "director":    DocumentNivel.ejecutivo,
-        "humanizador": DocumentNivel.ejecutivo,
-        "validador":   DocumentNivel.tecnico,
+        "arquitecto":    DocumentNivel.municipal,
+        "ghostwriter":   DocumentNivel.ejecutivo,
+        "comparador":    DocumentNivel.financiero,
+        "mapeador":      DocumentNivel.ejecutivo,
+        "director":      DocumentNivel.ejecutivo,
+        "humanizador":   DocumentNivel.ejecutivo,
+        "validador":     DocumentNivel.tecnico,
+        # Wave 1 — logística
+        "rutas":         DocumentNivel.operativo,
+        "flota":         DocumentNivel.operativo,
+        "territorio":    DocumentNivel.operativo,
+        "supply_chain":  DocumentNivel.operativo,
     }
 
     await report(18, f"Arquitecto Jurídico — Diagnosticando reglamentos ({', '.join(bundle.municipios_activos[:2])})...")
-    await report(32, "Economista — Construyendo modelo financiero...")
+    await report(32, "Economista y Logística — Construyendo modelos en paralelo...")
     await report(46, "Mapeador — Identificando stakeholders y riesgos...")
 
-    arquitecto_prompt = _load_prompt("arquitecto")
-    comparador_prompt = _load_prompt("comparador")
-    mapeador_prompt   = _load_prompt("mapeador")
+    arquitecto_prompt  = _load_prompt("arquitecto")
+    comparador_prompt  = _load_prompt("comparador")
+    mapeador_prompt    = _load_prompt("mapeador")
+    rutas_prompt       = _load_prompt("rutas")
+    flota_prompt       = _load_prompt("flota")
+    territorio_prompt  = _load_prompt("territorio")
+    supply_chain_prompt = _load_prompt("supply_chain")
+
+    def _spec_by_doc_id(plan: DocumentPlan, doc_id: str):
+        """Retorna el spec con ese document_id exacto, o fallback al primero."""
+        for s in plan.specs:
+            if s.document_id == doc_id:
+                return s
+        return plan.specs[0] if plan.specs else _default_spec()
+
+    from app.agents.document_specs import (
+        DOC_RUTAS, DOC_FLOTA, DOC_TERRITORIO, DOC_SUPPLY_CHAIN,
+    )
 
     await asyncio.gather(
+        # ── Agentes existentes ───────────────────────────────────────────────
         _call_agent_with_context(
             AgentContext("arquitecto", bundle,
                          _get_spec_for_nivel(document_plan, DocumentNivel.municipal),
@@ -300,6 +321,31 @@ async def run_agora(
                          _get_spec_for_nivel(document_plan, DocumentNivel.ejecutivo),
                          draft_bundle),
             mapeador_prompt, plan_input, output,
+        ),
+        # ── Agentes logísticos Wave 1 (paralelo con los anteriores) ─────────
+        _call_agent_with_context(
+            AgentContext("rutas", bundle,
+                         _spec_by_doc_id(document_plan, DOC_RUTAS),
+                         draft_bundle),
+            rutas_prompt, plan_input, output,
+        ),
+        _call_agent_with_context(
+            AgentContext("flota", bundle,
+                         _spec_by_doc_id(document_plan, DOC_FLOTA),
+                         draft_bundle),
+            flota_prompt, plan_input, output,
+        ),
+        _call_agent_with_context(
+            AgentContext("territorio", bundle,
+                         _spec_by_doc_id(document_plan, DOC_TERRITORIO),
+                         draft_bundle),
+            territorio_prompt, plan_input, output,
+        ),
+        _call_agent_with_context(
+            AgentContext("supply_chain", bundle,
+                         _spec_by_doc_id(document_plan, DOC_SUPPLY_CHAIN),
+                         draft_bundle),
+            supply_chain_prompt, plan_input, output,
         ),
         return_exceptions=True,
     )
@@ -624,6 +670,11 @@ def _store_agent_output(agent_name: str, content: str, output: PlanOutput) -> No
         output.reporte_ejecutivo = content
     elif agent_name == "director":
         output.plan_impl = content
+    elif agent_name in ("rutas", "flota", "territorio", "supply_chain"):
+        # Almacenar en operations_summary como sub-clave
+        if output.modelo_cfo is None:
+            output.modelo_cfo = {}
+        output.modelo_cfo[f"logistica_{agent_name}"] = content
 
 
 def _get_template_text(agent_name: str, p: PlanInput) -> str:
@@ -743,6 +794,120 @@ Presentar al Cabildo con las advertencias activas de datos y el diagnóstico jur
 Plataforma ALQUIMIA · {p.zm}""",
 
         "validador": "",  # Validador no produce texto — produce ValidationReport
+
+        # ── Wave 1: Agentes logísticos ────────────────────────────────────────
+        "rutas": f"""# PLAN DE RUTAS DE RECOLECCIÓN — {p.municipio.upper()}
+
+## 1. Zonificación de sectores
+Sin datos de rutas verificables en este fallback. La zonificación requiere
+composición RSU municipal y distancias al Centro de Acopio más cercano.
+
+## 2. Rutas por sector y CA asignado
+
+| Sector | CA asignado | km/ruta (est.) | Frecuencia | Costo mensual (est.) |
+|--------|------------|----------------|------------|----------------------|
+| Zona A (alta densidad) | CA-01 | 18 km | Diaria | supuesto_editable |
+| Zona B (densidad media) | CA-01 | 25 km | 3x/semana | supuesto_editable |
+
+## 3. Frecuencias y horarios
+- Zona A: recolección diaria 6:00–14:00 h
+- Zona B: lunes, miércoles, viernes 6:00–14:00 h
+
+## 4. Costo mensual por ruta
+Precio diesel: pendiente de fuente — usar precio PEMEX más reciente.
+Consumo estimado: 4 km/litro (supuesto_editable para camión 12 ton).
+
+## 5. Supuestos y fuentes
+- Distancias: estimadas (pendiente de verificación con cartografía municipal)
+- Precio diesel: supuesto_editable — actualizar con PEMEX al inicio del programa
+
+Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
+
+        "flota": f"""# DIMENSIONAMIENTO DE FLOTA — {p.municipio.upper()}
+
+## 1. Demanda de recolección
+Generación per cápita estimada: {p.scenario_json.get('gen_percapita_kg_dia', 0.9):.2f} kg/hab/día (supuesto_editable).
+Toneladas/día objetivo: pendiente de fuente — derivado del simulador.
+
+## 2. Número de unidades requeridas
+- Capacidad por camión: 12 ton (supuesto_editable)
+- Flota mínima estimada: 2–4 unidades (escala con población y rutas)
+- Factor de reserva 15%: 1 unidad adicional recomendada
+
+## 3. CAPEX de flota
+Precio camión recolector 12 ton: pendiente de cotización formal.
+Referencia de mercado: $1,800,000–$2,500,000 MXN (2025, supuesto_editable).
+
+## 4. OPEX vehicular mensual
+- Diesel: pendiente de cálculo con km/ruta y precio PEMEX
+- Mantenimiento: 2.5% anual sobre valor del vehículo (supuesto_editable)
+
+## 5. Ciclo de reposición
+Vida útil estimada: 8–10 años. Primera reposición: Año 8 con ajuste por inflación.
+
+Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
+
+        "territorio": f"""# SEGMENTACIÓN TERRITORIAL — {p.municipio.upper()}
+
+## 1. Zonificación municipal
+
+| Zona | Tipo | Criterio | CA asignado | Viviendas (est.) | Riesgo participación |
+|------|------|----------|-------------|-----------------|----------------------|
+| Zona A | Arranque (sem. 1–12) | Alta densidad, accesibilidad alta | CA-01 | estimado_modelo | Bajo |
+| Zona B | Expansión (sem. 13–26) | Densidad media | CA-01 | estimado_modelo | Medio |
+| Zona C | Consolidación (sem. 27+) | Periférica/dispersa | CA-01 | estimado_modelo | Alto |
+
+## 2. Criterios de priorización
+- Densidad de viviendas por colonia (INEGI o estimación municipal)
+- Accesibilidad vehicular de los camiones
+- Presencia de escuelas u organizaciones vecinales activas
+
+## 3. Cobertura por ola
+- Ola 1 (sem. 12): ~35% de viviendas
+- Ola 2 (sem. 26): ~65% de viviendas
+- Ola 3 (sem. 52): cobertura total estimada
+
+## 4. Riesgos y mitigaciones
+- Baja participación Zona B/C: campaña previa de 4 semanas con encuesta de base
+- Acceso limitado en zonas periféricas: vehículos de menor capacidad o rutas adaptadas
+
+Fuentes: estimación del modelo — verificar con padrón municipal y cartografía INEGI.
+
+Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
+
+        "supply_chain": f"""# CADENA DE SUMINISTRO Y COMERCIALIZACIÓN — {p.municipio.upper()}
+
+## 1. Volúmenes estimados por material
+
+| Material | % en RSU (est.) | ton/año (est.) | Fuente composición |
+|----------|-----------------|----------------|--------------------|
+| PET | 5.0% | estimado_modelo | supuesto_editable |
+| HDPE | 3.5% | estimado_modelo | supuesto_editable |
+| Aluminio | 1.0% | estimado_modelo | supuesto_editable |
+| Cartón/Papel | 12.0% | estimado_modelo | supuesto_editable |
+| Vidrio | 4.0% | estimado_modelo | supuesto_editable |
+| Orgánico | 50.0% | estimado_modelo | supuesto_editable |
+
+## 2. Precios de mercado
+
+| Material | Precio (MXN/kg) | Fuente | Clasificación |
+|----------|-----------------|--------|---------------|
+| PET | 7.00–8.50 | Referencia mercado CANIRAC/sector | supuesto_editable |
+| Aluminio | 20.00–24.00 | Referencia mercado nacional | supuesto_editable |
+| Cartón | 1.80–2.20 | Referencia mercado nacional | supuesto_editable |
+
+## 3. Compradores identificados
+Pendiente de verificación local. Consultar base de datos de Centros de Acopio
+en /api/v1/centros-acopio/?zm={p.zm} para compradores verificados en la ZM.
+
+## 4. Ingresos proyectados
+Proyección completa pendiente de: (a) precio de materiales verificado, (b) volúmenes
+con composición RSU municipal, (c) comprador confirmado por material.
+
+## 5. Riesgo de no-colocación
+Materiales sin comprador: vidrio, orgánicos — identificar mercado antes de arrancar.
+
+Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
     }
     return templates.get(agent_name, "")
 

@@ -32,6 +32,11 @@ DOC_METROPOLITANO     = "04_coordinacion_metropolitana"
 DOC_OPERATIVO         = "05_manual_operativo_90_dias"
 DOC_CIUDADANO         = "06_guia_ciudadana_separacion"
 DOC_FUENTES           = "07_fuentes_trazabilidad"
+# Wave 1 — Logística (4 nuevos docs)
+DOC_RUTAS             = "08_plan_rutas_recoleccion"
+DOC_FLOTA             = "09_dimensionamiento_flota"
+DOC_TERRITORIO        = "10_segmentacion_territorial"
+DOC_SUPPLY_CHAIN      = "11_cadena_suministro_comercializacion"
 
 
 # ─── Specs estándar ───────────────────────────────────────────────────────────
@@ -397,6 +402,137 @@ def spec_fuentes_trazabilidad(zm: str) -> DocumentSpec:
     )
 
 
+def spec_rutas_logisticas(zm: str, municipio: str) -> DocumentSpec:
+    """08 — Plan de Rutas de Recolección Separada."""
+    return DocumentSpec(
+        document_id=DOC_RUTAS,
+        titulo=f"Plan de Rutas de Recolección — {municipio.title()} / {zm}",
+        audiencia=[
+            "Director de Servicios Públicos",
+            "Jefe de Recolección",
+            "Operador logístico",
+        ],
+        decision_que_habilita="Aprobar el diseño de rutas y calcular el costo operativo mensual de recolección separada",
+        nivel=DocumentNivel.operativo,
+        secciones_obligatorias=[
+            "1. Zonificación de sectores",
+            "2. Rutas por sector y CA asignado",
+            "3. Frecuencias y horarios",
+            "4. Costo mensual por ruta",
+            "5. Costo total mensual de operación vial",
+            "6. Supuestos y fuentes (diesel, mantenimiento, km)",
+        ],
+        tablas_obligatorias=[
+            "Tabla de rutas: sector, CA, km, frecuencia, costo mensual",
+            "Resumen de costo operativo mensual",
+        ],
+        figuras_obligatorias=[],
+        fuentes_minimas=["Precio diesel PEMEX con fecha", "Distancias estimadas con etiqueta"],
+        criterios_de_bloqueo=["Sin rutas definidas", "Sin precio de diesel declarado"],
+        tono="técnico-operativo",
+        lecturabilidad_objetivo="técnico",
+        max_paginas=8,
+    )
+
+
+def spec_flota_vehicular(zm: str, municipio: str) -> DocumentSpec:
+    """09 — Dimensionamiento de Flota Vehicular."""
+    return DocumentSpec(
+        document_id=DOC_FLOTA,
+        titulo=f"Dimensionamiento de Flota — {municipio.title()} / {zm}",
+        audiencia=[
+            "Director de Servicios Públicos",
+            "Tesorería",
+            "Comité de Adquisiciones",
+        ],
+        decision_que_habilita="Autorizar la licitación y adquisición de la flota de recolección separada",
+        nivel=DocumentNivel.operativo,
+        secciones_obligatorias=[
+            "1. Demanda de recolección (ton/día)",
+            "2. Número de unidades requeridas",
+            "3. Especificaciones técnicas del vehículo",
+            "4. CAPEX de flota con precio y fuente",
+            "5. OPEX vehicular mensual (diesel + mantenimiento)",
+            "6. Ciclo de reposición y costo proyectado",
+            "7. Clasificación de fuentes de precios",
+        ],
+        tablas_obligatorias=[
+            "Tabla de flota: tipo, capacidad, unidades, precio unitario, CAPEX total",
+            "OPEX vehicular mensual detallado",
+        ],
+        fuentes_minimas=["Precio de camión con URL o cotización", "Precio diesel PEMEX"],
+        criterios_de_bloqueo=["Sin precio de vehículo declarado"],
+        tono="técnico-operativo",
+        lecturabilidad_objetivo="técnico",
+        max_paginas=10,
+    )
+
+
+def spec_territorio(zm: str, municipio: str) -> DocumentSpec:
+    """10 — Segmentación Territorial y Secuencia de Arranque."""
+    return DocumentSpec(
+        document_id=DOC_TERRITORIO,
+        titulo=f"Segmentación Territorial — {municipio.title()} / {zm}",
+        audiencia=[
+            "Director de Servicios Públicos",
+            "Presidencia Municipal",
+            "Comunicación Social",
+        ],
+        decision_que_habilita="Definir el orden de arranque por zonas y priorizar la campaña de sensibilización",
+        nivel=DocumentNivel.operativo,
+        secciones_obligatorias=[
+            "1. Zonificación municipal (Zona A/B/C)",
+            "2. Criterios de priorización",
+            "3. Cobertura por ola (% viviendas)",
+            "4. CA asignado por zona",
+            "5. Riesgos de baja participación y mitigaciones",
+            "6. Semana estimada de cobertura total",
+        ],
+        tablas_obligatorias=[
+            "Tabla de zonas: nombre, tipo, CA, viviendas, ton/día, riesgo",
+            "Cronograma de arranque por ola",
+        ],
+        fuentes_minimas=["Estimación de viviendas con fuente (INEGI o estimado)"],
+        criterios_de_bloqueo=["Sin zonificación definida"],
+        tono="técnico-operativo",
+        lecturabilidad_objetivo="técnico",
+        max_paginas=8,
+    )
+
+
+def spec_supply_chain(zm: str, municipio: str) -> DocumentSpec:
+    """11 — Cadena de Suministro y Comercialización."""
+    return DocumentSpec(
+        document_id=DOC_SUPPLY_CHAIN,
+        titulo=f"Cadena de Suministro y Comercialización — {municipio.title()} / {zm}",
+        audiencia=[
+            "Director de Servicios Públicos",
+            "Tesorería",
+            "Operador del CA",
+        ],
+        decision_que_habilita="Confirmar compradores de materiales y proyectar ingresos reales por venta",
+        nivel=DocumentNivel.operativo,
+        secciones_obligatorias=[
+            "1. Volúmenes por material (ton/año)",
+            "2. Precios de mercado por material con fuente",
+            "3. Compradores identificados en la ZM",
+            "4. Ingreso bruto y ajustado por material",
+            "5. Materiales sin comprador identificado (riesgo)",
+            "6. Recomendaciones para asegurar mercado",
+            "7. Líneas de ingreso para el CostModel",
+        ],
+        tablas_obligatorias=[
+            "Tabla de materiales: vol, precio, comprador, ingreso ajustado, riesgo",
+            "Resumen de ingresos totales proyectados",
+        ],
+        fuentes_minimas=["Precio PET con fuente y fecha", "Al menos un comprador identificado"],
+        criterios_de_bloqueo=["Sin precios de materiales declarados"],
+        tono="técnico-financiero",
+        lecturabilidad_objetivo="técnico",
+        max_paginas=10,
+    )
+
+
 # ─── Director de Paquete ─────────────────────────────────────────────────────
 
 def build_document_plan(bundle: ScenarioBundle) -> DocumentPlan:
@@ -467,6 +603,13 @@ def build_document_plan(bundle: ScenarioBundle) -> DocumentPlan:
             f"[{DOC_FUENTES}] BLOQUEADO — "
             "sin snapshot_datos ni kpis_con_provenance no se puede construir el anexo de fuentes."
         )
+
+    # 8–11. Documentos logísticos (Wave 1) — siempre generados
+    # Los 4 agentes logísticos corren en paralelo con el bloque 3 del pipeline.
+    specs.append(spec_rutas_logisticas(bundle.zm, municipio_principal))
+    specs.append(spec_flota_vehicular(bundle.zm, municipio_principal))
+    specs.append(spec_territorio(bundle.zm, municipio_principal))
+    specs.append(spec_supply_chain(bundle.zm, municipio_principal))
 
     if municipios_sin_legal:
         warnings.append(
