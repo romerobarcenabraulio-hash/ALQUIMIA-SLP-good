@@ -2,7 +2,7 @@
 import { useEffect, useState, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
-import { Header } from '@/components/layout/Header'
+import { AppShell } from '@/components/layout/AppShell'
 import { cn } from '@/lib/utils'
 import {
   documentosHub,
@@ -23,6 +23,7 @@ import {
 import type { PackageStatus, PackageAsset, PackageManifest } from '@/types'
 import { AdendoViewer } from '@/components/hub/AdendoViewer'
 import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
+import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
 
@@ -223,8 +224,7 @@ function HubContent() {
   const assetZip         = (assets ?? []).find(a => a.filename.endsWith('.zip'))
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
-      <Header />
+    <AppShell>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
 
         {/* Cabecera */}
@@ -238,6 +238,11 @@ function HubContent() {
               ? 'Paquete documental generado por ÁGORA — descarga, manifest y trazabilidad.'
               : 'Repositorio de documentos generados por ÁGORA.'}
           </p>
+          {!jobParam && (
+            <div className="mt-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
+              <SimulatorGatewayHint variant="compact" />
+            </div>
+          )}
           {!jobParam && (
             <div className="mt-3 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-4 py-3 text-[12px] text-[#6B6760]">
               <strong className="text-[#1C1B18]">Simulación · no confundir con oficialidad.</strong>{' '}
@@ -705,7 +710,7 @@ function HubContent() {
           </p>
         )}
       </div>
-    </div>
+    </AppShell>
   )
 }
 
@@ -714,7 +719,7 @@ function HubContent() {
 export default function HubPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F6F1' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F4F2ED' }}>
         <p className="text-[#A8A49C] text-[13px]">Cargando Hub…</p>
       </div>
     }>

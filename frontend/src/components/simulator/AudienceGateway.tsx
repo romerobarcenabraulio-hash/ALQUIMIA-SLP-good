@@ -1,13 +1,5 @@
 'use client'
 
-/**
- * Fase 22.0 — Gateway de Identidad obligatorio.
- *
- * Tres audiencias, una sola entrada. Sin selección, el simulador no carga
- * ningún módulo. Persiste la elección en el store (zustand) y mapea a un
- * PortalEntry backend sin tocar el contrato actual.
- */
-
 import { useMemo, useState } from 'react'
 import { ArrowRight, Briefcase, HeartHandshake, Landmark } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -18,7 +10,6 @@ import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
-import { EducacionFuncionarioIntro } from '@/components/simulator/EducacionFuncionarioIntro'
 
 type AudienceCard = {
   id: Audience
@@ -28,50 +19,59 @@ type AudienceCard = {
   promise: string
   modules: string[]
   cta: string
+  accentColor: string
+  bgColor: string
 }
 
 const CARDS: AudienceCard[] = [
   {
     id: 'citizen',
     icon: HeartHandshake,
-    kicker: 'Ciudadano · Educación',
+    kicker: 'Ciudadano',
     title: '¿Qué pasa con lo que tiro?',
-    promise: 'Entiende cuánto genera tu vivienda, qué se puede separar y por qué una bolsa mezclada termina costando dinero, salud pública y espacio de relleno.',
-    modules: ['Problema RSU de tu ciudad', 'Composición y vivienda', 'Huella ambiental personal'],
-    cta: 'Continuar como ciudadano',
+    promise: 'Entiende cuánto genera tu vivienda, qué se puede separar y por qué una bolsa mezclada termina costando dinero, salud y espacio en el relleno.',
+    modules: ['Diagnóstico RSU de tu ciudad', 'Composición de residuos y vivienda', 'Huella ambiental y multiplicadores'],
+    cta: 'Entrar como ciudadano',
+    accentColor: '#3B6D11',
+    bgColor: '#EAF3DE',
   },
   {
     id: 'functionary',
     icon: Landmark,
-    kicker: 'Funcionario público · Decisión',
-    title: '¿Cómo planeo el cambio sin inventar datos?',
-    promise: 'Entra a la sala de mando institucional: vivienda INEGI, generación ajustable, operación PER, reglamento municipal y matriz de fuentes por cálculo.',
-    modules: ['Marco legal y diagnóstico', 'PER y advertencias educativas', 'Comparador de escenarios y exportables'],
-    cta: 'Continuar como funcionario',
+    kicker: 'Funcionario público',
+    title: '¿Cómo planeo el cambio con datos reales?',
+    promise: 'Sala de mando institucional: vivienda INEGI, generación ajustable, operación PER, reglamento municipal, comparador de escenarios y exportables para Cabildo.',
+    modules: ['Marco legal y diagnóstico jurídico', 'Infraestructura, PER y bitácora', 'Escenarios, derrama y paquete de salida'],
+    cta: 'Entrar como funcionario',
+    accentColor: '#1A5FA8',
+    bgColor: '#EBF3FB',
   },
   {
     id: 'entrepreneur',
     icon: Briefcase,
-    kicker: 'Empresario · Negocio',
-    title: '¿Cuál es mi retorno?',
-    promise: 'Lee el modelo financiero como una hoja de viabilidad: ROI, Monte Carlo, sensibilidad y trazabilidad de mercado — todo con narrativa de consultoría senior.',
-    modules: ['Perfil de organización y macrogeneradores', 'Trazabilidad de mercado y precolocación', 'ROI, Monte Carlo y sensibilidad'],
-    cta: 'Continuar como empresario',
+    kicker: 'Empresario',
+    title: '¿Cuál es mi retorno sobre la inversión?',
+    promise: 'Lee el modelo como una hoja de viabilidad: CAPEX, TIR, Monte Carlo, sensibilidad de precios y trazabilidad de mercado — con narrativa de consultoría senior.',
+    modules: ['Perfil de organización y macrogeneradores', 'Trazabilidad de mercado y precolocación', 'ROI, Monte Carlo y paquete ejecutivo'],
+    cta: 'Entrar como empresario',
+    accentColor: '#8B6B4A',
+    bgColor: '#F5EDE3',
   },
 ]
 
 export function AudienceGateway() {
-  const setAudience = useSimulatorStore(s => s.setAudience)
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const setAudience        = useSimulatorStore(s => s.setAudience)
+  const zmActiva           = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos  = useSimulatorStore(s => s.municipiosActivos)
   const [submitting, setSubmitting] = useState<Audience | null>(null)
+  const [hovered, setHovered]       = useState<Audience | null>(null)
 
   const citizenModules = useMemo(() => {
     const etiqueta = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
     return [
-      aplicarSustitucionesTerritorio('Problema RSU de tu ciudad', etiqueta),
-      'Composición y vivienda',
-      'Huella ambiental personal',
+      aplicarSustitucionesTerritorio('Diagnóstico RSU de tu ciudad', etiqueta),
+      'Composición de residuos y vivienda',
+      'Huella ambiental y multiplicadores',
     ]
   }, [municipiosActivos, zmActiva])
 
@@ -86,84 +86,124 @@ export function AudienceGateway() {
   }
 
   return (
-    <section
-      className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8"
-      aria-labelledby="audience-gateway-title"
-    >
-      <header className="mb-8">
-        <p className="text-[11px] uppercase tracking-[0.18em] text-[#A8A49C]">
-          ALQUIMIA · Identifica tu rol
+    <div className="flex flex-col min-h-[calc(100vh-56px)]" style={{ background: '#F4F2ED' }}>
+      {/* Hero */}
+      <div className="bg-[#1C2B15] px-6 py-10 lg:px-12">
+        <p className="text-[10px] uppercase tracking-[0.15em] text-[#6A9A50] mb-3 font-medium">
+          ALQUIMIA · Selecciona tu perfil
         </p>
-        <h1
-          id="audience-gateway-title"
-          className="mt-3 font-serif text-[34px] leading-tight text-[#1C1B18] sm:text-[42px]"
-        >
-          Elige desde dónde quieres leer el problema
+        <h1 className="font-serif text-[32px] sm:text-[40px] text-white leading-[1.05] mb-4 max-w-2xl">
+          Elige desde dónde quieres<br className="hidden sm:block" /> leer el problema
         </h1>
-        <p className="mt-3 max-w-3xl text-[14px] leading-relaxed text-[#6B6760]">
-          La misma ciudad se entiende distinto si eres habitante, funcionario o empresa. ALQUIMIA cambia módulos,
-          supuestos y lenguaje para que cada decisión tenga datos, fuentes y límites claros.
+        <p className="text-[14px] text-[#7AAB60] leading-[1.7] max-w-2xl">
+          La misma ciudad se entiende distinto si eres habitante, funcionario o empresa.
+          ALQUIMIA adapta módulos, supuestos y lenguaje para que cada decisión tenga datos, fuentes y límites claros.
         </p>
-      </header>
+      </div>
 
-      <div className="grid gap-5 md:grid-cols-3">
-        {CARDS.map(card => {
-          const Icon = card.icon
-          const isLoading = submitting === card.id
-          const modulesList = card.id === 'citizen' ? citizenModules : card.modules
-          return (
-            <article
-              key={card.id}
-              className="flex flex-col rounded-[16px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 shadow-[0_1px_0_rgba(28,27,24,0.04)] transition-shadow hover:shadow-[0_8px_28px_-18px_rgba(28,27,24,0.35)]"
-            >
-              <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F2EEE5] text-[#3B6D11]">
-                  <Icon className="h-5 w-5" aria-hidden />
-                </span>
-                <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">
-                  {card.kicker}
-                </p>
-              </div>
-              <h2 className="mt-4 font-serif text-[24px] leading-tight text-[#1C1B18]">
-                {card.title}
-              </h2>
-              <p className="mt-3 text-[13px] leading-relaxed text-[#6B6760]">
-                {card.promise}
-              </p>
-              <ul className="mt-4 space-y-1.5 text-[12px] text-[#6B6760]">
-                {modulesList.map(m => (
-                  <li key={m} className="flex items-start gap-2">
-                    <span className="mt-[6px] inline-block h-[5px] w-[5px] flex-none rounded-full bg-[#3B6D11]" aria-hidden />
-                    <span>{m}</span>
-                  </li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                onClick={() => handleSelect(card.id)}
-                disabled={Boolean(submitting)}
+      {/* Cards */}
+      <div className="flex-1 px-4 sm:px-6 lg:px-12 py-10">
+        <div className="grid gap-4 md:grid-cols-3 max-w-5xl">
+          {CARDS.map(card => {
+            const Icon       = card.icon
+            const isLoading  = submitting === card.id
+            const isHovered  = hovered === card.id
+            const modulesList = card.id === 'citizen' ? citizenModules : card.modules
+
+            return (
+              <article
+                key={card.id}
+                onMouseEnter={() => setHovered(card.id)}
+                onMouseLeave={() => setHovered(null)}
                 className={cn(
-                  'mt-6 inline-flex items-center justify-between gap-3 rounded-full border px-5 py-3 text-[13px] font-medium transition-colors',
-                  isLoading
-                    ? 'border-[#3B6D11] bg-[#3B6D11] text-white'
-                    : 'border-[#1C1B18] bg-[#1C1B18] text-white hover:bg-[#3B6D11] hover:border-[#3B6D11]',
-                  submitting && !isLoading && 'opacity-50',
+                  'flex flex-col rounded-[16px] border bg-white transition-all duration-200 overflow-hidden',
+                  isHovered
+                    ? 'border-[#3B6D11]/30 shadow-[0_8px_32px_-8px_rgba(28,27,24,0.15)]'
+                    : 'border-[#E8E4DC] shadow-[0_2px_8px_rgba(28,27,24,0.05)]',
                 )}
               >
-                <span>{isLoading ? 'Cargando journey…' : card.cta}</span>
-                <ArrowRight className="h-4 w-4" aria-hidden />
-              </button>
-            </article>
-          )
-        })}
-      </div>
+                {/* Top accent bar */}
+                <div
+                  className="h-1 w-full"
+                  style={{ background: card.accentColor }}
+                />
 
-      <footer className="mt-8 max-w-3xl text-[12px] text-[#A8A49C]">
-        Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador.
-      </footer>
-      <div className="mt-8">
-        <EducacionFuncionarioIntro />
+                <div className="p-6 flex flex-col flex-1">
+                  {/* Icon + kicker */}
+                  <div className="flex items-center gap-3 mb-4">
+                    <div
+                      className="w-10 h-10 rounded-[10px] flex items-center justify-center"
+                      style={{ background: card.bgColor }}
+                    >
+                      <Icon className="w-5 h-5" style={{ color: card.accentColor }} strokeWidth={1.75} />
+                    </div>
+                    <span
+                      className="text-[11px] font-semibold uppercase tracking-[0.08em]"
+                      style={{ color: card.accentColor }}
+                    >
+                      {card.kicker}
+                    </span>
+                  </div>
+
+                  {/* Title */}
+                  <h2 className="font-serif text-[22px] text-[#1C1B18] leading-snug mb-3">
+                    {card.title}
+                  </h2>
+
+                  {/* Promise */}
+                  <p className="text-[12px] text-[#6B6760] leading-[1.65] mb-5 flex-1">
+                    {card.promise}
+                  </p>
+
+                  {/* Modules list */}
+                  <div className="mb-5">
+                    <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold mb-2">Incluye</p>
+                    <ul className="space-y-1.5">
+                      {modulesList.map(m => (
+                        <li key={m} className="flex items-start gap-2 text-[11px] text-[#4A4642]">
+                          <span
+                            className="mt-[5px] w-1.5 h-1.5 rounded-full shrink-0"
+                            style={{ background: card.accentColor }}
+                            aria-hidden
+                          />
+                          {m}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* CTA */}
+                  <button
+                    type="button"
+                    onClick={() => void handleSelect(card.id)}
+                    disabled={Boolean(submitting)}
+                    className={cn(
+                      'w-full inline-flex items-center justify-between gap-2 rounded-[10px] px-5 py-3 text-[13px] font-medium transition-all',
+                      isLoading
+                        ? 'opacity-70 cursor-wait'
+                        : 'hover:opacity-90',
+                      submitting && !isLoading ? 'opacity-40 cursor-not-allowed' : '',
+                    )}
+                    style={{
+                      background: card.accentColor,
+                      color: '#fff',
+                    }}
+                  >
+                    <span>{isLoading ? 'Cargando journey…' : card.cta}</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </article>
+            )
+          })}
+        </div>
+
+        {/* Footnote */}
+        <p className="mt-8 text-[11px] text-[#A8A49C] max-w-xl">
+          Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador en cualquier momento.
+          Escenarios generados como propuesta técnica — no constituyen dictamen oficial.
+        </p>
       </div>
-    </section>
+    </div>
   )
 }

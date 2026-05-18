@@ -1,14 +1,384 @@
 'use client'
 
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { AlertTriangle, CheckCircle2, ChevronRight, Lock } from 'lucide-react'
+import {
+  AlertTriangle,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  Download,
+  Lock,
+  Share2,
+  TrendingUp,
+  Users,
+  Wind,
+  Zap,
+} from 'lucide-react'
 import { cn, fmt } from '@/lib/utils'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
-import { audienceModeLabel } from '@/lib/audienceModeLabel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import type { DecisionModule, PortalEntry } from '@/types'
+
+// ─── Module number mapping ────────────────────────────────────────────────────
+
+const MODULE_NUMBERS: Record<string, string> = {
+  city_baseline:            '1',
+  municipal_context:        '2',
+  citizen_inputs:           '2',
+  impact_finance:           '3',
+  future_goals:             '3',
+  infrastructure_operations:'4',
+  inspeccion_predios:       '5',
+  market_traceability:      '5',
+  scenarios_export:         '6',
+  source_traceability:      '7',
+  organization_profile:     '1',
+  containers_provider:      '2',
+  organization_report:      '3',
+}
+
+function moduleNumber(id: string): string {
+  return MODULE_NUMBERS[id] ?? '·'
+}
+
+// ─── Top KPI strip ────────────────────────────────────────────────────────────
+
+function TopKpiStrip() {
+  const r         = useSimulatorStore(s => s.resultados)
+  const horizonte = useSimulatorStore(s => s.horizonte)
+  const h         = Math.max(1, horizonte)
+
+  const kpis = [
+    {
+      Icon: TrendingUp,
+      label: 'RSU generado diario',
+      value: r ? fmt.kgd(r.rsuTotalTonDia) : '—',
+      sub: 'estimación de escenario',
+      color: 'text-[#3B6D11]',
+    },
+    {
+      Icon: Zap,
+      label: 'Derrama anual',
+      value: r ? fmt.mxnM(r.ingresosBrutos / h) : '—',
+      sub: 'costo económico total',
+      color: 'text-[#3B6D11]',
+    },
+    {
+      Icon: Wind,
+      label: 'CO₂ evitado',
+      value: r ? fmt.co2(r.co2eEvitadasAnualTon) : '—',
+      sub: 'equivalente anual',
+      color: 'text-[#1A5FA8]',
+    },
+    {
+      Icon: Users,
+      label: 'Empleos directos',
+      value: r ? fmt.num0(r.empleosTotalesDirectos) : '—',
+      sub: 'programa + reciclaje',
+      color: 'text-[#D4881E]',
+    },
+  ]
+
+  return (
+    <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-[#E8E4DC] border-b border-[#E8E4DC]">
+      {kpis.map(k => (
+        <div key={k.label} className="bg-white px-5 py-3 flex items-center gap-3">
+          <div className="w-9 h-9 rounded-[8px] bg-[#F4F2ED] flex items-center justify-center shrink-0">
+            <k.Icon className={cn('w-4 h-4', k.color)} strokeWidth={1.75} />
+          </div>
+          <div className="min-w-0">
+            <p className={cn('font-mono text-[16px] font-semibold leading-tight', k.color)}>{k.value}</p>
+            <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] leading-tight truncate">{k.label}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+// ─── Left navigation ──────────────────────────────────────────────────────────
+
+function ModuleNav({
+  modules,
+  activeId,
+  onChange,
+}: {
+  modules: DecisionModule[]
+  activeId: string
+  onChange: (id: string) => void
+}) {
+  return (
+    <nav
+      aria-label="Módulos de decisión"
+      className="hidden xl:block bg-[#F4F2ED] border-r border-[#E8E4DC] w-[230px] shrink-0 overflow-y-auto"
+    >
+      <div className="px-3 py-4 border-b border-[#E8E4DC]">
+        <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold px-2">Módulos</p>
+      </div>
+      <div className="py-2">
+        {modules.map((m) => {
+          const active  = m.module_id === activeId
+          const blocked = m.status === 'blocked'
+          const num     = moduleNumber(m.module_id)
+          return (
+            <button
+              key={m.module_id}
+              type="button"
+              onClick={() => onChange(m.module_id)}
+              aria-current={active ? 'true' : undefined}
+              className={cn(
+                'w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors group',
+                active
+                  ? 'bg-[#EAF3DE] border-r-2 border-r-[#3B6D11]'
+                  : 'hover:bg-[#ECEAE5]',
+              )}
+            >
+              {/* Number badge */}
+              <span
+                className={cn(
+                  'mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center font-mono text-[9px] font-semibold transition-colors',
+                  active
+                    ? 'bg-[#3B6D11] text-white'
+                    : blocked
+                      ? 'bg-amber-200 text-amber-900'
+                      : 'bg-[#D8D4CC] text-[#6B6760] group-hover:bg-[#C8C4BC]',
+                )}
+              >
+                {blocked ? <Lock size={8} /> : num}
+              </span>
+
+              <div className="min-w-0 flex-1">
+                <p
+                  className={cn(
+                    'text-[12px] font-medium leading-snug',
+                    active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
+                  )}
+                >
+                  {m.label}
+                </p>
+                <p className="text-[10px] text-[#A8A49C] mt-0.5 leading-tight">
+                  {blocked ? 'Requiere acción' : m.audience_mode ?? 'Disponible'}
+                </p>
+              </div>
+
+              {active && !blocked && (
+                <ChevronRight size={13} className="shrink-0 text-[#3B6D11] mt-1" />
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </nav>
+  )
+}
+
+// ─── Mobile select ────────────────────────────────────────────────────────────
+
+function MobileModuleSelect({
+  modules,
+  activeId,
+  onChange,
+}: {
+  modules: DecisionModule[]
+  activeId: string
+  onChange: (id: string) => void
+}) {
+  return (
+    <div className="xl:hidden border-b border-[#E8E4DC] bg-white px-4 py-3">
+      <label htmlFor="module-select" className="block text-[10px] uppercase tracking-[0.07em] text-[#A8A49C] mb-1.5">
+        Módulo activo
+      </label>
+      <select
+        id="module-select"
+        value={activeId}
+        onChange={e => onChange(e.target.value)}
+        className="w-full rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 text-[13px] text-[#1C1B18] focus:border-[#3B6D11] focus:outline-none"
+      >
+        {modules.map(m => (
+          <option key={m.module_id} value={m.module_id}>
+            {moduleNumber(m.module_id)}. {m.label}
+            {m.status === 'blocked' ? ' — requiere acción' : ''}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+// ─── Module header ────────────────────────────────────────────────────────────
+
+function ModuleHeader({ module }: { module: DecisionModule }) {
+  const blocked      = module.status === 'blocked'
+  const num          = moduleNumber(module.module_id)
+  const audienceSel  = useSimulatorStore(s => s.audience)
+
+  return (
+    <div className="border-b border-[#E8E4DC] bg-white px-6 py-4">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-1.5 mb-2">
+        <span className="text-[11px] text-[#A8A49C]">Módulo {num}</span>
+        <ChevronRight size={11} className="text-[#C8C4BC]" />
+        <span className="text-[11px] text-[#3B6D11] font-medium">{module.label}</span>
+      </div>
+
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h2 className="font-serif text-[26px] text-[#1C1B18] leading-tight">{module.label}</h2>
+          {module.decision && (
+            <p className="text-[13px] text-[#6B6760] mt-1 leading-relaxed max-w-2xl">{module.decision}</p>
+          )}
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[10px] font-medium uppercase tracking-[0.06em]',
+              blocked
+                ? 'bg-amber-100 text-amber-900'
+                : audienceSel === 'functionary'
+                  ? 'bg-[#1A5FA8]/10 text-[#1A5FA8]'
+                  : 'bg-[#EAF3DE] text-[#3B6D11]',
+            )}
+          >
+            {blocked ? (
+              <><Lock size={10} />Bloqueado</>
+            ) : (
+              <><CheckCircle2 size={10} />Disponible</>
+            )}
+          </span>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+          >
+            <Share2 size={11} />
+            Compartir
+          </button>
+          <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+          >
+            <Download size={11} />
+            Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Right guidance panel ─────────────────────────────────────────────────────
+
+function GuidancePanel({ module }: { module: DecisionModule }) {
+  return (
+    <aside className="hidden 2xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
+      <div className="px-4 py-4 border-b border-[#E8E4DC]">
+        <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold flex items-center gap-1.5">
+          <BookOpen size={11} />
+          Consideraciones
+        </p>
+      </div>
+
+      <div className="p-4 space-y-4 text-[11px]">
+        {module.evidence && (
+          <div>
+            <p className="font-semibold text-[#1C1B18] mb-1.5">Qué sostiene el análisis</p>
+            <p className="text-[#6B6760] leading-relaxed">{module.evidence}</p>
+          </div>
+        )}
+        {module.next_action && (
+          <div className="pt-3 border-t border-[#E8E4DC]">
+            <p className="font-semibold text-[#1C1B18] mb-1.5">Siguiente paso</p>
+            <p className="text-[#6B6760] leading-relaxed">{module.next_action}</p>
+          </div>
+        )}
+
+        <div className="pt-3 border-t border-[#E8E4DC]">
+          <p className="font-semibold text-[#1C1B18] mb-2">Condiciones de lectura</p>
+          <ul className="space-y-1.5">
+            {[
+              'Proyecciones en precios corrientes (MXN)',
+              'Los supuestos editables en Módulo 1 determinan estas trayectorias',
+              'No constituye dictamen oficial ni garantía de resultado',
+            ].map(item => (
+              <li key={item} className="flex items-start gap-1.5 text-[#6B6760]">
+                <span className="mt-1 w-1 h-1 rounded-full bg-[#A8A49C] shrink-0" />
+                <span className="leading-snug">{item}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="pt-3 border-t border-[#E8E4DC]">
+          <p className="font-semibold text-[#1C1B18] mb-2 flex items-center gap-1.5">
+            Nivel de confianza
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EAF3DE] text-[#3B6D11] font-mono text-[9px]">
+              Alto
+            </span>
+          </p>
+          <div className="bg-[#F4F2ED] rounded-[6px] px-3 py-2 text-[10px] text-[#6B6760] leading-snug">
+            Basado en datos medidos y supuestos técnicos validados. Requiere revisión con autoridad competente antes de presentar en Cabildo.
+          </div>
+        </div>
+      </div>
+    </aside>
+  )
+}
+
+// ─── Bottom action bar ────────────────────────────────────────────────────────
+
+function BottomBar({
+  modules,
+  activeId,
+  onChange,
+}: {
+  modules: DecisionModule[]
+  activeId: string
+  onChange: (id: string) => void
+}) {
+  const idx  = modules.findIndex(m => m.module_id === activeId)
+  const prev = modules[idx - 1] ?? null
+  const next = modules[idx + 1] ?? null
+
+  return (
+    <div className="border-t border-[#E8E4DC] bg-white px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
+      <div className="flex items-center gap-2">
+        {prev && (
+          <button
+            type="button"
+            onClick={() => onChange(prev.module_id)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[12px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+          >
+            ← {prev.label}
+          </button>
+        )}
+      </div>
+
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[12px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+        >
+          <Download size={13} />
+          Exportar borrador PDF
+        </button>
+        {next && (
+          <button
+            type="button"
+            onClick={() => onChange(next.module_id)}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[12px] font-medium hover:bg-[#2D5409] transition-colors"
+          >
+            {next.label} →
+          </button>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Main shell ───────────────────────────────────────────────────────────────
 
 interface DecisionModuleShellProps {
   modules: DecisionModule[]
@@ -18,17 +388,24 @@ interface DecisionModuleShellProps {
   renderModule: (module: DecisionModule) => ReactNode
 }
 
-export function DecisionModuleShell({ modules, loading, error, audience, renderModule }: DecisionModuleShellProps) {
-  // Fase 22.2 — el shell respeta el filtrado por audiencia (gateway).
+export function DecisionModuleShell({
+  modules,
+  loading,
+  error,
+  renderModule,
+}: DecisionModuleShellProps) {
   const audienceSelected = useSimulatorStore(s => s.audience)
   const visibleIds = audienceSelected ? AUDIENCE_MODULES[audienceSelected] : null
+
   const filteredModules = useMemo(
     () => (visibleIds ? modules.filter(m => visibleIds.includes(m.module_id)) : modules),
     [modules, visibleIds],
   )
+
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
+
   const activeModule = useMemo(
-    () => filteredModules.find(module => module.module_id === activeModuleId) ?? filteredModules[0] ?? null,
+    () => filteredModules.find(m => m.module_id === activeModuleId) ?? filteredModules[0] ?? null,
     [activeModuleId, filteredModules],
   )
 
@@ -36,245 +413,125 @@ export function DecisionModuleShell({ modules, loading, error, audience, renderM
 
   useEffect(() => {
     setActiveDecisionModuleId(activeModule?.module_id ?? null)
-    return () => {
-      setActiveDecisionModuleId(null)
-    }
+    return () => { setActiveDecisionModuleId(null) }
   }, [activeModule?.module_id, setActiveDecisionModuleId])
 
   useEffect(() => {
-    if (!filteredModules.length) {
-      setActiveModuleId(null)
-      return
-    }
-    if (!activeModuleId || !filteredModules.some(module => module.module_id === activeModuleId)) {
+    if (!filteredModules.length) { setActiveModuleId(null); return }
+    if (!activeModuleId || !filteredModules.some(m => m.module_id === activeModuleId)) {
       setActiveModuleId(filteredModules[0].module_id)
     }
   }, [activeModuleId, filteredModules])
 
-  return (
-    <section className="section" aria-labelledby="decision-shell-title">
-      <div className="mb-4">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Tu recorrido · módulos de decisión</p>
-        <h2 id="decision-shell-title" className="mt-2 font-serif text-[26px] text-[#1C1B18]">
-          Modulos de decision
-        </h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-          Audiencia activa:{' '}
-          {audienceSelected === 'citizen'
-            ? 'Ciudadano · educacion y huella'
-            : audienceSelected === 'functionary'
-              ? 'Funcionario publico · decision institucional'
-              : audienceSelected === 'entrepreneur'
-                ? 'Empresario · viabilidad y mercado'
-                : audience === 'organization'
-                  ? 'Empresa / institucion (portal tecnico)'
-                  : 'Ciudadania / plan de ciudad (portal tecnico)'}
-          . Cada modulo abre una parte del expediente municipal: problema, contexto sociodemográfico, marco jurídico, ruta temporal, operación,
-          estrategia administrativa, salida y matriz de fuentes.
+  // ── Loading / error / empty states ─────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20 text-[#A8A49C]">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-[#3B6D11] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <p className="text-[13px]">Cargando módulos del journey…</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="mx-4 mt-6 rounded-[10px] border border-red-200 bg-red-50 px-5 py-4">
+        <p className="flex items-center gap-2 text-[13px] font-semibold text-red-800">
+          <AlertTriangle size={15} />No se pudo cargar la navegación modular
         </p>
-        <ScopeAnclaKicker className="mt-3 border-l-[3px] border-[#8CAA7A] pl-3" />
+        <p className="mt-1 text-[12px] text-red-700">{error}</p>
+      </div>
+    )
+  }
+
+  if (!activeModule) {
+    return (
+      <div className="mx-4 mt-6 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] px-5 py-4 text-[#6B6760] text-[13px]">
+        Sin módulos disponibles para esta audiencia.
+      </div>
+    )
+  }
+
+  // ── Main layout ─────────────────────────────────────────────────────────────
+  return (
+    <section
+      className="flex flex-col rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] mt-6"
+      aria-labelledby="decision-shell-title"
+    >
+      {/* Scope hint (small) */}
+      <div className="bg-[#F4F2ED] border-b border-[#E8E4DC] px-4 py-2">
+        <ScopeAnclaKicker className="text-[11px] text-[#6B6760]" />
       </div>
 
-      {loading && (
-        <ShellState title="Cargando modulos" detail="Obteniendo DecisionModule desde el contrato /city/journey/steps." />
+      {/* KPI strip */}
+      <TopKpiStrip />
+
+      {/* Mobile module selector */}
+      {activeModule && (
+        <MobileModuleSelect
+          modules={filteredModules}
+          activeId={activeModule.module_id}
+          onChange={setActiveModuleId}
+        />
       )}
 
-      {!loading && error && (
-        <ShellState title="No se pudo cargar la navegacion modular" detail={error} tone="error" />
-      )}
+      {/* Three-column body: nav | content | guidance */}
+      <div className="flex flex-1 min-h-0">
+        {/* Left nav */}
+        <ModuleNav
+          modules={filteredModules}
+          activeId={activeModule.module_id}
+          onChange={setActiveModuleId}
+        />
 
-      {!loading && !error && filteredModules.length === 0 && (
-        <ShellState title="No hay modulos disponibles" detail="Selecciona una audiencia para cargar el journey modular." />
-      )}
+        {/* Center content */}
+        <div className="flex-1 flex flex-col min-w-0 bg-white">
+          {/* Module header */}
+          <ModuleHeader module={activeModule} />
 
-      {!loading && !error && activeModule && (
-        <div className="grid gap-4 xl:grid-cols-[minmax(240px,290px)_minmax(0,1fr)]">
-          <div className="space-y-2 self-start">
-            <div className="xl:hidden">
-              <label htmlFor="decision-module-select" className="mb-1 block text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
-                Módulo
-              </label>
-              <select
-                id="decision-module-select"
-                value={activeModule.module_id}
-                onChange={e => setActiveModuleId(e.target.value)}
-                className="w-full rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2.5 text-[13px] text-[#1C1B18] focus:border-[#3B6D11] focus:outline-none focus:ring-1 focus:ring-[#3B6D11]"
-              >
-                {filteredModules.map(module => (
-                  <option key={module.module_id} value={module.module_id}>
-                    {module.label}
-                    {module.status === 'blocked' ? ' — requiere acción' : ''}
-                  </option>
-                ))}
-              </select>
+          {/* Editorial brief (functionary) */}
+          {audienceSelected === 'functionary' && (
+            <div className="px-6 pt-4 pb-2 border-b border-[#F0EDE5]">
+              <ModuleEditorialBrief moduleId={activeModule.module_id} />
             </div>
-            <nav aria-label="Modulos de decision" className="hidden gap-2 xl:grid">
-            {filteredModules.map(module => {
-              const active = module.module_id === activeModule.module_id
-              const blocked = module.status === 'blocked'
-              return (
-                <button
-                  key={module.module_id}
-                  type="button"
-                  onClick={() => setActiveModuleId(module.module_id)}
-                  aria-current={active ? 'true' : undefined}
-                  className={cn(
-                    'rounded-[8px] border px-3 py-3 text-left transition-colors',
-                    active
-                      ? 'border-[#3B6D11] bg-[#EAF3DE]'
-                      : 'border-[#E8E4DC] bg-[#FDFCFA] hover:border-[#B9C8A6]',
-                    blocked && !active ? 'border-amber-200 bg-amber-50/70' : ''
-                  )}
-                >
-                  <span className="flex items-start justify-between gap-2">
-                    <span className="text-[12px] font-semibold text-[#1C1B18]">{module.label}</span>
-                    {blocked ? (
-                      <Lock size={14} className="shrink-0 text-amber-800" aria-hidden="true" />
-                    ) : (
-                      <ChevronRight size={14} className="shrink-0 text-[#6B6760]" aria-hidden="true" />
-                    )}
-                  </span>
-                  <span className="mt-2 inline-flex items-center gap-1 text-[10px] uppercase tracking-[0.06em] text-[#8A857C]">
-                    {blocked ? (
-                      <>
-                        <Lock size={11} aria-hidden="true" />
-                        Requiere acción
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 size={11} aria-hidden="true" className="text-[#3B6D11]" />
-                        Disponible
-                      </>
-                    )}
-                    <span className="text-[#A8A49C]">· {audienceModeLabel(module.audience_mode)}</span>
-                  </span>
-                </button>
-              )
-            })}
-          </nav>
-          </div>
+          )}
 
-          <article className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 min-w-0 w-full max-w-none">
-            <div className="sticky top-24 z-20 space-y-3 border-b border-[#E8E4DC]/80 bg-[#FDFCFA]/97 pb-3 backdrop-blur-md lg:top-28">
-              <DecisionHeader module={activeModule} titleOnly={audienceSelected === 'functionary'} />
-              {audienceSelected === 'functionary' && <ModuleEditorialBrief moduleId={activeModule.module_id} />}
-            </div>
-            {audienceSelected === 'functionary' && <FunctionaryKpiStrip />}
+          {/* Content area */}
+          <div className="flex-1 overflow-y-auto px-6 py-6" id="decision-shell-title">
             {activeModule.status === 'blocked' ? (
-              <div className="mt-4 rounded-[8px] border border-amber-300 bg-amber-50 p-4">
-                <p className="inline-flex items-center gap-2 text-[12px] font-semibold text-amber-900">
-                  <AlertTriangle size={15} aria-hidden="true" />
-                  Modulo bloqueado
+              <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
+                <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
+                  <AlertTriangle size={15} />
+                  Módulo bloqueado
                 </p>
-                <p className="mt-2 text-[12px] leading-relaxed text-amber-900">
-                  {activeModule.blocker ?? 'Este modulo requiere una condicion previa antes de mostrar herramientas operativas.'}
+                <p className="mt-2 text-[12px] leading-relaxed text-amber-800">
+                  {activeModule.blocker ?? 'Este módulo requiere una condición previa.'}
                 </p>
-                <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Siguiente accion</p>
-                <p className="mt-1 text-[12px] text-[#6B6760]">{activeModule.next_action}</p>
+                <div className="mt-4 pt-3 border-t border-amber-200">
+                  <p className="text-[11px] font-semibold text-amber-900">Siguiente acción</p>
+                  <p className="mt-1 text-[11px] text-amber-800">{activeModule.next_action}</p>
+                </div>
               </div>
             ) : (
-              <div className="mt-4 grid gap-5">
+              <div className="space-y-5">
                 {renderModule(activeModule)}
               </div>
             )}
-          </article>
+          </div>
+
+          {/* Bottom bar */}
+          <BottomBar
+            modules={filteredModules}
+            activeId={activeModule.module_id}
+            onChange={setActiveModuleId}
+          />
         </div>
-      )}
+
+        {/* Right guidance panel */}
+        <GuidancePanel module={activeModule} />
+      </div>
     </section>
-  )
-}
-
-function DecisionHeader({ module, titleOnly = false }: { module: DecisionModule; titleOnly?: boolean }) {
-  const blocked = module.status === 'blocked'
-  const audienceSelected = useSimulatorStore(s => s.audience)
-  const resultados = useSimulatorStore(s => s.resultados)
-  const horizonte = useSimulatorStore(s => s.horizonte)
-  const showFunctionaryKpis = audienceSelected === 'functionary' && !titleOnly
-
-  return (
-    <header className="border-b border-[#E8E4DC] pb-3">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Que veo</p>
-          <h2 className="mt-1 font-serif text-[24px] text-[#1C1B18]">{module.label}</h2>
-        </div>
-        <span
-          className={cn(
-            'inline-flex items-center gap-1 rounded-[6px] px-2 py-1 text-[10px] uppercase tracking-[0.06em]',
-            blocked ? 'bg-amber-100 text-amber-900' : 'bg-[#EAF3DE] text-[#3B6D11]'
-          )}
-        >
-          {blocked ? <AlertTriangle size={12} aria-hidden="true" /> : <CheckCircle2 size={12} aria-hidden="true" />}
-          {blocked ? 'Requiere acción' : 'Disponible'}
-        </span>
-      </div>
-      {audienceSelected === 'functionary' ? (
-        showFunctionaryKpis && (
-        <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-4">
-          <KpiBlock label="RSU generado diario" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="estimación de escenario" />
-          <KpiBlock label="Derrama base/año" value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'} helper="venta de material separado" />
-          <KpiBlock label="CO₂e a evitar/año" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="factor ambiental trazado" />
-          <KpiBlock label="Empleos directos" value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'} helper="programa + reciclaje" />
-        </div>
-        )
-      ) : (
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
-          <InfoBlock label="Que decido" value={module.decision} />
-          <InfoBlock label="Dato que sostiene" value={module.evidence} />
-          <InfoBlock label="Que sigue" value={module.next_action} />
-        </div>
-      )}
-    </header>
-  )
-}
-
-function FunctionaryKpiStrip() {
-  const resultados = useSimulatorStore(s => s.resultados)
-  const horizonte = useSimulatorStore(s => s.horizonte)
-  return (
-    <div className="mb-4 mt-3 rounded-[10px] border border-[#E8E4DC] bg-white/90 px-3 py-3 shadow-[0_1px_0_rgba(28,27,24,0.04)]">
-      <p className="text-[10px] uppercase tracking-[0.08em] text-[#8A857C]">Indicadores del escenario (referencia)</p>
-      <div className="mt-3 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiBlock label="RSU generado diario" value={resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} helper="estimación de escenario" />
-        <KpiBlock label="Derrama base/año" value={resultados ? fmt.mxnM(resultados.ingresosBrutos / Math.max(1, horizonte)) : '—'} helper="venta de material separado" />
-        <KpiBlock label="CO₂e a evitar/año" value={resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'} helper="factor ambiental trazado" />
-        <KpiBlock label="Empleos directos" value={resultados ? fmt.num0(resultados.empleosTotalesDirectos) : '—'} helper="programa + reciclaje" />
-      </div>
-    </div>
-  )
-}
-
-function KpiBlock({ label, value, helper }: { label: string; value: string; helper: string }) {
-  return (
-    <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
-      <p className="mt-1 font-mono text-[17px] leading-tight text-[#1C1B18]">{value}</p>
-      <p className="mt-1 text-[10px] leading-relaxed text-[#8C8880]">{helper}</p>
-    </div>
-  )
-}
-
-function InfoBlock({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
-      <p className="mt-1 text-[12px] leading-relaxed text-[#1C1B18]">{value}</p>
-    </div>
-  )
-}
-
-function ShellState({ title, detail, tone = 'neutral' }: { title: string; detail: string; tone?: 'neutral' | 'error' }) {
-  return (
-    <div
-      className={cn(
-        'rounded-[8px] border px-4 py-4',
-        tone === 'error'
-          ? 'border-red-200 bg-red-50 text-red-800'
-          : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#6B6760]'
-      )}
-    >
-      <p className="text-[13px] font-semibold">{title}</p>
-      <p className="mt-1 text-[12px] leading-relaxed">{detail}</p>
-    </div>
   )
 }

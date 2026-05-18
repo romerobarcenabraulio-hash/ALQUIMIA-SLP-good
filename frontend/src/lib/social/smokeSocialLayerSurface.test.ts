@@ -21,10 +21,10 @@ describe('smokeSocialLayerSurface (capa social)', () => {
     expect(AUDIENCE_MODULES.citizen).toContain('municipal_context')
   })
 
-  it('page.tsx monta SocialDemographicContextPanel en municipal_context', () => {
-    const page = readSrc('app/simulator/page.tsx')
-    expect(page).toContain("case 'municipal_context':")
-    expect(page).toMatch(/case 'municipal_context':[\s\S]*<SocialDemographicContextPanel/)
+  it('renderDecisionModule monta SocialDemographicContextPanel en municipal_context', () => {
+    const registry = readSrc('app/simulator/renderDecisionModule.tsx')
+    expect(registry).toContain("case 'municipal_context':")
+    expect(registry).toMatch(/case 'municipal_context':[\s\S]*<SocialDemographicContextPanel/)
   })
 
   it('panel social expone testids y sección oficial PR3', () => {

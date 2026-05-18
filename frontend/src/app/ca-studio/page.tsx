@@ -1,10 +1,11 @@
 'use client'
 import { useState } from 'react'
-import { Header } from '@/components/layout/Header'
+import { AppShell } from '@/components/layout/AppShell'
 import { CAIsometrico } from '@/components/ca-studio/CAIsometrico'
 import { CAPanelLateral } from '@/components/ca-studio/CAPanelLateral'
 import { GuiaOperativa } from '@/components/ca-studio/GuiaOperativa'
 import { EstudiosIdoneidad } from '@/components/ca-studio/EstudiosIdoneidad'
+import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
 import { cn } from '@/lib/utils'
 
 type Pestaña = 'studio' | 'guia' | 'idoneidad'
@@ -17,12 +18,12 @@ export default function CAStudioPage() {
   const [contexto, setContexto] = useState<Contexto>('torre')
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
-      <Header />
+    <AppShell>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">CA-Studio — Módulo SimCity</p>
           <h1 className="font-serif text-[32px] text-[#1C1B18]">Diseña tu Centro de Acopio</h1>
+          <SimulatorGatewayHint variant="compact" className="mt-3 max-w-2xl" />
         </div>
 
         {/* Pestañas */}
@@ -88,6 +89,6 @@ export default function CAStudioPage() {
         {pestaña === 'guia' && <GuiaOperativa />}
         {pestaña === 'idoneidad' && <EstudiosIdoneidad />}
       </div>
-    </div>
+    </AppShell>
   )
 }

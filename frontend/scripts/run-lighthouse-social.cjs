@@ -111,6 +111,7 @@ function journeyStub() {
     mk('municipal_context', 'Contexto sociodemográfico y marco legal municipal'),
     mk('future_goals', 'Metas futuras / Gantt-PERT'),
     mk('infrastructure_operations', 'Infraestructura en espacio-tiempo'),
+    mk('market_traceability', 'Mercado y causalidad'),
     mk('inspeccion_predios', 'Inspección de predios / estrategia administrativa'),
     mk('scenarios_export', 'Escenarios, derrama y salida'),
     mk('source_traceability', 'Bibliografía y cálculos'),

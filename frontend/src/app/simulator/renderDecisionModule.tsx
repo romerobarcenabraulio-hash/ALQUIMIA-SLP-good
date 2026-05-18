@@ -16,17 +16,12 @@ import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { FlujosResiduos } from '@/components/simulator/FlujosResiduos'
 import { SankeyFlujoResiduos } from '@/components/simulator/SankeyFlujoResiduos'
 import { HojaRuta } from '@/components/simulator/HojaRuta'
-import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
-import { DashboardKPIs } from '@/components/simulator/DashboardKPIs'
-import { AlertasPanel } from '@/components/simulator/AlertasPanel'
-import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { InspeccionForm } from '@/components/simulator/InspeccionForm'
-import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
+import { ScenariosExportStack } from '@/components/simulator/stacks/ScenariosExportStack'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
-import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -144,17 +139,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'inspeccion_predios':
       return <InspeccionForm />
     case 'scenarios_export':
-      return (
-        <>
-          <ImpactoFinanciero />
-          <ExportarSection />
-          <ExportadorReporte />
-          <DashboardKPIs />
-          <AlertasPanel />
-          <GovernancePanel />
-          <LaunchChecklist />
-        </>
-      )
+      return <ScenariosExportStack />
     case 'source_traceability':
       return <ReferenciasCalculos />
     default:
