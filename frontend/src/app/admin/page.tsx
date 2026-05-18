@@ -1,6 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { Header } from '@/components/layout/Header'
+import { AppShell } from '@/components/layout/AppShell'
+import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
 
 const USUARIOS_MOCK = [
   { id: 1, nombre: 'Arq. Carlos Pérez', email: 'carlos@slp.gob.mx', rol: 'analista', zm: 'SLP', ultimo_acceso: '2025-04-26' },
@@ -18,12 +19,12 @@ export default function AdminPage() {
   const [tab, setTab] = useState<'usuarios' | 'logs' | 'agentes'>('usuarios')
 
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
-      <Header />
+    <AppShell>
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">/admin — Panel de administración</p>
           <h1 className="font-serif text-[28px] text-[#1C1B18]">Administración ALQUIMIA</h1>
+          <SimulatorGatewayHint variant="compact" className="mt-3 max-w-2xl" />
         </div>
 
         {/* Tabs */}
@@ -136,6 +137,6 @@ export default function AdminPage() {
           </div>
         )}
       </div>
-    </div>
+    </AppShell>
   )
 }

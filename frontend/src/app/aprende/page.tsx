@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import type { LucideIcon } from 'lucide-react'
+import { AppShell } from '@/components/layout/AppShell'
 import {
   AlertCircle,
   CheckCircle,
@@ -15,6 +15,7 @@ import { EconomiaLinealCircularIntro } from '@/components/aprende/EconomiaLineal
 import { ContadorRelleno } from '@/components/aprende/ContadorRelleno'
 import { FAQSection } from '@/components/aprende/FAQSection'
 import LegislacionRSU from '@/components/aprende/LegislacionRSU'
+import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
 
 type FraccionGuia = {
   nombre: string
@@ -128,20 +129,8 @@ function TarjetaFraccionGuia({
 
 export default function AprendePage() {
   return (
-    <div className="min-h-screen" style={{ background: '#F8F6F1' }}>
-      {/* Header simple (sin auth) */}
-      <header className="bg-[#FDFCFA] border-b border-[#E8E4DC] sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
-          <span className="font-serif text-[18px] text-[#3B6D11] font-semibold">ALQUIMIA</span>
-          <nav className="hidden sm:flex gap-4 text-[12px] text-[#6B6760]">
-            <Link href="/" className="hover:text-[#3B6D11]">Inicio</Link>
-            <Link href="/simulator" className="hover:text-[#3B6D11]">Simulador</Link>
-            <Link href="/aprende" className="text-[#3B6D11] font-medium">Aprende</Link>
-          </nav>
-        </div>
-      </header>
-
-      <main className="max-w-4xl mx-auto px-4 py-12">
+    <AppShell>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
 
         {/* Qué es el RSU y por qué importa */}
         <section className="mb-16">
@@ -191,11 +180,14 @@ export default function AprendePage() {
           <FAQSection />
         </section>
 
-      </main>
+        <section className="mb-16">
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Desde la guía al simulador</p>
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
+            <SimulatorGatewayHint />
+          </div>
+        </section>
 
-      <footer className="border-t border-[#E8E4DC] py-6 text-center text-[12px] text-[#A8A49C]">
-        ALQUIMIA · Plataforma de circularidad municipal · México 2026
-      </footer>
-    </div>
+      </main>
+    </AppShell>
   )
 }

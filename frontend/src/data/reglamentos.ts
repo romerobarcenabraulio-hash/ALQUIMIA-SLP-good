@@ -1,7 +1,9 @@
 /**
  * Fuente primaria de reglamentos (Blueprint 26) — datos estáticos hasta endpoint futuro.
- * Los PDF se guardan en `ADENDOS: LEGAL/pdfs/reglamentos/`; bajo `public/reglamentos/` hay symlinks con el mismo nombre
- * para servir `/reglamentos/...`. Los .doc siguen en `public/reglamentos/`. Vigencia frente a terceros = fuente oficial (URL).
+ * Solo PDFs se sirven en línea desde `public/reglamentos/`.
+ * Archivos .doc no van en línea — cuando se consiga el PDF oficial se agrega aquí.
+ * Adendos jurídicos los generan los agentes de ALQUIMIA; el frontend los consume, no los produce.
+ * Vigencia frente a terceros = fuente oficial (URL).
  */
 
 export type ZmReglamentoId = 'SLP' | 'MTY' | 'QRO' | 'GDL' | 'EXT'
@@ -15,7 +17,7 @@ export interface ReglamentoFuente {
   url_fuente: string
   /** Texto o fecha de publicación en POE/DOF/gaceta según verificación local (no certificada por ALQUIMIA). */
   fecha_publicacion?: string
-  /** Rutas `/reglamentos/...` (PDF vía symlink → `ADENDOS: LEGAL/pdfs/reglamentos/`). */
+  /** Rutas `/reglamentos/...` — solo PDFs servidos desde `public/reglamentos/`. */
   archivo_local?: string[]
   captura_url?: string
   articulos_clave?: string[]
@@ -37,30 +39,29 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
   {
     zm_id: 'SLP',
     municipio_id: 'slp',
-    nombre:
-      'San Luis Potosí (capital) · Reglamento de Aseo Público (RSU / limpia municipal) — espejo PDF pendiente',
+    nombre: 'San Luis Potosí (capital) · Reglamento de Aseo Público',
     anio_version: 2018,
     url_fuente: 'https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria',
     fecha_publicacion:
       'Consultar fecha exacta en Periódico Oficial del Estado y en el portal municipal; catálogo ALQUIMIA usa versión 2018 como referencia.',
+    archivo_local: ['/reglamentos/SLP_slp_reglamento_aseo_publico.pdf'],
     captura_url: '/reglamentos/slp/portada.svg',
     articulos_clave: ['Definiciones', 'Obligaciones', 'Sanciones', 'Disposiciones transitorias'],
-    estado_verificacion: 'no_localizado',
-    fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo:
-      `${ANCLA_STD} Auditoría ALQUIMIA (2026-05-05): el espejo previo era Ley de Ingresos 2023 (mal etiquetado); archivo archivado en ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/. Pendiente cargar el PDF oficial del Reglamento de Aseo Público vigente como ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf y ` +
-      'enlace simbólico en frontend/public/reglamentos/ hacia ese archivo.',
+    estado_verificacion: 'en_revision',
+    fecha_verificacion: '2026-05-18',
+    hint_ancla_adendo: ANCLA_STD,
   },
   {
     zm_id: 'SLP',
     municipio_id: 'sol',
-    nombre: 'Soledad de Graciano Sánchez · reglamento municipal de limpia / RSU (pendiente URL estable)',
-    anio_version: 0,
+    nombre: 'Soledad de Graciano Sánchez · Reglamento de Aseo Público (18-JUN-2013)',
+    anio_version: 2013,
     url_fuente: 'https://soledad.gob.mx/transparencia/',
-    fecha_publicacion: 'Consultar instrumento vigente en sitio municipal o POE.',
-    articulos_clave: [],
-    estado_verificacion: 'no_localizado',
-    fecha_verificacion: '2026-05-05',
+    fecha_publicacion: 'Publicado 18 de junio de 2013 según carátula del instrumento.',
+    archivo_local: ['/reglamentos/SLP_sol_reglamento_aseo_publico_2013.pdf'],
+    articulos_clave: ['Definiciones', 'Obligaciones', 'Sanciones', 'Disposiciones transitorias'],
+    estado_verificacion: 'en_revision',
+    fecha_verificacion: '2026-05-18',
     hint_ancla_adendo: ANCLA_STD,
   },
   {
@@ -92,6 +93,7 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2021,
     url_fuente:
       'https://www.monterrey.gob.mx/pdf/reglamentos/1/Reglamento_de_Limpia_Municipal_de_Monterrey.pdf',
+    archivo_local: ['/reglamentos/MTY_mty_monterrey_reglamento_limpia_municipal.pdf'],
     articulos_clave: ['Definiciones', 'Obligaciones', 'Disposiciones transitorias'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',
@@ -105,6 +107,7 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 0,
     url_fuente: 'https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf',
     archivo_local: [
+      '/reglamentos/MTY_spg_san_pedro_reglamento_aseo_publico.pdf',
       '/reglamentos/MTY_spg_san_pedro_reglamento_limpia_sistec_candidate.pdf',
       '/reglamentos/MTY_spg_san_pedro_reglamento_ambiental_gaceta118_2009.pdf',
       '/reglamentos/MTY_spg_san_pedro_reglamento_zonificacion_usos_suelo.pdf',
@@ -122,10 +125,10 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2016,
     url_fuente:
       'http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=6913&ambito=MUNICIPAL',
-    archivo_local: ['/reglamentos/MTY_snl_san_nicolas_servicio_limpieza_fuentestatal.doc'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo: ANCLA_STD,
+    hint_ancla_adendo:
+      `${ANCLA_STD} Fuente .doc retirada del servido web; pendiente obtener PDF oficial para publicar en línea.`,
   },
   {
     zm_id: 'MTY',
@@ -158,10 +161,10 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2013,
     url_fuente:
       'http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=7027&ambito=MUNICIPAL',
-    archivo_local: ['/reglamentos/MTY_sca_santa_catarina_reglamento_limpia_recoleccion_fuentestatal.doc'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo: ANCLA_STD,
+    hint_ancla_adendo:
+      `${ANCLA_STD} Fuente .doc retirada del servido web; pendiente obtener PDF oficial para publicar en línea.`,
   },
   {
     zm_id: 'MTY',
@@ -182,10 +185,10 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2016,
     url_fuente:
       'http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=6968&ambito=MUNICIPAL',
-    archivo_local: ['/reglamentos/MTY_esc_escobedo_reglamento_limpia_fuentestatal.doc'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo: ANCLA_STD,
+    hint_ancla_adendo:
+      `${ANCLA_STD} Fuente .doc retirada del servido web; pendiente obtener PDF oficial para publicar en línea.`,
   },
   {
     zm_id: 'MTY',
@@ -194,23 +197,22 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
     anio_version: 2025,
     url_fuente:
       'http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=105171&ambito=MUNICIPAL',
-    archivo_local: ['/reglamentos/MTY_jua_juarez_reglamento_limpia_fuentestatal.doc'],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo: ANCLA_STD,
+    hint_ancla_adendo:
+      `${ANCLA_STD} Fuente .doc retirada del servido web; pendiente obtener PDF oficial para publicar en línea.`,
   },
   {
     zm_id: 'QRO',
     municipio_id: 'qro',
-    nombre:
-      'Querétaro capital · Reglamento de Limpia y Aseo Público / gestión de residuos — espejo PDF pendiente en repo',
+    nombre: 'Querétaro capital · Reglamento de Aseo Público',
     anio_version: 2021,
     url_fuente: 'https://municipiodequeretaro.gob.mx/reglamento/',
-    articulos_clave: [],
-    estado_verificacion: 'no_localizado',
-    fecha_verificacion: '2026-05-05',
-    hint_ancla_adendo:
-      `${ANCLA_STD} CLC (2026-05-07): existe **marco municipal propio** de obligaciones y sanciones; la brecha es de instrumentación (5 fracciones condominio, tabulador acotado). Corregir espejo: el archivo LOMEQ estatal está en _espejo_catalogo_erroneo/; cargar PDF oficial municipal (Limpia/Aseo o GIRS vigente) como ADENDOS: LEGAL/pdfs/reglamentos/QRO_qro_reglamento_municipal.pdf + symlink en frontend/public/reglamentos/.`,
+    archivo_local: ['/reglamentos/QRO_qro_reglamento_aseo_publico.pdf'],
+    articulos_clave: ['Definiciones', 'Obligaciones', 'Sanciones', 'Disposiciones transitorias'],
+    estado_verificacion: 'en_revision',
+    fecha_verificacion: '2026-05-18',
+    hint_ancla_adendo: ANCLA_STD,
   },
   {
     zm_id: 'QRO',
@@ -252,10 +254,13 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
       'https://transparencia.guadalajara.gob.mx/sites/default/files/reglamentos/Reg.GestionIntegralMunicipioGuadalajara.pdf',
     fecha_publicacion:
       'Gaceta base 2016-07-15 + reformas posteriores por cotejar; servidor Last-Modified 2025-05-13.',
-    archivo_local: ['/reglamentos/GDL_gdl_guadalajara_reglamento_gestion_integral_municipio.pdf'],
+    archivo_local: [
+      '/reglamentos/GDL_gdl_guadalajara_reglamento_gestion_integral_municipio.pdf',
+      '/reglamentos/GDL_gdl_guadalajara_reglamento_aseo_publico.pdf',
+    ],
     articulos_clave: ['Objeto', 'Definiciones', 'Obligaciones', 'Sanciones', 'Desarrollo urbano articulado'],
     estado_verificacion: 'en_revision',
-    fecha_verificacion: '2026-05-07',
+    fecha_verificacion: '2026-05-18',
     hint_ancla_adendo:
       `${ANCLA_STD} CSA (2026-05-07): PDF descargado y SHA256 verificado contra portal; vigencia jurídica y técnica de reforma siguen sujetas a revisión competente.`,
   },
@@ -295,7 +300,6 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
       'http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=104426&ambito=MUNICIPAL',
     archivo_local: [
       '/reglamentos/EXT_cad_cadereyta_reglamento_desarrollo_urbano_portalmunicipal.pdf',
-      '/reglamentos/EXT_cad_cadereyta_reglamento_equilibrio_ecologico_ambiente_fuentestatal.doc',
     ],
     estado_verificacion: 'en_revision',
     fecha_verificacion: '2026-05-05',

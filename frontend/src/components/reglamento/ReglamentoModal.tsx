@@ -171,18 +171,11 @@ export function ReglamentoModal({
                 />
               ) : (
                 <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-                  <p className="text-[13px] font-medium text-[#1C1B18]">Sin PDF local embebible</p>
+                  <p className="text-[13px] font-medium text-[#1C1B18]">PDF no disponible aún</p>
                   <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-                    Este municipio tiene archivo no PDF o URL externa. Abre la fuente oficial desde la cabecera y usa la nota de lectura
-                    para ubicar artículos, transitorios o anexos.
+                    Este municipio aún no tiene PDF del reglamento en el catálogo. Abre la fuente oficial desde la cabecera
+                    para consultar el instrumento vigente en el portal municipal o periódico oficial.
                   </p>
-                  {archivosLocales.length > 0 && (
-                    <ul className="mt-3 space-y-1 text-[11px] text-[#6B6760]">
-                      {archivosLocales.map(path => (
-                        <li key={path} className="font-mono">{path}</li>
-                      ))}
-                    </ul>
-                  )}
                 </div>
               )}
               <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
