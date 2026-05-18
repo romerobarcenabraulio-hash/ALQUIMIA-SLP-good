@@ -21,6 +21,7 @@ import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ReferenciasCalculos } from '@/components/simulator/ReferenciasCalculos'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import { MunicipalContextStack } from '@/components/simulator/stacks/MunicipalContextStack'
+import { InfrastructureOperationsStack } from '@/components/simulator/stacks/InfrastructureOperationsStack'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 
@@ -106,17 +107,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'future_goals':
       return <FutureGoalsModule notice={<MetasPlanDerivadasNotice />} />
     case 'infrastructure_operations':
-      return (
-        <>
-          <CentrosAcopio />
-          <Logistica />
-          <OperacionPERBitacora />
-          <PortalEmpresarial />
-          <FlujosResiduos />
-          <SankeyFlujoResiduos />
-          <HojaRuta />
-        </>
-      )
+      return <InfrastructureOperationsStack />
     case 'market_traceability':
       return <ReasoningGraphPanel />
     case 'risk_trends':
