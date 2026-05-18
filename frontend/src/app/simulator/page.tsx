@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { Header } from '@/components/layout/Header'
@@ -7,7 +7,7 @@ import { Sidebar } from '@/components/layout/Sidebar'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
 import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
-import { DecisionModuleShell } from '@/components/simulator/DecisionModuleShell'
+import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulatorBar'
@@ -23,6 +23,7 @@ import {
   enrichFunctionaryModules,
   SOURCE_TRACEABILITY_MODULE,
 } from '@/lib/simulator/functionaryJourneyEnrichment'
+import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 
 function SimulatorSimulationRibbon() {
@@ -90,6 +91,7 @@ export default function SimulatorPage() {
   const portalError = useSimulatorStore(s => s.portalError)
   const cityPortalError = useSimulatorStore(s => s.cityPortalError)
   const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
 
   useEffect(() => { recalcular() }, [recalcular])
   useEffect(() => {
@@ -99,14 +101,36 @@ export default function SimulatorPage() {
 
   const isOrganizationJourney = portalEntry === 'organization'
   const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
+
   const portalJourneyWithTraceability = useMemo(() => {
     if (audience !== 'functionary') return portalJourney
     const enriched = enrichFunctionaryModules(portalJourney)
-    if (enriched.some(module => module.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return enriched
+    if (enriched.some(m => m.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return enriched
     return [...enriched, SOURCE_TRACEABILITY_MODULE]
   }, [audience, portalJourney])
 
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  // ── Module nav state (lifted from DecisionModuleShell) ──────────────────────
+  const visibleIds = audience ? AUDIENCE_MODULES[audience] : null
+  const filteredModules = useMemo(
+    () => (visibleIds ? portalJourneyWithTraceability.filter(m => visibleIds.includes(m.module_id)) : portalJourneyWithTraceability),
+    [portalJourneyWithTraceability, visibleIds],
+  )
+
+  const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!filteredModules.length) { setActiveModuleId(null); return }
+    setActiveModuleId(prev => {
+      if (!prev || !filteredModules.some(m => m.module_id === prev)) return filteredModules[0].module_id
+      return prev
+    })
+  }, [filteredModules])
+
+  const activeModule = useMemo(
+    () => filteredModules.find(m => m.module_id === activeModuleId) ?? filteredModules[0] ?? null,
+    [activeModuleId, filteredModules],
+  )
+
   const sociodemographicBlock = useMemo(
     () => buildSociodemographicScaffoldBlock(municipiosActivos),
     [municipiosActivos],
@@ -114,62 +138,83 @@ export default function SimulatorPage() {
 
   if (!audience) {
     return (
-      <div className="min-h-screen flex" style={{ background: '#F4F2ED' }}>
+      <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
         <Sidebar />
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <Header />
-          <AudienceGateway />
+          <div className="flex-1 overflow-y-auto">
+            <AudienceGateway />
+          </div>
         </div>
       </div>
     )
   }
 
+  const showModuleNav = baselineValid && !portalJourneyLoading && filteredModules.length > 0
+
   return (
-    <div className="min-h-screen flex" style={{ background: '#F4F2ED' }}>
+    <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0">
-      <Header />
-      <div className="mx-auto w-full max-w-[min(96rem,calc(100vw-1.5rem))]">
-        <SimulatorSimulationRibbon />
-        <main className="px-4 sm:px-6 lg:px-8 py-8 max-w-[min(96rem,calc(100vw-1.5rem))] mx-auto w-full">
 
-          <CityFirstSelector />
-          {audience === 'citizen' && <PlanGlobalControlsBar />}
-          <CircularityBaselineCard />
+      {/* Module nav — sticky left panel, between app sidebar and content */}
+      {showModuleNav && (
+        <ModuleNav
+          modules={filteredModules}
+          activeId={activeModuleId ?? ''}
+          onChange={setActiveModuleId}
+          className="hidden xl:flex flex-col w-[230px] shrink-0 bg-[#F4F2ED] border-r border-[#E8E4DC] overflow-y-auto sticky top-0 h-screen"
+        />
+      )}
 
-          {!baselineValid ? (
-            <BaselineGateBlocked
-              loading={circularityBaselineLoading}
-              error={cityPortalError}
-              cityId={zmActiva}
-            />
-          ) : (
-            <>
-              {audience === 'functionary' && (
-                <>
-                  <PropuestasSimulatorBar />
-                  {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
-                </>
-              )}
-              <DecisionModuleShell
-                modules={portalJourneyWithTraceability}
-                loading={portalJourneyLoading}
-                error={portalError}
-                audience={portalEntry}
-                renderModule={module =>
-                  renderDecisionModule({
-                    module,
-                    audience,
-                    isOrganizationJourney,
-                    sociodemographicBlock,
-                  })
-                }
+      {/* Right: header + scrollable content */}
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <Header />
+
+        {/* Scrollable content area */}
+        <div className="flex-1 overflow-y-auto">
+          <SimulatorSimulationRibbon />
+
+          <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-[min(96rem,calc(100vw-1.5rem))] mx-auto w-full">
+            <CityFirstSelector />
+            {audience === 'citizen' && <PlanGlobalControlsBar />}
+            <CircularityBaselineCard />
+
+            {!baselineValid ? (
+              <BaselineGateBlocked
+                loading={circularityBaselineLoading}
+                error={cityPortalError}
+                cityId={zmActiva}
               />
-            </>
-          )}
-
-        </main>
-      </div>
+            ) : (
+              <div className="flex flex-col mt-4" style={{ height: 'calc(100vh - 14rem)' }}>
+                {audience === 'functionary' && (
+                  <div className="mb-4 space-y-3 shrink-0">
+                    <PropuestasSimulatorBar />
+                    {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
+                  </div>
+                )}
+                <div className="flex-1 min-h-0 rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] flex flex-col">
+                  <DecisionModuleShell
+                    modules={filteredModules}
+                    activeModule={activeModule}
+                    onModuleChange={setActiveModuleId}
+                    loading={portalJourneyLoading}
+                    error={portalError}
+                    audience={portalEntry}
+                    renderModule={module =>
+                      renderDecisionModule({
+                        module,
+                        audience,
+                        isOrganizationJourney,
+                        sociodemographicBlock,
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </main>
+        </div>
       </div>
 
       <GeneraPlanConfirmModal />

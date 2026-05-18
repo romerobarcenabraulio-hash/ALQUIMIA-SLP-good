@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect } from 'react'
 import {
   AlertTriangle,
   BookOpen,
@@ -15,7 +15,6 @@ import {
   Zap,
 } from 'lucide-react'
 import { cn, fmt } from '@/lib/utils'
-import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
@@ -100,19 +99,21 @@ function TopKpiStrip() {
 
 // ─── Left navigation ──────────────────────────────────────────────────────────
 
-function ModuleNav({
+export function ModuleNav({
   modules,
   activeId,
   onChange,
+  className,
 }: {
   modules: DecisionModule[]
   activeId: string
   onChange: (id: string) => void
+  className?: string
 }) {
   return (
     <nav
       aria-label="Módulos de decisión"
-      className="hidden xl:block bg-[#F4F2ED] border-r border-[#E8E4DC] w-[230px] shrink-0 overflow-y-auto"
+      className={className ?? "bg-[#F4F2ED] border-r border-[#E8E4DC] w-[230px] shrink-0 overflow-y-auto"}
     >
       <div className="px-3 py-4 border-b border-[#E8E4DC]">
         <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold px-2">Módulos</p>
@@ -381,7 +382,10 @@ function BottomBar({
 // ─── Main shell ───────────────────────────────────────────────────────────────
 
 interface DecisionModuleShellProps {
+  /** Already-filtered modules for the current audience */
   modules: DecisionModule[]
+  activeModule: DecisionModule | null
+  onModuleChange: (id: string) => void
   loading: boolean
   error: string | null
   audience: PortalEntry | null
@@ -390,39 +394,19 @@ interface DecisionModuleShellProps {
 
 export function DecisionModuleShell({
   modules,
+  activeModule,
+  onModuleChange,
   loading,
   error,
   renderModule,
 }: DecisionModuleShellProps) {
   const audienceSelected = useSimulatorStore(s => s.audience)
-  const visibleIds = audienceSelected ? AUDIENCE_MODULES[audienceSelected] : null
-
-  const filteredModules = useMemo(
-    () => (visibleIds ? modules.filter(m => visibleIds.includes(m.module_id)) : modules),
-    [modules, visibleIds],
-  )
-
-  const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
-
-  const activeModule = useMemo(
-    () => filteredModules.find(m => m.module_id === activeModuleId) ?? filteredModules[0] ?? null,
-    [activeModuleId, filteredModules],
-  )
-
   const setActiveDecisionModuleId = useSimulatorStore(s => s.setActiveDecisionModuleId)
 
   useEffect(() => {
     setActiveDecisionModuleId(activeModule?.module_id ?? null)
     return () => { setActiveDecisionModuleId(null) }
   }, [activeModule?.module_id, setActiveDecisionModuleId])
-
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    if (!filteredModules.length) { setActiveModuleId(null); return }
-    if (!activeModuleId || !filteredModules.some(m => m.module_id === activeModuleId)) {
-      setActiveModuleId(filteredModules[0].module_id)
-    }
-  }, [activeModuleId, filteredModules])
 
   // ── Loading / error / empty states ─────────────────────────────────────────
   if (loading) {
@@ -457,38 +441,23 @@ export function DecisionModuleShell({
 
   // ── Main layout ─────────────────────────────────────────────────────────────
   return (
-    <section
-      className="flex flex-col rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] mt-6"
-      aria-labelledby="decision-shell-title"
-    >
-      {/* Scope hint (small) */}
-      <div className="bg-[#F4F2ED] border-b border-[#E8E4DC] px-4 py-2">
-        <ScopeAnclaKicker className="text-[11px] text-[#6B6760]" />
-      </div>
-
+    <div className="flex flex-col flex-1 min-h-0" aria-labelledby="decision-shell-title">
       {/* KPI strip */}
       <TopKpiStrip />
 
       {/* Mobile module selector */}
       {activeModule && (
         <MobileModuleSelect
-          modules={filteredModules}
+          modules={modules}
           activeId={activeModule.module_id}
-          onChange={setActiveModuleId}
+          onChange={onModuleChange}
         />
       )}
 
-      {/* Three-column body: nav | content | guidance */}
+      {/* Two-column body: content | guidance */}
       <div className="flex flex-1 min-h-0">
-        {/* Left nav */}
-        <ModuleNav
-          modules={filteredModules}
-          activeId={activeModule.module_id}
-          onChange={setActiveModuleId}
-        />
-
         {/* Center content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white">
+        <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
           {/* Module header */}
           <ModuleHeader module={activeModule} />
 
@@ -524,15 +493,15 @@ export function DecisionModuleShell({
 
           {/* Bottom bar */}
           <BottomBar
-            modules={filteredModules}
+            modules={modules}
             activeId={activeModule.module_id}
-            onChange={setActiveModuleId}
+            onChange={onModuleChange}
           />
         </div>
 
         {/* Right guidance panel */}
         <GuidancePanel module={activeModule} />
       </div>
-    </section>
+    </div>
   )
 }
