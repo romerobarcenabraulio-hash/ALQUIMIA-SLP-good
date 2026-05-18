@@ -6,7 +6,6 @@ import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
-import { CircularityBaselineCard } from '@/components/simulator/CircularityBaselineCard'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
@@ -14,7 +13,6 @@ import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulat
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
-import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
@@ -84,12 +82,9 @@ export default function SimulatorPage() {
   const audience = useSimulatorStore(s => s.audience)
   const portalEntry = useSimulatorStore(s => s.portalEntry)
   const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
-  const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
-  const circularityBaselineLoading = useSimulatorStore(s => s.circularityBaselineLoading)
   const portalJourney = useSimulatorStore(s => s.portalJourney)
   const portalJourneyLoading = useSimulatorStore(s => s.portalJourneyLoading)
   const portalError = useSimulatorStore(s => s.portalError)
-  const cityPortalError = useSimulatorStore(s => s.cityPortalError)
   const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
 
@@ -100,7 +95,6 @@ export default function SimulatorPage() {
   }, [audience, fetchCityPortalData, zmActiva])
 
   const isOrganizationJourney = portalEntry === 'organization'
-  const baselineValid = isCircularityBaselineReadyForUi(circularityBaseline, zmActiva)
 
   const portalJourneyWithTraceability = useMemo(() => {
     if (audience !== 'functionary') return portalJourney
@@ -150,7 +144,7 @@ export default function SimulatorPage() {
     )
   }
 
-  const showModuleNav = baselineValid && !portalJourneyLoading && filteredModules.length > 0
+  const showModuleNav = !portalJourneyLoading && filteredModules.length > 0
 
   return (
     <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
@@ -177,42 +171,33 @@ export default function SimulatorPage() {
           <main className="px-4 sm:px-6 lg:px-8 py-6 max-w-[min(96rem,calc(100vw-1.5rem))] mx-auto w-full">
             <CityFirstSelector />
             {audience === 'citizen' && <PlanGlobalControlsBar />}
-            <CircularityBaselineCard />
 
-            {!baselineValid ? (
-              <BaselineGateBlocked
-                loading={circularityBaselineLoading}
-                error={cityPortalError}
-                cityId={zmActiva}
-              />
-            ) : (
-              <div className="flex flex-col mt-4" style={{ height: 'calc(100vh - 14rem)' }}>
-                {audience === 'functionary' && (
-                  <div className="mb-4 space-y-3 shrink-0">
-                    <PropuestasSimulatorBar />
-                    {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
-                  </div>
-                )}
-                <div className="flex-1 min-h-0 rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] flex flex-col">
-                  <DecisionModuleShell
-                    modules={filteredModules}
-                    activeModule={activeModule}
-                    onModuleChange={setActiveModuleId}
-                    loading={portalJourneyLoading}
-                    error={portalError}
-                    audience={portalEntry}
-                    renderModule={module =>
-                      renderDecisionModule({
-                        module,
-                        audience,
-                        isOrganizationJourney,
-                        sociodemographicBlock,
-                      })
-                    }
-                  />
+            <div className="flex flex-col mt-4" style={{ height: 'calc(100vh - 12rem)' }}>
+              {audience === 'functionary' && (
+                <div className="mb-4 space-y-3 shrink-0">
+                  <PropuestasSimulatorBar />
+                  {activeDecisionModuleId !== 'municipal_context' && <FuncionariosViviendaRsuModel />}
                 </div>
+              )}
+              <div className="flex-1 min-h-0 rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)] flex flex-col">
+                <DecisionModuleShell
+                  modules={filteredModules}
+                  activeModule={activeModule}
+                  onModuleChange={setActiveModuleId}
+                  loading={portalJourneyLoading}
+                  error={portalError}
+                  audience={portalEntry}
+                  renderModule={module =>
+                    renderDecisionModule({
+                      module,
+                      audience,
+                      isOrganizationJourney,
+                      sociodemographicBlock,
+                    })
+                  }
+                />
               </div>
-            )}
+            </div>
           </main>
         </div>
       </div>
@@ -223,53 +208,3 @@ export default function SimulatorPage() {
   )
 }
 
-function BaselineGateBlocked({ loading, error, cityId }: { loading: boolean; error: string | null; cityId: string }) {
-  const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const etiquetaTerritorio = useMemo(
-    () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
-    [municipiosActivos, zmActiva],
-  )
-
-  const title = loading
-    ? aplicarSustitucionesTerritorio('Cargando la referencia RSU de tu ciudad', etiquetaTerritorio)
-    : error
-      ? 'No pudimos obtener los datos de la ciudad'
-      : 'Selecciona una ciudad para continuar'
-
-  const nextAction = loading
-    ? 'En un momento podrás seguir cuando terminen de cargarse fuente, confianza e incertidumbre.'
-    : error
-      ? 'Prueba otra ciudad o comprueba que el servicio de datos esté disponible.'
-      : 'Elige una ciudad con una estimación RSU trazable; después podrás ver metas, módulos y el resto del simulador.'
-
-  return (
-    <section className="section" aria-labelledby="baseline-gate-title">
-      <div className="rounded-[8px] border border-amber-300 bg-amber-50 p-5">
-        <h2 id="baseline-gate-title" className="font-serif text-[22px] text-[#1C1B18]">{title}</h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-amber-900">
-          Para <span className="font-medium">{cityId}</span> necesitamos una línea base de residuos sólidos urbana actual y verificable; hasta entonces no mostramos metas futuras ni el resto del recorrido del simulador.
-        </p>
-        {error && (
-          <p className="mt-3 rounded-[6px] border border-red-200 bg-red-50 px-3 py-2 text-[12px] text-red-800">
-            {error}
-          </p>
-        )}
-        <p className="mt-3 text-[12px] font-semibold text-[#1C1B18]">Qué puedes hacer</p>
-        <p className="mt-1 text-[12px] text-[#6B6760]">{nextAction}</p>
-        {!loading && (
-          <div className="mt-4">
-            <button
-              type="button"
-              onClick={() => void fetchCityPortalData(zmActiva)}
-              className="rounded-[8px] border border-[#3B6D11]/40 bg-white px-4 py-2 text-[12px] font-medium text-[#23470A] transition-colors hover:bg-[#EAF3DE]"
-            >
-              Intentar de nuevo
-            </button>
-          </div>
-        )}
-      </div>
-    </section>
-  )
-}
