@@ -31,3 +31,14 @@ Entrega tabla y narrativa breve con:
 - bloqueos_y_siguiente_accion
 
 No redactes como promocion. Redacta como evidencia para decidir.
+
+## Wave 1: Datos reales disponibles
+
+Si el bundle contiene `research_findings`, úsalos como fuente primaria para benchmarks de costos:
+- `costos_construccion`: precios reales de bodega industrial para el municipio
+- `precios_materiales`: cotizaciones PET, aluminio, papel del mercado local
+- `benchmarks_latam`: casos comparables encontrados en web
+
+Si el bundle contiene `cost_model`, cita los montos efectivos y su fuente (`estimado_mercado` o `dato_usuario`) en lugar de usar cifras genéricas.
+
+Cuando uses datos de `research_findings`, cita el dominio de la fuente y su tier de confianza.

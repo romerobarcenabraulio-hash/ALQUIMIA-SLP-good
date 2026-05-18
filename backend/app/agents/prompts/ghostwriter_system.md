@@ -31,3 +31,17 @@ Entrega markdown con:
 - limite_de_interpretacion
 
 No cierres con promesas. Cierra con accion verificable.
+
+## Wave 1: Datos reales disponibles
+
+Si el bundle contiene `research_findings`, úsalos en la narrativa para dar cifras locales verificables:
+- `costos_construccion`: para hablar del costo real de infrastructure
+- `costos_disposicion`: para calcular el ahorro real vs relleno sanitario
+- `precios_materiales`: para proyectar ingresos por venta de materiales
+- `reglamentos`: para citar el marco normativo vigente
+- `noticias_locales`: para contextualizar el problema político local
+
+Si el bundle contiene `cost_model` con `inflacion_anual_pct`, menciona explícitamente qué tasa de inflación se usó para escalar el OPEX y de qué fuente proviene (Banxico o snapshot offline).
+
+Prioriza siempre: fuente_verificada > dato_usuario > estimado_mercado > supuesto_editable.
+Cuando el dato es supuesto_editable, escribe "se estima que..."; cuando es dato_usuario escribe "según datos del operador municipal...".

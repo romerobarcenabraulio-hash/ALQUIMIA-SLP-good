@@ -73,6 +73,9 @@ class PlanInput:
     coverage_statuses: Optional[list[dict]] = field(default=None)
     legal_sources: Optional[list[dict]] = field(default=None)
     operations_summary: Optional[dict] = field(default=None)
+    # Wave 1: Investigador + CostModel
+    research_findings: Optional[dict] = field(default=None)   # ResearchFindings serializado
+    cost_model: Optional[dict] = field(default=None)          # CostModelSummary serializado
 
 
 @dataclass
@@ -197,7 +200,41 @@ async def run_agora(
         for warning in plan_input.operations_summary.get("warnings", []):
             bundle.warnings.append(warning)
 
-    # ── 0B. MunicipalReasoningDossier ────────────────────────────────────────
+    # ── 0B. Investigador — ResearchFindings en tiempo real ────────────────────
+    # Ejecuta búsquedas Serper para costos reales, precios y reglamentos.
+    # Si Serper no está configurado, retorna findings vacíos con advertencia.
+    if getattr(plan_input, "research_findings", None):
+        # Ya viene pre-calculado (llamada desde tests o pipeline avanzado)
+        bundle.inputs_usuario["research_findings"] = plan_input.research_findings
+        logger.info("ÁGORA — ResearchFindings recibido pre-calculado.")
+    else:
+        await report(5, f"Investigador — Buscando costos y contexto para {plan_input.municipio}...")
+        try:
+            from app.agents.research_service import investigate_municipio
+            _estado = bundle.zm.split("_")[-1] if "_" in bundle.zm else bundle.zm
+            findings = await investigate_municipio(
+                municipio=plan_input.municipio,
+                estado=_estado,
+                zm=bundle.zm,
+            )
+            bundle.inputs_usuario["research_findings"] = findings.model_dump(mode="json")
+            if findings.advertencias:
+                bundle.warnings.extend(findings.advertencias[:3])
+            logger.info(
+                f"ÁGORA — Investigador: {findings.queries_con_resultado}/"
+                f"{findings.queries_ejecutadas} queries con resultado. "
+                f"Serper: {findings.fuente_serper}"
+            )
+        except Exception as exc:
+            logger.warning(f"ÁGORA — Investigador falló, continuando sin findings: {exc}")
+            bundle.warnings.append("Investigador no disponible — costos sin enriquecer con datos web.")
+
+    # Inyectar CostModel si viene en plan_input (de Wave 0)
+    if getattr(plan_input, "cost_model", None):
+        bundle.inputs_usuario["cost_model"] = plan_input.cost_model
+        logger.info("ÁGORA — CostModel trazable recibido.")
+
+    # ── 0C. MunicipalReasoningDossier ────────────────────────────────────────
     # El expediente razonado es insumo previo a documentos. Los agentes redactan
     # desde este contrato, no desde intuiciones ni prosa suelta.
     from app.agents.dossier import build_municipal_reasoning_dossier
