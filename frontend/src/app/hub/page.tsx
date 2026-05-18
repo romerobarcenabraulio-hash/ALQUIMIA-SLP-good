@@ -719,7 +719,7 @@ function HubContent() {
 export default function HubPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F6F1' }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: '#F4F2ED' }}>
         <p className="text-[#A8A49C] text-[13px]">Cargando Hub…</p>
       </div>
     }>

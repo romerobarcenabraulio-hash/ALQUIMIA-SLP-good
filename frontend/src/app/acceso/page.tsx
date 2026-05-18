@@ -137,7 +137,7 @@ function AccesoForm() {
           <div className="mt-5 text-center space-y-2">
             <p className="text-[12px] text-[#8A857C]">
               ¿Sin código?{' '}
-              <Link href="/?tab=solicitar" className="text-[#3B6D11] font-medium hover:underline">
+              <Link href="/" className="text-[#3B6D11] font-medium hover:underline">
                 Solicitar acceso institucional
               </Link>
             </p>

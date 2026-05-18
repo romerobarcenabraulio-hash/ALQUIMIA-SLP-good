@@ -114,7 +114,7 @@ export default function SimulatorPage() {
 
   if (!audience) {
     return (
-      <div className="min-h-screen flex" style={{ background: '#F8F6F1' }}>
+      <div className="min-h-screen flex" style={{ background: '#F4F2ED' }}>
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0">
           <Header />
@@ -125,7 +125,7 @@ export default function SimulatorPage() {
   }
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#F8F6F1' }}>
+    <div className="min-h-screen flex" style={{ background: '#F4F2ED' }}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
       <Header />

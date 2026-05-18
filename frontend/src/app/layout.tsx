@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es">
-      <body style={{ backgroundColor: '#F8F6F1' }}>
+      <body style={{ backgroundColor: '#F4F2ED' }}>
         <ReglamentoFuenteProvider>{children}</ReglamentoFuenteProvider>
       </body>
     </html>
