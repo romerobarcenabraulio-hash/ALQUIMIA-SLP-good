@@ -29,7 +29,10 @@ describe('simulator functionary surface', () => {
     expect(futureGoals).toContain('future-goals-arm')
     expect(futureGoals).toContain('PERT y oleadas')
     expect(readFrontend('src/components/simulator/ProgresionPlanMunicipalTiempo.tsx')).not.toContain('ResponsiveContainer')
-    expect(registrySource).toMatch(/case 'scenarios_export':[\s\S]*<ImpactoFinanciero \/>/)
+    expect(registrySource).toMatch(/case 'scenarios_export':[\s\S]*<ScenariosExportStack \/>/)
+    expect(readFrontend('src/components/simulator/stacks/ScenariosExportStack.tsx')).toContain(
+      '<ImpactoFinanciero />',
+    )
     expect(registrySource).toContain("case 'market_traceability':")
     expect(readFrontend('src/lib/simulator/functionaryJourneyEnrichment.ts')).toContain(
       "label: 'Bibliografía y cálculos'",
