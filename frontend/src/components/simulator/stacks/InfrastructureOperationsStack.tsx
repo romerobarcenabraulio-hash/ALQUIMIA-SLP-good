@@ -7,6 +7,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_CA } from '@/lib/constants'
 import { fmt, cn } from '@/lib/utils'
 import { CentrosAcopio } from '@/components/simulator/CentrosAcopio'
+import { CentrosAcopioMap } from '@/components/simulator/CentrosAcopioMap'
 import { Logistica } from '@/components/simulator/Logistica'
 import { SankeyFlujoResiduos } from '@/components/simulator/SankeyFlujoResiduos'
 import { FlujosResiduos } from '@/components/simulator/FlujosResiduos'
@@ -260,8 +261,22 @@ export function InfrastructureOperationsStack() {
             </ResponsiveContainer>
           </div>
 
-          {/* CentrosAcopio + Logistica */}
+          {/* CentrosAcopio + Mapa directorio + Logistica */}
           <CentrosAcopio />
+
+          {/* Directorio interactivo de centros de acopio */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+            <div className="mb-4 flex items-start justify-between gap-2">
+              <div>
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Directorio de centros de acopio</p>
+                <p className="text-[10px] text-[#A8A49C]">
+                  Puntos de entrega para ciudadanos y empresas — filtrado por material
+                </p>
+              </div>
+            </div>
+            <CentrosAcopioMap />
+          </div>
+
           <Logistica />
         </div>
       )}

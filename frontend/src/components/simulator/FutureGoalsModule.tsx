@@ -23,6 +23,15 @@ function loadProgresion() {
     })
 }
 
+function loadGanttMaestro() {
+  return import('@/components/simulator/GanttMaestroView')
+    .then(m => ({ default: m.GanttMaestroView }))
+    .catch(err => {
+      console.error('[future_goals] GanttMaestroView', err)
+      return { default: ChunkFailed }
+    })
+}
+
 const ImplementacionEspacioTiempo = dynamic(loadImplementacion, {
   ssr: false,
   loading: () => <ModuleChunkLoading label="PERT y oleadas territoriales" />,
@@ -33,21 +42,26 @@ const ProgresionPlanMunicipalTiempo = dynamic(loadProgresion, {
   loading: () => <ModuleChunkLoading label="progresión temporal (Gantt)" />,
 })
 
-type TabId = 'pert' | 'charts'
+const GanttMaestroView = dynamic(loadGanttMaestro, {
+  ssr: false,
+  loading: () => <ModuleChunkLoading label="Gantt · PERT · RACI maestro" />,
+})
+
+type TabId = 'pert' | 'charts' | 'gantt_raci'
 
 export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
   const [armed, setArmed] = useState(false)
-  const [tab, setTab] = useState<TabId>('pert')
+  const [tab, setTab] = useState<TabId>('gantt_raci')
 
   if (!armed) {
     return (
       <section className="space-y-4" data-testid="future-goals-module">
         {notice}
         <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-4">
-          <p className="text-[13px] font-medium text-[#1C1B18]">Carga controlada del módulo PERT / Gantt</p>
+          <p className="text-[13px] font-medium text-[#1C1B18]">Carga controlada del módulo PERT / Gantt / RACI</p>
           <p className="mt-2 text-[12px] leading-relaxed text-[#5A6347]">
             Este bloque incluye gráficas y líneas de tiempo que en algunos navegadores provocan el mensaje «This page
-            couldn&apos;t load» (caída de la pestaña). Se carga solo cuando lo confirmas, en dos pestañas separadas.
+            couldn&apos;t load» (caída de la pestaña). Se carga solo cuando lo confirmas.
           </p>
           <button
             type="button"
@@ -55,7 +69,7 @@ export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
             className="mt-3 rounded-[8px] bg-[#3B6D11] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2D5409]"
             data-testid="future-goals-arm"
           >
-            Cargar Metas futuras / Gantt-PERT
+            Cargar Metas futuras / Gantt · PERT · RACI
           </button>
         </div>
       </section>
@@ -70,15 +84,22 @@ export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
         className="flex flex-wrap gap-2 rounded-[10px] border border-[#E8E4DC] bg-white p-2"
         aria-label="Vistas del módulo de metas futuras"
       >
+        <TabButton active={tab === 'gantt_raci'} onClick={() => setTab('gantt_raci')}>
+          Gantt · PERT · RACI
+        </TabButton>
         <TabButton active={tab === 'pert'} onClick={() => setTab('pert')}>
-          PERT y oleadas
+          Oleadas territoriales
         </TabButton>
         <TabButton active={tab === 'charts'} onClick={() => setTab('charts')}>
           Progresión y tabla
         </TabButton>
       </nav>
 
-      {tab === 'pert' ? (
+      {tab === 'gantt_raci' ? (
+        <SimulatorModuleErrorBoundary moduleLabel="Gantt · PERT · RACI maestro">
+          <GanttMaestroView />
+        </SimulatorModuleErrorBoundary>
+      ) : tab === 'pert' ? (
         <SimulatorModuleErrorBoundary moduleLabel="PERT y oleadas territoriales">
           <ImplementacionEspacioTiempo />
         </SimulatorModuleErrorBoundary>

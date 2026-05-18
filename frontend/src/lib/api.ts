@@ -767,3 +767,136 @@ export async function getOperationsSummary(municipioId: string): Promise<Operati
   if (!res.ok) throw new Error(`Resumen operativo no disponible: ${res.status}`)
   return res.json()
 }
+
+// ─── Wave 1: Planning (Gantt / PERT / RACI) ─────────────────────────────────
+
+export interface PlanningTask {
+  task_id:          string
+  nombre:           string
+  descripcion:      string
+  responsable:      string
+  inicio_semana:    number
+  duracion_semanas: number
+  predecesoras:     string[]
+  es_critica:       boolean
+  costo_mxn:        number
+  fuente_costo:     string
+  holgura_semanas:  number
+}
+
+export interface GanttPlan {
+  zm:               string
+  municipio:        string
+  scenario_id:      string
+  tasks:            PlanningTask[]
+  horizonte_semanas: number
+  costo_total_mxn:  number
+  generated_at:     string
+  fuente_costos:    string
+}
+
+export interface PertNode {
+  node_id:         string
+  nombre:          string
+  tiempo_esperado: number
+  tiempo_temprano: number
+  tiempo_tardio:   number
+  holgura:         number
+  es_critico:      boolean
+}
+
+export interface PertPlan {
+  zm:                     string
+  municipio:              string
+  scenario_id:            string
+  nodes:                  PertNode[]
+  duracion_total_semanas: number
+  generated_at:           string
+}
+
+export interface RACIRow {
+  proceso:         string
+  responsable:     string
+  aprueba:         string
+  consulta:        string[]
+  informa:         string[]
+  plazo_semanas:   number | null
+  norma_aplicable: string | null
+}
+
+export interface RACIPlan {
+  zm:           string
+  municipio:    string
+  scenario_id:  string
+  filas:        RACIRow[]
+  generated_at: string
+}
+
+export interface PlanningAllResponse {
+  gantt: GanttPlan
+  pert:  PertPlan
+  raci:  RACIPlan
+}
+
+export interface PlanningRequest {
+  municipio:         string
+  zm:                string
+  scenario_id:       string
+  n_cas_pequeno:     number
+  n_cas_mediano:     number
+  n_cas_grande:      number
+  capex_total_mxn:   number
+  horizonte_semanas: number
+}
+
+export async function buildPlanningAll(payload: PlanningRequest): Promise<PlanningAllResponse> {
+  const res = await backendFetch(`${getApiUrl()}/api/planning/all`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Planning no disponible: ${res.status}`)
+  return res.json()
+}
+
+// ─── Wave 1: Centros de Acopio ───────────────────────────────────────────────
+
+export interface CentroAcopio {
+  centro_id:      string
+  nombre:         string
+  tipo:           string
+  direccion:      string
+  municipio:      string
+  estado:         string
+  zm:             string | null
+  lat:            number | null
+  lon:            number | null
+  materiales:     string[]
+  precio_compra:  Record<string, number>
+  telefono:       string | null
+  horario:        string | null
+  acepta_publico: boolean
+  acepta_empresa: boolean
+  fuente:         string
+  verificado:     boolean
+  score_confianza: number
+}
+
+export interface CentrosAcopioListResponse {
+  total:   number
+  centros: CentroAcopio[]
+}
+
+export async function getCentrosAcopio(params: {
+  zm?: string
+  municipio?: string
+  material?: string
+}): Promise<CentrosAcopioListResponse> {
+  const query = new URLSearchParams()
+  if (params.zm)        query.set('zm', params.zm)
+  if (params.municipio) query.set('municipio', params.municipio)
+  if (params.material)  query.set('material', params.material)
+  const res = await backendFetch(`${getApiUrl()}/api/v1/centros-acopio/?${query.toString()}`)
+  if (!res.ok) throw new Error(`Centros de acopio no disponibles: ${res.status}`)
+  return res.json()
+}
