@@ -148,22 +148,6 @@ export function CityBaselineStack() {
 
   return (
     <div className="space-y-5 pb-6">
-      {/* ── Scope reminder strip ─────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 rounded-[8px] border border-[#E8E4DC] bg-[#F4F2ED] px-4 py-2.5 text-[11px]">
-        <span className="text-[#6B6760]">
-          📍 <strong className="text-[#1C1B18]">{municipioLabel}</strong>
-        </span>
-        <span className="text-[#6B6760]">
-          ⏱ Horizonte: <strong className="text-[#1C1B18]">{horizonte} años</strong>
-        </span>
-        <span className="text-[#6B6760]">
-          ⚖ Generación: <strong className="text-[#1C1B18]">{genPercapita.toFixed(2)} kg/hab·día</strong>
-        </span>
-        <span className="ml-auto text-[#A8A49C]">
-          Audiencia: {audience === 'functionary' ? 'Funcionario público' : audience === 'citizen' ? 'Ciudadano' : 'Empresario'}
-        </span>
-      </div>
-
       {/* ── Trajectory selector ──────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-[11px] text-[#6B6760] shrink-0">Trayectoria de adopción:</span>

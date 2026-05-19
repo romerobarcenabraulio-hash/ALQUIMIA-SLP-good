@@ -178,66 +178,6 @@ function MobileModuleSelect({
 
 // ─── Module header ────────────────────────────────────────────────────────────
 
-function ModuleHeader({ module }: { module: DecisionModule }) {
-  const blocked      = module.status === 'blocked'
-  const num          = moduleNumber(module.module_id)
-  const audienceSel  = useSimulatorStore(s => s.audience)
-
-  return (
-    <div className="border-b border-[#E8E4DC] bg-white px-6 py-4">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-[11px] text-[#A8A49C]">Módulo {num}</span>
-        <ChevronRight size={11} className="text-[#C8C4BC]" />
-        <span className="text-[11px] text-[#3B6D11] font-medium">{module.label}</span>
-      </div>
-
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="flex-1 min-w-0">
-          <h2 className="font-serif text-[26px] text-[#1C1B18] leading-tight">{module.label}</h2>
-          {module.decision && (
-            <p className="text-[13px] text-[#6B6760] mt-1 leading-relaxed max-w-2xl">{module.decision}</p>
-          )}
-        </div>
-
-        {/* Action buttons */}
-        <div className="flex items-center gap-2 shrink-0">
-          <span
-            className={cn(
-              'inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-[6px] text-[10px] font-medium uppercase tracking-[0.06em]',
-              blocked
-                ? 'bg-amber-100 text-amber-900'
-                : audienceSel === 'functionary'
-                  ? 'bg-[#1A5FA8]/10 text-[#1A5FA8]'
-                  : 'bg-[#EAF3DE] text-[#3B6D11]',
-            )}
-          >
-            {blocked ? (
-              <><Lock size={10} />Bloqueado</>
-            ) : (
-              <><CheckCircle2 size={10} />Disponible</>
-            )}
-          </span>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
-          >
-            <Share2 size={11} />
-            Compartir
-          </button>
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[6px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
-          >
-            <Download size={11} />
-            Exportar
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 // ─── Per-module lectura ejecutiva data ────────────────────────────────────────
 
 type LecturaItem = { header: string; color: string; bullets: string[] }
@@ -519,10 +459,6 @@ export function DecisionModuleShell({
       <div className="flex">
         {/* Center content */}
         <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
-          {/* Module header */}
-          <ModuleHeader module={activeModule} />
-
-
           {/* Content area — flows naturally, page scrolls */}
           <div className="px-6 py-6" id="decision-shell-title">
             {activeModule.status === 'blocked' ? (
