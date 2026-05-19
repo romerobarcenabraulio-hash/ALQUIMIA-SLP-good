@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ChevronRight, Scale, Shield, AlertTriangle, CheckCircle, Lock } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { getEtiquetaNarrativaCiudad, getMunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
 import { MarcoLegal } from '@/components/simulator/MarcoLegal'
 import CoberturaNacional from '@/components/simulator/CoberturaNacional'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
@@ -128,6 +128,34 @@ function CoverageBar({ pct, label }: { pct: number; label: string }) {
   )
 }
 
+// ── Municipio intro header ────────────────────────────────────────────────────
+
+function MunicipioIntroHeader({ zmActiva, municipiosActivos }: { zmActiva: string; municipiosActivos: string[] }) {
+  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
+  const legal = getLegalData(zmActiva)
+
+  const introduccion = municipio
+    ? `${municipio.nombre} es un municipio en la ZM de ${zmActiva}, con cobertura normativa actual de ${legal.cobertura}% y ${legal.vaciosJuridicos} vacíos jurídicos identificados en materia de RSU. Este módulo analiza el marco regulatorio vigente y define qué puede ejecutarse hoy sin reforma y qué requiere adenda o lineamiento.`
+    : `${territorio} comprende ${legal.totalMunicipios} municipios, con ${legal.municipiosPrioritarios} prioritarios para diagnóstico legal. La cobertura normativa promedio es ${legal.cobertura}% y hay ${legal.vaciosJuridicos} vacíos jurídicos identificados en el ámbito territorial analizado.`
+
+  return (
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-gradient-to-r from-[#F4FAEC] to-[#FDFCFA] px-5 py-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <p className="text-[10px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-0.5">Marco jurídico y contexto territorial</p>
+          <h3 className="text-[16px] font-bold text-[#1C1B18] leading-tight">{territorio}</h3>
+          <p className="text-[11px] text-[#6B6760] mt-1.5 leading-relaxed max-w-2xl">{introduccion}</p>
+        </div>
+        <div className="shrink-0 text-right">
+          <p className="text-[9px] text-[#A8A49C] uppercase tracking-[0.08em]">Fase actual</p>
+          <p className="text-[12px] font-semibold text-[#3B6D11] mt-0.5">{legal.faseActual}</p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Tab nav ───────────────────────────────────────────────────────────────────
 
 type TabId = 'diagnostico' | 'cobertura'
@@ -139,7 +167,7 @@ const TABS: Array<{ id: TabId; label: string }> = [
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function MunicipalContextStack({ block, moduleAnchor }: { block?: SociodemographicDisplayBlock; moduleAnchor?: string }) {
-  const { zmActiva, audience } = useSimulatorStore()
+  const { zmActiva, audience, municipiosActivos } = useSimulatorStore()
   const [tab, setTab] = useState<TabId>('diagnostico')
   const legal = getLegalData(zmActiva)
 
@@ -187,7 +215,7 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
       {/* ── Tab 1: Diagnóstico y reforma ───────────────────────────────── */}
       {tab === 'diagnostico' && (
         <div className="space-y-4">
-          <ScopeAnclaKicker className="text-[11px]" />
+          <MunicipioIntroHeader zmActiva={zmActiva} municipiosActivos={municipiosActivos} />
 
           {/* Reading panels — colapsados por default */}
           <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">

@@ -1730,6 +1730,10 @@ export interface CircularityHeatmapResponse {
       properties: Record<string, unknown>
     }>
   }
+  /** 'proxy' | 'mgn_ageb' | 'mgn_manzana' */
+  data_quality?: string
+  /** Texto explicativo para el badge UI */
+  data_quality_nota?: string
 }
 
 export interface CoverageStatus {

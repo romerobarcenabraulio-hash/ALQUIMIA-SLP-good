@@ -48,14 +48,28 @@ def _gantt_tasks(
     # Duración de infraestructura escala con número de CAs
     dur_infra = max(8, n_cas * 3)
 
+    def _pert(t_o: float, t_m: float, t_p: float) -> tuple[int, float, float, float]:
+        """Retorna (duracion_semanas_round, t_o, t_m, t_p). Duración = round(β-PERT)."""
+        dur = (t_o + 4 * t_m + t_p) / 6
+        sigma = (t_p - t_o) / 6
+        return max(1, round(dur)), t_o, t_m, t_p
+
+    d01, o01, m01, p01 = _pert(1.5, 2.0, 3.5)   # T01: diagnóstico
+    d02, o02, m02, p02 = _pert(2.0, 3.0, 5.0)   # T02: diseño técnico
+    d03, o03, m03, p03 = _pert(2.0, 3.0, 6.0)   # T03: licitación — alta varianza
+    d04, o04, m04, p04 = _pert(dur_infra * 0.8, dur_infra, dur_infra * 1.4)  # T04: construcción
+    d05, o05, m05, p05 = _pert(3.0, 4.0, 6.0)   # T05: equipamiento
+
     tasks = [
-        # ── FASE 1: Diseño y planeación (semanas 1-4) ─────────────────────────
+        # ── FASE 1: Diseño y planeación ───────────────────────────────────────
         PlanningTask(
             task_id="T01",
             nombre="Diagnóstico territorial y levantamiento de datos",
             descripcion="Estudio de caracterización RSU, mapeo de zonas, análisis de rutas.",
             responsable="Dirección de Servicios Públicos",
-            inicio_semana=1, duracion_semanas=2,
+            inicio_semana=1, duracion_semanas=d01,
+            t_optimista=o01, t_probable=m01, t_pesimista=p01,
+            sigma=(p01 - o01) / 6,
             predecesoras=[], es_critica=True,
             costo_mxn=costo_diseno * 0.4,
             fuente_costo="estimado_mercado",
@@ -65,7 +79,9 @@ def _gantt_tasks(
             nombre="Diseño técnico de Centros de Acopio",
             descripcion="Planos arquitectónicos, ingeniería civil y especificaciones técnicas.",
             responsable="Dirección de Obras Públicas",
-            inicio_semana=2, duracion_semanas=3,
+            inicio_semana=2, duracion_semanas=d02,
+            t_optimista=o02, t_probable=m02, t_pesimista=p02,
+            sigma=(p02 - o02) / 6,
             predecesoras=["T01"], es_critica=True,
             costo_mxn=costo_diseno * 0.4,
             fuente_costo="estimado_mercado",
@@ -75,18 +91,22 @@ def _gantt_tasks(
             nombre="Proceso licitatorio y adjudicación de obra",
             descripcion="Llamado a licitación, evaluación de propuestas y contrato.",
             responsable="Comité de Adquisiciones",
-            inicio_semana=4, duracion_semanas=3,
+            inicio_semana=4, duracion_semanas=d03,
+            t_optimista=o03, t_probable=m03, t_pesimista=p03,
+            sigma=(p03 - o03) / 6,
             predecesoras=["T02"], es_critica=True,
             costo_mxn=costo_diseno * 0.2,
             fuente_costo="supuesto_editable",
         ),
-        # ── FASE 2: Infraestructura (semanas 7 + dur_infra) ───────────────────
+        # ── FASE 2: Infraestructura ───────────────────────────────────────────
         PlanningTask(
             task_id="T04",
             nombre=f"Construcción de {n_cas_pequeno + n_cas_mediano} CAs pequeños/medianos",
             descripcion="Cimentación, estructura, instalaciones y equipamiento básico.",
             responsable="Empresa constructora",
-            inicio_semana=7, duracion_semanas=dur_infra,
+            inicio_semana=7, duracion_semanas=d04,
+            t_optimista=o04, t_probable=m04, t_pesimista=p04,
+            sigma=(p04 - o04) / 6,
             predecesoras=["T03"], es_critica=True,
             costo_mxn=costo_infra * 0.70,
             fuente_costo="estimado_mercado",
@@ -96,7 +116,9 @@ def _gantt_tasks(
             nombre=f"Instalación equipamiento CA{' grande' if n_cas_grande > 0 else ''}",
             descripcion="Prensas, básculas, bandas, contenedores, señalética.",
             responsable="Proveedor de equipamiento",
-            inicio_semana=7 + dur_infra - 3, duracion_semanas=4,
+            inicio_semana=7 + d04 - 3, duracion_semanas=d05,
+            t_optimista=o05, t_probable=m05, t_pesimista=p05,
+            sigma=(p05 - o05) / 6,
             predecesoras=["T04"], es_critica=False,
             costo_mxn=costo_infra * 0.20,
             fuente_costo="estimado_mercado",
@@ -282,14 +304,23 @@ def build_pert(gantt: GanttPlan) -> PertPlan:
         lf = late_finish.get(tid, total_duration)
         ls = late_start.get(tid, 0.0)
         holgura = ls - es
+        # Usar β-PERT cuando hay estimados de 3 puntos
+        tiempo_esp = t.duracion_pert() if t.t_optimista is not None else float(t.duracion_semanas)
+        varianza = t.varianza_pert() if t.t_optimista is not None else 0.0
+        sigma_nodo = math.sqrt(varianza) if varianza > 0 else 0.0
         nodes.append(PertNode(
             node_id=tid,
             nombre=t.nombre,
-            tiempo_esperado=float(t.duracion_semanas),
+            tiempo_esperado=tiempo_esp,
             tiempo_temprano=round(es, 2),
             tiempo_tardio=round(ls, 2),
             holgura=round(holgura, 2),
             es_critico=abs(holgura) < 0.01,
+            t_optimista=t.t_optimista,
+            t_probable=t.t_probable,
+            t_pesimista=t.t_pesimista,
+            varianza=round(varianza, 4),
+            sigma=round(sigma_nodo, 4),
         ))
 
     return PertPlan(

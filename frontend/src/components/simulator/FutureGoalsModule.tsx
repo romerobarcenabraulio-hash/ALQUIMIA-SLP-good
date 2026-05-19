@@ -5,6 +5,20 @@ import dynamic from 'next/dynamic'
 import { cn } from '@/lib/utils'
 import { SimulatorModuleErrorBoundary } from '@/components/simulator/SimulatorModuleErrorBoundary'
 
+function loadCircularidadMap() {
+  return import('@/components/simulator/CircularidadRoadmapMap')
+    .then(m => ({ default: m.CircularidadRoadmapMap }))
+    .catch(err => {
+      console.error('[future_goals] CircularidadRoadmapMap', err)
+      return { default: ChunkFailed }
+    })
+}
+
+const CircularidadRoadmapMap = dynamic(loadCircularidadMap, {
+  ssr: false,
+  loading: () => <ModuleChunkLoading label="Mapa de avance de circularidad" />,
+})
+
 function loadImplementacion() {
   return import('@/components/simulator/ImplementacionEspacioTiempo')
     .then(m => ({ default: m.ImplementacionEspacioTiempo }))
@@ -47,7 +61,7 @@ const GanttMaestroView = dynamic(loadGanttMaestro, {
   loading: () => <ModuleChunkLoading label="Gantt · PERT · RACI maestro" />,
 })
 
-type TabId = 'pert' | 'charts' | 'gantt_raci'
+type TabId = 'pert' | 'charts' | 'gantt_raci' | 'mapa_avance'
 
 export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
   const [armed, setArmed] = useState(false)
@@ -93,6 +107,9 @@ export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
         <TabButton active={tab === 'charts'} onClick={() => setTab('charts')}>
           Progresión y tabla
         </TabButton>
+        <TabButton active={tab === 'mapa_avance'} onClick={() => setTab('mapa_avance')}>
+          🗺 Mapa de avance
+        </TabButton>
       </nav>
 
       {tab === 'gantt_raci' ? (
@@ -102,6 +119,10 @@ export function FutureGoalsModule({ notice }: { notice: ReactNode }) {
       ) : tab === 'pert' ? (
         <SimulatorModuleErrorBoundary moduleLabel="PERT y oleadas territoriales">
           <ImplementacionEspacioTiempo />
+        </SimulatorModuleErrorBoundary>
+      ) : tab === 'mapa_avance' ? (
+        <SimulatorModuleErrorBoundary moduleLabel="Mapa de avance de circularidad">
+          <CircularidadRoadmapMap />
         </SimulatorModuleErrorBoundary>
       ) : (
         <SimulatorModuleErrorBoundary moduleLabel="progresión temporal (Gantt)">

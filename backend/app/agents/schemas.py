@@ -797,18 +797,44 @@ class CentroAcopio(BaseModel):
 # ─── Wave 1: Planning (Gantt / PERT / RACI) ──────────────────────────────────
 
 class PlanningTask(BaseModel):
-    """Tarea individual para Gantt y PERT."""
+    """Tarea individual para Gantt y PERT con estimados β-PERT de 3 puntos.
+
+    Estimados de duración:
+      t_optimista (t_o): mejor caso — sin obstáculos ni retrasos
+      t_probable  (t_m): duración más realista (moda)
+      t_pesimista (t_p): peor caso — retrasos máximos esperados
+
+    Duración esperada PERT: (t_o + 4·t_m + t_p) / 6
+    Varianza PERT: ((t_p - t_o) / 6)²
+    """
     task_id:      str = Field(default_factory=lambda: str(uuid.uuid4()))
     nombre:       str
     descripcion:  str = ""
     responsable:  str
     inicio_semana: int = Field(ge=1)
-    duracion_semanas: int = Field(ge=1)
+    duracion_semanas: int = Field(ge=1)   # duración esperada calculada con β-PERT
     predecesoras: List[str] = Field(default_factory=list)
     es_critica:   bool = False
     costo_mxn:    float = 0.0
     fuente_costo: str = ""
     holgura_semanas: int = 0
+    # 3-point PERT estimates (semanas)
+    t_optimista:  Optional[float] = None  # t_o: mejor caso
+    t_probable:   Optional[float] = None  # t_m: más probable
+    t_pesimista:  Optional[float] = None  # t_p: peor caso
+    sigma:        Optional[float] = None  # desviación estándar = (t_p - t_o) / 6
+
+    def duracion_pert(self) -> float:
+        """Calcula la duración esperada usando la fórmula β-PERT."""
+        if self.t_optimista is not None and self.t_probable is not None and self.t_pesimista is not None:
+            return round((self.t_optimista + 4 * self.t_probable + self.t_pesimista) / 6, 2)
+        return float(self.duracion_semanas)
+
+    def varianza_pert(self) -> float:
+        """Varianza de la duración = ((t_p - t_o) / 6)²"""
+        if self.t_optimista is not None and self.t_pesimista is not None:
+            return round(((self.t_pesimista - self.t_optimista) / 6) ** 2, 4)
+        return 0.0
 
 
 class GanttPlan(BaseModel):
@@ -827,14 +853,19 @@ class GanttPlan(BaseModel):
 
 
 class PertNode(BaseModel):
-    """Nodo del diagrama PERT con análisis de tiempo temprano/tardío."""
+    """Nodo del diagrama PERT con análisis de tiempo temprano/tardío y varianza β-PERT."""
     node_id:        str
     nombre:         str
-    tiempo_esperado: float   # semanas
+    tiempo_esperado: float   # semanas — calculado con β-PERT si hay 3 puntos
     tiempo_temprano: float = 0.0
     tiempo_tardio:  float = 0.0
     holgura:        float = 0.0
     es_critico:     bool = False
+    t_optimista:    Optional[float] = None
+    t_probable:     Optional[float] = None
+    t_pesimista:    Optional[float] = None
+    varianza:       float = 0.0   # ((t_p - t_o) / 6)²
+    sigma:          float = 0.0   # desviación estándar del nodo
 
 
 class PertPlan(BaseModel):
@@ -893,3 +924,69 @@ class SurveyTemplate(BaseModel):
 
     def n_secciones(self) -> int:
         return len({p.seccion for p in self.preguntas if p.seccion})
+
+
+# ─── Módulo de Riesgos: dimensiones y análisis ───────────────────────────────
+
+class RiesgoDimension(str, Enum):
+    mercado    = "mercado"
+    politico   = "politico"
+    operativo  = "operativo"
+    regulatorio = "regulatorio"
+
+
+class RiesgoFormula(BaseModel):
+    """Fórmula documentada para una dimensión de riesgo."""
+    dimension:        RiesgoDimension
+    expresion:        str   # p.e. "(1 − tasa_colocacion) × vol × precio × 0.35"
+    variables:        Dict[str, str]   # nombre_var → descripción
+    ponderacion:      float            # peso en score total (0–1, suma = 1)
+    fuente_datos:     str              # de dónde vienen los inputs
+    referencia:       str              # fuente bibliográfica o institucional
+    rango_score:      str = "0–100"
+
+
+class RiesgoScore(BaseModel):
+    """Score calculado para una dimensión en un escenario específico."""
+    dimension:   RiesgoDimension
+    valor:       float              # 0–100
+    nivel:       str                # "bajo" | "medio" | "alto" | "critico"
+    drivers:     List[str] = Field(default_factory=list)    # factores que elevan el score
+    mitigaciones: List[str] = Field(default_factory=list)  # acciones recomendadas
+
+
+class RiesgoAnalisis(BaseModel):
+    """Análisis completo de riesgo para un municipio / escenario."""
+    municipio:      str
+    zm:             str
+    scenario_id:    str
+    scores:         List[RiesgoScore] = Field(default_factory=list)
+    score_total:    float = 0.0         # suma ponderada de todos los scores
+    nivel_total:    str   = "bajo"      # semáforo global
+    formula_ponderacion: Dict[str, float] = Field(
+        default_factory=lambda: {
+            "mercado":     0.30,
+            "politico":    0.40,
+            "operativo":   0.20,
+            "regulatorio": 0.10,
+        }
+    )
+    notas:          Optional[str] = None
+    generated_at:   datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    def calcular_score_total(self) -> float:
+        pesos = self.formula_ponderacion
+        total = sum(
+            s.valor * pesos.get(s.dimension.value, 0.0)
+            for s in self.scores
+        )
+        self.score_total = round(total, 2)
+        if total < 25:
+            self.nivel_total = "bajo"
+        elif total < 50:
+            self.nivel_total = "medio"
+        elif total < 75:
+            self.nivel_total = "alto"
+        else:
+            self.nivel_total = "critico"
+        return self.score_total

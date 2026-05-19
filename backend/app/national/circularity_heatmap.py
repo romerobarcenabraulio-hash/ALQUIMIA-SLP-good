@@ -44,6 +44,8 @@ def build_circularity_heatmap_response(zm_id: str) -> CircularityHeatmapResponse
             methodology_summary=methodology,
             feature_count=0,
             geojson={"type": "FeatureCollection", "features": []},
+            data_quality="proxy",
+            data_quality_nota="Sin datos — ZM desconocida.",
         )
 
     municipios = list_zm_municipios(zmu)
@@ -74,4 +76,9 @@ def build_circularity_heatmap_response(zm_id: str) -> CircularityHeatmapResponse
         methodology_summary=methodology,
         feature_count=len(features),
         geojson=geojson,
+        data_quality="proxy",
+        data_quality_nota=(
+            "SIMULACIÓN · Rejilla proxy — no son polígonos AGEBs del INEGI MGN. "
+            "Para datos georreferenciados oficiales se requiere integración MGN (piloto SLP pendiente)."
+        ),
     )

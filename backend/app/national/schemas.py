@@ -114,6 +114,20 @@ class CircularityHeatmapResponse(BaseModel):
     methodology_summary: str
     feature_count: int = Field(ge=0)
     geojson: Dict[str, Any] = Field(description="GeoJSON FeatureCollection en EPSG:4326")
+    # ── Calidad de datos ────────────────────────────────────────────────────
+    data_quality: str = Field(
+        default="proxy",
+        description=(
+            "Indicador de calidad de la geometría. Valores posibles: "
+            "'proxy' (rejilla rectangular simulada, no AGEB INEGI), "
+            "'mgn_ageb' (polígonos verificados del Marco Geoestadístico Nacional), "
+            "'mgn_manzana' (granularidad de manzana MGN)."
+        ),
+    )
+    data_quality_nota: str = Field(
+        default="Geometría simulada — rejilla proxy. No usar para decisiones de localización.",
+        description="Texto explicativo de la calidad para mostrar en badge UI.",
+    )
 
 
 class LegalSource(BaseModel):

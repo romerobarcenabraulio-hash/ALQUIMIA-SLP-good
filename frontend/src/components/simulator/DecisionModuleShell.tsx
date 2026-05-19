@@ -220,6 +220,23 @@ function getLecturaEjecutiva(moduleId: string): LecturaEjecutiva | null {
   return null
 }
 
+// ─── Module subtitle (catchy) ─────────────────────────────────────────────────
+
+function ModuleSubtitle({ moduleId }: { moduleId: string }) {
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
+  const scope = municipiosActivos.length === 0 ? 'sin_municipio' as const : municipiosActivos.length === 1 ? 'municipio' as const : 'zm' as const
+  const brief = getModuleEditorialBrief(moduleId, { territorio, scope, municipio, municipiosCount: municipiosActivos.length })
+  if (!brief?.subtitulo_catchy) return null
+  return (
+    <div className="mb-4 pb-3 border-b border-[#F0EDE5]">
+      <p className="text-[11px] text-[#7A8A6A] italic leading-snug">{brief.subtitulo_catchy}</p>
+    </div>
+  )
+}
+
 // ─── Right guidance panel ─────────────────────────────────────────────────────
 
 function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId: string }) {
@@ -248,15 +265,48 @@ function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId:
       </div>
 
       <div className="p-4 space-y-4 text-[11px]">
-        {/* Prosa metodológica — explica qué muestran las gráficas y cómo se calculan */}
-        {brief?.metodologia_editorial && (
-          <div>
-            <p className="text-[9px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-2">
-              Cómo se calcula
-            </p>
-            <p className="text-[11px] leading-[1.6] text-[#5A6347]">
-              {brief.metodologia_editorial}
-            </p>
+        {/* Metodología estructurada en 4 secciones */}
+        {brief?.metodologia_editorial && typeof brief.metodologia_editorial === 'object' && (
+          <div className="space-y-3">
+            {/* ¿Cómo se calcula? */}
+            <div>
+              <p className="text-[9px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-1.5 flex items-center gap-1">
+                <span>⟨f⟩</span> Cómo se calcula
+              </p>
+              <p className="text-[11px] leading-[1.65] text-[#5A6347]">
+                {brief.metodologia_editorial.como_se_calcula}
+              </p>
+            </div>
+
+            {/* Origen de datos */}
+            <div className="pt-2.5 border-t border-[#EDE9E3]">
+              <p className="text-[9px] uppercase tracking-[0.08em] text-[#7A9FC0] font-semibold mb-1.5 flex items-center gap-1">
+                <span>◎</span> Origen de los datos
+              </p>
+              <p className="text-[11px] leading-[1.65] text-[#5A6060]">
+                {brief.metodologia_editorial.origen_datos}
+              </p>
+            </div>
+
+            {/* Por qué este enfoque */}
+            <div className="pt-2.5 border-t border-[#EDE9E3]">
+              <p className="text-[9px] uppercase tracking-[0.08em] text-[#9A7AC0] font-semibold mb-1.5 flex items-center gap-1">
+                <span>↗</span> Por qué este enfoque
+              </p>
+              <p className="text-[11px] leading-[1.65] text-[#5A5A70]">
+                {brief.metodologia_editorial.por_que_este_enfoque}
+              </p>
+            </div>
+
+            {/* Supuesto crítico */}
+            <div className="pt-2.5 border-t border-[#F5DEB0]">
+              <p className="text-[9px] uppercase tracking-[0.08em] text-[#C07A2A] font-semibold mb-1.5 flex items-center gap-1">
+                <span>⚠</span> Supuesto crítico
+              </p>
+              <p className="text-[11px] leading-[1.65] text-[#6B5A2A] bg-[#FEF9EC] rounded-[6px] px-2.5 py-2">
+                {brief.metodologia_editorial.supuesto_critico}
+              </p>
+            </div>
           </div>
         )}
 
@@ -461,6 +511,8 @@ export function DecisionModuleShell({
         <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
           {/* Content area — flows naturally, page scrolls */}
           <div className="px-6 py-6" id="decision-shell-title">
+            {/* Subtitle catchy del módulo activo */}
+            <ModuleSubtitle moduleId={activeModule.module_id} />
             {activeModule.status === 'blocked' ? (
               <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
                 <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">

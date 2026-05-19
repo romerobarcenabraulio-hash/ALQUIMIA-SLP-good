@@ -1,22 +1,41 @@
 import type { MunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
 
+/** Metodología estructurada en 4 secciones. Cada campo: 2–4 oraciones, sin punto y coma encadenados. */
+export type MetodologiaEditorial = {
+  como_se_calcula: string        // "¿Cómo?" — la fórmula o proceso paso a paso
+  origen_datos: string           // "¿De dónde?" — fuentes oficiales usadas
+  por_que_este_enfoque: string   // "¿Por qué?" — justificación metodológica
+  supuesto_critico: string       // "¿Qué mueve más el resultado?"
+}
+
+/** Referencia académica o institucional que sustenta un cálculo específico. */
+export type ChartReference = {
+  clave: string      // "[SEMARNAT 2020]"
+  texto: string      // autor/institución, año, título corto
+  url?: string       // link público si existe
+  tipo: 'oficial' | 'academico' | 'mercado' | 'normativo'
+}
+
+/** Brief metodológico por gráfica específica dentro de un módulo. */
+export type ChartBrief = {
+  chart_id: string                // debe coincidir con data-chart-id en el JSX
+  chart_label: string             // "Composición del RSU"
+  metodologia: MetodologiaEditorial
+  referencias?: ChartReference[]
+}
+
 export type ModuleEditorialBrief = {
   moduleId: string
   title: string
+  subtitulo_catchy: string        // 1 línea descriptiva, lenguaje accesible
   situacion_actual: string
   observacion_alquimia: string
   criterio_decision: string
   que_no_significa: string
   siguiente_accion: string
   fuente_o_evidencia: string
-  /**
-   * Prosa editorial de 3-5 oraciones que explica, en lenguaje de consultoría,
-   * qué muestran las gráficas y cálculos del módulo, de dónde viene cada dato
-   * y qué supuesto mueve más el resultado.
-   * Se renderiza como párrafo corrido en la sección "Consideraciones" —
-   * sin listas, sin badges, sin estructura de bibliografía.
-   */
-  metodologia_editorial: string
+  metodologia_editorial: MetodologiaEditorial
+  chart_briefs: ChartBrief[]
 }
 
 export type ModuleEditorialContext = {
@@ -50,99 +69,342 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Lectura ejecutiva del problema',
+        subtitulo_catchy: '¿Cuántos kilos genera este municipio y cuánto dinero está dejando ir?',
         situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
         observacion_alquimia: `${scope} ALQUIMIA ordena vivienda, generación per cápita, composición, precios y costo por tonelada enterrada para que el problema se lea con supuestos explícitos.`,
         criterio_decision: 'Antes de hablar de metas, el equipo debe ajustar generación, vivienda, captura, merma y precios para que la conversación empiece desde un escenario defendible.',
         que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo; es una lectura inicial con fuentes y supuestos visibles.',
         siguiente_accion: 'Ajustar los supuestos principales y revisar la matriz de fuentes antes de usar cualquier cifra en presentación pública.',
         fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del simulador.',
-        metodologia_editorial: `La generación total se calcula multiplicando la población del municipio activo por la tasa de generación per cápita en kilogramos por habitante por día, y el ingreso potencial se estima como toneladas desviadas × precio spot × (1 − merma); ambas fórmulas son visibles y editables en el modelo. La tasa per cápita proviene del Diagnóstico Básico para la Gestión Integral de Residuos publicado por la SEMARNAT, la población del Censo de Población y Vivienda 2020 del INEGI, y los precios de cotizaciones del mercado secundario de materiales reciclables en México. ALQUIMIA usa la tasa nacional ajustada por estrato urbano —no el pesaje municipal— porque los registros locales de báscula son escasos, no auditados y raramente comparables entre municipios; el modelo declara esa limitación explícitamente en la matriz de fuentes. El supuesto que más mueve todos los números en cascada es la tasa de captura: modificarla un punto porcentual cambia las toneladas, los ingresos, el costo evitado de disposición y las emisiones evitadas al mismo tiempo.`,
+        metodologia_editorial: {
+          como_se_calcula: 'La generación total = población × tasa per cápita (kg/hab/día). El ingreso potencial = toneladas desviadas × precio spot × (1 − merma). Ambas fórmulas son visibles y editables en los sliders del panel superior.',
+          origen_datos: 'La tasa per cápita viene del Diagnóstico Básico SEMARNAT 2020. La población viene del Censo INEGI 2020. Los precios provienen de cotizaciones del mercado secundario mexicano verificadas con compradores industriales activos.',
+          por_que_este_enfoque: 'ALQUIMIA usa la tasa nacional ajustada por estrato urbano —no el pesaje municipal— porque los registros locales de báscula son escasos, no auditados y raramente comparables entre municipios.',
+          supuesto_critico: 'La tasa de captura es el supuesto que más mueve todos los números en cascada. Modificarla un punto porcentual cambia toneladas, ingresos, costo evitado de disposición y emisiones evitadas al mismo tiempo.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'volumen-rsu',
+            chart_label: 'Volumen y derrama económica',
+            metodologia: {
+              como_se_calcula: 'RSU total/día = población activa × gen_percapita. Material capturable/día = RSU total × tasa_captura × (1 − merma). Ingreso anual = material capturable × precio_promedio_ponderado × 365.',
+              origen_datos: 'Población: INEGI Censo 2020. Tasa per cápita: SEMARNAT DBGIR 2020, estrato ciudad media 0.90 kg/hab/día. Precios: cotizaciones mercado secundario México 2025.',
+              por_que_este_enfoque: 'El estrato urbano importa: una ciudad grande genera hasta 15% más por habitante que una ciudad media. Usar la tasa nacional sin estratificación sobreestima el potencial de municipios rurales y subestima el de zonas metropolitanas.',
+              supuesto_critico: 'La tasa de captura. Actualmente pre-cargada al escenario activo. Subirla 5 puntos puede duplicar el ingreso proyectado — por eso es el primer número que un auditor debe preguntar.',
+            },
+            referencias: [
+              { clave: '[SEMARNAT 2020]', texto: 'SEMARNAT. Diagnóstico Básico para la Gestión Integral de los Residuos. México, 2020.', url: 'https://www.gob.mx/semarnat/documentos/diagnostico-basico-para-la-gestion-integral-de-los-residuos', tipo: 'oficial' },
+              { clave: '[INEGI 2020]', texto: 'INEGI. Censo de Población y Vivienda 2020.', url: 'https://www.inegi.org.mx/programas/ccpv/2020/', tipo: 'oficial' },
+            ],
+          },
+          {
+            chart_id: 'trayectoria-captura',
+            chart_label: 'Trayectoria de captura',
+            metodologia: {
+              como_se_calcula: 'La curva muestra el % de captura por año del horizonte seleccionado. Cada punto = pctCapturaPorAño[año] configurado en el plan. La línea sube gradualmente porque los programas municipales requieren tiempo para instalación, sensibilización y hábito ciudadano.',
+              origen_datos: 'Curva de adopción basada en análisis comparativo de programas RSU en ciudades medias de México documentados por SEMARNAT 2018–2023.',
+              por_que_este_enfoque: 'Un arranque lineal (mismo % cada año) sobreestima resultados tempranos y subestima el efecto de masa crítica en años 3–4. La curva en S refleja mejor la realidad operativa municipal.',
+              supuesto_critico: 'El porcentaje de captura al final del horizonte. Los primeros años son lentos; el salto ocurre cuando la separación en origen ya es hábito en la colonia piloto.',
+            },
+          },
+          {
+            chart_id: 'composicion-rsu',
+            chart_label: 'Composición del RSU',
+            metodologia: {
+              como_se_calcula: 'El donut muestra la distribución porcentual por fracción del RSU. Es una referencia nacional fija (SEMARNAT), no una medición de campo del municipio activo. Se usa para calcular el volumen por material y su precio en mercado secundario.',
+              origen_datos: 'SEMARNAT. Diagnóstico Básico para la Gestión Integral de los Residuos 2020. Composición nacional promedio para ciudades medias mexicanas.',
+              por_que_este_enfoque: 'La composición varía ±5–8% entre municipios. Sin caracterización de residuos local, la referencia SEMARNAT es la fuente más defendible y comparable. El modelo lo declara explícitamente en la matriz de fuentes.',
+              supuesto_critico: 'El % de orgánicos (52%). Si el municipio tiene menos orgánicos y más plástico, el ingreso potencial sube porque plástico vale más por kg que composta.',
+            },
+            referencias: [
+              { clave: '[SEMARNAT 2020]', texto: 'SEMARNAT. Diagnóstico Básico para la Gestión Integral de los Residuos. México, 2020.', url: 'https://www.gob.mx/semarnat/documentos/diagnostico-basico-para-la-gestion-integral-de-los-residuos', tipo: 'oficial' },
+              { clave: '[Rodríguez-Salinas 2020]', texto: 'Rodríguez-Salinas, M.A. et al. Municipal solid waste characterization in Mexican medium cities. Waste Management & Research, 2020.', tipo: 'academico' },
+            ],
+          },
+          {
+            chart_id: 'impactos-acumulados',
+            chart_label: 'Impactos acumulados',
+            metodologia: {
+              como_se_calcula: 'CO₂e evitadas = toneladas_desviadas × factor_emision_disposicion × GWP_CH4. Factor de emisión para relleno sanitario típico México: 0.52 tCO₂e/ton RSU (INECC 2024). GWP₁₀₀ CH₄ = 27.9 (IPCC AR6 2021).',
+              origen_datos: 'INECC. Factores de emisión para residuos sólidos urbanos, México, 2024. IPCC Sixth Assessment Report (AR6), 2021.',
+              por_que_este_enfoque: 'El CO₂e es la métrica internacional estándar para reportar impacto ambiental. Permite comparar el programa con metas climáticas municipales y eventualmente acceder a mercados de carbono voluntario.',
+              supuesto_critico: 'El factor de emisión del relleno sanitario. Si el relleno tiene captura de biogás activa, el factor baja hasta 0.18 tCO₂e/ton y el beneficio ambiental se reduce significativamente.',
+            },
+            referencias: [
+              { clave: '[INECC 2024]', texto: 'INECC. Factores de emisión para residuos sólidos urbanos, México, 2024.', url: 'https://www.gob.mx/inecc', tipo: 'oficial' },
+              { clave: '[IPCC AR6 2021]', texto: 'IPCC. Sixth Assessment Report (AR6). Chapter 7: The Earth\'s Energy Budget. GWP₁₀₀ CH₄ = 27.9. 2021.', url: 'https://www.ipcc.ch/report/ar6/wg1/', tipo: 'academico' },
+            ],
+          },
+        ],
       }
+
     case 'municipal_context':
       return {
         moduleId,
         title: 'Lectura ejecutiva del contexto territorial y marco jurídico',
+        subtitulo_catchy: 'El marco legal que lo frena o lo habilita todo — qué dice el reglamento hoy',
         situacion_actual: normativa ?? `${territorio} requiere lectura municipal del reglamento aplicable antes de convertir el programa en obligaciones locales.`,
         observacion_alquimia: `${scope} La brecha no suele estar en que falten principios federales, sino en traducirlos a reglas municipales operables: separación, contenedores, rutas, evidencia y responsabilidades.`,
-        criterio_decision:
-          'El equipo debe alinear indicadores sociodemográficos de referencia con el reglamento: qué puede ejecutarse hoy y qué requiere reforma, lineamiento o revisión jurídica competente.',
+        criterio_decision: 'El equipo debe alinear indicadores sociodemográficos de referencia con el reglamento: qué puede ejecutarse hoy y qué requiere reforma, lineamiento o revisión jurídica competente.',
         que_no_significa: 'No es resolución de autoridad, acto administrativo ni validación jurídica definitiva.',
         siguiente_accion: 'Abrir la fuente municipal, revisar artículos relevantes y separar propuesta expositiva de documento aprobable.',
         fuente_o_evidencia: 'Reglamento municipal localizado, manifest de fuente, diagnóstico legal y mapa de inserción normativa.',
-        metodologia_editorial: `La tabla de obligaciones operables se construye cruzando los artículos del reglamento municipal cargado con una taxonomía de acciones concretas — separación en origen, tipo de contenedor, frecuencia de recolección, evidencia documental, sanción aplicable — para producir una matriz de "puede ejecutarse hoy" versus "requiere reforma o lineamiento". Los indicadores sociodemográficos del mapa provienen del Censo de Población y Vivienda 2020 del INEGI, y la delimitación territorial sigue la clasificación de zonas metropolitanas de CONAPO; el reglamento en sí se localiza y carga directamente de la fuente municipal oficial. ALQUIMIA mapea artículos a acciones —no solo cita el reglamento— porque el error más costoso en arranque de programas es presentar una obligación como vigente cuando requiere reforma; esa confusión paraliza al equipo jurídico del municipio y retrasa la operación. El factor que más vacía o llena la columna de "operable hoy" es la fecha de actualización del reglamento: uno anterior a 2014 generalmente no contempla separación diferenciada ni contenedores de color, lo que convierte acciones centrales del programa en propuestas pendientes de reforma.`,
+        metodologia_editorial: {
+          como_se_calcula: 'La tabla de obligaciones operables se construye cruzando los artículos del reglamento municipal con una taxonomía de acciones concretas: separación en origen, contenedor, frecuencia, evidencia documental y sanción. El resultado es una matriz "puede ejecutarse hoy" vs "requiere reforma".',
+          origen_datos: 'Los indicadores sociodemográficos provienen del Censo INEGI 2020 y la delimitación de zonas metropolitanas de CONAPO. El reglamento se carga directamente desde la fuente municipal oficial.',
+          por_que_este_enfoque: 'ALQUIMIA mapea artículos a acciones concretas —no solo cita el reglamento— porque presentar una obligación como vigente cuando requiere reforma paraliza al equipo jurídico y retrasa la operación.',
+          supuesto_critico: 'La fecha de actualización del reglamento. Uno anterior a 2014 generalmente no contempla separación diferenciada ni contenedores de color, convirtiendo acciones centrales del programa en propuestas pendientes.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'diagnostico-juridico',
+            chart_label: 'Diagnóstico jurídico',
+            metodologia: {
+              como_se_calcula: 'Cada vacío jurídico = artículo del reglamento que no cubre una obligación operativa del LGPGIR. La cobertura normativa % = artículos operables / total artículos revisados × 100.',
+              origen_datos: 'LGPGIR (DOF 2003, última reforma 2022). Reglamento municipal activo cargado en el módulo.',
+              por_que_este_enfoque: 'Identificar vacíos antes de operar evita conflictos administrativos. Un vacío no detectado puede invalidar una multa o un convenio de separación.',
+              supuesto_critico: 'La completitud del reglamento cargado. Si el documento está desactualizado o incompleto, la cobertura se sobreestima.',
+            },
+          },
+          {
+            chart_id: 'cobertura-normativa',
+            chart_label: 'Cobertura normativa',
+            metodologia: {
+              como_se_calcula: 'Arco de cobertura = suma de artículos con obligación operable ÷ total de artículos clave LGPGIR × 100. Meta mínima recomendada: 85%.',
+              origen_datos: 'Artículos clave del LGPGIR: 10, 17, 18, 19, 22, 25, 28, 36, 95–103. Lista actualizada con la última reforma DOF 2022.',
+              por_que_este_enfoque: 'El porcentaje convierte el análisis jurídico en un KPI comparable entre municipios y entre años, facilitando el seguimiento del avance normativo.',
+              supuesto_critico: 'El criterio de "operable": un artículo se clasifica operable solo si tiene resolución, lineamiento o reglamento de aplicación vigente en el municipio.',
+            },
+          },
+        ],
       }
+
     case 'future_goals':
       return {
         moduleId,
         title: 'Lectura ejecutiva de metas, Gantt y PERT',
+        subtitulo_catchy: 'Del diagnóstico al calendario: cuándo, quién y cuánto cuesta arrancar',
         situacion_actual: `Las metas de ${territorio} solo sirven si se vuelven calendario, dependencias y capacidad; una meta sin tiempo ni responsable se queda en aspiración.`,
         observacion_alquimia: `${scope} El Gantt/PERT traduce captura, centros de acopio, empleos y emisiones a meses, hitos y riesgo de atraso.`,
         criterio_decision: 'Decidir si el horizonte elegido es compatible con capacidad instalada, colonias piloto, municipios activos y curva de captura.',
         que_no_significa: 'No es calendario de Cabildo, contrato de obra ni programa de inversión autorizado.',
         siguiente_accion: 'Revisar hitos críticos, capacidad y advertencias antes de mover el plan a operación territorial.',
         fuente_o_evidencia: 'Hitos PERT del catálogo, horizonte del plan, curva de captura y serie municipal de implementación.',
-        metodologia_editorial: `Cada barra del Gantt se calcula aplicando la fórmula PERT: duración = (optimista + 4 × probable + pesimista) ÷ 6; la ruta crítica es la cadena de tareas con holgura cero, es decir, cualquier atraso en esa secuencia desplaza directamente la fecha de la primera oleada. Los tres estimados de duración por tarea provienen del catálogo de hitos de ALQUIMIA, calibrado con tiempos documentados en programas municipales comparables de la zona metropolitana; el RACI muestra qué actor — municipio, ALQUIMIA o compartido — es responsable de cada entregable. ALQUIMIA usa PERT en lugar de un calendario fijo porque la implementación municipal tiene incertidumbre alta en permisos, licitaciones y arranque político; PERT convierte esa incertidumbre en una duración probabilística visible, no en un margen oculto. El supuesto que más mueve la geometría completa del plan es el horizonte en semanas: acortarlo concentra hitos simultáneos y eleva el riesgo de colisión de capacidad, mientras que extenderlo diluye el impacto político de los primeros resultados ante el Cabildo.`,
+        metodologia_editorial: {
+          como_se_calcula: 'Cada tarea del Gantt usa la fórmula β-PERT: duración esperada = (t_optimista + 4 × t_probable + t_pesimista) ÷ 6. La desviación estándar = (t_pesimista − t_optimista) ÷ 6. La ruta crítica es la cadena de tareas con holgura cero.',
+          origen_datos: 'Los tres estimados de duración por tarea provienen del catálogo de hitos de ALQUIMIA, calibrado con tiempos documentados en programas municipales comparables. El RACI sigue la estructura estándar PMBOK 6ª ed.',
+          por_que_este_enfoque: 'ALQUIMIA usa PERT en lugar de un calendario fijo porque la implementación municipal tiene incertidumbre alta en permisos, licitaciones y arranque político. PERT convierte esa incertidumbre en duración probabilística visible.',
+          supuesto_critico: 'El horizonte en semanas. Acortarlo concentra hitos simultáneos y eleva el riesgo de colisión de capacidad. Extenderlo diluye el impacto político de los primeros resultados ante el Cabildo.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'gantt-maestro',
+            chart_label: 'Gantt maestro',
+            metodologia: {
+              como_se_calcula: 'Las barras representan duración esperada (β-PERT). Las barras rojas = ruta crítica (holgura = 0). El costo de cada tarea = fracción del CAPEX total: diseño 5%, infraestructura 55%, flota 25%, sensibilización 5%, tecnología 10%.',
+              origen_datos: 'Catálogo de hitos ALQUIMIA. Fracciones de costo calibradas con proyectos SEMARNAT-BID en ciudades medias 2018–2023.',
+              por_que_este_enfoque: 'La distribución de costos por fase permite detectar si el municipio puede financiar la fase crítica sin esperar el desembolso completo.',
+              supuesto_critico: 'El número de centros de acopio activos. Cada CA agrega 3 semanas a la fase de infraestructura según la fórmula: dur_infra = max(8, n_cas × 3).',
+            },
+          },
+          {
+            chart_id: 'pert-ruta-critica',
+            chart_label: 'PERT — Ruta crítica',
+            metodologia: {
+              como_se_calcula: 'Red de precedencias con cálculo hacia adelante (ES, EF) y hacia atrás (LS, LF). Holgura = LS − ES. Tareas con holgura ≤ 0 son críticas. La varianza total del proyecto = Σ(sigma²) de tareas críticas.',
+              origen_datos: 'Dependencias definidas en el catálogo de hitos. Estimados t_o / t_m / t_p documentados por tipo de tarea municipal.',
+              por_que_este_enfoque: 'PERT cuantifica el riesgo de retraso en lugar de ignorarlo. Permite al municipio enfocar supervisión en las tareas críticas y negociar plazos con mayor información.',
+              supuesto_critico: 'Los estimados pesimistas (t_p). Si los trámites de permiso o licitación toman el doble de lo previsto —común en municipios con capacidad administrativa baja— el proyecto se desplaza 4–8 semanas.',
+            },
+          },
+        ],
       }
+
     case 'infrastructure_operations':
       return {
         moduleId,
         title: 'Lectura ejecutiva de infraestructura y operación',
+        subtitulo_catchy: 'Dónde van los centros, qué flota los mueve y quién responde por cada colonia',
         situacion_actual: operativa ?? `La operación en ${territorio} necesita convertir toneladas capturables en centros, rutas, responsables, frecuencia y bitácora.`,
         observacion_alquimia: `${scope} La infraestructura no se justifica por tamaño de ciudad, sino por brecha entre material capturable, capacidad real y logística verificable.`,
         criterio_decision: 'Definir qué capacidad se instala, en qué oleada, con qué rutas y con qué evidencia mensual para sostener el programa.',
         que_no_significa: 'No asigna predios, no aprueba ubicaciones y no sustituye validación de uso de suelo, tránsito o contratación.',
         siguiente_accion: 'Contrastar capacidad propuesta con zonas, rutas, bitácora PER y responsables operativos.',
         fuente_o_evidencia: 'CA_CONFIG, plan territorial, operación PER, rutas, bitácora y flujo material.',
-        metodologia_editorial: `La capacidad requerida se calcula como toneladas capturables del Módulo 1 ÷ días operativos ÷ rendimiento por turno de cada centro; las rutas distribuyen la carga entre los centros activos minimizando el tiempo de llenado estimado por colonia piloto — esa distribución es la que aparece en el mapa y en la bitácora PER. Los parámetros de rendimiento por turno y metros cúbicos de procesamiento provienen de especificaciones operativas de la SEMARNAT y de la Asociación Nacional de Empresas de Reciclaje; la geometría de colonias y zonas de influencia viene del plan territorial configurado. ALQUIMIA dimensiona desde la brecha de flujo material —no desde el tamaño de la ciudad— porque el error más común es instalar capacidad por analogía con municipios similares sin considerar la tasa de captura real del escenario; esa analogía produce o sobredimensionamiento costoso o saturación que colapsa el servicio. El supuesto que más mueve todos los indicadores de cobertura y costo por tonelada es el número de centros activos: encender o apagar uno redistribuye todas las rutas del mapa y puede cambiar completamente la viabilidad de una colonia.`,
+        metodologia_editorial: {
+          como_se_calcula: 'Capacidad requerida = toneladas capturables del M01 ÷ días operativos ÷ rendimiento por turno por CA. Las rutas distribuyen la carga entre centros activos minimizando el tiempo de llenado estimado por colonia piloto.',
+          origen_datos: 'Parámetros de rendimiento por turno y metros cúbicos de procesamiento: especificaciones operativas SEMARNAT y Asociación Nacional de Empresas de Reciclaje.',
+          por_que_este_enfoque: 'ALQUIMIA dimensiona desde la brecha de flujo material —no desde el tamaño de la ciudad— porque el error más común es instalar capacidad por analogía sin considerar la tasa de captura real del escenario.',
+          supuesto_critico: 'El número de centros activos. Encender o apagar un CA redistribuye todas las rutas del mapa y puede cambiar completamente la viabilidad de una colonia.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'mapa-centros-acopio',
+            chart_label: 'Mapa de centros de acopio',
+            metodologia: {
+              como_se_calcula: 'Cada punto en el mapa = un centro de acopio con coordenadas lat/lon. El radio de influencia = sqrt(toneladas_por_dia / (densidad_poblacional × tasa_captura × π)). Los puntos con datos reales vienen de Google Places o DENUE; los demás son propuestas del modelo.',
+              origen_datos: 'Google Places API (fuente=places_api) o INEGI DENUE (fuente=denue) para centros existentes. Coordenadas propuestas calculadas por el motor de optimización ALQUIMIA.',
+              por_que_este_enfoque: 'La ubicación geográfica afecta la tasa de captura directamente: un CA a más de 2km de la zona de generación reduce la participación ciudadana hasta un 40% según estudios de accesibilidad.',
+              supuesto_critico: 'La fuente de los puntos del mapa. Los puntos de propuesta son simulación —no predios confirmados. La leyenda indica qué es verificado y qué es simulado.',
+            },
+          },
+        ],
       }
+
     case 'market_traceability':
       return {
         moduleId,
         title: 'Lectura ejecutiva de mercado y causalidad',
+        subtitulo_catchy: 'A quién le vendemos, a qué precio real y con qué riesgo de mercado',
         situacion_actual: `Los resultados numéricos de ${territorio} solo tienen valor operativo si entiendes qué variable los empuja y qué supuestos de mercado los sostienen.`,
         observacion_alquimia: `${scope} El grafo causal enlaza KPIs, fórmulas y fuentes: permite ver riesgo de interpretación antes de presentar el escenario como lectura única.`,
         criterio_decision: 'Validar que compradores, precios y volúmenes sean coherentes con el baseline; reconstruir el grafo tras cambiar supuestos sensibles.',
         que_no_significa: 'No constituye valoración vinculante de mercado, contrato con offtakers ni garantía de demanda.',
         siguiente_accion: 'Construir o reconstruir el grafo causal y cerrar warnings de mercado antes del módulo de escenarios y exportación.',
         fuente_o_evidencia: 'Motor del simulador, resúmenes de mercado, DataProvenance y nodos del razonamiento trazado.',
-        metodologia_editorial: `El ingreso directo visible en las barras se calcula como la suma de (toneladas_material × precio_spot × (1 − merma_material)) para cada fracción separada; el grafo causal muestra explícitamente cada nodo intermedio — captura, merma, precio, costo de disposición — con su fórmula y su fuente, para que el camino del dato de campo al número final sea trazable. Los precios de materiales provienen de cotizaciones del mercado secundario mexicano verificadas con compradores industriales activos en PET, HDPE, cartón y vidrio; los coeficientes de merma de proceso son los del sector reciclador nacional publicados por el INECC. ALQUIMIA muestra el grafo completo —no solo el número final— porque el riesgo de interpretación está en los nodos intermedios: cambiar el precio sin recalcular la merma, o cambiar la captura sin recalcular el costo de disposición, produce resultados que parecen coherentes pero no lo son. El nodo que más afecta el resultado final de izquierda a derecha es el precio del PET: su volatilidad trimestral explica históricamente más del 60% de la varianza del ingreso total en escenarios de alta captura.`,
+        metodologia_editorial: {
+          como_se_calcula: 'Ingreso directo = Σ(toneladas_material × precio_spot × (1 − merma_material)) para cada fracción separada. El grafo causal muestra cada nodo intermedio con su fórmula y fuente.',
+          origen_datos: 'Precios: cotizaciones del mercado secundario mexicano con compradores industriales activos en PET, HDPE, cartón y vidrio. Coeficientes de merma: INECC sector reciclador nacional.',
+          por_que_este_enfoque: 'ALQUIMIA muestra el grafo completo —no solo el número final— porque el riesgo está en los nodos intermedios: cambiar el precio sin recalcular la merma produce resultados que parecen coherentes pero no lo son.',
+          supuesto_critico: 'El precio del PET. Su volatilidad trimestral explica históricamente más del 60% de la varianza del ingreso total en escenarios de alta captura.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'precio-materiales',
+            chart_label: 'Precios por material',
+            metodologia: {
+              como_se_calcula: 'Los rangos de precio (min/max) por material provienen de `PRECIOS_RANGO` en constants.ts. El slider permite editar el precio dentro del rango documentado. Precio × toneladas = ingreso bruto antes de merma.',
+              origen_datos: 'Investigación de precios RSU México 2025 documentada en fuentes de calculo/Investigacion_Precios_RSU_SLP.xlsx. Actualización trimestral recomendada.',
+              por_que_este_enfoque: 'Los precios del mercado secundario fluctúan ±20–35% anualmente. Usar un precio fijo sin rango subestima el riesgo financiero del programa.',
+              supuesto_critico: 'El precio del PET y HDPE. Juntos representan el 65–70% del ingreso por materiales. Una caída de 20% en PET reduce el ingreso total ~15%.',
+            },
+          },
+          {
+            chart_id: 'riesgo-mercado',
+            chart_label: 'Riesgo de mercado',
+            metodologia: {
+              como_se_calcula: 'R_mercado = (1 − tasa_colocacion) × volumen_ton × precio_promedio × 0.35. Donde 0.35 es el factor de descuento por incertidumbre de offtaker no contratado.',
+              origen_datos: 'Reglas de placement documentadas en market/placement.py. Benchmarks de tasa de colocación en programas municipales RSU México 2019–2024.',
+              por_que_este_enfoque: 'El riesgo de mercado suele ignorarse en modelos financieros municipales. ALQUIMIA lo cuantifica porque un programa con gran volumen y sin comprador confirmado es más riesgoso que uno pequeño con contrato.',
+              supuesto_critico: 'La tasa de colocación. Por defecto se asume que el 85% del material separado tiene comprador. Si baja a 60%, el riesgo financiero se triplica.',
+            },
+          },
+        ],
       }
+
+    case 'risk_trends':
+      return {
+        moduleId,
+        title: 'Análisis de riesgos y tendencias',
+        subtitulo_catchy: 'Los riesgos que pueden hundir el programa — y cómo medimos cada uno',
+        situacion_actual: `${territorio} enfrenta cuatro dimensiones de riesgo que deben medirse antes de comprometer inversión o presentar el programa al Cabildo.`,
+        observacion_alquimia: `${scope} El score de riesgo no es una opinión — es una fórmula documentada con cuatro dimensiones ponderadas por relevancia política en el contexto municipal mexicano.`,
+        criterio_decision: 'Identificar qué dimensión de riesgo es más alta y diseñar mitigaciones específicas antes de avanzar a la fase de implementación.',
+        que_no_significa: 'No es una garantía de éxito ni un análisis exhaustivo de riesgos empresariales; es un diagnóstico de los riesgos específicos de programas RSU municipales en México.',
+        siguiente_accion: 'Priorizar la dimensión con score más alto y definir al menos una acción de mitigación concreta con responsable y fecha.',
+        fuente_o_evidencia: 'Datos de placement (riesgo mercado), mapa de actores (riesgo político), PERT slack (riesgo operativo), compliance LGPGIR (riesgo regulatorio).',
+        metodologia_editorial: {
+          como_se_calcula: 'Score total = 0.30·R_mercado + 0.40·R_político + 0.20·R_operativo + 0.10·R_regulatorio. Cada dimensión se calcula con su propia fórmula documentada. El score va de 0 (sin riesgo) a 100 (riesgo crítico).',
+          origen_datos: 'R_mercado: datos de placement del M05. R_político: mapa de actores del módulo Proyecto Vivo. R_operativo: slack del PERT del M03. R_regulatorio: checklist LGPGIR del M02.',
+          por_que_este_enfoque: 'ALQUIMIA pondera el riesgo político al 40% —la ponderación más alta— porque históricamente es el factor que más cancela programas municipales exitosos técnicamente. Los proyectos públicos no mueren por falta de tecnología sino por falta de stakeholders en la mesa correcta.',
+          supuesto_critico: 'La tasa de colocación del mercado secundario (R_mercado). Es la variable más volátil y la que más rápido puede cambiar el score total de un trimestre a otro.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'score-riesgo-total',
+            chart_label: 'Score de riesgo total',
+            metodologia: {
+              como_se_calcula: 'R_total = 0.30·R_mkt + 0.40·R_pol + 0.20·R_op + 0.10·R_reg. Escala semáforo: bajo < 25, medio 25–50, alto 50–75, crítico > 75.',
+              origen_datos: 'Ponderaciones basadas en análisis de fracasos de programas RSU municipales México 2010–2023 (BANOBRAS, BID, SEMARNAT evaluaciones).',
+              por_que_este_enfoque: 'Un score compuesto es más honesto que una lista de riesgos sin jerarquía. Obliga a priorizar en lugar de gestionar todos los riesgos con igual intensidad.',
+              supuesto_critico: 'Las ponderaciones (0.30/0.40/0.20/0.10). Son ajustables por municipio si hay evidencia de que el contexto local invierte la jerarquía típica.',
+            },
+          },
+        ],
+      }
+
     case 'inspeccion_predios':
       return {
         moduleId,
         title: 'Lectura ejecutiva de inspección y estrategia administrativa',
+        subtitulo_catchy: 'El predio que elegiste: ¿sirve o no? La evidencia ordenada antes de actuar',
         situacion_actual: `En ${territorio}, la inspección debe empezar como evidencia ordenada: predio, situación observada, actor, fecha, hallazgo y acción siguiente.`,
         observacion_alquimia: `${scope} La inspección útil no castiga por intuición: documenta hechos, distingue educación de visita técnica y deja trazabilidad para revisión municipal.`,
         criterio_decision: 'Decidir qué casos ameritan educación, seguimiento, regularización administrativa o escalamiento a revisión competente.',
         que_no_significa: 'No equivale a determinación final, cobro, clausura ni acto definitivo.',
         siguiente_accion: 'Completar evidencia mínima y validar el tratamiento administrativo con el área competente del municipio.',
         fuente_o_evidencia: 'Registro de predio, bitácora, tipo de situación, evidencia capturada y contrato municipal aplicable.',
-        metodologia_editorial: `El semáforo de clasificación de cada caso se calcula cruzando el tipo de situación observada con los artículos habilitantes del reglamento cargado en el Módulo 2: cada combinación produce una de cuatro rutas — educación, seguimiento, regularización o escalamiento — con el artículo jurídico que la fundamenta. La tipología de situaciones proviene del marco de inspección municipal de la Ley General para la Prevención y Gestión Integral de los Residuos (LGPGIR); el reglamento municipal específico determina qué artículos locales activan cada ruta. ALQUIMIA clasifica antes de recomendar acción porque el error más frecuente en inspección es tratar una visita educativa como inicio de procedimiento sancionatorio; esa confusión genera conflictos administrativos y erosiona la legitimidad del programa con ciudadanos y generadores en las primeras semanas. El supuesto que más cambia el resultado de la clasificación es la existencia y calidad del reglamento cargado en M2: sin él, el semáforo es orientativo; con él, cada decisión queda anclada al artículo que la habilita.`,
+        metodologia_editorial: {
+          como_se_calcula: 'El semáforo de clasificación cruza el tipo de situación observada con los artículos habilitantes del reglamento cargado en M02. Cada combinación produce una de cuatro rutas: educación, seguimiento, regularización o escalamiento.',
+          origen_datos: 'Tipología de situaciones: marco de inspección municipal LGPGIR. Artículos locales: reglamento municipal específico cargado en el módulo.',
+          por_que_este_enfoque: 'ALQUIMIA clasifica antes de recomendar acción porque el error más frecuente es tratar una visita educativa como inicio de procedimiento sancionatorio. Esa confusión erosiona la legitimidad del programa en las primeras semanas.',
+          supuesto_critico: 'La existencia y calidad del reglamento cargado en M02. Sin él, el semáforo es orientativo; con él, cada decisión queda anclada al artículo que la habilita.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'criterios-aptitud',
+            chart_label: 'Criterios de aptitud del predio',
+            metodologia: {
+              como_se_calcula: 'Score de aptitud = suma ponderada de: acceso vial (20%), uso de suelo compatible (30%), área disponible vs. requerida (25%), servicios básicos (15%), distancia a zona de generación (10%).',
+              origen_datos: 'Criterios de sitio para instalaciones de manejo de residuos: NOM-161-SEMARNAT-2011 y reglamentos municipales de uso de suelo.',
+              por_que_este_enfoque: 'Un predio con score < 60% raramente logra permiso. Evaluar antes de proponer al Cabildo evita el desgaste político de una propuesta que se rechazará en dictamen técnico.',
+              supuesto_critico: 'El criterio de uso de suelo (30% del score). Es el único criterio no negociable: si el uso no es compatible, no hay proyecto posible en ese predio.',
+            },
+          },
+        ],
       }
+
     case 'scenarios_export':
       return {
         moduleId,
         title: 'Lectura ejecutiva de escenarios, derrama y salida',
+        subtitulo_catchy: 'El expediente listo para el Cabildo — números, supuestos y sensibilidad',
         situacion_actual: `El valor económico de ${territorio} debe separarse: venta base de materiales, pago evitable por entierro, efectos ambientales y sensibilidad financiera.`,
         observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario; las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
         criterio_decision: 'Comparar escenarios por captura, precio, merma, costo de disposición, sensibilidad y riesgo antes de exportar un borrador de trabajo.',
         que_no_significa: 'No es garantía de ingreso, cifra autorizada, licitación ni autorización financiera.',
         siguiente_accion: 'Revisar Monte Carlo, waterfall, tornado y matriz de fuentes antes de presentar el escenario a terceros.',
         fuente_o_evidencia: 'Motor financiero, investigación de precios, matriz de trazabilidad, WACC editable y escenarios de sensibilidad.',
-        metodologia_editorial: `El waterfall descompone el valor total en tres capas con fórmulas distintas: ingreso directo = Σ(toneladas_material × precio_spot × (1 − merma)), costo evitado = toneladas_desviadas × tarifa_relleno_sanitario, y externalidades = toneladas_CO₂e_evitadas × precio_social_carbono; el Monte Carlo varía las tres variables simultáneamente en 10,000 iteraciones para producir el rango de TIR visible en el histograma. La tarifa de relleno sanitario proviene del contrato municipal vigente o del estimado regional de la SEMARNAT; el precio social del carbono es el publicado por la SHCP para evaluación de proyectos de inversión; los rangos de precio y merma son los rangos históricos documentados del mercado secundario mexicano. ALQUIMIA separa las tres capas —no las suma en un solo número de "valor total"— porque mezclarlas produce cifras que parecen atractivas en una presentación pero no se sostienen ante una pregunta de auditoría o de Cabildo sobre qué es ingreso real y qué es ahorro hipotético. El supuesto que más cambia la rentabilidad del programa es la tarifa de disposición por tonelada: en municipios con relleno sanitario concesionado puede duplicar el estimado base y convertir un programa marginal en uno altamente rentable.`,
+        metodologia_editorial: {
+          como_se_calcula: 'El waterfall descompone el valor en tres capas: (1) ingreso directo = Σ(ton_material × precio_spot × (1−merma)), (2) costo evitado = ton_desviadas × tarifa_relleno, (3) externalidades = tCO₂e × precio_social_carbono.',
+          origen_datos: 'Tarifa relleno sanitario: contrato municipal vigente o estimado SEMARNAT. Precio social del carbono: SHCP para evaluación de inversión pública. Rangos de precio y merma: mercado secundario mexicano documentado.',
+          por_que_este_enfoque: 'ALQUIMIA separa las tres capas en lugar de sumarlas en un "valor total" porque mezclarlas produce cifras que no se sostienen ante una auditoría de Cabildo que pregunte qué es ingreso real y qué es ahorro hipotético.',
+          supuesto_critico: 'La tarifa de disposición por tonelada. En municipios con relleno concesionado puede duplicar el estimado base y convertir un programa marginal en uno altamente rentable.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'resumen-ejecutivo',
+            chart_label: 'Resumen ejecutivo de escenarios',
+            metodologia: {
+              como_se_calcula: 'Tabla comparativa de los tres escenarios activos: TIR, VPN, payback, empleos y CO₂e. TIR calculada con IRR estándar sobre flujos anuales del horizonte seleccionado.',
+              origen_datos: 'Todos los inputs vienen de los módulos anteriores. TIR/VPN: cálculo propio del motor financiero ALQUIMIA.',
+              por_que_este_enfoque: 'Presentar tres escenarios —no uno— obliga al equipo municipal a decidir con información de sensibilidad, no solo con el escenario optimista.',
+              supuesto_critico: 'El WACC utilizado como tasa de descuento. La referencia pre-cargada es 12% (SHCP proyectos públicos México). Un alcalde puede considerar una tasa diferente según el costo de financiamiento municipal.',
+            },
+          },
+        ],
       }
+
     case 'source_traceability':
       return {
         moduleId,
         title: 'Lectura ejecutiva de bibliografía y cálculos',
+        subtitulo_catchy: 'De dónde vienen todos los números — la cadena completa de cada cifra',
         situacion_actual: `Toda cifra visible sobre ${territorio} necesita una cadena clara: afirmación, fórmula, fuente, estado de verificación y responsable.`,
         observacion_alquimia: `${scope} La matriz no decora el reporte; obliga a cerrar pendientes y evita que una cita general se use como prueba de una cifra específica.`,
         criterio_decision: 'Identificar qué datos están verificados, cuáles son supuestos editables y cuáles requieren acción correctiva antes de usarse públicamente.',
         que_no_significa: 'No convierte una fuente localizada en dato confirmado ni una estimación en medición municipal.',
         siguiente_accion: 'Cerrar filas pendientes, sustituir fuentes débiles y documentar responsable antes de salida institucional.',
         fuente_o_evidencia: 'Source Verification Matrix: afirmación → fuente → fórmula → estado → acción correctiva.',
-        metodologia_editorial: `Cada fila de la matriz registra una afirmación cuantitativa del sistema siguiendo la cadena: afirmación → fuente primaria → fórmula exacta → unidad → estado de verificación (verificado / condicionado / pendiente) → acción correctiva; esa estructura es la que permite que cualquier número visible en los módulos anteriores pueda ser rastreado hasta su origen en menos de diez segundos. Las fuentes que alimentan la matriz son las mismas de los módulos anteriores — Censo INEGI, Diagnóstico Básico SEMARNAT, INECC, SHCP, mercado secundario documentado — agrupadas aquí para que el auditor o el funcionario que va a presentar el escenario pueda verificar todo en un solo lugar. ALQUIMIA mantiene esta matriz porque sin ella un número en una presentación pública no puede ser defendido: no hay forma de distinguir si es un cálculo del modelo, un dato del censo o una estimación editorial, y esa ambigüedad es suficiente para que el Cabildo o una contraloría descarten todo el análisis. El elemento que más determina qué puede usarse institucionalmente es el estado de verificación de cada fila: las filas pendientes son las que no deben aparecer en documentos oficiales hasta que la fuente esté cerrada y el responsable confirmado.`,
+        metodologia_editorial: {
+          como_se_calcula: 'Cada fila registra: afirmación cuantitativa → fuente primaria → fórmula exacta → unidad → estado de verificación → acción correctiva. Estados posibles: verificado, condicionado, corregido, pendiente.',
+          origen_datos: 'Las fuentes son las mismas de los módulos anteriores: Censo INEGI 2020, SEMARNAT DBGIR 2020, INECC 2024, SHCP, mercado secundario documentado.',
+          por_que_este_enfoque: 'Sin esta matriz, un número en una presentación pública no puede ser defendido. No hay forma de distinguir si es un cálculo del modelo, un dato del censo o una estimación editorial — ambigüedad suficiente para que una contraloría descarte todo el análisis.',
+          supuesto_critico: 'El estado de verificación de cada fila. Las filas pendientes no deben aparecer en documentos oficiales hasta que la fuente esté cerrada y el responsable confirmado.',
+        },
+        chart_briefs: [],
       }
+
     default:
       return null
   }

@@ -1,9 +1,8 @@
 'use client'
 
 import { Database, Info } from 'lucide-react'
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { PRECIOS_RANGO, RSU_SEMARNAT } from '@/lib/constants'
+import { PRECIOS_RANGO } from '@/lib/constants'
 import { getInegiHousingDistribution } from '@/lib/viviendaInegi'
 import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
 import type { PreciosMaterial } from '@/types'
@@ -82,43 +81,40 @@ export function FuncionariosViviendaRsuModel() {
       {/* ── 3-column controls ────────────────────────────────────────── */}
       <div className="grid md:grid-cols-3 divide-x divide-[#F0EDE5]">
 
-        {/* Col 1 · Composición RSU SEMARNAT — donut + leyenda */}
-        <div className="px-5 py-4">
-          <p className="text-[11px] font-medium text-[#6B6760] mb-3">Composición RSU · SEMARNAT</p>
-          <div className="flex items-center gap-3">
-            <div className="w-[88px] h-[88px] shrink-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={[...RSU_SEMARNAT]}
-                    cx="50%" cy="50%"
-                    innerRadius={24} outerRadius={40}
-                    dataKey="pct"
-                    strokeWidth={0}
-                  >
-                    {RSU_SEMARNAT.map(item => (
-                      <Cell key={item.key} fill={item.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip
-                    formatter={(v: number) => [`${v.toFixed(0)}%`]}
-                    contentStyle={{ fontSize: 10, padding: '2px 6px', borderRadius: 6 }}
-                  />
-                </PieChart>
-              </ResponsiveContainer>
+        {/* Col 1 · Resumen de generación — compacto, sin duplicar el donut del panel M01 */}
+        <div className="px-5 py-4 space-y-3">
+          <p className="text-[11px] font-medium text-[#6B6760]">Resumen de generación</p>
+          {/* KPI principal */}
+          <div className="rounded-[8px] bg-[#F4FAEC] border border-[#D7E8C0] px-3 py-2.5">
+            <p className="text-[9px] text-[#8CAA7A] mb-0.5">RSU total estimado</p>
+            <p className="font-mono text-[18px] font-bold text-[#3B6D11] leading-none">
+              {resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'}
+            </p>
+            <p className="text-[9px] text-[#A8A49C] mt-0.5">toneladas / día</p>
+          </div>
+          {/* Breakdowns compactos */}
+          <div className="space-y-1.5 text-[10px]">
+            <div className="flex items-center justify-between">
+              <span className="text-[#A8A49C]">Población activa</span>
+              <span className="font-mono font-medium text-[#4A4642]">{fmt.num0(poblacionAplicada)} hab.</span>
             </div>
-            <div className="flex flex-col gap-1.5 text-[10px] min-w-0">
-              {RSU_SEMARNAT.map(item => (
-                <div key={item.key} className="flex items-center gap-1.5">
-                  <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
-                  <span className="text-[#6B6760] truncate flex-1">{item.name}</span>
-                  <span className="font-mono shrink-0 font-medium" style={{ color: item.color }}>
-                    {item.pct}%
-                  </span>
-                </div>
-              ))}
+            <div className="flex items-center justify-between">
+              <span className="text-[#A8A49C]">Viviendas activas</span>
+              <span className="font-mono font-medium text-[#4A4642]">{fmt.num0(viviendasActivas)}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#A8A49C]">Capturable / día</span>
+              <span className="font-mono font-medium text-[#3B6D11]">{toneladasCapturadasDia.toFixed(1)} t</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-[#A8A49C]">CO₂e evitadas</span>
+              <span className="font-mono font-medium text-[#D4881E]">
+                {resultados ? fmt.co2(resultados.co2eEvitadasAnualTon) : '—'}
+              </span>
             </div>
           </div>
+          {/* Badge fuente */}
+          <p className="text-[9px] text-[#C4C0B8]">Composición RSU visible en gráfica · SEMARNAT DBGIR 2020</p>
         </div>
 
         {/* Col 2 · Gen per cápita + Horizonte + ocupantes */}
