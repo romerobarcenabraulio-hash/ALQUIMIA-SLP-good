@@ -177,6 +177,11 @@ interface SimulatorStore extends SimulatorState {
   setOperationsSummary:   (s: OperationsSummary | null) => void
   setActiveDecisionModuleId: (moduleId: string | null) => void
   setPropuestaActivaIdx: (idx: number | null) => void
+
+  // ── Cotización recomendada (motor ALQUIMIA) ────────────────────────────────
+  cotizacionRecomendada: import('@/lib/recommendationEngine').CotizacionRecomendada | null
+  generarCotizacion: () => void
+  guardarCotizacionRemota: () => Promise<void>
 }
 
 const defaultState: SimulatorState = {
@@ -682,6 +687,77 @@ export const useSimulatorStore = create<SimulatorStore>()(
         },
 
         setAgoraLegalBloqueado: (v) => { set({ agoraLegalBloqueado: v }) },
+
+        // ── Cotización recomendada ─────────────────────────────────────────────
+        cotizacionRecomendada: null,
+
+        generarCotizacion: () => {
+          const state = get()
+          const resultados = state.resultados
+          if (!resultados) return
+          import('@/lib/recommendationEngine').then(({ generarCotizacion }) => {
+            const cotizacion = generarCotizacion(state, resultados)
+            set({ cotizacionRecomendada: cotizacion })
+          })
+        },
+
+        guardarCotizacionRemota: async () => {
+          const { cotizacionRecomendada } = get()
+          if (!cotizacionRecomendada) return
+          try {
+            const apiUrl = getApiUrl()
+            const c = cotizacionRecomendada
+            const body = {
+              id:                      c.id,
+              version:                 c.version,
+              generado_por:            c.generadoPor,
+              municipio_id:            c.municipioId,
+              municipio_nombre:        c.municipioNombre,
+              zm:                      c.zm,
+              poblacion:               c.poblacion,
+              generacion_rsu_ton_dia:  c.rsuTotalTonDia,
+              pct_captura_meta:        c.pctCapturaMeta,
+              ton_captura_meta:        c.tonCapturaMeta,
+              horizonte_anos:          c.horizonteAnos,
+              precios_json:            c.precios,
+              fase_recomendada:        c.faseRecomendada,
+              fase_nombre:             c.faseNombre,
+              mix_cas:                 c.mixCAs,
+              capacidad_ton_dia:       c.capacidadCAs,
+              cobertura_meta_pct:      c.coberturaMetaPct,
+              recicladoras:            c.recicladoras.map(r => ({
+                giro: r.giro, nombre: r.nombre, justificacion: r.justificacion,
+                capex_mxn: r.capexMXN, opex_mes_mxn: r.opexMesMXN,
+                tir_pct: r.tirPct, payback_meses: r.paybackMeses, empleos: r.empleos,
+              })),
+              resumen: {
+                capex_total_mxn:  c.resumen.capexTotalMXN,
+                opex_mes_mxn:     c.resumen.opexMesMXN,
+                ebitda_mes_mxn:   c.resumen.ebitdaMesMXN,
+                empleos_directos: c.resumen.empleosDirectos,
+                co2e_anual_ton:   c.resumen.co2eAnualTon,
+                tir_estimada_pct: c.resumen.tirEstimadaPct,
+                payback_meses:    c.resumen.paybackMeses,
+              },
+              score_viabilidad:        c.scoreViabilidad,
+              clasificacion_viabilidad: c.clasificacionViabilidad,
+              justificacion: {
+                texto_ejecutivo:    c.justificacion.textoEjecutivo,
+                factores_favorables: c.justificacion.factoresFavorables,
+                restricciones:      c.justificacion.restricciones,
+                supuestos_clave:    c.justificacion.supuestosClave,
+              },
+              resultado_completo_json: c,
+            }
+            await apiFetch(`${apiUrl}/api/v1/cotizaciones/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(body),
+            })
+          } catch {
+            // Fallo silencioso — cotización generada localmente siempre disponible
+          }
+        },
 
         setSnapshotDatos: (s) => { set({ snapshotDatos: s }) },
         setMarketSummary: (s) => { set({ marketSummary: s }) },

@@ -11,6 +11,8 @@ Tablas:
   impacto_real             — North Star: toneladas medidas, valor capturado
   benchmark_municipal      — comparación anónima con pares
   checkpoint_costos        — gate obligatorio antes de status "defendible"
+  cotizaciones_municipales — cotización óptima recomendada por municipio
+                             (generada por motor de recomendación ALQUIMIA)
 """
 from __future__ import annotations
 
@@ -322,3 +324,98 @@ class CheckpointCostos(Base):
         )
         total = max(1, len(self.supuestos))
         return round(confirmados / total * 100, 1)
+
+
+# ─── CotizacionMunicipal ──────────────────────────────────────────────────────
+
+class CotizacionMunicipal(Base):
+    """
+    Cotización óptima recomendada para un municipio por el motor ALQUIMIA.
+
+    Cada vez que el sistema (o un agente/consultor) genera una recomendación
+    se persiste aquí con su versión. Permite a los agentes:
+      - Recuperar la última cotización para un municipio.
+      - Comparar revisiones (versión 1 → 2 → 3 con delta de supuestos).
+      - Auditar quién la generó y con qué inputs.
+      - Alimentar el 'data flywheel': con más municipios cotizados, mejoran
+        los benchmarks de la tabla benchmark_municipal.
+
+    Columnas de input: snapshot del estado del simulador al momento de
+    generación (municipio, RSU, % captura, precios, horizonte).
+
+    Columnas de output: recomendación (fase, mix CAs, recicladoras),
+    resumen financiero, score de viabilidad, JSON completo.
+    """
+    __tablename__ = "cotizaciones_municipales"
+
+    id:              Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    municipio_id:    Mapped[str] = mapped_column(String(50), index=True)
+    zm:              Mapped[str] = mapped_column(String(20))
+    municipio_nombre: Mapped[str] = mapped_column(String(200))
+
+    # ── Inputs del municipio ─────────────────────────────────────────────────
+    poblacion:               Mapped[float] = mapped_column(Float)
+    generacion_rsu_ton_dia:  Mapped[float] = mapped_column(Float)
+    pct_captura_meta:        Mapped[float] = mapped_column(Float)   # 0–100
+    ton_captura_meta:        Mapped[float] = mapped_column(Float)
+    horizonte_anos:          Mapped[int]   = mapped_column(Integer, default=5)
+    precios_json:            Mapped[dict]  = mapped_column(JSON, default=dict)
+    # {pet, hdpe, papel, vidrio, aluminio, organico}
+
+    # ── Recomendación ────────────────────────────────────────────────────────
+    fase_recomendada:        Mapped[int]   = mapped_column(Integer)
+    fase_nombre:             Mapped[str]   = mapped_column(String(100))
+    mix_cas_json:            Mapped[dict]  = mapped_column(JSON, default=dict)
+    # {P: int, M: int, G: int}
+    capacidad_ton_dia:       Mapped[float] = mapped_column(Float)
+    cobertura_meta_pct:      Mapped[float] = mapped_column(Float)
+    recicladoras_json:       Mapped[list]  = mapped_column(JSON, default=list)
+    # [{giro, nombre, capexMXN, opexMesMXN, tirPct, paybackMeses, empleos, justificacion}]
+
+    # ── Resumen financiero ───────────────────────────────────────────────────
+    capex_total_mxn:         Mapped[float] = mapped_column(Float)
+    opex_mes_mxn:            Mapped[float] = mapped_column(Float)
+    ebitda_mes_mxn:          Mapped[float] = mapped_column(Float)
+    empleos_directos:        Mapped[int]   = mapped_column(Integer)
+    co2e_anual_ton:          Mapped[float] = mapped_column(Float, default=0.0)
+    tir_estimada_pct:        Mapped[float] = mapped_column(Float)
+    payback_meses:           Mapped[int]   = mapped_column(Integer)
+
+    # ── Viabilidad ───────────────────────────────────────────────────────────
+    score_viabilidad:        Mapped[int]   = mapped_column(Integer)
+    # 0–100; ≥70 viable, 50–69 condicionada, <50 requiere subsidio
+    clasificacion_viabilidad: Mapped[str]  = mapped_column(String(30))
+    # viable | condicionada | requiere_subsidio
+
+    # ── Metadatos ────────────────────────────────────────────────────────────
+    version:                 Mapped[int]   = mapped_column(Integer, default=1)
+    generado_por:            Mapped[str]   = mapped_column(String(50), default="sistema")
+    # sistema | agente | consultor
+    notas:                   Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+
+    # ── JSON completo ────────────────────────────────────────────────────────
+    # La cotización completa tal como la generó el motor — trazabilidad total.
+    resultado_completo_json: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+
+    created_at:              Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at:              Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+    def es_viable(self) -> bool:
+        return self.score_viabilidad >= 70
+
+    def delta_vs_version(self, otra: "CotizacionMunicipal") -> dict[str, float]:
+        """Diferencia clave entre dos versiones — útil para reportes de agentes."""
+        return {
+            "capex_delta_mxn":    self.capex_total_mxn - otra.capex_total_mxn,
+            "tir_delta_pct":      self.tir_estimada_pct - otra.tir_estimada_pct,
+            "score_delta":        self.score_viabilidad - otra.score_viabilidad,
+            "empleos_delta":      float(self.empleos_directos - otra.empleos_directos),
+            "fase_cambia":        float(self.fase_recomendada != otra.fase_recomendada),
+        }
+
+    def __repr__(self) -> str:
+        return (
+            f"<CotizacionMunicipal {self.municipio_nombre} "
+            f"Fase{self.fase_recomendada} v{self.version} "
+            f"score={self.score_viabilidad}>"
+        )

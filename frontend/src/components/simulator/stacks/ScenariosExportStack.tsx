@@ -6,6 +6,7 @@ import { TrendingUp, DollarSign, RefreshCcw, Clock, Shield, Download, FileText, 
 import { cn } from '@/lib/utils'
 import { fmt } from '@/lib/utils'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+import { CotizacionRecomendada as CotizacionRecomendadaPanel } from '@/components/simulator/CotizacionRecomendada'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
@@ -70,8 +71,9 @@ const RUTA_FASES = [
 
 // ── Tab nav ───────────────────────────────────────────────────────────────────
 
-type ScenariosExportTabId = 'finance' | 'sensitivity' | 'export'
+type ScenariosExportTabId = 'cotizacion' | 'finance' | 'sensitivity' | 'export'
 const TABS: ReadonlyArray<{ id: ScenariosExportTabId; label: string }> = [
+  { id: 'cotizacion',  label: 'Cotización recomendada' },
   { id: 'finance',     label: 'Retorno y derrama financiera' },
   { id: 'sensitivity', label: 'Sensibilidad y riesgo' },
   { id: 'export',      label: 'Salida, gobernanza y exportación' },
@@ -80,7 +82,7 @@ const TABS: ReadonlyArray<{ id: ScenariosExportTabId; label: string }> = [
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function ScenariosExportStack() {
-  const [tab, setTab] = useState<ScenariosExportTabId>('finance')
+  const [tab, setTab] = useState<ScenariosExportTabId>('cotizacion')
   const [scenarioVariant, setScenarioVariant] = useState<ScenarioVariantId>('base')
   const { resultados, horizonte } = useSimulatorStore()
   const r = resultados
@@ -169,6 +171,11 @@ export function ScenariosExportStack() {
           </button>
         ))}
       </nav>
+
+      {/* ── Tab 0: Cotización recomendada ────────────────────────────── */}
+      {tab === 'cotizacion' && (
+        <CotizacionRecomendadaPanel />
+      )}
 
       {/* ── Tab 1: Retorno y derrama financiera ─────────────────────── */}
       {tab === 'finance' && (

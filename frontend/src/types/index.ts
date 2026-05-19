@@ -1060,6 +1060,11 @@ export interface EscenarioGuardado {
   costoModeloPromedioAnualMxn?: number
 }
 
+// ─── Cotización Recomendada (motor ALQUIMIA) ──────────────────────────────────
+
+/** Re-exportado desde recommendationEngine para uso en el store. */
+export type { CotizacionRecomendada } from '@/lib/recommendationEngine'
+
 /** Hasta 3 propuestas guardadas lado a lado (persist Zustand). */
 export type PropuestaSlotIndex = 0 | 1 | 2
 
