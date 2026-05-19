@@ -10,6 +10,7 @@ describe('simulator functionary surface', () => {
     expect(AUDIENCE_MODULES.functionary).toEqual([
       'city_baseline',
       'municipal_context',
+      'social_study',
       'future_goals',
       'infrastructure_operations',
       'market_traceability',

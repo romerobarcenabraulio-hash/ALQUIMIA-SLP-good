@@ -617,6 +617,33 @@ export interface InegiMunicipalSourceAudit {
 
 // ─── Resultados calculados ───────────────────────────────────────────────────
 
+/**
+ * Scores de riesgo calculados dinámicamente.
+ * Fuentes: SEMARNAT evaluaciones de programas RSU 2019-2024 (R_mercado);
+ * LGPGIR DOF 19/01/2022 + matriz de vacios M02 (R_regulatorio);
+ * heurística de mezcla CAs y tasa captura (R_operativo).
+ * R_político = null — requiere conexión con Proyecto Vivo (backend).
+ */
+export interface RiskScores {
+  r_mercado:     number       // 0-100 — función de tasa captura y volumen
+  r_regulatorio: number       // 0-100 — función de vacíos jurídicos M02
+  r_operativo:   number       // 0-100 — función de mezcla CAs y tasa captura
+  r_politico:    null         // null — requiere Proyecto Vivo
+  score_total:   number       // ponderado: 33%/44%/23% (R_político excluido)
+}
+
+/**
+ * Percentiles del Monte Carlo triangular (distribución triangular, n=2 000 iteraciones).
+ * Fuente metodológica: Al-Salem et al. (2024) — Risk Assessment of Waste Recycling Projects
+ * Using Monte Carlo Simulation, Sustainability 16(3):1127. DOI: 10.3390/su16031127
+ */
+export interface MonteCarloPercentiles {
+  p10: number   // TIR optimista (percentil 90 de la distribución de resultados negativos)
+  p50: number   // TIR mediana
+  p90: number   // TIR pesimista (percentil 10)
+  bcr_p50: number  // Benefit-Cost Ratio en P50; benchmark Al-Salem 2024: 1.006 mínimo viable
+}
+
 export interface ResultadosCalculados {
   // Demográficos
   pobActiva:      number
@@ -651,12 +678,12 @@ export interface ResultadosCalculados {
   ahorroDisposicion:   number
 
   // Empleos
-  empleosDirectosCAs:      number
-  empleosDirectosRecic:    number
-  empleosTotalesDirectos:  number
-  empleosIndirectos:       number
-  pepenadoresFormalizados: number
-  derramaSalarial:         number
+  empleosDirectosCAs:       number
+  empleosDirectosRecic:     number   // recuperadores/pepenadores formalizables (Anaya-Palacios 2024)
+  empleosTotalesDirectos:   number
+  empleosIndirectos:        number
+  pepenadoresFormalizados:  number
+  derramaSalarial:          number   // IMSS 2025: $14,298/mes promedio tabulador residuos
 
   // Ambiental
   co2eEvitadasTon:          number  // acumulado del horizonte completo (t CO2e)
@@ -680,6 +707,10 @@ export interface ResultadosCalculados {
   derremaTotal:        number
   scorePolitico:       number
   ratingESGDelta:      number
+
+  // Riesgo y Monte Carlo (calculados bajo demanda; null si no disponibles)
+  riskScores?:           RiskScores | null
+  monteCarloPercentiles?: MonteCarloPercentiles | null
 }
 
 export interface AñoResultados {

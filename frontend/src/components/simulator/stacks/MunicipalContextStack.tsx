@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
 import { ChevronRight, Scale, Shield, AlertTriangle, CheckCircle, Lock } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
@@ -10,8 +11,11 @@ import CoberturaNacional from '@/components/simulator/CoberturaNacional'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import type { SociodemographicDisplayBlock } from '@/types/socialDemographicContext'
 import { cn } from '@/lib/utils'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 
 // ── Static legal diagnostic per ZM ─────────────────────────────────────────
+
+type AdendaItem = { id: string; articulo: string; descripcion: string; prioridad: 'alta' | 'media' | 'baja' }
 
 const LEGAL_BY_ZM: Record<string, {
   municipiosPrioritarios: number
@@ -23,6 +27,7 @@ const LEGAL_BY_ZM: Record<string, {
   municipios: Array<{ nombre: string; separacion: string; recoleccion: string; sancionatoria: string; vacios: number; cobertura: number }>
   hallazgos: string[]
   acciones: string[]
+  adendas: AdendaItem[]
 }> = {
   SLP: {
     municipiosPrioritarios: 3, totalMunicipios: 9, vaciosJuridicos: 18, adendasPropuestas: 12, cobertura: 38, faseActual: 'Diagnóstico y reforma',
@@ -40,6 +45,14 @@ const LEGAL_BY_ZM: Record<string, {
       'Impulsar ordenanzas base alineadas a la reforma.',
       'Establecer ordenanzas marco metropolitanas.',
       'Fortalecer capacidades y acompañamiento jurídico-técnico.',
+    ],
+    adendas: [
+      { id: 'SLP-A01', articulo: 'Art. 10 Bis',  descripcion: 'Obligatoriedad de separación en origen para generadores domiciliarios.',                    prioridad: 'alta' },
+      { id: 'SLP-A02', articulo: 'Art. 17 Frac. III', descripcion: 'Incorporar trazabilidad por ruta de recolección diferenciada.',                        prioridad: 'alta' },
+      { id: 'SLP-A03', articulo: 'Art. 22',       descripcion: 'Establecer sanciones escalonadas por incumplimiento de separación.',                        prioridad: 'alta' },
+      { id: 'SLP-A04', articulo: 'Art. 25',       descripcion: 'Definir roles del operador privado y responsabilidad municipal en puntos limpios.',         prioridad: 'media' },
+      { id: 'SLP-A05', articulo: 'Art. 28 Bis',   descripcion: 'Protocolo de reporte de avance hacia metas de economía circular LGPGIR.',                  prioridad: 'media' },
+      { id: 'SLP-A06', articulo: 'Art. 31',       descripcion: 'Incentivos fiscales para generadores que acrediten separación verificable.',                prioridad: 'baja' },
     ],
   },
   MTY: {
@@ -62,6 +75,13 @@ const LEGAL_BY_ZM: Record<string, {
       'Homologar indicadores y sistema de reporte.',
       'Fortalecer capacidades y acompañamiento jurídico-técnico.',
     ],
+    adendas: [
+      { id: 'MTY-A01', articulo: 'Art. 10',      descripcion: 'Obligaciones explícitas de separación en origen para todos los generadores.', prioridad: 'alta' },
+      { id: 'MTY-A02', articulo: 'Art. 18 Bis',  descripcion: 'Integración de centros de acopio en la red oficial de servicio de limpia.',    prioridad: 'alta' },
+      { id: 'MTY-A03', articulo: 'Art. 25',       descripcion: 'Sanciones por disposición inadecuada de residuos valorizables.',               prioridad: 'alta' },
+      { id: 'MTY-A04', articulo: 'Art. 29',       descripcion: 'Convenios de corresponsabilidad con sector privado y recicladores.',           prioridad: 'media' },
+      { id: 'MTY-A05', articulo: 'Art. 33 Frac. II', descripcion: 'Homologación de criterios entre municipios metropolitanos.',               prioridad: 'media' },
+    ],
   },
   QRO: {
     municipiosPrioritarios: 4, totalMunicipios: 6, vaciosJuridicos: 16, adendasPropuestas: 14, cobertura: 52, faseActual: 'Diagnóstico y reforma',
@@ -81,6 +101,12 @@ const LEGAL_BY_ZM: Record<string, {
       'Adendos de separación diferenciada en origen.',
       'Establecer esquema de sanciones y registro de generadores.',
     ],
+    adendas: [
+      { id: 'QRO-A01', articulo: 'Art. 9 Bis',   descripcion: 'Obligación de separación en 4 fracciones para todos los generadores.',            prioridad: 'alta' },
+      { id: 'QRO-A02', articulo: 'Art. 14',       descripcion: 'Trazabilidad de residuos valorizables desde origen hasta disposición final.',     prioridad: 'alta' },
+      { id: 'QRO-A03', articulo: 'Art. 21',       descripcion: 'Registro de recicladores y empresas de valorización en el padrón municipal.',     prioridad: 'media' },
+      { id: 'QRO-A04', articulo: 'Art. 27',       descripcion: 'Corresponsabilidad y metas anuales para grandes generadores.',                    prioridad: 'media' },
+    ],
   },
   GDL: {
     municipiosPrioritarios: 4, totalMunicipios: 9, vaciosJuridicos: 21, adendasPropuestas: 16, cobertura: 45, faseActual: 'Diagnóstico y reforma',
@@ -99,6 +125,12 @@ const LEGAL_BY_ZM: Record<string, {
       'Reforma reglamentaria ordenanza-marco a nivel ZM.',
       'Alineación con el plan maestro de residuos de la capital.',
       'Fortalecer la base sancionatoria en municipios periféricos.',
+    ],
+    adendas: [
+      { id: 'GDL-A01', articulo: 'Art. 11',      descripcion: 'Separación obligatoria en 5 fracciones en ZM Guadalajara.',                        prioridad: 'alta' },
+      { id: 'GDL-A02', articulo: 'Art. 19 Bis',  descripcion: 'Recolección diferenciada con horarios y rutas definidos por colonia.',             prioridad: 'alta' },
+      { id: 'GDL-A03', articulo: 'Art. 24',       descripcion: 'Sanciones progresivas para municipios que incumplan metas metropolitanas.',       prioridad: 'media' },
+      { id: 'GDL-A04', articulo: 'Art. 30',       descripcion: 'Instrumentos económicos: bonos de reciclaje y tarifas diferenciadas.',            prioridad: 'baja' },
     ],
   },
 }
@@ -326,6 +358,38 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
             </div>
           </div>
 
+          {/* Adendas propuestas list */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+            <div className="px-5 py-3 border-b border-[#F0EDE5] flex items-center justify-between">
+              <div>
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Adendas propuestas al reglamento</p>
+                <p className="text-[10px] text-[#A8A49C]">{legal.adendasPropuestas} modificaciones identificadas para alcanzar cobertura normativa · ordenadas por prioridad</p>
+              </div>
+              <span className="text-[9px] font-semibold bg-[#FEF7E7] text-[#D4881E] border border-[#F5D98A] rounded px-2 py-0.5">
+                {legal.adendas.filter(a => a.prioridad === 'alta').length} de alta prioridad
+              </span>
+            </div>
+            <div className="divide-y divide-[#F0EDE5]">
+              {legal.adendas.map(adenda => (
+                <div key={adenda.id} className="flex items-start gap-3 px-5 py-3 hover:bg-[#FAFAF8] transition-colors">
+                  <div className={cn(
+                    'shrink-0 mt-0.5 px-1.5 py-0.5 rounded text-[9px] font-mono font-semibold',
+                    adenda.prioridad === 'alta'  ? 'bg-[#FDE8E8] text-[#7A1212]' :
+                    adenda.prioridad === 'media' ? 'bg-[#FEF7E7] text-[#6B4800]' :
+                                                   'bg-[#F0EDE5] text-[#6B6760]',
+                  )}>
+                    {adenda.prioridad.toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-[10px] font-semibold text-[#3B6D11] font-mono mr-2">{adenda.articulo}</span>
+                    <span className="text-[11px] text-[#4A4740]">{adenda.descripcion}</span>
+                  </div>
+                  <span className="shrink-0 text-[9px] text-[#A8A49C]">{adenda.id}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* Municipal coverage diagnostic table */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
             <div className="px-5 py-4 border-b border-[#F0EDE5]">
@@ -465,12 +529,73 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
       {/* ── Tab 2: Cobertura territorial ───────────────────────────────── */}
       {tab === 'cobertura' && (
         <div className="space-y-4">
+
+          {/* Per-municipality coverage bar chart */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Cobertura normativa por municipio</p>
+            <p className="text-[10px] text-[#A8A49C] mb-4">% de cobertura actual · objetivo 85% · ordenado de mayor a menor</p>
+            <ResponsiveContainer width="100%" height={Math.max(100, legal.municipios.length * 32)}>
+              <BarChart
+                data={[...legal.municipios].sort((a, b) => b.cobertura - a.cobertura)}
+                layout="vertical"
+                margin={{ top: 0, right: 48, left: 96, bottom: 0 }}
+              >
+                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                <YAxis type="category" dataKey="nombre" tick={{ fontSize: 10, fill: '#4A4740' }} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(v: number) => [`${v}%`, 'Cobertura']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                <ReferenceLine x={85} stroke="#D4881E" strokeDasharray="4 2" label={{ value: 'Obj. 85%', position: 'right', fontSize: 9, fill: '#D4881E' }} />
+                <Bar dataKey="cobertura" radius={[0, 4, 4, 0]}>
+                  {[...legal.municipios].sort((a, b) => b.cobertura - a.cobertura).map((m) => (
+                    <Cell key={m.nombre} fill={m.cobertura >= 70 ? '#3B6D11' : m.cobertura >= 40 ? '#D4881E' : '#C0392B'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+            {/* Legend */}
+            <div className="flex gap-4 mt-3 text-[10px]">
+              {[['#3B6D11', 'Cobertura completa (≥70%)'], ['#D4881E', 'Cobertura parcial (40-69%)'], ['#C0392B', 'Sin cobertura (<40%)']].map(([color, label]) => (
+                <div key={label} className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
+                  <span className="text-[#6B6760]">{label}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Hallazgos territoriales */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+              <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Hallazgos territoriales</p>
+              <ul className="space-y-2.5">
+                {legal.hallazgos.map(h => (
+                  <li key={h} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
+                    <AlertTriangle className="w-3 h-3 text-[#D4881E] mt-0.5 shrink-0" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] p-4">
+              <p className="text-[11px] font-semibold text-[#3B6D11] mb-3">Acciones regulatorias prioritarias</p>
+              <ul className="space-y-2.5">
+                {legal.acciones.map(a => (
+                  <li key={a} className="flex items-start gap-2 text-[11px] text-[#3B5F23]">
+                    <CheckCircle className="w-3 h-3 text-[#3B6D11] mt-0.5 shrink-0" />
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
           {block && (
             <SocialDemographicContextPanel block={block} moduleAnchor={moduleAnchor ?? 'municipal_context'} />
           )}
           <CoberturaNacional />
         </div>
       )}
+
+      <ModuleBottomBar onProfundizar={() => setTab('cobertura')} />
     </div>
   )
 }

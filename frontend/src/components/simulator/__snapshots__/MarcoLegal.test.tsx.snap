@@ -5,10 +5,10 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
   <p
     class="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3"
   >
-    S4.5 — Marco legal (vista ciudadana)
+    Marco legal
   </p>
   <h2
-    class="font-serif text-[24px] text-[#1C1B18] mb-2"
+    class="font-serif text-[20px] text-[#1C1B18] mb-2"
   >
     Leyes locales y programa de limpia
   </h2>
@@ -18,37 +18,13 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
   >
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
   </p>
-  <p
-    class="text-[13px] text-[#6B6760] mb-6 max-w-2xl leading-relaxed"
-  >
-    Cada municipio opera su propio reglamento de limpia. La zona metropolitana coordina —no sustituye al ayuntamiento. Lo que lees aquí resume el marco local en lenguaje claro.
-  </p>
   <div
-    class="mb-6 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] p-4"
+    class="mb-4"
   >
     <p
-      class="text-[12px] font-medium text-[#1C1B18] mb-1"
+      class="text-[11px] font-medium text-[#6B6760] mb-2"
     >
-      Vista educativa
-    </p>
-    <p
-      class="mt-1 text-[12px] leading-relaxed text-[#6B6760]"
-    >
-      Esta pantalla orienta —no reemplaza el Periódico Oficial, la ventanilla municipal ni un parecer jurídico. Trámites y sanciones siguen el reglamento publicado de tu territorio.
-    </p>
-  </div>
-  <div
-    class="mb-6"
-  >
-    <p
-      class="text-[11px] font-medium text-[#6B6760] mb-3"
-    >
-      Etapas habituales de un programa municipal
-    </p>
-    <p
-      class="mb-3 text-[12px] text-[#6B6760] leading-relaxed"
-    >
-      Los equipos avanzan por fases parecidas a estas. La lista es guía conceptual —no un checklist legal.
+      Fases del programa municipal
     </p>
     <div
       class="flex flex-col gap-2"
@@ -183,10 +159,10 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
   <p
     class="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3"
   >
-    S4.5 — Marco legal y reforma reglamentaria
+    Marco legal y reforma reglamentaria
   </p>
   <h2
-    class="font-serif text-[24px] text-[#1C1B18] mb-2"
+    class="font-serif text-[20px] text-[#1C1B18] mb-2"
   >
     Reforma reglamentaria
   </h2>
@@ -195,11 +171,6 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
     class="text-[11px] leading-snug text-[#5A6347] mb-3 max-w-2xl"
   >
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
-  </p>
-  <p
-    class="text-[13px] text-[#6B6760] mb-6 max-w-2xl"
-  >
-    Esta vista produce expediente técnico de respaldo; no reemplaza el parecer de autoridad competente ni la aprobación formal de reformas. Es el mismo insumo que un equipo jurídico municipal puede usar para redactar la iniciativa y presentarla ante Cabildo.
   </p>
   <div
     class="mb-6 rounded-[12px] border border-[#E8E4DC] bg-[#F8F6F1] p-5"
@@ -213,11 +184,6 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
       class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium mb-3 bg-[#FEF7E7] text-[#8B5A00]"
     >
       En regularización jurídica
-    </p>
-    <p
-      class="text-[13px] leading-relaxed text-[#6B6760] mb-4"
-    >
-      Aquí se contrasta el reglamento vigente con los adendos propuestos. Esta vista es informativa: no requiere validaciones manuales ni checklist de avance para continuar en el simulador.
     </p>
     <p
       class="text-[11px] font-medium text-[#6B6760] mb-2"

@@ -32,8 +32,8 @@ describe('Capa social PR2 — fichas y bitácora', () => {
     expect(matrix).toBeTruthy()
     const cards = container.querySelectorAll('[data-testid="social-context-risk-card"]')
     expect(cards.length).toBe(SOCIAL_RISK_MATRIX_ITEMS.length)
-    expect(container.textContent).toMatch(/pendiente de fuente/)
-    expect(container.querySelectorAll('a[href]').length).toBe(0)
+    expect(container.textContent).not.toMatch(/pendiente de fuente/)
+    expect(container.querySelectorAll('a[href]').length).toBeGreaterThan(0)
   })
 
   it('añade fila a bitácora y persiste en storage mock', async () => {

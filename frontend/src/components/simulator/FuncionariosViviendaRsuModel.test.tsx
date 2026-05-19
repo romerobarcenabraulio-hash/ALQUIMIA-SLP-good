@@ -45,17 +45,17 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByText(/Siguiente acción:/)).toBeTruthy()
     expect(screen.getAllByText(/Casa independiente/).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/Departamento en edificio/).length).toBeGreaterThan(0)
-    expect(screen.getByTestId('rsu-composition-under-percapita')).toBeTruthy()
-    expect(screen.getByText(/Composición RSU de referencia/)).toBeTruthy()
-    expect(screen.getByText(/No son medición oficial del municipio activo/i)).toBeTruthy()
+    expect(screen.getByText(/Composición base del RSU/)).toBeTruthy()
+    expect(screen.getByText(/Composición base del RSU/)).toBeTruthy()
+    expect(screen.getByText(/No es medición de campo del municipio activo/i)).toBeTruthy()
     expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
     expect(screen.getByText(/Captura global aplicada/)).toBeTruthy()
     expect(screen.getByText(/La composición por material queda fija/i)).toBeTruthy()
-    expect(screen.getByText(/Vivienda en edificio \(condominio \/ vertical\)/)).toBeTruthy()
-    expect(screen.getByText(/^Departamentos$/)).toBeTruthy()
+    expect(screen.getByText(/viviendas en edificio/i)).toBeTruthy()
+    expect(screen.getByLabelText(/Departamentos/)).toBeTruthy()
     expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
-    expect(screen.getByText(/Vivienda en casa \(no condominio\)/)).toBeTruthy()
-    expect(screen.getByText(/Ocupantes por vivienda del escenario/)).toBeTruthy()
+    expect(screen.getAllByText(/Casa independiente/).length).toBeGreaterThan(0)
+    expect(screen.getByText(/Ocupantes por vivienda/)).toBeTruthy()
     expect(screen.getAllByText(/Modelo operativo ALQUIMIA/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/no es porcentaje oficial INEGI/i).length).toBeGreaterThan(0)
     expect(screen.queryByText(/Residencial/)).toBeNull()
@@ -85,7 +85,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     const before = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
     render(<FuncionariosViviendaRsuModel />)
 
-    fireEvent.change(screen.getByLabelText('PET'), { target: { value: '7.8' } })
+    fireEvent.change(screen.getByLabelText(/^PET$/), { target: { value: '7.8' } })
 
     const after = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
     expect(after).toBeGreaterThan(before)
@@ -98,17 +98,17 @@ describe('FuncionariosViviendaRsuModel', () => {
     const before = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
     render(<FuncionariosViviendaRsuModel />)
 
-    fireEvent.change(screen.getByLabelText(/Ocupantes por vivienda del escenario/), { target: { value: '4.2' } })
+    fireEvent.change(screen.getByLabelText(/Ocupantes por vivienda/), { target: { value: '4.2' } })
     const afterOccupants = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
     expect(afterOccupants).not.toBe(before)
 
-    fireEvent.change(screen.getByLabelText(/Vivienda en edificio/), { target: { value: '80' } })
+    fireEvent.change(screen.getByLabelText(/viviendas en edificio/i), { target: { value: '80' } })
     const afterHousing = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
     const afterHousingVertical = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
     expect(afterHousing).not.toBe(afterOccupants)
     expect(afterHousingVertical).toBeGreaterThan(0)
 
-    fireEvent.change(screen.getByLabelText(/^Departamentos$/), { target: { value: '20' } })
+    fireEvent.change(screen.getByLabelText(/Departamentos/), { target: { value: '20' } })
     const afterCondoSplit = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
     expect(afterCondoSplit).toBeLessThan(afterHousingVertical)
   })
@@ -136,7 +136,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(container.querySelector<HTMLInputElement>('#captura-pet')).toBeNull()
     expect(mermaPet).toBeTruthy()
     expect(screen.getAllByText(/Mix fijo/).length).toBeGreaterThan(0)
-    expect(screen.getAllByText(/Capturable/).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/capturable/i).length).toBeGreaterThan(0)
 
     fireEvent.change(mermaPet!, { target: { value: '50' } })
     const afterMerma = useSimulatorStore.getState().resultados?.ingresosBrutos ?? 0
@@ -154,7 +154,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getAllByText(/Sin tabulado INEGI municipal/).length).toBe(1)
-    expect(screen.getByText(/Vivienda en edificio/)).toBeTruthy()
+    expect(screen.getByText(/viviendas en edificio/i)).toBeTruthy()
     expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
     expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
   })

@@ -23,6 +23,7 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
   functionary: [
     'city_baseline',
     'municipal_context',
+    'social_study',
     'future_goals',
     'infrastructure_operations',
     'market_traceability',

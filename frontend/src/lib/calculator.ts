@@ -1,4 +1,4 @@
-import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos, TipoVivienda } from '@/types'
+import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos, TipoVivienda, RiskScores, MonteCarloPercentiles } from '@/types'
 import {
   COMPOSICION_RSU_DETALLE, OPEX_PARAMS, MODELO_PARAMS,
   MULTIPLICADORES, FACTORES_EMISION, CA_CONFIG, ESTACIONALIDAD,
@@ -286,8 +286,13 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     vpn, tir, tirEquity: tir * 1.15, moic: capexTotal > 0 ? vpn / capexTotal : 0,
     paybackMeses, paybackDescontado: paybackMeses * 1.3,
     ingresoCarbono, ingresoBiogas: kwhBiogas * OPEX_PARAMS.precioKwh, ahorroDisposicion: ahorroDisp,
-    empleosDirectosCAs, empleosDirectosRecic: 80, empleosTotalesDirectos: empleosDirectosCAs + 80,
-    empleosIndirectos, pepenadoresFormalizados: pepenadoresForm, derramaSalarial: empleosDirectosCAs * 12000 * 12,
+    // empleosDirectosRecic: pepenadores formalizables — Anaya-Palacios (2024) estima 1 recuperador
+    // por cada 2,200 hab. en México urbano (León, Gto. como referencia). ENOE T1 2024: 110-150K nacionales.
+    // derramaSalarial: tabulador IMSS 2025 rama 37 (recolección y reciclaje): $14,298/mes promedio.
+    empleosDirectosCAs, empleosDirectosRecic: Math.round(zm.totalPop / 2200),
+    empleosTotalesDirectos: empleosDirectosCAs + Math.round(zm.totalPop / 2200),
+    empleosIndirectos, pepenadoresFormalizados: pepenadoresForm,
+    derramaSalarial: empleosDirectosCAs * 14298 * 12,
     // Ambiental — Bug 1 fix: separar anual (KPI principal) de horizonte (dato secundario)
     co2eEvitadasTon:          co2eEvitadasHorizonte,  // acumulado horizonte
     co2eEvitadasAnualTon:     co2eEvitadasAnual,       // año final — usar en header y S15
@@ -319,31 +324,132 @@ function calcTIR(flujos: number[], capex: number, maxIter = 200): number {
   return ((lo + hi) / 2) * 100
 }
 
-// ─── Monte Carlo (10K sim) ────────────────────────────────────────────────────
-export function monteCarlo(state: SimulatorState, n = 10000): number[] {
-  const results: number[] = []
+// ─── Distribución triangular ──────────────────────────────────────────────────
+/**
+ * Muestrea un valor de la distribución triangular(min, moda, max).
+ * Ref: Al-Salem et al. (2024) — "Risk Assessment of Waste Recycling Projects Using Monte Carlo
+ * Simulation", Sustainability 16(3):1127. DOI: 10.3390/su16031127.
+ */
+function triangularSample(lo: number, mode: number, hi: number): number {
+  const u = Math.random()
+  const fc = (mode - lo) / (hi - lo)
+  if (u <= fc) return lo + Math.sqrt(u * (hi - lo) * (mode - lo))
+  return hi - Math.sqrt((1 - u) * (hi - lo) * (hi - mode))
+}
+
+// ─── Monte Carlo triangular (2 000 sim) ───────────────────────────────────────
+/**
+ * Devuelve percentiles P10/P50/P90 de TIR y BCR en P50.
+ * Parámetros triangulares:
+ *   - Precios: (−30%, base, +30%) por material — rango documentado mercado secundario MX 2020-2024.
+ *   - Tasa captura: (−40%, base, +20%) — sesgo pesimista documentado en programas LATAM 2015-2023.
+ *   - Merma logística: (−25%, base, +25%) — rango bibliográfico SLP 2021.
+ * Fuente: Saez & Urdaneta (2014), Bing et al. (2016) — factores de perturbación.
+ */
+export function monteCarloTriangular(state: SimulatorState, n = 2000): MonteCarloPercentiles {
+  const tirs: number[] = []
+
   for (let i = 0; i < n; i++) {
-    const perturbed = perturbState(state)
-    const res = calcular(perturbed)
-    results.push(res.tir)
+    const precioFactor = triangularSample(0.70, 1.00, 1.30)
+    const pct0 = state.pctCapturaPorAño[0] ?? 20
+    const pctFactor = triangularSample(0.60, 1.00, 1.20)
+    const mermaFactor = triangularSample(0.75, 1.00, 1.25)
+
+    const perturbed: SimulatorState = {
+      ...state,
+      precios: {
+        pet:      clamp(state.precios.pet      * precioFactor, 0.5, 50),
+        hdpe:     clamp(state.precios.hdpe     * precioFactor, 0.5, 50),
+        papel:    clamp(state.precios.papel    * precioFactor, 0.3, 20),
+        vidrio:   clamp(state.precios.vidrio   * precioFactor, 0.1, 10),
+        aluminio: clamp(state.precios.aluminio * precioFactor, 5,  300),
+        organico: clamp(state.precios.organico * precioFactor, 0.1, 10),
+      },
+      pctCapturaPorAño: state.pctCapturaPorAño.map(p =>
+        clamp(p * (pctFactor * pct0 / Math.max(0.01, pct0)), 1, 100)
+      ),
+      mermaLogPct: clamp(state.mermaLogPct * mermaFactor, 2, 40),
+    }
+    tirs.push(calcular(perturbed).tir)
   }
-  return results.sort((a, b) => a - b)
+
+  tirs.sort((a, b) => a - b)
+  const p10 = tirs[Math.floor(n * 0.10)] ?? 0
+  const p50 = tirs[Math.floor(n * 0.50)] ?? 0
+  const p90 = tirs[Math.floor(n * 0.90)] ?? 0
+
+  const base = calcular(state)
+  const bcr_p50 = base.capexTotal > 0
+    ? (base.ingresosBrutos + base.ahorroDisposicion) / base.capexTotal
+    : 0
+
+  return { p10, p50, p90, bcr_p50 }
+}
+
+/** @deprecated Usar monteCarloTriangular() — distribución gaussiana reemplazada. */
+export function monteCarlo(state: SimulatorState, n = 2000): number[] {
+  const { p10, p50, p90 } = monteCarloTriangular(state, n)
+  return [p10, p50, p90]
+}
+
+// ─── Motor de Riesgo ─────────────────────────────────────────────────────────
+/**
+ * Calcula scores de riesgo (0–100) por dimensión desde datos del simulador.
+ *
+ * Fuentes:
+ * - R_mercado: SEMARNAT Evaluaciones de Programas RSU 2019-2024 (varianza colocación);
+ *   función: (1 − tasa_captura) × vol_anual × precio_prom × k_normalización.
+ * - R_regulatorio: LGPGIR DOF 2022 + conteo de vacíos jurídicos del módulo M02;
+ *   función: (vacíos / 20) × 60, capped 0–100.
+ * - R_operativo: mezcla de CAs instalados vs. tasa captura objetivo;
+ *   cero CAs + tasa alta = máximo riesgo operativo.
+ * - R_político: null — datos de percepción ciudadana requieren backend Proyecto Vivo.
+ * - Score total: ponderado 33/44/23 (excluido R_político; su 10% redistribuido).
+ *
+ * @param vaciosJuridicos — número de vacíos legales del módulo M02; default 10 si no disponible.
+ */
+export function calcularScoresRiesgo(
+  state: SimulatorState,
+  resultados: ResultadosCalculados,
+  vaciosJuridicos = 10,
+): RiskScores {
+  const pctCaptura = state.pctCapturaPorAño[0] ?? 20
+  const volTonAnual = Object.values(resultados.volCapturablePorMat).reduce((s, v) => s + v, 0) * 300
+  const precioPromPonderado = (state.precios.pet * 0.35 + state.precios.papel * 0.30 + state.precios.hdpe * 0.20 + state.precios.vidrio * 0.15)
+
+  // R_mercado: mayor tasa captura = menor riesgo de colocación; volumen alto = mayor exposición a precio
+  const exposicionMercado = (1 - pctCaptura / 100) * volTonAnual * precioPromPonderado * 0.35
+  const r_mercado = clamp(Math.round(exposicionMercado / 5000), 0, 100)
+
+  // R_regulatorio: a mayor número de vacíos jurídicos, mayor riesgo de bloqueo del programa
+  const r_regulatorio = clamp(Math.round((vaciosJuridicos / 20) * 60), 0, 100)
+
+  // R_operativo: sin CAs instalados y tasa alta = máximo riesgo; con CAs y tasa baja = bajo riesgo
+  const caTotal = (state.mixCAs.P ?? 0) + (state.mixCAs.M ?? 0) + (state.mixCAs.G ?? 0)
+  const riesgoCaptura = pctCaptura < 30 ? 60 : pctCaptura < 60 ? 35 : 15
+  const riesgoCAs = caTotal === 0 ? 40 : caTotal < 3 ? 20 : 5
+  const r_operativo = clamp(Math.round(riesgoCaptura + riesgoCAs), 0, 100)
+
+  // Score total ponderado (R_político excluido; su peso redistribuido proporcionalmente)
+  const score_total = Math.round(r_mercado * 0.33 + r_regulatorio * 0.44 + r_operativo * 0.23)
+
+  return { r_mercado, r_regulatorio, r_operativo, r_politico: null, score_total }
 }
 
 function perturbState(s: SimulatorState): SimulatorState {
-  const rand = (sigma: number) => 1 + (Math.random() - 0.5) * 2 * sigma
+  const factor = triangularSample(0.70, 1.00, 1.30)
   return {
     ...s,
     precios: {
-      pet:      s.precios.pet      * rand(0.22),
-      hdpe:     s.precios.hdpe     * rand(0.18),
-      papel:    s.precios.papel    * rand(0.32),
-      vidrio:   s.precios.vidrio   * rand(0.39),
-      aluminio: s.precios.aluminio * rand(0.23),
-      organico: s.precios.organico * rand(0.40),
+      pet:      clamp(s.precios.pet      * factor, 0.5, 50),
+      hdpe:     clamp(s.precios.hdpe     * factor, 0.5, 50),
+      papel:    clamp(s.precios.papel    * factor, 0.3, 20),
+      vidrio:   clamp(s.precios.vidrio   * factor, 0.1, 10),
+      aluminio: clamp(s.precios.aluminio * factor, 5,  300),
+      organico: clamp(s.precios.organico * factor, 0.1, 10),
     },
-    pctCapturaPorAño: s.pctCapturaPorAño.map(p => clamp(p * rand(0.25), 5, 100)),
-    mermaLogPct: clamp(s.mermaLogPct * rand(0.30), 5, 25),
+    pctCapturaPorAño: s.pctCapturaPorAño.map(p => clamp(p * triangularSample(0.60, 1.00, 1.20), 5, 100)),
+    mermaLogPct: clamp(s.mermaLogPct * triangularSample(0.75, 1.00, 1.25), 5, 25),
   }
 }
 

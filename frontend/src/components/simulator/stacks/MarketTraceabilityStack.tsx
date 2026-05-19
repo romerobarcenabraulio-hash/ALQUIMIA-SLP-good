@@ -8,12 +8,35 @@ import {
 import { Shield, Users, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { calcularScoresRiesgo } from '@/lib/calculator'
 import dynamic from 'next/dynamic'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+
+// Confianza metodológica del módulo M05 — definida en DecisionModuleShell.MODULE_CONFIDENCE
+const M05_CONFIDENCE_PCT = 40
 
 const ReasoningGraphPanel = dynamic(
   () => import('@/components/simulator/ReasoningGraphPanel'),
   { ssr: false, loading: () => <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-6 text-[13px] text-[#6B6760]">Cargando grafo causal…</div> },
 )
+
+// ── Distribución triangular para visualización ────────────────────────────────
+// Reemplaza la distribución gaussiana std=10 (sin respaldo académico).
+// Ref: Al-Salem et al. (2024) — parámetros de perturbación triangular para RSU.
+function buildTriangularDist(lo: number, mode: number, hi: number) {
+  const range = Math.max(0.01, hi - lo)
+  const data: { pct: number; freq: number; freqBelow50: number }[] = []
+  for (let x = Math.max(0, lo - 5); x <= Math.min(100, hi + 5); x += 2) {
+    let y = 0
+    if (x >= lo && x < mode && mode > lo) {
+      y = (2 * (x - lo)) / (range * (mode - lo))
+    } else if (x >= mode && x <= hi && hi > mode) {
+      y = (2 * (hi - x)) / (range * (hi - mode))
+    }
+    data.push({ pct: x, freq: Math.round(y * 800) / 10, freqBelow50: x <= 50 ? Math.round(y * 800) / 10 : 0 })
+  }
+  return data
+}
 
 // ── Static risk data (derived from scenario type) ─────────────────────────────
 
@@ -84,39 +107,34 @@ function matrixBorder(prob: MatrixLevel, imp: MatrixLevel): string {
   return '#D7E8C0'
 }
 
-// ── Success distribution (bell-shaped histogram, dynamic mean) ───────────────
-
-function buildSuccessDist(mean: number) {
-  const std = 10
-  const data = []
-  for (let x = 20; x <= 100; x += 5) {
-    const z = (x - mean) / std
-    const y = Math.round(100 * Math.exp(-0.5 * z * z) / (std * Math.sqrt(2 * Math.PI)) * 500) / 10
-    // Shade region for P(éxito < 50%) — negative values treated as 0 for fill
-    data.push({
-      pct: x,
-      freq: y,
-      freqBelow50: x <= 50 ? y : 0,
-    })
-  }
-  return data
-}
-
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function MarketTraceabilityStack() {
-  const { resultados, horizonte } = useSimulatorStore()
+  const { resultados, horizonte, pctCapturaPorAño, mixCAs, precios, mermaLogPct, zmActiva } = useSimulatorStore()
   const r = resultados
 
-  // Derived risk indices (would come from backend in production)
-  const successProb  = r ? Math.min(95, Math.max(40, Math.round(55 + r.tir * 0.3))) : 62
+  // Probabilidad de implementación exitosa — heurística basada en TIR y tasa de captura
+  const successProb = r ? Math.min(95, Math.max(40, Math.round(55 + r.tir * 0.3))) : 62
 
-  const successDist = useMemo(() => buildSuccessDist(successProb), [successProb])
-  const citizenAccept = 74
-  const riskTotal    = 38
-  const riskLegal    = 32
-  const riskOp       = 46
-  const confidence   = 76
+  // Scores de riesgo calculados dinámicamente desde datos del simulador
+  // Fuente: calcularScoresRiesgo (calculator.ts) — no son valores hardcodeados
+  const scores = useMemo(() => {
+    if (!r) return null
+    // vaciosJuridicos: pendiente conexión M02 — se usa el default conservador (10)
+    return calcularScoresRiesgo({ pctCapturaPorAño, mixCAs, precios, mermaLogPct, zmActiva } as Parameters<typeof calcularScoresRiesgo>[0], r, 10)
+  }, [r, pctCapturaPorAño, mixCAs, precios, mermaLogPct, zmActiva])
+
+  // Distribución triangular: lo=P10, mode=P50, hi=P90 de tasa captura año 1
+  // Parámetros: (−40%, base, +20%) — sesgo pesimista consistente con LATAM 2015-2023
+  const pct1 = pctCapturaPorAño[0] ?? 20
+  const successDist = useMemo(
+    () => buildTriangularDist(Math.max(5, pct1 * 0.6), pct1, Math.min(100, pct1 * 1.2)),
+    [pct1],
+  )
+
+  const riskTotal = scores?.score_total ?? null
+  const riskLegal = scores?.r_regulatorio ?? null
+  const riskOp    = scores?.r_operativo ?? null
 
   return (
     <div className="space-y-4 pb-6">
@@ -124,12 +142,48 @@ export function MarketTraceabilityStack() {
       {/* ── M07 KPI strip ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
         {[
-          { icon: TrendingUp,    label: 'Prob. implementación exitosa', value: `${successProb}%`,     sub: 'IC 95%: 53%–75%',    color: '#3B6D11' },
-          { icon: Users,         label: 'Aceptación ciudadana estimada', value: `${citizenAccept}%`,   sub: 'IC 95%: 66%–81%',    color: '#1A5FA8' },
-          { icon: AlertTriangle, label: 'Índice de riesgo total',        value: `${riskTotal}/100`,    sub: 'Riesgo moderado',     color: '#D4881E' },
-          { icon: Shield,        label: 'Riesgo jurídico',               value: `${riskLegal}/100`,    sub: 'Bajo',                color: '#3B6D11' },
-          { icon: AlertTriangle, label: 'Riesgos operativos',            value: `${riskOp}/100`,       sub: 'Moderado',            color: '#D4881E' },
-          { icon: Shield,        label: 'Nivel de confianza',            value: `${confidence}%`,      sub: 'Confianza media-alta', color: '#1A5FA8' },
+          {
+            icon: TrendingUp,
+            label: 'Prob. implementación exitosa',
+            value: `${successProb}%`,
+            sub: 'Heurística: 55 + TIR×0.3',
+            color: '#3B6D11',
+          },
+          {
+            icon: Users,
+            label: 'Aceptación ciudadana',
+            value: 'Sin encuesta',
+            sub: 'Dato pendiente — sin encuesta municipal',
+            color: '#A8A49C',
+          },
+          {
+            icon: AlertTriangle,
+            label: 'Índice de riesgo total',
+            value: riskTotal !== null ? `${riskTotal}/100` : '—',
+            sub: riskTotal !== null ? (riskTotal < 30 ? 'Bajo' : riskTotal < 60 ? 'Moderado' : 'Alto') : 'Calculando…',
+            color: riskTotal !== null && riskTotal >= 60 ? '#C0392B' : riskTotal !== null && riskTotal >= 30 ? '#D4881E' : '#3B6D11',
+          },
+          {
+            icon: Shield,
+            label: 'Riesgo regulatorio',
+            value: riskLegal !== null ? `${riskLegal}/100` : '—',
+            sub: 'Fn. vacíos jurídicos M02',
+            color: riskLegal !== null && riskLegal >= 60 ? '#C0392B' : riskLegal !== null && riskLegal >= 30 ? '#D4881E' : '#3B6D11',
+          },
+          {
+            icon: AlertTriangle,
+            label: 'Riesgo operativo',
+            value: riskOp !== null ? `${riskOp}/100` : '—',
+            sub: 'Fn. mix CAs y tasa captura',
+            color: riskOp !== null && riskOp >= 60 ? '#C0392B' : riskOp !== null && riskOp >= 30 ? '#D4881E' : '#3B6D11',
+          },
+          {
+            icon: Shield,
+            label: 'Confianza del modelo',
+            value: `${M05_CONFIDENCE_PCT}%`,
+            sub: 'Condicionado — datos DENUE pendientes',
+            color: '#A8A49C',
+          },
         ].map(({ icon: Icon, label, value, sub, color }) => (
           <div key={label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
             <div className="flex items-center gap-1.5 mb-1">
@@ -416,6 +470,7 @@ export function MarketTraceabilityStack() {
         </p>
         <ReasoningGraphPanel />
       </div>
+      <ModuleBottomBar />
     </div>
   )
 }

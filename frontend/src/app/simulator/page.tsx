@@ -19,6 +19,7 @@ import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import {
   enrichFunctionaryModules,
   SOURCE_TRACEABILITY_MODULE,
+  SOCIAL_STUDY_MODULE,
 } from '@/lib/simulator/functionaryJourneyEnrichment'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
@@ -87,8 +88,18 @@ export default function SimulatorPage() {
   const portalJourneyWithTraceability = useMemo(() => {
     if (audience !== 'functionary') return portalJourney
     const enriched = enrichFunctionaryModules(portalJourney)
-    if (enriched.some(m => m.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return enriched
-    return [...enriched, SOURCE_TRACEABILITY_MODULE]
+
+    // Inyectar social_study después de municipal_context si no viene del backend
+    let withSocial = enriched
+    if (!enriched.some(m => m.module_id === SOCIAL_STUDY_MODULE.module_id)) {
+      const mcIdx = enriched.findIndex(m => m.module_id === 'municipal_context')
+      withSocial = mcIdx >= 0
+        ? [...enriched.slice(0, mcIdx + 1), SOCIAL_STUDY_MODULE, ...enriched.slice(mcIdx + 1)]
+        : [SOCIAL_STUDY_MODULE, ...enriched]
+    }
+
+    if (withSocial.some(m => m.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return withSocial
+    return [...withSocial, SOURCE_TRACEABILITY_MODULE]
   }, [audience, portalJourney])
 
   // ── Module nav state (lifted from DecisionModuleShell) ──────────────────────

@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import { TrendingUp, DollarSign, RefreshCcw, Clock, Shield, Download, FileText, Share2 } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, LineChart, Line, CartesianGrid, Legend } from 'recharts'
+import { TrendingUp, DollarSign, RefreshCcw, Clock, Shield, Download, FileText, Share2, Zap } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { fmt } from '@/lib/utils'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
@@ -36,6 +37,37 @@ const CAPEX_ITEMS = [
   { label: 'Acompañamiento técnico-jurídico', pct: 10, color: '#C4DAB4' },
 ]
 
+// ── Scenario variant multipliers ─────────────────────────────────────────────
+
+type ScenarioVariantId = 'acelerado' | 'base' | 'conservador' | 'sinintervencion'
+
+const SCENARIO_VARIANTS: ReadonlyArray<{
+  id: ScenarioVariantId
+  label: string
+  color: string
+  badge: string
+  tirMult: number
+  vpnMult: number
+  capexMult: number
+  capturaMult: number
+  desc: string
+}> = [
+  { id: 'acelerado',       label: 'Acelerado',       color: '#3B6D11', badge: 'bg-[#EAF3DE] border-[#A5C97A] text-[#23470A]',     tirMult: 1.25, vpnMult: 1.35, capexMult: 1.0,  capturaMult: 1.25, desc: 'Inversión completa al inicio, captura acelerada.' },
+  { id: 'base',            label: 'Base',            color: '#1A5FA8', badge: 'bg-[#EBF3FB] border-[#7BAEE0] text-[#0D3B7A]',     tirMult: 1.0,  vpnMult: 1.0,  capexMult: 1.0,  capturaMult: 1.0,  desc: 'Trayectoria planeada con supuestos nominales.' },
+  { id: 'conservador',     label: 'Conservador',     color: '#D4881E', badge: 'bg-[#FEF7E7] border-[#F5D98A] text-[#6B4800]',     tirMult: 0.72, vpnMult: 0.65, capexMult: 1.1,  capturaMult: 0.75, desc: 'Restricciones presupuestales, adopción lenta.' },
+  { id: 'sinintervencion', label: 'Sin intervención', color: '#C0392B', badge: 'bg-[#FDE8E8] border-[#F5B7B1] text-[#7A1212]',    tirMult: 0.0,  vpnMult: 0.0,  capexMult: 0.0,  capturaMult: 0.0,  desc: 'Statu quo: sin programa de reciclaje.' },
+]
+
+// ── Ruta de inversión — phase timeline data ───────────────────────────────────
+
+const RUTA_FASES = [
+  { fase: 'F1', label: 'Diagnóstico', acelerado: 20, base: 15, conservador: 10 },
+  { fase: 'F2', label: 'Diseño',      acelerado: 45, base: 35, conservador: 20 },
+  { fase: 'F3', label: 'Piloto',      acelerado: 65, base: 55, conservador: 40 },
+  { fase: 'F4', label: 'Escala',      acelerado: 85, base: 75, conservador: 60 },
+  { fase: 'F5', label: 'Estabilidad', acelerado: 98, base: 90, conservador: 78 },
+]
+
 // ── Tab nav ───────────────────────────────────────────────────────────────────
 
 type ScenariosExportTabId = 'finance' | 'sensitivity' | 'export'
@@ -49,6 +81,7 @@ const TABS: ReadonlyArray<{ id: ScenariosExportTabId; label: string }> = [
 
 export function ScenariosExportStack() {
   const [tab, setTab] = useState<ScenariosExportTabId>('finance')
+  const [scenarioVariant, setScenarioVariant] = useState<ScenarioVariantId>('base')
   const { resultados, horizonte } = useSimulatorStore()
   const r = resultados
   const scenarios = buildScenarios(r)
@@ -56,18 +89,58 @@ export function ScenariosExportStack() {
   // Capex total reference
   const capexRef = 31_000_000 // MXN — from FASES_CA optimal
 
+  // Active variant multipliers
+  const activeVariant = SCENARIO_VARIANTS.find(s => s.id === scenarioVariant) ?? SCENARIO_VARIANTS[1]!
+  const adjMetrics = useMemo(() => {
+    if (!r || !activeVariant) return null
+    return {
+      tir:         r.tir * activeVariant.tirMult,
+      vpn:         r.vpn * activeVariant.vpnMult,
+      ebitda:      r.ebitda * activeVariant.vpnMult,
+      capex:       capexRef * activeVariant.capexMult,
+      payback:     activeVariant.tirMult > 0 ? r.paybackMeses / activeVariant.tirMult : 999,
+    }
+  }, [r, activeVariant, capexRef])
+
   return (
     <section className="space-y-4 pb-6" data-testid="scenarios-export-stack">
+
+      {/* ── Scenario variant selector ─────────────────────────────── */}
+      <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+        <p className="text-[10px] text-[#A8A49C] uppercase tracking-[0.06em] mb-3">Escenario de inversión a modelar</p>
+        <div className="flex flex-wrap gap-2">
+          {SCENARIO_VARIANTS.map(sv => (
+            <button
+              key={sv.id}
+              type="button"
+              onClick={() => setScenarioVariant(sv.id)}
+              className={cn(
+                'flex-1 min-w-[120px] flex flex-col items-center gap-1 rounded-[10px] border px-3 py-2.5 transition-all text-center',
+                scenarioVariant === sv.id ? sv.badge + ' shadow-sm' : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#6B6760] hover:border-[#C8C4BC]',
+              )}
+            >
+              <span className="text-[12px] font-semibold">{sv.label}</span>
+              <span className="text-[9px] leading-tight opacity-80">{sv.desc}</span>
+            </button>
+          ))}
+        </div>
+        {activeVariant && (
+          <p className="text-[10px] text-[#6B6760] mt-2.5 flex items-center gap-1.5">
+            <span className="inline-block w-2 h-2 rounded-full shrink-0" style={{ background: activeVariant.color }} />
+            <span>Mostrando métricas ajustadas para escenario <strong className="text-[#1C1B18]">{activeVariant.label}</strong> — TIR ×{activeVariant.tirMult.toFixed(2)} · VPN ×{activeVariant.vpnMult.toFixed(2)} · Captura ×{activeVariant.capturaMult.toFixed(2)}</span>
+          </p>
+        )}
+      </div>
 
       {/* ── M06 KPI strip ────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
         {[
-          { icon: TrendingUp,  label: 'TIR del proyecto',       value: r ? `${r.tir.toFixed(1)}%` : '—',                                                    color: '#3B6D11' },
-          { icon: DollarSign,  label: 'VPN (20 años)',           value: r ? fmt.mxnM(r.vpn) : '—',                                                           color: '#3B6D11' },
-          { icon: RefreshCcw,  label: 'EBITDA promedio anual',   value: r ? fmt.mxnM(r.ebitda / Math.max(1, horizonte)) : '—',                               color: '#1A5FA8' },
-          { icon: Clock,       label: 'Recuperación (payback)',  value: r ? `${r.paybackMeses.toFixed(0)} meses` : '—',                                      color: '#5A4A2A' },
-          { icon: DollarSign,  label: 'CAPEX implementación',    value: fmt.mxnM(capexRef),                                                                   color: '#D4881E' },
-          { icon: Shield,      label: 'Nivel de confianza',      value: '82%',                                                                                color: '#3B6D11' },
+          { icon: TrendingUp,  label: 'TIR del proyecto',       value: adjMetrics ? `${adjMetrics.tir.toFixed(1)}%` : (r ? `${r.tir.toFixed(1)}%` : '—'),               color: '#3B6D11' },
+          { icon: DollarSign,  label: 'VPN',                    value: adjMetrics ? fmt.mxnM(adjMetrics.vpn) : (r ? fmt.mxnM(r.vpn) : '—'),                              color: '#3B6D11' },
+          { icon: RefreshCcw,  label: 'EBITDA promedio anual',  value: adjMetrics ? fmt.mxnM(adjMetrics.ebitda / Math.max(1, horizonte)) : '—',                          color: '#1A5FA8' },
+          { icon: Clock,       label: 'Recuperación (payback)', value: adjMetrics && adjMetrics.payback < 999 ? `${adjMetrics.payback.toFixed(0)} meses` : '—',           color: '#5A4A2A' },
+          { icon: DollarSign,  label: 'CAPEX implementación',   value: adjMetrics ? fmt.mxnM(adjMetrics.capex) : fmt.mxnM(capexRef),                                     color: '#D4881E' },
+          { icon: Shield,      label: 'Confianza del modelo',   value: '55%', color: '#D4881E' },
         ].map(({ icon: Icon, label, value, color }) => (
           <div key={label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
             <div className="flex items-center gap-1.5 mb-1">
@@ -198,6 +271,41 @@ export function ScenariosExportStack() {
             </div>
           </div>
 
+          {/* Ruta de inversión — phase deployment line chart */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+            <div className="flex items-start justify-between mb-1">
+              <div>
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Ruta de inversión — despliegue por fase</p>
+                <p className="text-[10px] text-[#A8A49C] mt-0.5">% de cobertura desplegada · Fases F1–F5 · todos los escenarios</p>
+              </div>
+              <span className="text-[9px] bg-[#EBF3FB] text-[#0D3B7A] border border-[#B0D0F5] rounded px-2 py-0.5 font-medium">
+                {activeVariant?.label ?? 'Base'} activo
+              </span>
+            </div>
+            <ResponsiveContainer width="100%" height={180}>
+              <LineChart data={RUTA_FASES} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                <XAxis dataKey="fase" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={32} />
+                <Tooltip formatter={(v: number, name: string) => [`${v}%`, name]} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                <Line type="monotone" dataKey="acelerado"   name="Acelerado"   stroke="#3B6D11" strokeWidth={scenarioVariant === 'acelerado'       ? 3 : 1.5} strokeDasharray={scenarioVariant === 'acelerado'       ? undefined : '4 2'} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="base"        name="Base"        stroke="#1A5FA8" strokeWidth={scenarioVariant === 'base'            ? 3 : 1.5} strokeDasharray={scenarioVariant === 'base'            ? undefined : '4 2'} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="conservador" name="Conservador" stroke="#D4881E" strokeWidth={scenarioVariant === 'conservador'     ? 3 : 1.5} strokeDasharray={scenarioVariant === 'conservador'     ? undefined : '4 2'} dot={{ r: 3 }} />
+              </LineChart>
+            </ResponsiveContainer>
+
+            {/* Phase descriptions */}
+            <div className="mt-3 grid grid-cols-5 gap-1.5">
+              {RUTA_FASES.map((f, i) => (
+                <div key={f.fase} className="rounded-[6px] bg-[#FAFAF8] border border-[#F0EDE5] px-2 py-1.5 text-center">
+                  <p className="text-[10px] font-semibold" style={{ color: ['#3B6D11','#5A9438','#7DA84A','#A5C97A','#C8E6A4'][i] }}>{f.fase}</p>
+                  <p className="text-[9px] text-[#6B6760] leading-tight">{f.label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
           {/* ImpactoFinanciero full component */}
           <ImpactoFinanciero />
         </div>
@@ -258,12 +366,41 @@ export function ScenariosExportStack() {
             </div>
           </div>
 
+          {/* Generar plan de circularidad CTA */}
+          <div className="rounded-[12px] border border-[#D7E8C0] bg-gradient-to-br from-[#F4FAEC] to-[#EBF3FB] p-5">
+            <div className="flex items-start gap-4">
+              <div className="shrink-0 w-10 h-10 rounded-[10px] bg-[#3B6D11] flex items-center justify-center">
+                <Zap className="w-5 h-5 text-white" strokeWidth={2} />
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] font-semibold text-[#1A4200] mb-1">Generar plan de circularidad completo</p>
+                <p className="text-[12px] text-[#5A6347] mb-3">
+                  Exporta el modelo financiero completo en el escenario <strong>{activeVariant?.label ?? 'Base'}</strong>, incluyendo fichas de proyecto, supuestos, rutas de implementación y paquete para presentación a Cabildo.
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: 'PDF ejecutivo',         icon: FileText, color: '#C0392B', bg: 'bg-[#FDE8E8]' },
+                    { label: 'Excel con supuestos',   icon: Download,  color: '#1A5FA8', bg: 'bg-[#EBF3FB]' },
+                    { label: 'Resumen para Cabildo',  icon: FileText, color: '#3B6D11', bg: 'bg-[#EAF3DE]' },
+                    { label: 'URL compartida',        icon: Share2,   color: '#5A4A2A', bg: 'bg-[#F4F2ED]' },
+                  ].map(({ label, icon: Icon, color, bg }) => (
+                    <button key={label} type="button" className={cn('flex items-center gap-1.5 rounded-[8px] border border-[#E8E4DC] px-3 py-1.5 text-[11px] font-medium hover:shadow-sm transition-shadow', bg)}>
+                      <Icon className="w-3.5 h-3.5" style={{ color }} strokeWidth={2} />
+                      <span style={{ color }}>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <ExportarSection />
           <ExportadorReporte />
           <GovernancePanel />
           <LaunchChecklist />
         </div>
       )}
+      <ModuleBottomBar onProfundizar={() => setTab('sensitivity')} onExportar={() => setTab('export')} />
     </section>
   )
 }

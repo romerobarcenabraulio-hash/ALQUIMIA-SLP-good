@@ -15,6 +15,7 @@ import { HojaRuta } from '@/components/simulator/HojaRuta'
 import { OperacionPERBitacora } from '@/components/simulator/OperacionPERBitacora'
 import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -83,6 +84,23 @@ export function InfrastructureOperationsStack() {
     cobertura: f.coberturaPct,
     optimal: f.esOptimo ?? false,
   }))
+
+  // Dual-line deployment: CAs + Recicladoras per phase
+  const despliegueLineData = FASES_CA.map(f => ({
+    name: `F${f.fase}`,
+    label: f.nombre,
+    centrosAcopio: f.nCAs,
+    recicladoras: Math.max(1, Math.floor(f.nCAs / 4)),
+    cobertura: f.coberturaPct,
+    esOptimo: f.esOptimo ?? false,
+  }))
+
+  // Centros propuestos card data (from optimal phase mix)
+  const centrosCards = [
+    { tipo: 'P', nombre: 'Centro Pequeño',  capacidad: '5 t/día',  area: '250 m²', capex: '$726K',  zonas: 'Residencial / Colonia', color: '#C8E6A4', count: 10 },
+    { tipo: 'M', nombre: 'Centro Mediano',  capacidad: '15 t/día', area: '750 m²', capex: '$2.5M',  zonas: 'Comercial / Centro',   color: '#7DA84A', count: 6  },
+    { tipo: 'G', nombre: 'Centro Grande',   capacidad: '50 t/día', area: '2,000 m²', capex: '$7.1M', zonas: 'Industrial / Periférico', color: '#3B6D11', count: 2  },
+  ]
 
   return (
     <div className="space-y-4 pb-6">
@@ -153,6 +171,64 @@ export function InfrastructureOperationsStack() {
                 <p className="font-mono text-[16px] font-semibold mt-0.5" style={{ color: item.color }}>{item.value}</p>
               </div>
             ))}
+          </div>
+
+          {/* Dual-line deployment chart: CAs + Recicladoras */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+              <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Despliegue de infraestructura por fase</p>
+              <p className="text-[10px] text-[#A8A49C] mb-4">Centros de Acopio (CA) y Recicladoras habilitadas por fase operativa</p>
+              <ResponsiveContainer width="100%" height={160}>
+                <BarChart data={despliegueLineData} margin={{ top: 2, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={24} />
+                  <Tooltip
+                    formatter={(v: number, name: string) => [v, name === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras']}
+                    labelFormatter={(l: string) => `${l} — ${despliegueLineData.find(d => d.name === l)?.label ?? ''}`}
+                    contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
+                    formatter={(v: string) => v === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras'}
+                  />
+                  <Bar dataKey="centrosAcopio" name="centrosAcopio" fill="#3B6D11" radius={[3, 3, 0, 0]}>
+                    {despliegueLineData.map((d, i) => (
+                      <Cell key={i} fill={d.esOptimo ? '#3B6D11' : FASE_COLORS[i] ?? '#3B6D11'} />
+                    ))}
+                  </Bar>
+                  <Bar dataKey="recicladoras" name="recicladoras" fill="#1A5FA8" radius={[3, 3, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Centros propuestos card grid */}
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+              <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Centros propuestos — mix óptimo (F5)</p>
+              <p className="text-[10px] text-[#A8A49C] mb-4">Tipología en fase de madurez: {optimalFase.mix} · {optimalFase.nCAs} CAs total</p>
+              <div className="space-y-2.5">
+                {centrosCards.map(c => (
+                  <div key={c.tipo} className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="shrink-0 w-9 h-9 rounded-[8px] flex items-center justify-center text-white text-[12px] font-bold" style={{ background: c.color }}>
+                        {c.tipo}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[11px] font-semibold text-[#1C1B18]">{c.nombre}</p>
+                          <span className="text-[10px] font-mono font-semibold text-[#3B6D11]">×{c.count}</span>
+                        </div>
+                        <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-0.5 text-[9px] text-[#6B6760]">
+                          <span>{c.capacidad}</span>
+                          <span>{c.area}</span>
+                          <span className="font-mono">{c.capex} CAPEX</span>
+                        </div>
+                        <p className="text-[9px] text-[#A8A49C] mt-0.5">{c.zonas}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Deployment phases table */}
@@ -406,10 +482,41 @@ export function InfrastructureOperationsStack() {
           <SankeyFlujoResiduos />
           <FlujosResiduos />
           <HojaRuta />
+
+          {/* Hoja de ruta ejecutiva municipal — action grid */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Hoja de ruta ejecutiva municipal</p>
+            <p className="text-[10px] text-[#A8A49C] mb-4">Acciones clave por dimensión para cerrar el ciclo de residuos en el municipio</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[
+                { fase: 'F1–F2', titulo: 'Habilitación legal',        desc: 'Reformar reglamento, crear adendas y establecer base sancionatoria.',        color: '#C8E6A4', icon: '⚖' },
+                { fase: 'F2–F3', titulo: 'Infraestructura piloto',    desc: 'Instalar primeros 6 CAs en zonas de alta densidad y cobertura residencial.',  color: '#7DA84A', icon: '🏗' },
+                { fase: 'F3–F4', titulo: 'Separación en origen',      desc: 'Programa de comunicación ciudadana, capacitación y rutas diferenciadas.',     color: '#5A8C2C', icon: '♻' },
+                { fase: 'F3–F5', titulo: 'Mercado de materiales',     desc: 'Contratos con recicladores formales y plataforma de trazabilidad.',           color: '#3B6D11', icon: '📦' },
+                { fase: 'F4–F5', titulo: 'Escala metropolitana',      desc: 'Convenios ZM, homologar tarifas, sistema unificado de reporte.',              color: '#1A5FA8', icon: '🌐' },
+                { fase: 'F5+',   titulo: 'Circularidad y ESG',        desc: 'Bonos verdes, reporte ESG y metas de economía circular para Cabildo.',        color: '#5A4A2A', icon: '🏆' },
+              ].map(item => (
+                <div key={item.titulo} className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] p-3.5">
+                  <div className="flex items-center gap-2 mb-1.5">
+                    <span className="text-[16px]">{item.icon}</span>
+                    <div>
+                      <p className="text-[10px] font-mono text-[#A8A49C]">{item.fase}</p>
+                      <p className="text-[11px] font-semibold text-[#1C1B18]">{item.titulo}</p>
+                    </div>
+                  </div>
+                  <p className="text-[10px] text-[#6B6760] leading-relaxed">{item.desc}</p>
+                  <div className="mt-2 h-1 rounded-full" style={{ background: item.color }} />
+                </div>
+              ))}
+            </div>
+          </div>
+
           <OperacionPERBitacora />
           <PortalEmpresarial />
         </div>
       )}
+
+      <ModuleBottomBar onProfundizar={() => setTab('flujos')} />
     </div>
   )
 }

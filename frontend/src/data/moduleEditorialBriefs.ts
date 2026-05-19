@@ -355,8 +355,8 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             metodologia: {
               como_se_calcula: 'Score de aptitud = suma ponderada de: acceso vial (20%), uso de suelo compatible (30%), área disponible vs. requerida (25%), servicios básicos (15%), distancia a zona de generación (10%).',
               origen_datos: 'Criterios de sitio para instalaciones de manejo de residuos: NOM-161-SEMARNAT-2011 y reglamentos municipales de uso de suelo.',
-              por_que_este_enfoque: 'Un predio con score < 60% raramente logra permiso. Evaluar antes de proponer al Cabildo evita el desgaste político de una propuesta que se rechazará en dictamen técnico.',
-              supuesto_critico: 'El criterio de uso de suelo (30% del score). Es el único criterio no negociable: si el uso no es compatible, no hay proyecto posible en ese predio.',
+              por_que_este_enfoque: 'Un predio con score < 60% raramente logra permiso. Evaluar antes de proponer al Cabildo evita el desgaste político de una propuesta que será rechazada en revisión técnica.',
+              supuesto_critico: 'El criterio de uso de suelo (30% del score). Es el único criterio no negociable: si el uso no es compatible, no hay proyecto posible en ese predio, y proponerlo al Cabildo genera desgaste político sin salida técnica.',
             },
           },
         ],
@@ -388,6 +388,37 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
               origen_datos: 'Todos los inputs vienen de los módulos anteriores. TIR/VPN: cálculo propio del motor financiero ALQUIMIA.',
               por_que_este_enfoque: 'Presentar tres escenarios —no uno— obliga al equipo municipal a decidir con información de sensibilidad, no solo con el escenario optimista.',
               supuesto_critico: 'El WACC utilizado como tasa de descuento. La referencia pre-cargada es 12% (SHCP proyectos públicos México). Un alcalde puede considerar una tasa diferente según el costo de financiamiento municipal.',
+            },
+          },
+        ],
+      }
+
+    case 'social_study':
+      return {
+        moduleId,
+        title: 'Estudio demográfico y contexto social',
+        subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
+        situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
+        observacion_alquimia: `${scope} Los indicadores de este módulo son referencias estadísticas trazables (INEGI Censo 2020, CONEVAL 2022, ENOE 2024), no diagnósticos municipales certificados. Cada cifra citada aquí debe declararse como "estimación con supuestos explícitos" en comunicación pública.`,
+        criterio_decision: 'Identificar grupos prioritarios, colonias de rezago, pepenadores a integrar y riesgos de reputación antes de cerrar el diseño de la estrategia de participación ciudadana.',
+        que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico certificado ni padrón de beneficiarios.',
+        siguiente_accion: 'Revisar la matriz de riesgos sociales, documentar supuestos en la bitácora y cerrar brechas con evidencia de campo antes de presentar el programa a Cabildo.',
+        fuente_o_evidencia: 'INEGI Censo de Población y Vivienda 2020; CONEVAL Índice de Rezago Social 2022; INEGI ENOE T1 2024 (sector informal); INEGI ENIGH 2022; INE calendario electoral 2024–2027.',
+        metodologia_editorial: {
+          como_se_calcula: 'Los indicadores cuantitativos (población, viviendas, ocupantes, rezago social) se leen directamente de los tabulados INEGI cargados en el sistema. Los indicadores de riesgo social son heurísticas documentadas; no provienen de fórmulas de campo sino de estudios nacionales escalados.',
+          origen_datos: 'INEGI Censo 2020: variables de vivienda, población y ocupantes. CONEVAL 2022: Índice de Rezago Social por municipio. ENOE T1 2024: estimación del sector informal de recuperación. ENIGH 2022: porcentaje de hogares sin espacio para contenedores.',
+          por_que_este_enfoque: 'Un programa de separación sin lectura sociodemográfica diseña para la población promedio, no para la real. El error más frecuente es planear la misma estrategia para colonias con rezago IV y colonias residenciales — eso garantiza baja adopción en los segmentos más vulnerables.',
+          supuesto_critico: 'El ciclo de actualización decenal del Censo INEGI. En municipios con alta movilidad poblacional (periferia metropolitana), los datos 2020 pueden subestimar densidad, rezago o sector informal hasta en un 15-20%.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'social-risk-matrix',
+            chart_label: 'Matriz de riesgos sociales',
+            metodologia: {
+              como_se_calcula: 'Fichas cualitativas; no hay fórmula numérica. Severidad interna (bajo/medio/alto) basada en frecuencia de aparición en literatura de programas RSU LATAM 2010-2024 y en evaluaciones de CONEVAL de programas municipales.',
+              origen_datos: 'CONEVAL evaluaciones de programas municipales; INE calendario electoral; LGPGIR DOF 2022; INEGI ENOE 2024.',
+              por_que_este_enfoque: 'La matriz de riesgo permite al equipo técnico identificar los tres riesgos más críticos antes de iniciar el diseño operativo. Sin esta lectura previa, los riesgos emergen durante la implementación, cuando el costo de cambio es 5-10x mayor.',
+              supuesto_critico: 'La ausencia de encuesta de aceptación ciudadana local. Sin ella, la severidad de riesgo "comunicación institucional" es estimada, no medida.',
             },
           },
         ],

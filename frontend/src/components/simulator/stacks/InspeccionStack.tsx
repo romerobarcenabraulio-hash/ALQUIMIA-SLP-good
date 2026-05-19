@@ -6,6 +6,7 @@ import { Camera, FolderOpen, AlertTriangle, CheckCircle, Clock, Shield } from 'l
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { InspeccionForm } from '@/components/simulator/InspeccionForm'
 import { cn } from '@/lib/utils'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -182,10 +183,42 @@ export function InspeccionStack() {
         ))}
       </div>
 
-      {/* ── Title ──────────────────────────────────────────────────────── */}
-      <div>
-        <h2 className="font-serif text-[22px] text-[#1C1B18]">Inspección de predios / estrategia administrativa</h2>
-        <p className="text-[12px] text-[#6B6760]">Registro operativo para documentar infracciones, evidencia y acción administrativa.</p>
+      {/* ── Title + GPS badge ──────────────────────────────────────────── */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="font-serif text-[22px] text-[#1C1B18]">Inspección de predios / estrategia administrativa</h2>
+          <p className="text-[12px] text-[#6B6760]">Registro operativo para documentar infracciones, evidencia y acción administrativa.</p>
+        </div>
+        {/* GPS status badge */}
+        <div className="flex items-center gap-2 rounded-[8px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-2">
+          <div className="w-2 h-2 rounded-full bg-[#3B6D11] animate-pulse" />
+          <div>
+            <p className="text-[10px] font-semibold text-[#1A4200]">GPS activo</p>
+            <p className="text-[9px] text-[#5A6347]">Precisión ±5m · EPSG:4326</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ── 4-section progress indicator ─────────────────────────────── */}
+      <div className="grid grid-cols-4 gap-1.5">
+        {[
+          { n: 1, label: 'Identificación',   desc: 'Predio · dirección · GPS',      done: true  },
+          { n: 2, label: 'Registro',         desc: 'Tipo de infracción · hallazgo',  done: true  },
+          { n: 3, label: 'Evidencia',        desc: 'Fotos · documentos adjuntos',    done: false },
+          { n: 4, label: 'Sanción',          desc: 'Nivel · escalera · expediente',  done: false },
+        ].map(s => (
+          <div key={s.n} className={cn(
+            'rounded-[8px] border p-2.5 text-center',
+            s.done ? 'border-[#D7E8C0] bg-[#F4FAEC]' : 'border-[#E8E4DC] bg-[#FAFAF8]',
+          )}>
+            <div className={cn(
+              'w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold mx-auto mb-1',
+              s.done ? 'bg-[#3B6D11] text-white' : 'bg-[#E8E4DC] text-[#A8A49C]',
+            )}>{s.n}</div>
+            <p className="text-[10px] font-semibold text-[#1C1B18] leading-snug">{s.label}</p>
+            <p className="text-[8px] text-[#A8A49C] mt-0.5 leading-tight">{s.desc}</p>
+          </div>
+        ))}
       </div>
 
       {/* ── Main layout: form + right sidebar ──────────────────────────── */}
@@ -208,6 +241,28 @@ export function InspeccionStack() {
             <p className="leading-relaxed">El expediente debe someterse al derecho de audiencia del presunto infractor antes de cualquier sanción. La validación jurídica es obligatoria.</p>
           </div>
         </div>
+      </div>
+
+      {/* ── Bottom actions bar ────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        {[
+          { label: 'Guardar borrador',    sub: 'Guardar sin enviar',           color: '#3B6D11', bg: 'bg-[#EAF3DE] border-[#D7E8C0]' },
+          { label: 'Adjuntar evidencia',  sub: 'Fotos, documentos, videos',    color: '#1A5FA8', bg: 'bg-[#EBF3FB] border-[#B0D0F5]' },
+          { label: 'Enviar expediente',   sub: 'Enviar a validación jurídica',  color: '#D4881E', bg: 'bg-[#FEF7E7] border-[#F5D98A]' },
+          { label: 'Generar PDF',         sub: 'Descargar acta de inspección',  color: '#5A4A2A', bg: 'bg-[#F4F2ED] border-[#E8E4DC]' },
+        ].map(btn => (
+          <button
+            key={btn.label}
+            type="button"
+            className={cn(
+              'flex flex-col items-center gap-1 rounded-[10px] border px-3 py-3 text-center transition-shadow hover:shadow-sm',
+              btn.bg,
+            )}
+          >
+            <p className="text-[11px] font-semibold" style={{ color: btn.color }}>{btn.label}</p>
+            <p className="text-[9px] text-[#6B6760]">{btn.sub}</p>
+          </button>
+        ))}
       </div>
     </div>
   )

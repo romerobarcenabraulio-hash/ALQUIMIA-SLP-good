@@ -13,6 +13,7 @@ import { fmt, cn } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
+import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -42,6 +43,15 @@ function buildTrajectoryFromStore(pctArr: number[], horizonte: number) {
     const captura = Math.round(((pctArr[lo] ?? 0) * (1 - frac) + (pctArr[hi] ?? 0) * frac) * 10) / 10
     return { año: yr, captura }
   })
+}
+
+// ── Recommendation constants ──────────────────────────────────────────────────
+
+const RECO_BY_HORIZON: Record<number, { presetId: string; label: string; reason: string }> = {
+  3:  { presetId: 'Agresivo',    label: 'Ambicioso',   reason: 'Horizonte corto — maximiza impacto visible, velocidad de recuperación y legitimidad política.' },
+  5:  { presetId: 'Agresivo',    label: 'Ambicioso',   reason: 'Ventana TIR/CAPEX óptima: la mejor relación costo-beneficio se logra antes del año 5.' },
+  10: { presetId: 'Realista',    label: 'Moderado',    reason: 'Escalado progresivo sin sobrecargar el CAPEX inicial; riesgo político acotado.' },
+  15: { presetId: 'Conservador', label: 'Conservador', reason: 'Horizonte largo reduce riesgo político-operativo; la adopción gradual es más sostenible.' },
 }
 
 // ── Sub-components ────────────────────────────────────────────────────────────
@@ -107,7 +117,7 @@ export function CityBaselineStack() {
     setPreset,
   } = useSimulatorStore()
 
-  const [tab, setTab] = useState<'base' | 'comparativa'>('base')
+  const [tab, setTab] = useState<'base' | 'comparativa' | 'impactos'>('base')
 
   const r = resultados
   const municipioLabel = seleccionMunicipioCatalog?.nombre ?? `ZM ${zmActiva}`
@@ -118,6 +128,66 @@ export function CityBaselineStack() {
 
   // Active trajectory UI label
   const activeUI = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)
+
+  // ── Impact lines: year-by-year cumulative for 4 metrics × 4 trajectories ───
+
+  const impactLines = useMemo(() => {
+    if (!r) return null
+    const rsuTonDia = r.rsuTotalTonDia
+    const cf = Math.max(capturaFinal, 1)
+    const capTonDia = cf / 100 * rsuTonDia
+    const co2eRate  = capTonDia > 0 ? r.co2eEvitadasAnualTon / (capTonDia * 365) : 0
+    const ingrRate  = capTonDia > 0 ? (r.ingresosBrutos / Math.max(1, horizonte)) / (capTonDia * 365) : 0
+    const saludRate = capTonDia > 0 ? r.ahorroSalud / (capTonDia * 365) : 0
+    const trajs = TRAJECTORY_UI.map(s => ({ ...s, captures: interpolatePreset(s.presetId, horizonte) }))
+    const acc: Record<string, { co2e: number; derr: number; salud: number }> = {}
+    trajs.forEach(t => { acc[t.label] = { co2e: 0, derr: 0, salud: 0 } })
+    const captChartData: Record<string, number>[] = []
+    const coChartData:   Record<string, number>[] = []
+    const derrChartData: Record<string, number>[] = []
+    const saludChartData: Record<string, number>[] = []
+    for (let yr = 0; yr <= horizonte; yr++) {
+      const cp: Record<string, number> = { año: yr }
+      const co: Record<string, number> = { año: yr }
+      const de: Record<string, number> = { año: yr }
+      const sa: Record<string, number> = { año: yr }
+      trajs.forEach(t => {
+        const capPct = t.captures[yr] ?? 0
+        cp[t.label] = capPct
+        const a = acc[t.label] ?? { co2e: 0, derr: 0, salud: 0 }
+        if (yr > 0) {
+          const tons = capPct / 100 * rsuTonDia * 365
+          a.co2e  += tons * co2eRate
+          a.derr  += tons * ingrRate
+          a.salud += tons * saludRate
+        }
+        co[t.label] = Math.round(a.co2e / 1000)
+        de[t.label] = Math.round(a.derr / 1_000_000)
+        sa[t.label] = Math.round(a.salud / 1_000_000)
+      })
+      captChartData.push(cp)
+      coChartData.push(co)
+      derrChartData.push(de)
+      saludChartData.push(sa)
+    }
+    return { captChartData, coChartData, derrChartData, saludChartData, trajs }
+  }, [r, horizonte, capturaFinal])
+
+  // ── Recommendation engine ────────────────────────────────────────────────────
+
+  const motorRecomendacion = useMemo(() => {
+    if (!r) return null
+    const hint = RECO_BY_HORIZON[horizonte] ?? RECO_BY_HORIZON[10]!
+    const isOptimal = presetTrayectoria === hint.presetId
+    const activeLabel = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
+    const reco = TRAJECTORY_UI.find(t => t.presetId === hint.presetId)
+    const capActiva = interpolatePreset(presetTrayectoria, horizonte)[horizonte] ?? 0
+    const capReco   = interpolatePreset(hint.presetId, horizonte)[horizonte] ?? 0
+    const capBrecha = capReco - capActiva
+    const derrAnual = r.ingresosBrutos / Math.max(1, horizonte)
+    const derrDelta = capActiva > 0 ? derrAnual * (capBrecha / Math.max(capActiva, 1)) : 0
+    return { isOptimal, activeLabel, hint, reco, capBrecha, derrDelta }
+  }, [r, horizonte, presetTrayectoria])
 
   // ── Comparative data ────────────────────────────────────────────────────────
 
@@ -186,6 +256,7 @@ export function CityBaselineStack() {
         {([
           { id: 'base',        label: 'Diagnóstico base' },
           { id: 'comparativa', label: 'Comparativa de escenarios' },
+          { id: 'impactos',    label: 'Impactos y recomendación' },
         ] as const).map(t => (
           <button
             key={t.id}
@@ -440,11 +511,187 @@ export function CityBaselineStack() {
         </div>
       )}
 
+      {/* ── Tab: Impactos y recomendación ────────────────────────────────── */}
+      {tab === 'impactos' && (
+        <div className="space-y-5">
+
+          {/* Cadena del escenario header */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+            <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Cadena del escenario — cómo se genera el valor</p>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {[
+                { step: 1, label: 'Parámetros municipales', sub: 'Población · generación · ZM' },
+                { step: 2, label: 'Trayectoria elegida', sub: presetTrayectoria ?? 'Sin preset' },
+                { step: 3, label: 'Captura de RSU', sub: `${capturaFinal.toFixed(0)}% al año ${horizonte}` },
+                { step: 4, label: 'Impactos cuantificados', sub: 'CO₂e · salud · derrama' },
+                { step: 5, label: 'Resultado financiero', sub: 'TIR · VPN · payback' },
+              ].map((s, i, arr) => (
+                <div key={s.step} className="flex items-center gap-1.5 flex-1 min-w-[100px]">
+                  <div className="flex-1 rounded-[8px] bg-[#F4F2ED] border border-[#E8E4DC] px-2 py-2 text-center">
+                    <p className="text-[8px] text-[#A8A49C] uppercase tracking-wide leading-none mb-0.5">Paso {s.step}</p>
+                    <p className="text-[10px] font-semibold text-[#1C1B18] leading-snug">{s.label}</p>
+                    <p className="text-[9px] text-[#6B6760] leading-none mt-0.5">{s.sub}</p>
+                  </div>
+                  {i < arr.length - 1 && <span className="text-[#C8C4BC] text-[14px] shrink-0">→</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* 4 impact charts in 2×2 grid */}
+          {impactLines && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {[
+                { title: 'Trayectoria de captura RSU', unit: '%', data: impactLines.captChartData,  fmt: (v: number) => `${v.toFixed(1)}%`,   yFmt: (v: number) => `${v}%`,    color: '#3B6D11' },
+                { title: 'CO₂e evitado acumulado',     unit: 'ktCO₂e', data: impactLines.coChartData,   fmt: (v: number) => `${v}K tCO₂e`, yFmt: (v: number) => `${v}k`,    color: '#1A5FA8' },
+                { title: 'Derrama económica acumulada', unit: 'M MXN', data: impactLines.derrChartData, fmt: (v: number) => `$${v}M MXN`,  yFmt: (v: number) => `$${v}M`,   color: '#D4881E' },
+                { title: 'Ahorro en salud acumulado',  unit: 'M MXN', data: impactLines.saludChartData, fmt: (v: number) => `$${v}M MXN`, yFmt: (v: number) => `$${v}M`,   color: '#C0392B' },
+              ].map(chart => (
+                <div key={chart.title} className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+                  <p className="text-[11px] font-semibold text-[#1C1B18] mb-0.5">{chart.title}</p>
+                  <p className="text-[9px] text-[#A8A49C] mb-3">{chart.unit} · acumulado al horizonte {horizonte} años</p>
+                  <ResponsiveContainer width="100%" height={130}>
+                    <LineChart data={chart.data} margin={{ top: 2, right: 16, left: 0, bottom: 0 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                      <XAxis dataKey="año" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+                      <YAxis tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={chart.yFmt} width={34} />
+                      <Tooltip formatter={(v: number, name: string) => [chart.fmt(v), name]} labelFormatter={(l: number) => `Año ${l}`} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                      {impactLines.trajs.map(t => (
+                        <Line key={t.label} type="monotone" dataKey={t.label} stroke={t.color}
+                          strokeWidth={presetTrayectoria === t.presetId ? 2.5 : 1.5}
+                          strokeDasharray={presetTrayectoria === t.presetId ? undefined : '3 2'}
+                          dot={false} activeDot={{ r: 3 }} />
+                      ))}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Shared legend */}
+          {impactLines && (
+            <div className="flex flex-wrap gap-4 justify-center py-1">
+              {impactLines.trajs.map(t => (
+                <div key={t.label} className="flex items-center gap-1.5">
+                  <div className="w-6 h-[2px] rounded-full" style={{ background: t.color, opacity: presetTrayectoria === t.presetId ? 1 : 0.6 }} />
+                  <span className={cn('text-[10px]', presetTrayectoria === t.presetId ? 'font-semibold' : 'text-[#6B6760]')} style={{ color: presetTrayectoria === t.presetId ? t.color : undefined }}>
+                    {t.label}{presetTrayectoria === t.presetId && ' ●'}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Enhanced comparison table */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+            <div className="px-5 py-3 border-b border-[#F0EDE5]">
+              <p className="text-[12px] font-semibold text-[#1C1B18]">Comparativa de impacto al año {horizonte}</p>
+              <p className="text-[10px] text-[#A8A49C]">CO₂e, derrama y ahorro en salud acumulados para cada trayectoria</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[11px]">
+                <thead>
+                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
+                    <th className="text-left px-4 py-2.5 font-semibold text-[#1C1B18]">Trayectoria</th>
+                    <th className="text-right px-3 py-2.5 font-semibold text-[#1C1B18]">Captura</th>
+                    <th className="text-right px-3 py-2.5 font-semibold text-[#1A5FA8]">CO₂e acum.</th>
+                    <th className="text-right px-3 py-2.5 font-semibold text-[#D4881E]">Derrama acum.</th>
+                    <th className="text-right px-3 py-2.5 font-semibold text-[#C0392B]">Ahorro salud</th>
+                    <th className="text-center px-4 py-2.5 font-semibold text-[#1C1B18]">Valoración</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {comparisonTable.map((row, i) => {
+                    const lastCO2e  = impactLines?.coChartData[horizonte]
+                    const lastDerr  = impactLines?.derrChartData[horizonte]
+                    const lastSalud = impactLines?.saludChartData[horizonte]
+                    const isActive = presetTrayectoria === TRAJECTORY_UI[i]?.presetId
+                    return (
+                      <tr key={row.label} className={cn(i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]', isActive && 'ring-1 ring-inset ring-[#3B6D11]/30')}>
+                        <td className="px-4 py-2.5">
+                          <div className="flex items-center gap-2">
+                            <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: row.color }} />
+                            <span className="font-medium text-[#1C1B18]">{row.label}</span>
+                            {isActive && <span className="text-[9px] text-[#3B6D11] font-semibold">● activo</span>}
+                          </div>
+                        </td>
+                        <td className="px-3 py-2.5 text-right font-mono" style={{ color: row.color }}>{row.captura.toFixed(0)}%</td>
+                        <td className="px-3 py-2.5 text-right font-mono text-[#1A5FA8]">{lastCO2e?.[row.label] !== undefined ? `${lastCO2e[row.label]}K tCO₂e` : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono text-[#3B6D11]">{lastDerr?.[row.label] !== undefined ? `$${lastDerr[row.label]}M` : '—'}</td>
+                        <td className="px-3 py-2.5 text-right font-mono text-[#C0392B]">{lastSalud?.[row.label] !== undefined ? `$${lastSalud[row.label]}M` : '—'}</td>
+                        <td className="px-4 py-2.5 text-center">
+                          <span className={cn('px-2 py-0.5 rounded text-[10px] font-semibold',
+                            row.recomendacion === 'Excelente' ? 'bg-[#EAF3DE] text-[#23470A]' :
+                            row.recomendacion === 'Óptimo'    ? 'bg-[#EBF3FB] text-[#0D3B7A]' :
+                            row.recomendacion === 'Viable'    ? 'bg-[#FEF7E7] text-[#6B4800]' :
+                                                                'bg-[#FDE8E8] text-[#7A1212]',
+                          )}>{row.recomendacion}</span>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Recommendation engine box */}
+          {motorRecomendacion && (
+            <div className={cn('rounded-[12px] border p-5',
+              motorRecomendacion.isOptimal ? 'border-[#D7E8C0] bg-[#F4FAEC]' : 'border-[#F5D98A] bg-[#FEF7E7]',
+            )}>
+              <div className="flex items-start gap-3">
+                <div className={cn('shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-base font-bold',
+                  motorRecomendacion.isOptimal ? 'bg-[#D7E8C0] text-[#1A4200]' : 'bg-[#F5D98A] text-[#6B4800]',
+                )}>
+                  {motorRecomendacion.isOptimal ? '✓' : '!'}
+                </div>
+                <div className="flex-1">
+                  <p className={cn('text-[12px] font-semibold mb-1', motorRecomendacion.isOptimal ? 'text-[#1A4200]' : 'text-[#6B4800]')}>
+                    {motorRecomendacion.isOptimal
+                      ? `Trayectoria óptima para ${horizonte} años: "${motorRecomendacion.activeLabel}"`
+                      : `Para ${horizonte} años, el motor recomienda "${motorRecomendacion.hint.label}" — activa "${motorRecomendacion.activeLabel}"`}
+                  </p>
+                  <p className="text-[11px] text-[#4A4740] mb-3">{motorRecomendacion.hint.reason}</p>
+                  {!motorRecomendacion.isOptimal && motorRecomendacion.capBrecha > 0 && (
+                    <div className="flex flex-wrap gap-4 text-[11px] mb-3">
+                      <span className="text-[#6B6760]">Brecha de captura: <span className="font-mono font-semibold text-[#D4881E]">{motorRecomendacion.capBrecha.toFixed(0)}%</span></span>
+                      {motorRecomendacion.derrDelta !== 0 && (
+                        <span className="text-[#6B6760]">Derrama anual sacrificada: <span className="font-mono font-semibold text-[#C0392B]">{fmt.mxnM(Math.abs(motorRecomendacion.derrDelta))}</span></span>
+                      )}
+                    </div>
+                  )}
+                  {!motorRecomendacion.isOptimal && motorRecomendacion.reco && (
+                    <button
+                      type="button"
+                      onClick={() => motorRecomendacion.reco && setPreset(motorRecomendacion.reco.presetId)}
+                      className="px-4 py-1.5 rounded-[7px] text-[11px] font-medium bg-[#3B6D11] text-white hover:bg-[#2D5A0D] transition-colors"
+                    >
+                      Aplicar trayectoria &ldquo;{motorRecomendacion.hint.label}&rdquo;
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Bridge footer — connects to the next module */}
       <div className="mt-2 pt-3 border-t border-[#F0EDE5] flex items-start gap-2 text-[10px] text-[#6B6760]">
         <span className="shrink-0 text-[#3B6D11] mt-0.5 font-semibold">→</span>
         <span>Los supuestos de vivienda, generación y trayectoria definidos en el panel de parámetros determinan las trayectorias de impacto en <strong className="text-[#1C1B18]">M02 Contexto sociodemográfico y marco legal</strong> y los flujos financieros de <strong className="text-[#1C1B18]">M06 Escenarios y derrama</strong>.</span>
       </div>
+
+      {/* Bottom action bar */}
+      <ModuleBottomBar
+        onProfundizar={() => setTab('impactos')}
+        onEditarSupuestos={() => {
+          const el = document.querySelector('[data-testid="funcionarios-panel"]')
+          el?.scrollIntoView({ behavior: 'smooth' })
+        }}
+      />
     </div>
   )
 }

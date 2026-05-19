@@ -324,6 +324,7 @@ export function FuncionariosViviendaRsuModel() {
                               value={precios[material]}
                               onChange={e => setPrecio(material, Number(e.target.value))}
                               className="h-1 w-full cursor-pointer accent-[#3B6D11]"
+                              aria-label={MATERIAL_LABEL[material]}
                             />
                           </div>
                         </div>

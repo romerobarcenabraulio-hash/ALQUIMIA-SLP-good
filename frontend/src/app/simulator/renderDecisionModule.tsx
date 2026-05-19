@@ -108,6 +108,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <CityBaselineStack />
     case 'municipal_context':
       return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} />
+    case 'social_study':
+      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
     case 'future_goals':
       return <FutureGoalsModule notice={<MetasPlanDerivadasNotice />} />
     case 'infrastructure_operations':

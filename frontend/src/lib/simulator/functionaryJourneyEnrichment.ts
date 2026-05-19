@@ -11,6 +11,21 @@ export const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
   next_action: 'Cerrar pendientes de fuente antes de usar el escenario como soporte público formal.',
 }
 
+/**
+ * Módulo de estudio demográfico y contexto social — cliente-side, se inyecta
+ * después de `municipal_context` para el recorrido de funcionario.
+ * Integra los 16 componentes Social* del sistema ALQUIMIA.
+ */
+export const SOCIAL_STUDY_MODULE: DecisionModule = {
+  module_id: 'social_study',
+  label: 'Estudio demográfico y contexto social',
+  audience_mode: 'city_team',
+  decision: 'Leer el contexto sociodemográfico del municipio antes de diseñar estrategia de separación.',
+  evidence: 'Indicadores INEGI Censo 2020, CONEVAL 2022, ENOE 2024, ENIGH 2022 — sin cifras inventadas.',
+  status: 'ready',
+  next_action: 'Revisar rezago social, informalidad y riesgo reputacional antes de cerrar diseño del programa.',
+}
+
 export const FUNCTIONARY_MODULE_LABELS: Record<
   string,
   Pick<DecisionModule, 'label' | 'decision' | 'evidence' | 'next_action'>
@@ -65,6 +80,12 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
     decision: 'Comparar derrama base, sensibilidad financiera y salida ejecutiva sin carácter oficial.',
     evidence: 'Monte Carlo, waterfall, tornado, KPIs, supuestos, exportables y advertencias de validación pendientes.',
     next_action: 'Revisar matriz de fuentes antes de presentar cifras en sesión pública.',
+  },
+  social_study: {
+    label: 'Estudio demográfico y contexto social',
+    decision: 'Integrar lectura sociodemográfica trazable (INEGI, CONEVAL, ENOE) antes de diseñar la estrategia de participación ciudadana.',
+    evidence: 'Indicadores versionados con fuente, matriz de riesgo social, bitácora de supuestos y panel exportable.',
+    next_action: 'Revisar rezago social, informalidad del sector y riesgo reputacional antes de cerrar diseño del programa.',
   },
 }
 
