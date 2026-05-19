@@ -119,6 +119,8 @@ interface SimulatorStore extends SimulatorState {
   cityPortalError: string | null
   /** Módulo activo en `DecisionModuleShell` (no persistido; UI). */
   activeDecisionModuleId: string | null
+  /** Índice de la propuesta que fue cargada más recientemente (0|1|2), null si ninguna. */
+  propuestaActivaIdx: number | null
 
   // Actions
   setPortalEntry:      (entry: PortalEntry) => Promise<void>
@@ -174,6 +176,7 @@ interface SimulatorStore extends SimulatorState {
   setNationalCoverage:    (profiles: MunicipioProfile[] | null, coverage: CoverageStatus[] | null) => void
   setOperationsSummary:   (s: OperationsSummary | null) => void
   setActiveDecisionModuleId: (moduleId: string | null) => void
+  setPropuestaActivaIdx: (idx: number | null) => void
 }
 
 const defaultState: SimulatorState = {
@@ -255,9 +258,13 @@ export const useSimulatorStore = create<SimulatorStore>()(
         portalError: null,
         cityPortalError: null,
         activeDecisionModuleId: null,
+        propuestaActivaIdx: null,
 
         setActiveDecisionModuleId: moduleId => {
           set({ activeDecisionModuleId: moduleId })
+        },
+        setPropuestaActivaIdx: idx => {
+          set({ propuestaActivaIdx: idx })
         },
 
         setPortalEntry: async (entry) => {
@@ -635,6 +642,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
               ? [...inc.pctCapturaPorAño]
               : get().pctCapturaPorAño,
             precios: inc.precios ? { ...inc.precios } : get().precios,
+            propuestaActivaIdx: slot,
           })
           get().recalcular()
         },

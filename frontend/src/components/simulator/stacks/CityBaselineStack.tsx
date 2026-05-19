@@ -46,16 +46,21 @@ function buildTrajectoryFromStore(pctArr: number[], horizonte: number) {
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function SectionHeader({ n, title, sub }: { n: number; title: string; sub?: string }) {
+function SectionHeader({ n, title, sub, insight }: { n: number; title: string; sub?: string; insight?: string }) {
   return (
-    <div className="flex items-center gap-3 mb-4">
-      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#3B6D11] text-white text-[11px] font-bold shrink-0">
-        {n}
-      </span>
-      <div>
-        <p className="text-[13px] font-semibold text-[#1C1B18] leading-tight">{title}</p>
-        {sub && <p className="text-[10px] text-[#A8A49C]">{sub}</p>}
+    <div className="mb-4">
+      <div className="flex items-center gap-3">
+        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-[#3B6D11] text-white text-[11px] font-bold shrink-0">
+          {n}
+        </span>
+        <div>
+          <p className="text-[13px] font-semibold text-[#1C1B18] leading-tight">{title}</p>
+          {sub && <p className="text-[10px] text-[#A8A49C]">{sub}</p>}
+        </div>
       </div>
+      {insight && (
+        <p className="mt-1.5 ml-9 text-[11px] italic text-[#3B6D11] leading-snug">{insight}</p>
+      )}
     </div>
   )
 }
@@ -201,13 +206,18 @@ export function CityBaselineStack() {
       {/* ── Tab: Diagnóstico base ─────────────────────────────────────────── */}
       {tab === 'base' && (
         <>
-          {/* Row 1: KPIs + Trayectoria + Donut */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Row 1: KPIs + Trayectoria (donut now lives in FuncionariosViviendaRsuModel Panel 3) */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
 
             {/* Col 1 — KPIs de volumen */}
             <ExpandableChart chartId="volumen-rsu" title="Volumen y derrama económica" subtitle="Escenario municipal · simulación">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-              <SectionHeader n={1} title="Volumen y derrama" sub="Escenario municipal · simulación" />
+              <SectionHeader
+                n={1}
+                title="Volumen y derrama"
+                sub="Escenario municipal · simulación"
+                insight={r ? `Con la trayectoria actual, el municipio genera ${fmt.kgd(r.rsuTotalTonDia)} de RSU diario y proyecta ${fmt.mxnM(r.ingresosBrutos / Math.max(1, horizonte))} de derrama anual.` : undefined}
+              />
 
               <div className="mb-3 rounded-[10px] bg-[#F4FAEC] border border-[#D7E8C0] px-4 py-2.5">
                 <div className="flex items-end gap-3">
@@ -239,8 +249,13 @@ export function CityBaselineStack() {
             {/* Col 2 — Trayectoria de captura (uses store data) */}
             <ExpandableChart chartId="trayectoria-captura" title="Trayectoria de captura" subtitle={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`}>
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-              <div className="flex items-start justify-between mb-3">
-                <SectionHeader n={2} title="Trayectoria de captura" sub={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`} />
+              <div className="flex items-start justify-between mb-1">
+                <SectionHeader
+                  n={2}
+                  title="Trayectoria de captura"
+                  sub={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`}
+                  insight={`Cada punto porcentual adicional equivale a ~${r ? (r.rsuTotalTonDia / 100).toFixed(1) : '—'} t/día menos al relleno sanitario.`}
+                />
                 <div className="text-right shrink-0">
                   <p className="font-mono text-[24px] leading-none font-semibold" style={{ color: activeUI?.color ?? '#3B6D11' }}>{capturaFinal.toFixed(0)}%</p>
                   <p className="text-[9px] text-[#A8A49C]">al año {horizonte}</p>
@@ -259,104 +274,6 @@ export function CityBaselineStack() {
 
             </ExpandableChart>
 
-            {/* Col 3 — Composición RSU donut */}
-            <ExpandableChart chartId="composicion-rsu" title="Composición del RSU" subtitle="Referencia fija · SEMARNAT">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-              <div className="flex items-start justify-between mb-3">
-                <SectionHeader n={3} title="Composición del RSU" sub="Referencia fija · SEMARNAT" />
-                <span className="flex items-center gap-1 rounded border border-[#E8E4DC] bg-[#F4F2ED] px-2 py-0.5 text-[9px] text-[#A8A49C] shrink-0">
-                  <Lock className="w-2.5 h-2.5" />
-                  No editable
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="shrink-0" style={{ width: 120, height: 120 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={[...RSU_SEMARNAT]} cx="50%" cy="50%" innerRadius={34} outerRadius={54} dataKey="pct" strokeWidth={2} stroke="#fff">
-                        {RSU_SEMARNAT.map((entry, i) => <Cell key={i} fill={entry.color} />)}
-                      </Pie>
-                      <Tooltip formatter={(v: number) => [`${v}%`, '']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </div>
-                <div className="flex-1 space-y-1">
-                  {RSU_SEMARNAT.map(item => (
-                    <div key={item.key} className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-[2px] shrink-0" style={{ background: item.color }} />
-                        <span className="text-[10px] text-[#4A4740]">{item.name}</span>
-                      </div>
-                      <span className="font-mono text-[11px] font-medium text-[#1C1B18]">{item.pct}%</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            </ExpandableChart>
-          </div>
-
-          {/* Section 4: Qué sí/no se ajusta + Estado del escenario */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] p-4">
-              <p className="text-[11px] font-semibold text-[#3B6D11] mb-3">✓ ¿Qué sí se ajusta?</p>
-              <ul className="space-y-2">
-                {[
-                  'Municipio / zona metropolitana activa',
-                  'Horizonte de análisis (3 · 5 · 10 · 15 años)',
-                  'Generación per cápita (kg/hab·día)',
-                  'Trayectoria de adopción (4 perfiles)',
-                ].map(item => (
-                  <li key={item} className="flex items-start gap-2 text-[11px] text-[#3B5F23]">
-                    <span className="text-[#5A9438] mt-0.5 shrink-0">›</span>
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4">
-              <p className="text-[11px] font-semibold text-[#6B6760] mb-3">🔒 ¿Qué no se ajusta aquí?</p>
-              <ul className="space-y-2">
-                {[
-                  'Composición base RSU (SEMARNAT)',
-                  'Factores de emisión CO₂e (IPCC AR6)',
-                  'Supuestos macro (inflación, población)',
-                  'Precios por material (módulo Infraestructura)',
-                ].map(item => (
-                  <li key={item} className="flex items-start gap-2 text-[11px] text-[#A8A49C]">
-                    <Lock className="w-2.5 h-2.5 mt-0.5 shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Estado del escenario</p>
-              <div className="space-y-2 text-[11px]">
-                <div className="flex justify-between">
-                  <span className="text-[#A8A49C]">Escenario activo</span>
-                  <span className="font-medium text-[#1C1B18] truncate ml-2">{municipioLabel}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#A8A49C]">Horizonte</span>
-                  <span className="font-medium text-[#1C1B18]">{horizonte} años</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#A8A49C]">Captura objetivo</span>
-                  <span className="font-medium" style={{ color: activeUI?.color ?? '#3B6D11' }}>{capturaFinal.toFixed(0)}%</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#A8A49C]">RSU diario</span>
-                  <span className="font-medium text-[#1C1B18]">{r ? fmt.kgd(r.rsuTotalTonDia) : '—'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-[#A8A49C]">Trayectoria</span>
-                  <span className="font-medium" style={{ color: activeUI?.color ?? '#3B6D11' }}>{activeUI?.label ?? presetTrayectoria}</span>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Lectura municipal — colapsado */}
@@ -522,6 +439,12 @@ export function CityBaselineStack() {
           </div>
         </div>
       )}
+
+      {/* Bridge footer — connects to the next module */}
+      <div className="mt-2 pt-3 border-t border-[#F0EDE5] flex items-start gap-2 text-[10px] text-[#6B6760]">
+        <span className="shrink-0 text-[#3B6D11] mt-0.5 font-semibold">→</span>
+        <span>Los supuestos de vivienda, generación y trayectoria definidos en el panel de parámetros determinan las trayectorias de impacto en <strong className="text-[#1C1B18]">M02 Contexto sociodemográfico y marco legal</strong> y los flujos financieros de <strong className="text-[#1C1B18]">M06 Escenarios y derrama</strong>.</span>
+      </div>
     </div>
   )
 }

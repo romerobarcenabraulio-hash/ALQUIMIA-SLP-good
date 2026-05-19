@@ -249,15 +249,38 @@ function ModuleContextHeader({
   const num = moduleNumber(moduleId)
   const title = brief?.title ?? module.label
   const rsuEntry = buscarTermino('RSU')
+  const conf = MODULE_CONFIDENCE[moduleId]
+  const propuestaSlots = useSimulatorStore(s => s.propuestaSlots)
+  const propuestaActivaIdx = useSimulatorStore(s => s.propuestaActivaIdx)
+  const activePropuesta = propuestaActivaIdx !== null ? propuestaSlots[propuestaActivaIdx] : null
 
   return (
     <header
       className="mb-5 pb-5 border-b border-[#E8E4DC]"
       data-testid="module-context-header"
     >
-      <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold">
-        Módulo {num} · {module.label}
-      </p>
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold">
+          Módulo {num} · {module.label}
+        </p>
+        <div className="flex items-center gap-2 shrink-0">
+          {activePropuesta && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#D7E8C0] bg-[#F4FAEC] text-[9px] font-medium text-[#3B6D11]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
+              {activePropuesta.nombre}
+            </span>
+          )}
+          {conf && (
+            <span
+              className="text-[9px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
+              style={{ color: conf.color, background: conf.bg }}
+              title={`Nivel de confianza del modelo: ${conf.label} (${conf.pct}% de inputs con fuente documentada)`}
+            >
+              {conf.label} · {conf.pct}%
+            </span>
+          )}
+        </div>
+      </div>
       <h2
         id="decision-shell-title"
         className="mt-2 font-serif text-[clamp(1.35rem,2.5vw,1.85rem)] font-medium text-[#1C1B18] leading-tight tracking-tight"
@@ -393,6 +416,34 @@ function ModuleMetodologiaMobile({
 
 // ─── Right guidance panel ─────────────────────────────────────────────────────
 
+// ── Per-module confidence levels ─────────────────────────────────────────────
+const MODULE_CONFIDENCE: Record<string, { label: string; pct: number; color: string; bg: string }> = {
+  city_baseline:            { label: 'Medio',       pct: 55, color: '#D4881E', bg: '#FEF7E7' },
+  municipal_context:        { label: 'Medio-alto',  pct: 65, color: '#D4881E', bg: '#FEF7E7' },
+  future_goals:             { label: 'Medio',       pct: 50, color: '#D4881E', bg: '#FEF7E7' },
+  infrastructure_operations:{ label: 'Medio',       pct: 55, color: '#D4881E', bg: '#FEF7E7' },
+  market_traceability:      { label: 'Condicionado',pct: 40, color: '#A8A49C', bg: '#F4F2ED' },
+  risk_trends:              { label: 'Medio-alto',  pct: 65, color: '#D4881E', bg: '#FEF7E7' },
+  inspeccion_predios:       { label: 'Alto',        pct: 80, color: '#3B6D11', bg: '#EAF3DE' },
+  scenarios_export:         { label: 'Medio',       pct: 55, color: '#D4881E', bg: '#FEF7E7' },
+  source_traceability:      { label: 'Alto',        pct: 85, color: '#3B6D11', bg: '#EAF3DE' },
+}
+
+// Reusable <details> accordion with the standard green border style
+function SidebarAccordion({ summary, children, defaultOpen = false }: { summary: string; children: ReactNode; defaultOpen?: boolean }) {
+  return (
+    <details className="rounded-[8px] border border-[#D7E8C0] overflow-hidden" open={defaultOpen || undefined}>
+      <summary className="cursor-pointer bg-[#F6FAEF] px-3 py-2 text-[10px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between">
+        <span>{summary}</span>
+        <span className="text-[9px] text-[#8CAA7A]">▾</span>
+      </summary>
+      <div className="px-3 py-3 border-t border-[#D7E8C0] bg-white text-[10px]">
+        {children}
+      </div>
+    </details>
+  )
+}
+
 function GuidancePanel({
   module,
   moduleId,
@@ -406,6 +457,8 @@ function GuidancePanel({
 
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const propuestaSlots = useSimulatorStore(s => s.propuestaSlots)
+  const propuestaActivaIdx = useSimulatorStore(s => s.propuestaActivaIdx)
   const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
   const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
   const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
@@ -417,33 +470,132 @@ function GuidancePanel({
   })
   const chartBrief = getChartBrief(brief, activeChartId)
   const metodologia = chartBrief?.metodologia ?? brief?.metodologia_editorial
+  const conf = MODULE_CONFIDENCE[moduleId]
+
+  const activePropuesta = propuestaActivaIdx !== null ? propuestaSlots[propuestaActivaIdx] : null
 
   return (
     <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
+      {/* ── Header — always visible ───────────────────────────────────────── */}
       <div className="px-4 py-4 border-b border-[#E8E4DC]">
-        <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold flex items-center gap-1.5">
-          <BookOpen size={11} />
-          Consideraciones
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold flex items-center gap-1.5">
+            <BookOpen size={11} />
+            Consideraciones
+          </p>
+          {conf && (
+            <span
+              className="text-[8px] font-medium px-1.5 py-0.5 rounded-full"
+              style={{ color: conf.color, background: conf.bg }}
+            >
+              {conf.pct}% confianza
+            </span>
+          )}
+        </div>
+
+        {/* Module summary — the only always-visible content */}
+        {brief?.subtitulo_catchy && (
+          <p className="mt-2 text-[11px] text-[#4A4642] leading-snug">{brief.subtitulo_catchy}</p>
+        )}
+        {!brief?.subtitulo_catchy && (
+          <p className="mt-2 text-[11px] text-[#6B6760] leading-snug">{module.label}</p>
+        )}
+
+        {/* Active scenario badge */}
+        {activePropuesta && (
+          <div className="mt-2 flex items-center gap-1 text-[9px] text-[#3B6D11] font-medium">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
+            Escenario activo: {activePropuesta.nombre}
+          </div>
+        )}
+
+        {/* Chart in focus */}
         {chartBrief && (
-          <p className="mt-2 text-[10px] text-[#3B6D11] font-medium leading-snug">
+          <p className="mt-1.5 text-[9px] text-[#3B6D11] font-medium leading-snug">
             En foco: {chartBrief.chart_label}
           </p>
         )}
       </div>
 
-      <div className="p-4 space-y-4 text-[11px]">
-        {metodologia && <MetodologiaSections meta={metodologia} />}
-        {chartBrief && <ChartReferences refs={chartBrief.referencias} />}
+      {/* ── On-demand depth — all collapsed by default ───────────────────── */}
+      <div className="p-3 space-y-2 text-[11px]">
 
-        {/* Lectura ejecutiva — colapsada por default, solo para módulos con data */}
+        {/* M01 — Cadena del modelo */}
+        {moduleId === 'city_baseline' && (
+          <SidebarAccordion summary="Cadena del modelo">
+            <p className="text-[9px] text-[#A8A49C] mb-2 leading-snug">Cómo cada supuesto fluye hacia los resultados finales</p>
+            <div className="flex flex-wrap items-center gap-1">
+              {([
+                { label: 'Supuestos', desc: 'P1–P4', active: true },
+                { label: 'Trayectoria', desc: 'M01', active: true },
+                { label: 'Toneladas', desc: 'capturadas', active: false },
+                { label: 'Impactos', desc: 'M01–M02', active: false },
+                { label: 'Infraestr.', desc: 'M04', active: false },
+                { label: 'Resultados', desc: 'M06', active: false },
+              ]).map((step, i, arr) => (
+                <span key={step.label} className="flex items-center gap-1">
+                  <span className={cn(
+                    'inline-flex flex-col items-center px-1.5 py-1 rounded-[5px] text-[8px] leading-tight',
+                    step.active ? 'bg-[#EAF3DE] text-[#23470A]' : 'bg-[#F4F2ED] text-[#A8A49C]',
+                  )}>
+                    <span className="font-semibold">{step.label}</span>
+                    <span className="opacity-70">{step.desc}</span>
+                  </span>
+                  {i < arr.length - 1 && <span className="text-[9px] text-[#C8C4BC]">→</span>}
+                </span>
+              ))}
+            </div>
+          </SidebarAccordion>
+        )}
+
+        {/* M01 — Qué sí / no se ajusta */}
+        {moduleId === 'city_baseline' && (
+          <SidebarAccordion summary="Qué sí / no se ajusta aquí">
+            <div className="space-y-3">
+              <div>
+                <p className="text-[9px] font-semibold text-[#3B6D11] uppercase tracking-[0.06em] mb-1.5">Sí se ajusta</p>
+                <ul className="space-y-1">
+                  {['Municipio / zona metropolitana', 'Horizonte (3–15 años)', 'Generación per cápita (kg/hab·día)', 'Trayectoria de adopción (4 perfiles)', 'Vivienda, RSU, merma y precios por material'].map(item => (
+                    <li key={item} className="flex items-start gap-1.5 text-[#3B5F23]">
+                      <CheckCircle2 size={9} className="shrink-0 mt-0.5 text-[#5A9438]" />
+                      <span className="leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="text-[9px] font-semibold text-[#A8A49C] uppercase tracking-[0.06em] mb-1.5">No se ajusta aquí</p>
+                <ul className="space-y-1">
+                  {['Composición base RSU (SEMARNAT · fija)', 'Factores de emisión CO₂e (IPCC AR6)', 'Supuestos macro (inflación, población)', 'Estructura de centros de acopio (M04)'].map(item => (
+                    <li key={item} className="flex items-start gap-1.5 text-[#A8A49C]">
+                      <Lock size={9} className="shrink-0 mt-0.5" />
+                      <span className="leading-snug">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </SidebarAccordion>
+        )}
+
+        {/* Metodología */}
+        {metodologia && (
+          <SidebarAccordion summary="Cómo se calcula">
+            <MetodologiaSections meta={metodologia} />
+          </SidebarAccordion>
+        )}
+
+        {/* Chart references */}
+        {chartBrief?.referencias && chartBrief.referencias.length > 0 && (
+          <SidebarAccordion summary={`Referencias · ${chartBrief.chart_label}`}>
+            <ChartReferences refs={chartBrief.referencias} />
+          </SidebarAccordion>
+        )}
+
+        {/* Lectura ejecutiva */}
         {lectura && (
-          <details className="rounded-[8px] border border-[#D7E8C0] overflow-hidden">
-            <summary className="cursor-pointer bg-[#F6FAEF] px-3 py-2 text-[11px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between">
-              <span>Lectura ejecutiva · {lectura.title}</span>
-              <span className="text-[9px] text-[#8CAA7A]">▾</span>
-            </summary>
-            <div className="px-3 py-3 space-y-3 border-t border-[#D7E8C0] bg-white">
+          <SidebarAccordion summary={`Lectura ejecutiva · ${lectura.title}`}>
+            <div className="space-y-3">
               {lectura.items.map(item => (
                 <div key={item.header}>
                   <p className="text-[9px] font-semibold uppercase tracking-wide mb-1.5" style={{ color: item.color }}>
@@ -451,50 +603,59 @@ function GuidancePanel({
                   </p>
                   <ul className="space-y-1">
                     {item.bullets.map(b => (
-                      <li key={b} className="flex items-start gap-1.5 text-[10px] text-[#6B6760]">
+                      <li key={b} className="flex items-start gap-1.5">
                         <span className="shrink-0 mt-0.5" style={{ color: item.color }}>›</span>
-                        <span className="leading-snug">{b}</span>
+                        <span className="leading-snug text-[#6B6760]">{b}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
               ))}
             </div>
-          </details>
+          </SidebarAccordion>
         )}
 
-        {/* Editorial brief — sits in Consideraciones, not in the center column */}
-        <div className="pt-3 border-t border-[#E8E4DC]">
+        {/* Contexto editorial */}
+        <SidebarAccordion summary="Contexto editorial">
           <ModuleEditorialBrief moduleId={moduleId} suppressTitle />
-        </div>
+        </SidebarAccordion>
 
-        <div className="pt-3 border-t border-[#E8E4DC]">
-          <p className="font-semibold text-[#1C1B18] mb-2">Condiciones de lectura</p>
-          <ul className="space-y-1.5">
+        {/* Condiciones de lectura */}
+        <SidebarAccordion summary="Condiciones de lectura">
+          <ul className="space-y-1.5 text-[#6B6760]">
             {[
               'Proyecciones en precios corrientes (MXN)',
-              'Los supuestos editables en Módulo 1 determinan estas trayectorias',
+              'Los supuestos de M01 determinan todas las trayectorias',
               'No constituye dictamen oficial ni garantía de resultado',
             ].map(item => (
-              <li key={item} className="flex items-start gap-1.5 text-[#6B6760]">
+              <li key={item} className="flex items-start gap-1.5">
                 <span className="mt-1 w-1 h-1 rounded-full bg-[#A8A49C] shrink-0" />
                 <span className="leading-snug">{item}</span>
               </li>
             ))}
           </ul>
-        </div>
+        </SidebarAccordion>
 
-        <div className="pt-3 border-t border-[#E8E4DC]">
-          <p className="font-semibold text-[#1C1B18] mb-2 flex items-center gap-1.5">
-            Nivel de confianza
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#EAF3DE] text-[#3B6D11] font-mono text-[9px]">
-              Alto
-            </span>
-          </p>
-          <div className="bg-[#F4F2ED] rounded-[6px] px-3 py-2 text-[10px] text-[#6B6760] leading-snug">
-            Basado en datos medidos y supuestos técnicos validados. Requiere revisión con autoridad competente antes de presentar en Cabildo.
-          </div>
-        </div>
+        {/* Nivel de confianza */}
+        {conf && (
+          <SidebarAccordion summary={`Nivel de confianza · ${conf.label}`}>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="flex-1 h-1.5 rounded-full bg-[#E8E4DC] overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${conf.pct}%`, background: conf.color }} />
+                </div>
+                <span className="font-mono text-[10px] font-semibold shrink-0" style={{ color: conf.color }}>{conf.pct}%</span>
+              </div>
+              <p className="text-[#6B6760] leading-snug">
+                {conf.pct >= 70
+                  ? 'Mayoría de inputs provienen de datos medidos (INEGI/SEMARNAT). Requiere validación con autoridad competente antes de Cabildo.'
+                  : conf.pct >= 50
+                  ? 'Mix de datos medidos y supuestos editoriales. Revisar fuentes antes de usar cifras en presentación pública.'
+                  : 'Mayoría de inputs son supuestos editoriales. Contrastar con datos locales antes de tomar decisiones.'}
+              </p>
+            </div>
+          </SidebarAccordion>
+        )}
       </div>
     </aside>
   )

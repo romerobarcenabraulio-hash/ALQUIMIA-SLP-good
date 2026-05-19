@@ -2,6 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { Check, Database } from 'lucide-react'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { PRECIOS_RANGO, RSU_SEMARNAT } from '@/lib/constants'
 import {
@@ -10,7 +11,17 @@ import {
 } from '@/lib/viviendaInegi'
 import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
 import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
+import type { MaterialPriceResearch } from '@/data/materialPriceResearch'
 import type { PreciosMaterial } from '@/types'
+
+// ── Price range context helper ────────────────────────────────────────────────
+function priceContext(value: number, r: MaterialPriceResearch) {
+  if (value < r.min)
+    return { label: `Por debajo del mínimo documentado ($${r.min}/kg) · ${r.verdict}`, cls: 'text-[#D4881E]', dot: 'bg-[#D4881E]' }
+  if (value > r.max)
+    return { label: `Por encima del máximo documentado ($${r.max}/kg) · ${r.verdict}`, cls: 'text-[#C0392B]', dot: 'bg-[#C0392B]' }
+  return { label: `Rango bibliográfico: $${r.min}–$${r.max}/kg · Mediana $${r.median}/kg`, cls: 'text-[#3B6D11]', dot: 'bg-[#3B6D11]' }
+}
 
 const MATERIALS: Array<keyof PreciosMaterial> = ['pet', 'hdpe', 'papel', 'vidrio', 'aluminio', 'organico']
 
@@ -86,30 +97,10 @@ export function FuncionariosViviendaRsuModel() {
             <p className="text-[10px] text-[#A8A49C]">INEGI Censo 2020</p>
           </div>
         </div>
-        <dl className="flex flex-wrap gap-x-4 gap-y-1 text-[11px]">
-          <div>
-            <dt className="text-[#A8A49C]">RSU</dt>
-            <dd className="font-mono font-semibold text-[#3B6D11]">
-              {resultados ? fmt.kgd(resultados.rsuTotalTonDia) : '—'} t/día
-            </dd>
-          </div>
-          <div>
-            <dt className="text-[#A8A49C]">Captura</dt>
-            <dd className="font-mono font-semibold text-[#1C1B18]">{capturaBasePct.toFixed(0)}%</dd>
-          </div>
-          <div>
-            <dt className="text-[#A8A49C]">Población</dt>
-            <dd className="font-mono font-semibold text-[#4A4642]">{fmt.num0(poblacionAplicada)}</dd>
-          </div>
-          <div>
-            <dt className="text-[#A8A49C]">Capturable</dt>
-            <dd className="font-mono font-semibold text-[#3B6D11]">{toneladasCapturadasDia.toFixed(1)} t/d</dd>
-          </div>
-        </dl>
       </div>
 
       <div className="p-4 sm:p-5 space-y-3" data-testid="rsu-zona-unica">
-        <div className="grid gap-3 lg:grid-cols-2">
+        <div className="grid gap-3 lg:grid-cols-3">
           <MockupPanel
             number="1"
             title="Distribución de vivienda en condominio"
@@ -118,16 +109,27 @@ export function FuncionariosViviendaRsuModel() {
           >
             {/* INEGI-sourced totals — read only */}
             {distribution ? (
-              <div className="grid grid-cols-3 gap-2 mb-3">
+              <div className="grid grid-cols-3 gap-2 mb-2">
                 <KpiChip label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
                 <KpiChip label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
                 <KpiChip label="Ocupantes/viv. base" value={distribution.stateAvgOccupants2020.toFixed(1)} />
               </div>
             ) : (
-              <p className="mb-3 text-[11px] text-amber-800 rounded-[8px] border border-amber-200 bg-amber-50 px-2.5 py-1.5">
+              <p className="mb-2 text-[11px] text-amber-800 rounded-[8px] border border-amber-200 bg-amber-50 px-2.5 py-1.5">
                 Sin tabulado INEGI municipal de vivienda para esta selección.
               </p>
             )}
+
+            {/* INEGI data gap disclosure */}
+            <details className="mb-3 rounded-[7px] border border-[#E8E4DC] overflow-hidden text-[9px]">
+              <summary className="cursor-pointer px-2.5 py-1.5 text-[#A8A49C] select-none list-none flex items-center gap-1.5 hover:bg-[#FAFAF8]">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#D4881E] shrink-0" />
+                Distribución casa/departamento por municipio · dato pendiente
+              </summary>
+              <div className="px-2.5 py-2 border-t border-[#F0EDE5] text-[#6B6760] leading-snug">
+                El tabulado de clase de vivienda por municipio (Vivienda_01.xlsx, INEGI) no está cargado. Los porcentajes condominio/independiente son supuesto editorial basado en mix urbano ZM, no medición oficial.
+              </div>
+            </details>
 
             {distribution && (
               <p className="sr-only">
@@ -325,12 +327,15 @@ export function FuncionariosViviendaRsuModel() {
                             />
                           </div>
                         </div>
-                        {research && (
-                          <p className="mt-0.5 text-[8px] text-[#A8A49C] leading-tight pl-0 truncate">
-                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4881E] inline-block mr-1 align-middle" />
-                            Bibliografía · {research.sourceSummary.split(',')[0]}
-                          </p>
-                        )}
+                        {research && (() => {
+                          const ctx = priceContext(precios[material], research)
+                          return (
+                            <p className={cn('mt-0.5 text-[8px] leading-tight truncate', ctx.cls)} title={research.explanation}>
+                              <span className={cn('w-1.5 h-1.5 rounded-full inline-block mr-1 align-middle', ctx.dot)} />
+                              {ctx.label}
+                            </p>
+                          )
+                        })()}
                       </div>
                     )
                   })}
@@ -338,33 +343,52 @@ export function FuncionariosViviendaRsuModel() {
                 <p className="sr-only">Mix fijo por material. {MATERIAL_PRICE_RESEARCH.pet.sourceRefs[0]}</p>
               </div>
 
-              {/* Composición base — resumen inline, no editable */}
-              <div className="pt-3 border-t border-[#F0EDE5]">
-                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] font-semibold mb-1.5">
-                  3. Composición base RSU · fija
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[...RSU_SEMARNAT].map(item => (
-                    <span
-                      key={item.key}
-                      className="inline-flex items-center gap-1 rounded-full border border-[#E8E4DC] bg-[#FDFCFA] px-2 py-0.5 text-[9px] text-[#4A4642]"
-                    >
-                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.color }} />
-                      {item.name} {item.pct}%
-                    </span>
-                  ))}
-                </div>
-                <p className="mt-1 flex items-center gap-1 text-[9px] text-[#3B6D11]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
-                  INEGI · SEMARNAT BDE 2022 · no medición municipal directa
-                </p>
-              </div>
-
               <p className="sr-only">
                 Captura global aplicada. La composición por material queda fija.{' '}
                 {toneladasCapturadasDia.toFixed(1)} t/día capturables.
               </p>
             </div>
+          </MockupPanel>
+
+          {/* Panel 3 — Composición base del RSU · fija no editable */}
+          <MockupPanel
+            number="3"
+            title="Composición base del RSU"
+            sourceTag="SEMARNAT BDE 2022 · fija"
+          >
+            <div className="flex items-center justify-between gap-1 mb-2">
+              <span className="flex items-center gap-1 text-[9px] text-[#A8A49C] rounded border border-[#E8E4DC] bg-[#F4F2ED] px-1.5 py-0.5">
+                No editable
+              </span>
+              <span className="text-[9px] text-[#A8A49C]">Referencia nacional · ciudades medias</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="shrink-0" style={{ width: 100, height: 100 }}>
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie data={[...RSU_SEMARNAT]} cx="50%" cy="50%" innerRadius={26} outerRadius={46} dataKey="pct" strokeWidth={2} stroke="#fff">
+                      {RSU_SEMARNAT.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip formatter={(v: number) => [`${v}%`, '']} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+              </div>
+              <div className="flex-1 space-y-0.5">
+                {RSU_SEMARNAT.map(item => (
+                  <div key={item.key} className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      <div className="w-2 h-2 rounded-[2px] shrink-0" style={{ background: item.color }} />
+                      <span className="text-[9px] text-[#4A4740] leading-tight">{item.name}</span>
+                    </div>
+                    <span className="font-mono text-[10px] font-medium text-[#1C1B18]">{item.pct}%</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <p className="mt-2 flex items-center gap-1 text-[9px] text-[#3B6D11]">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
+              No es medición de campo del municipio activo
+            </p>
           </MockupPanel>
         </div>
 

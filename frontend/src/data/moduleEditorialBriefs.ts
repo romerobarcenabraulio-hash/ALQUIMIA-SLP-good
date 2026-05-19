@@ -76,7 +76,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'city_baseline':
       return {
         moduleId,
-        title: 'Lectura ejecutiva del problema',
+        title: 'El problema en números: cuánto generamos y cuánto perdemos',
         subtitulo_catchy: '¿Cuántos kilos genera este municipio y cuánto dinero está dejando ir?',
         situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
         observacion_alquimia: `${scope} ALQUIMIA ordena vivienda, generación per cápita, composición, precios y costo por tonelada enterrada para que el problema se lea con supuestos explícitos.`,
@@ -149,7 +149,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'municipal_context':
       return {
         moduleId,
-        title: 'Lectura ejecutiva del contexto territorial y marco jurídico',
+        title: 'El reglamento que habilita o bloquea el programa',
         subtitulo_catchy: 'El marco legal que lo frena o lo habilita todo — qué dice el reglamento hoy',
         situacion_actual: normativa ?? `${territorio} requiere lectura municipal del reglamento aplicable antes de convertir el programa en obligaciones locales.`,
         observacion_alquimia: `${scope} La brecha no suele estar en que falten principios federales, sino en traducirlos a reglas municipales operables: separación, contenedores, rutas, evidencia y responsabilidades.`,
@@ -190,7 +190,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'future_goals':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de metas, Gantt y PERT',
+        title: 'El calendario que convierte las metas en acciones concretas',
         subtitulo_catchy: 'Del diagnóstico al calendario: cuándo, quién y cuánto cuesta arrancar',
         situacion_actual: `Las metas de ${territorio} solo sirven si se vuelven calendario, dependencias y capacidad; una meta sin tiempo ni responsable se queda en aspiración.`,
         observacion_alquimia: `${scope} El Gantt/PERT traduce captura, centros de acopio, empleos y emisiones a meses, hitos y riesgo de atraso.`,
@@ -231,7 +231,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'infrastructure_operations':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de infraestructura y operación',
+        title: 'Infraestructura y operación: dónde, con qué y con quién',
         subtitulo_catchy: 'Dónde van los centros, qué flota los mueve y quién responde por cada colonia',
         situacion_actual: operativa ?? `La operación en ${territorio} necesita convertir toneladas capturables en centros, rutas, responsables, frecuencia y bitácora.`,
         observacion_alquimia: `${scope} La infraestructura no se justifica por tamaño de ciudad, sino por brecha entre material capturable, capacidad real y logística verificable.`,
@@ -262,7 +262,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'market_traceability':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de mercado y causalidad',
+        title: 'El mercado secundario: compradores, precios y riesgo documentado',
         subtitulo_catchy: 'A quién le vendemos, a qué precio real y con qué riesgo de mercado',
         situacion_actual: `Los resultados numéricos de ${territorio} solo tienen valor operativo si entiendes qué variable los empuja y qué supuestos de mercado los sostienen.`,
         observacion_alquimia: `${scope} El grafo causal enlaza KPIs, fórmulas y fuentes: permite ver riesgo de interpretación antes de presentar el escenario como lectura única.`,
@@ -303,7 +303,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'risk_trends':
       return {
         moduleId,
-        title: 'Análisis de riesgos y tendencias',
+        title: 'Los cuatro riesgos que determinan si el programa llega al Cabildo',
         subtitulo_catchy: 'Los riesgos que pueden hundir el programa — y cómo medimos cada uno',
         situacion_actual: `${territorio} enfrenta cuatro dimensiones de riesgo que deben medirse antes de comprometer inversión o presentar el programa al Cabildo.`,
         observacion_alquimia: `${scope} El score de riesgo no es una opinión — es una fórmula documentada con cuatro dimensiones ponderadas por relevancia política en el contexto municipal mexicano.`,
@@ -334,7 +334,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'inspeccion_predios':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de inspección y estrategia administrativa',
+        title: 'Inspección y predios: evidencia ordenada antes de la acción',
         subtitulo_catchy: 'El predio que elegiste: ¿sirve o no? La evidencia ordenada antes de actuar',
         situacion_actual: `En ${territorio}, la inspección debe empezar como evidencia ordenada: predio, situación observada, actor, fecha, hallazgo y acción siguiente.`,
         observacion_alquimia: `${scope} La inspección útil no castiga por intuición: documenta hechos, distingue educación de visita técnica y deja trazabilidad para revisión municipal.`,
@@ -365,7 +365,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'scenarios_export':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de escenarios, derrama y salida',
+        title: 'El expediente de Cabildo: escenarios, derrama y sustento',
         subtitulo_catchy: 'El expediente listo para el Cabildo — números, supuestos y sensibilidad',
         situacion_actual: `El valor económico de ${territorio} debe separarse: venta base de materiales, pago evitable por entierro, efectos ambientales y sensibilidad financiera.`,
         observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario; las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
@@ -396,7 +396,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'source_traceability':
       return {
         moduleId,
-        title: 'Lectura ejecutiva de bibliografía y cálculos',
+        title: 'Cadena de evidencia: de dónde viene cada número',
         subtitulo_catchy: 'De dónde vienen todos los números — la cadena completa de cada cifra',
         situacion_actual: `Toda cifra visible sobre ${territorio} necesita una cadena clara: afirmación, fórmula, fuente, estado de verificación y responsable.`,
         observacion_alquimia: `${scope} La matriz no decora el reporte; obliga a cerrar pendientes y evita que una cita general se use como prueba de una cifra específica.`,
