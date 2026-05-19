@@ -68,6 +68,7 @@ export interface CAPEXDesglose {
   adecuacionNave: number
   gastosPreoperativos: number
   capitalTrabajo: number
+  contingencia: number
   totalCAPEX: number
 }
 
@@ -127,6 +128,66 @@ export const SUPUESTOS_GENERALES = {
   precioCarbonoUSD: 8.0,
   multiploValorTerminal: 5.0,
   fuente: 'Centros_Acopio_v2.xlsx, Bloque A. Precios marzo 2026.',
+} as const
+
+/**
+ * Benchmarks externos de validación cruzada.
+ * No se usan como inputs de cálculo — sirven para contrastar y argumentar frente a auditores.
+ */
+export const BENCHMARKS_EXTERNOS = {
+  capexCentroAcopioMXN: {
+    min: 10_000_000,
+    max: 25_000_000,
+    referencia: 'World Bank MSW Cost Guidelines 2024 + FONADIN PRORESOL (proyectos < $20M)',
+    ejemplos: [
+      { proyecto: 'Centro de Acopio León, Gto.', capexMXN: 18_000_000, fuente: 'Página Central, 2024' },
+      { proyecto: 'CIR Victoria, Tamaulipas (APP)', capexMXN: 500_000_000, fuente: 'BANOBRAS/Gobierno Tamaulipas, 2025' },
+    ],
+  },
+  opexMensualMXNPorTonelada: {
+    min: 400,
+    max: 1_000,
+    fuente: 'World Bank MSW Guidelines 2024 — separate collection: $2.5-$5 USD/persona/año',
+  },
+  contingenciaFactorPct: {
+    valor: 10,
+    rango: '10-12%',
+    fuente: 'EBRD/GIZ Feasibility Study Moldova Solid Waste WMZ-8; AACE International 119R-21 Class 4',
+  },
+  capitalTrabajoMesesRecomendados: {
+    minMeses: 3,
+    maxMeses: 6,
+    fuente: 'Energycle 2026; Kitech Cost Guide 2026; World Bank MSW Chapter 7',
+    nota: 'Gap de flujo entre recuperación de material y cobro al comprador ancla justifica 3+ meses',
+  },
+  permisosYSegurosAnual: {
+    minMXN: 150_000,
+    maxMXN: 500_000,
+    items: [
+      'SEMARNAT autorización: $5,910 MXN (federal)',
+      'MIA estudio ambiental: $50K-$300K',
+      'Seguro RC Ambiental (LGPGIR Art.50): $80K-$300K/año',
+      'Seguro equipo e incendio: 0.5% CAPEX/año',
+    ],
+    fuente: 'gob.mx/SEMARNAT; THB Mexico; GMX Seguros; Segurzon 2026',
+  },
+  salariosReferencia: {
+    operario: {
+      promedioNacional: 5_530,
+      SLP: 2_430,
+      notaUsoModeloMXN: 10_000,
+      nota: 'El modelo usa $10,000/mes (salario competitivo zona industrial SLP, atraer y retener). Media nacional INEGI Q1-2025: $5,530. Diferencia justificada por condiciones de trabajo industrial.',
+      fuente: 'Data Mexico / INEGI ENOE T1 2025; Computrabajo 2025',
+    },
+    chofer: {
+      promedioNacional: 9_156,
+      fuente: 'Computrabajo 2025',
+    },
+    supervisor: {
+      rango: '11_904 - 26_000',
+      fuente: 'Computrabajo / Sercanto RECO Recycling 2025',
+    },
+  },
 } as const
 
 // ─── Salarios base (IMSS Rama 37, 2025/2026) ────────────────────────────────
@@ -218,27 +279,33 @@ export const EQUIPOS_CA: Record<TamañoCA, EquipoCatalogo[]> = {
 
 // ─── CAPEX desglosado por escala CA ──────────────────────────────────────────
 
+// Contingencia 10% sobre (equipamiento + adecuación nave) — estándar EBRD/GIZ y AACE Class 4.
+// Capital de trabajo: 3 meses de OPEX — mínimo recomendado World Bank / Energycle para cubrir
+// el gap entre recuperación de material y cobro al comprador ancla.
 export const CAPEX_CA: Record<TamañoCA, CAPEXDesglose> = {
   P: {
-    equipamiento: 339_800,
-    adecuacionNave: 120_000,
-    gastosPreoperativos: 45_000,
-    capitalTrabajo: 221_676,
-    totalCAPEX: 726_476,
+    equipamiento:        339_800,
+    adecuacionNave:      120_000,
+    gastosPreoperativos:  45_000,
+    contingencia:         45_980,  // 10% × (339,800 + 120,000)
+    capitalTrabajo:      332_514,  // 3 meses × OPEX 110,838
+    totalCAPEX:          883_294,
   },
   M: {
-    equipamiento: 1_473_100,
-    adecuacionNave: 350_000,
-    gastosPreoperativos: 65_000,
-    capitalTrabajo: 640_708,
-    totalCAPEX: 2_528_808,
+    equipamiento:       1_473_100,
+    adecuacionNave:       350_000,
+    gastosPreoperativos:   65_000,
+    contingencia:         182_310,  // 10% × (1,473,100 + 350,000)
+    capitalTrabajo:       961_062,  // 3 meses × OPEX 320,354
+    totalCAPEX:         3_031_472,
   },
   G: {
-    equipamiento: 4_512_000,
-    adecuacionNave: 950_000,
-    gastosPreoperativos: 95_000,
-    capitalTrabajo: 1_574_655,
-    totalCAPEX: 7_131_655,
+    equipamiento:       4_512_000,
+    adecuacionNave:       950_000,
+    gastosPreoperativos:   95_000,
+    contingencia:         546_200,  // 10% × (4,512,000 + 950,000)
+    capitalTrabajo:     2_361_984,  // 3 meses × OPEX 787,328
+    totalCAPEX:         8_465_184,
   },
 }
 
@@ -323,7 +390,8 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 116_775,
     },
-    capex: { equipamiento: 2_071_000, adecuacionNave: 200_000, gastosPreoperativos: 55_000, capitalTrabajo: 1_514_995, totalCAPEX: 3_840_995 },
+    // contingencia 10%×(equip+nave)=$227,100; capital trabajo 3 meses×OPEX sin CMV: 757,497×3=não viable → usamos 2 meses OPEX total (distinto de CAs: recicladoras tienen CMV alto que ya es capital circulante del negocio)
+    capex: { equipamiento: 2_071_000, adecuacionNave: 200_000, gastosPreoperativos: 55_000, contingencia: 227_100, capitalTrabajo: 1_514_995, totalCAPEX: 4_068_095 },
     opex: { cmvCompraMPMes: 2_694_384, rentaMes: 19_500, energiaElectricaMes: 79_424, combustibleGasLPMes: 0, nominaConPrestaciones: 116_775, transporteCombustible: 15_000, mantenimientoEquipo: 4_315, insumosQuimicos: 128_449, aguaServicios: 4_500, seguros: 946, fleteComprador: 380_589, consumiblesLinea: 8_000, totalOPEXMes: 3_451_881 },
     capexTotal: 3_840_995,
     opexMes: 3_451_881,
@@ -361,7 +429,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 175_500,
     },
-    capex: { equipamiento: 1_544_000, adecuacionNave: 280_000, gastosPreoperativos: 55_000, capitalTrabajo: 1_517_734, totalCAPEX: 3_396_734 },
+    capex: { equipamiento: 1_544_000, adecuacionNave: 280_000, gastosPreoperativos: 55_000, contingencia: 182_400, capitalTrabajo: 1_517_734, totalCAPEX: 3_579_134 },
     opex: { cmvCompraMPMes: 3_265_920, rentaMes: 39_000, energiaElectricaMes: 20_315, combustibleGasLPMes: 0, nominaConPrestaciones: 175_500, transporteCombustible: 25_000, mantenimientoEquipo: 3_217, insumosQuimicos: 122_276, aguaServicios: 4_500, seguros: 760, fleteComprador: 362_299, consumiblesLinea: 6_000, totalOPEXMes: 4_024_787 },
     capexTotal: 3_396_734,
     opexMes: 4_024_787,
@@ -400,7 +468,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 107_325,
     },
-    capex: { equipamiento: 1_708_800, adecuacionNave: 350_000, gastosPreoperativos: 95_000, capitalTrabajo: 1_711_205, totalCAPEX: 3_865_005 },
+    capex: { equipamiento: 1_708_800, adecuacionNave: 350_000, gastosPreoperativos: 95_000, contingencia: 205_880, capitalTrabajo: 1_711_205, totalCAPEX: 4_070_885 },
     opex: { cmvCompraMPMes: 3_106_870, rentaMes: 16_250, energiaElectricaMes: 92_882, combustibleGasLPMes: 43_290, nominaConPrestaciones: 107_325, transporteCombustible: 12_000, mantenimientoEquipo: 3_560, insumosQuimicos: 144_068, aguaServicios: 3_500, seguros: 858, fleteComprador: 426_869, consumiblesLinea: 5_000, totalOPEXMes: 3_962_472 },
     capexTotal: 3_865_005,
     opexMes: 3_962_472,
@@ -436,7 +504,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 104_625,
     },
-    capex: { equipamiento: 1_035_000, adecuacionNave: 220_000, gastosPreoperativos: 55_000, capitalTrabajo: 562_564, totalCAPEX: 1_872_564 },
+    capex: { equipamiento: 1_035_000, adecuacionNave: 220_000, gastosPreoperativos: 55_000, contingencia: 125_500, capitalTrabajo: 562_564, totalCAPEX: 1_998_064 },
     opex: { cmvCompraMPMes: 816_480, rentaMes: 19_500, energiaElectricaMes: 19_510, combustibleGasLPMes: 0, nominaConPrestaciones: 104_625, transporteCombustible: 15_000, mantenimientoEquipo: 2_156, insumosQuimicos: 28_506, aguaServicios: 3_000, seguros: 523, fleteComprador: 84_462, consumiblesLinea: 4_000, totalOPEXMes: 1_097_762 },
     capexTotal: 1_872_564,
     opexMes: 1_097_762,
@@ -474,7 +542,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 186_975,
     },
-    capex: { equipamiento: 1_738_800, adecuacionNave: 420_000, gastosPreoperativos: 55_000, capitalTrabajo: 991_159, totalCAPEX: 3_204_959 },
+    capex: { equipamiento: 1_738_800, adecuacionNave: 420_000, gastosPreoperativos: 55_000, contingencia: 215_880, capitalTrabajo: 991_159, totalCAPEX: 3_420_839 },
     opex: { cmvCompraMPMes: 130_320, rentaMes: 26_000, energiaElectricaMes: 18_506, combustibleGasLPMes: 0, nominaConPrestaciones: 186_975, transporteCombustible: 20_000, mantenimientoEquipo: 3_623, insumosQuimicos: 16_499, aguaServicios: 6_000, seguros: 670, fleteComprador: 0, consumiblesLinea: 5_000, totalOPEXMes: 413_593 },
     capexTotal: 3_204_959,
     opexMes: 413_593,

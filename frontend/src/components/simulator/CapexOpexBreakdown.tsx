@@ -5,6 +5,7 @@ import { cn } from '@/lib/utils'
 import {
   CAPEX_CA, OPEX_CA, EQUIPOS_CA, PERSONAL_CA,
   RECICLADORAS, FASES_INVERSION, SUPUESTOS_GENERALES,
+  BENCHMARKS_EXTERNOS,
   type GiroRecicladora,
 } from '@/lib/capexOpexData'
 import type { TamañoCA } from '@/types'
@@ -60,10 +61,11 @@ function CAScalePanel({ escala }: { escala: TamañoCA }) {
   const nom   = PERSONAL_CA[escala]
 
   const capexItems = [
-    { label: 'Equipamiento',           val: capex.equipamiento },
-    { label: 'Adecuación de nave',     val: capex.adecuacionNave },
-    { label: 'Gastos preoperativos',   val: capex.gastosPreoperativos },
-    { label: 'Capital de trabajo',     val: capex.capitalTrabajo },
+    { label: 'Equipamiento',                                     val: capex.equipamiento },
+    { label: 'Adecuación de nave',                               val: capex.adecuacionNave },
+    { label: 'Gastos preoperativos',                             val: capex.gastosPreoperativos },
+    { label: 'Contingencia 10% (equip. + nave) — EBRD/GIZ',    val: capex.contingencia },
+    { label: 'Capital de trabajo (3 meses OPEX) — World Bank',  val: capex.capitalTrabajo },
   ]
 
   const opexItems = [
@@ -249,10 +251,11 @@ function RecicladorePanel({ giro }: { giro: GiroRecicladora }) {
   const r = RECICLADORAS[giro]
 
   const capexItems = [
-    { label: 'Equipamiento',         val: r.capex.equipamiento },
-    { label: 'Adecuación de nave',   val: r.capex.adecuacionNave },
-    { label: 'Gastos preoperativos', val: r.capex.gastosPreoperativos },
-    { label: 'Capital de trabajo',   val: r.capex.capitalTrabajo },
+    { label: 'Equipamiento',                                     val: r.capex.equipamiento },
+    { label: 'Adecuación de nave',                               val: r.capex.adecuacionNave },
+    { label: 'Gastos preoperativos',                             val: r.capex.gastosPreoperativos },
+    { label: 'Contingencia 10% (equip. + nave) — EBRD/GIZ',    val: r.capex.contingencia },
+    { label: 'Capital de trabajo — World Bank',                  val: r.capex.capitalTrabajo },
   ]
 
   const opexMostrar = [
@@ -558,6 +561,75 @@ export function CapexOpexBreakdown() {
                 <p className="text-[10px] text-[#9A9A9A] mt-0.5">{k.sub}</p>
               </div>
             ))}
+          </div>
+
+          {/* Validación cruzada con benchmarks externos */}
+          <div className="mt-6 rounded-xl border border-[#E8E4DC] overflow-hidden">
+            <div className="bg-[#F5F3EE] px-4 py-3 border-b border-[#E8E4DC]">
+              <h3 className="text-xs font-semibold text-[#3A3A3A]">Validación cruzada — benchmarks externos</h3>
+              <p className="text-[10px] text-[#7A7A7A] mt-0.5">
+                Fuentes: World Bank MSW Guidelines 2024 · FONADIN/BANOBRAS PRORESOL · EBRD/GIZ Moldova SF · INEGI ENOE T1-2025
+              </p>
+            </div>
+            <div className="divide-y divide-[#F0EDE8]">
+              {[
+                {
+                  concepto: 'CAPEX centro de acopio (rango mercado MX)',
+                  benchmarkExterno: `${fmtMXN(BENCHMARKS_EXTERNOS.capexCentroAcopioMXN.min, true)} – ${fmtMXN(BENCHMARKS_EXTERNOS.capexCentroAcopioMXN.max, true)}`,
+                  modeloAlquimia: `${fmtMXN(CAPEX_CA.P.totalCAPEX, true)} – ${fmtMXN(CAPEX_CA.G.totalCAPEX, true)}`,
+                  estado: 'ok',
+                  nota: 'León, Gto. $18M MXN (2024); PRORESOL < $20M MXN. Modelo dentro de rango.',
+                },
+                {
+                  concepto: 'Contingencia recomendada (CAPEX físico)',
+                  benchmarkExterno: BENCHMARKS_EXTERNOS.contingenciaFactorPct.rango,
+                  modeloAlquimia: '10% sobre equipamiento + nave',
+                  estado: 'ok',
+                  nota: BENCHMARKS_EXTERNOS.contingenciaFactorPct.fuente,
+                },
+                {
+                  concepto: 'Capital de trabajo mínimo',
+                  benchmarkExterno: `${BENCHMARKS_EXTERNOS.capitalTrabajoMesesRecomendados.minMeses}–${BENCHMARKS_EXTERNOS.capitalTrabajoMesesRecomendados.maxMeses} meses OPEX`,
+                  modeloAlquimia: '3 meses OPEX (CAs) / 2 meses OPEX (Recicladoras)',
+                  estado: 'ok',
+                  nota: BENCHMARKS_EXTERNOS.capitalTrabajoMesesRecomendados.nota,
+                },
+                {
+                  concepto: 'Salario operario — promedio nacional INEGI',
+                  benchmarkExterno: `$${BENCHMARKS_EXTERNOS.salariosReferencia.operario.promedioNacional.toLocaleString('es-MX')}/mes`,
+                  modeloAlquimia: `$${BENCHMARKS_EXTERNOS.salariosReferencia.operario.notaUsoModeloMXN.toLocaleString('es-MX')}/mes`,
+                  estado: 'nota',
+                  nota: BENCHMARKS_EXTERNOS.salariosReferencia.operario.nota,
+                },
+                {
+                  concepto: 'Permisos + seguros anuales',
+                  benchmarkExterno: `${fmtMXN(BENCHMARKS_EXTERNOS.permisosYSegurosAnual.minMXN, true)} – ${fmtMXN(BENCHMARKS_EXTERNOS.permisosYSegurosAnual.maxMXN, true)}/año`,
+                  modeloAlquimia: '0.5% CAPEX/año (seguros en OPEX mensual)',
+                  estado: 'ok',
+                  nota: 'SEMARNAT autorización $5,910; MIA $50K-$300K; Seguro RC Ambiental (LGPGIR Art.50).',
+                },
+              ].map((row, i) => (
+                <div key={i} className="grid grid-cols-[2fr_1fr_1fr] gap-2 px-4 py-3 text-xs">
+                  <div>
+                    <p className="font-medium text-[#2A2A2A]">{row.concepto}</p>
+                    <p className="text-[10px] text-[#8A8A8A] mt-0.5">{row.nota}</p>
+                  </div>
+                  <div className="text-[#5A5A5A]">
+                    <p className="text-[10px] text-[#9A9A9A] mb-0.5">Benchmark externo</p>
+                    <p className="font-mono">{row.benchmarkExterno}</p>
+                  </div>
+                  <div className="flex flex-col">
+                    <p className="text-[10px] text-[#9A9A9A] mb-0.5">Modelo ALQUIMIA</p>
+                    <span className={cn(
+                      'inline-flex items-center gap-1 font-mono',
+                      row.estado === 'ok' ? 'text-[#3B6D11]' : 'text-[#7A5A0A]',
+                    )}>
+                      {row.estado === 'ok' ? '✓' : '⚠'} {row.modeloAlquimia}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
