@@ -48,59 +48,6 @@ function moduleNumber(id: string): string {
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
-function TopKpiStrip() {
-  const r         = useSimulatorStore(s => s.resultados)
-  const horizonte = useSimulatorStore(s => s.horizonte)
-  const h         = Math.max(1, horizonte)
-
-  const kpis = [
-    {
-      Icon: TrendingUp,
-      label: 'RSU generado diario',
-      value: r ? fmt.kgd(r.rsuTotalTonDia) : '—',
-      sub: 'estimación de escenario',
-      color: 'text-[#3B6D11]',
-    },
-    {
-      Icon: Zap,
-      label: 'Derrama anual',
-      value: r ? fmt.mxnM(r.ingresosBrutos / h) : '—',
-      sub: 'costo económico total',
-      color: 'text-[#3B6D11]',
-    },
-    {
-      Icon: Wind,
-      label: 'CO₂ evitado',
-      value: r ? fmt.co2(r.co2eEvitadasAnualTon) : '—',
-      sub: 'equivalente anual',
-      color: 'text-[#1A5FA8]',
-    },
-    {
-      Icon: Users,
-      label: 'Empleos directos',
-      value: r ? fmt.num0(r.empleosTotalesDirectos) : '—',
-      sub: 'programa + reciclaje',
-      color: 'text-[#D4881E]',
-    },
-  ]
-
-  return (
-    <div className="grid grid-cols-2 xl:grid-cols-4 gap-px bg-[#E8E4DC] border-b border-[#E8E4DC]">
-      {kpis.map(k => (
-        <div key={k.label} className="bg-white px-4 py-2 flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-[7px] bg-[#F4F2ED] flex items-center justify-center shrink-0">
-            <k.Icon className={cn('w-4 h-4', k.color)} strokeWidth={1.75} />
-          </div>
-          <div className="min-w-0">
-            <p className={cn('font-mono text-[16px] font-semibold leading-tight', k.color)}>{k.value}</p>
-            <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] leading-tight truncate">{k.label}</p>
-          </div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // ─── Left navigation ──────────────────────────────────────────────────────────
 
 export function ModuleNav({
@@ -559,9 +506,6 @@ export function DecisionModuleShell({
   // ── Main layout ─────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col" aria-labelledby="decision-shell-title">
-      {/* KPI strip */}
-      <TopKpiStrip />
-
       {/* Mobile module selector */}
       {activeModule && (
         <MobileModuleSelect
