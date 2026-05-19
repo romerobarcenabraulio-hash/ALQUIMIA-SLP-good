@@ -14,7 +14,6 @@ describe('simulator functionary surface', () => {
       'future_goals',
       'infrastructure_operations',
       'market_traceability',
-      'risk_trends',
       'inspeccion_predios',
       'scenarios_export',
       'source_traceability',
@@ -36,7 +35,10 @@ describe('simulator functionary surface', () => {
       '<ImpactoFinanciero />',
     )
     expect(registrySource).toContain("case 'market_traceability':")
-    expect(registrySource).toContain("case 'risk_trends':")
+    // risk_trends está absorbido como tab en MarketTraceabilityStack
+    expect(readFrontend('src/components/simulator/stacks/MarketTraceabilityStack.tsx')).toContain(
+      "import { RiskTrendsPanel }",
+    )
     expect(readFrontend('src/lib/simulator/functionaryJourneyEnrichment.ts')).toContain(
       "label: 'Bibliografía y cálculos'",
     )

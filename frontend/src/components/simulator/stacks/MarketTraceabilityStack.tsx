@@ -1,17 +1,18 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
   AreaChart, Area, CartesianGrid,
 } from 'recharts'
-import { Shield, Users, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
+import { Shield, Users, AlertTriangle, CheckCircle, TrendingUp, BarChart2, Activity } from 'lucide-react'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { calcularScoresRiesgo } from '@/lib/calculator'
 import dynamic from 'next/dynamic'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+import { RiskTrendsPanel } from '@/components/simulator/RiskTrendsPanel'
 
 // Confianza metodológica del módulo M05 — definida en DecisionModuleShell.MODULE_CONFIDENCE
 const M05_CONFIDENCE_PCT = 40
@@ -137,8 +138,41 @@ export function MarketTraceabilityStack() {
   const riskLegal = scores?.r_regulatorio ?? null
   const riskOp    = scores?.r_operativo ?? null
 
+  const [tab, setTab] = useState<'analisis' | 'tendencias'>('analisis')
+
+  const TABS: { id: 'analisis' | 'tendencias'; label: string; icon: React.ElementType }[] = [
+    { id: 'analisis',   label: 'Análisis y riesgos', icon: BarChart2 },
+    { id: 'tendencias', label: 'Tendencias',          icon: Activity  },
+  ]
+
   return (
     <div className="space-y-4 pb-6">
+
+      {/* ── Tab navigation ─────────────────────────────────────────────── */}
+      <div className="flex gap-1 border-b border-[#E8E4DC] -mx-0">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            type="button"
+            onClick={() => setTab(t.id)}
+            className={cn(
+              'flex items-center gap-1.5 px-4 py-2 text-[12px] font-medium border-b-2 -mb-px transition-colors',
+              tab === t.id
+                ? 'border-[#3B6D11] text-[#3B6D11]'
+                : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
+            )}
+          >
+            <t.icon size={13} />
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── Tab: Tendencias ────────────────────────────────────────────── */}
+      {tab === 'tendencias' && <RiskTrendsPanel />}
+
+      {/* ── Tab: Análisis y riesgos ────────────────────────────────────── */}
+      {tab === 'analisis' && <>
 
       {/* ── M07 KPI strip ──────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
@@ -482,6 +516,7 @@ export function MarketTraceabilityStack() {
         <ReasoningGraphPanel />
       </div>
       <ModuleBottomBar />
+      </> /* end tab: analisis */}
     </div>
   )
 }

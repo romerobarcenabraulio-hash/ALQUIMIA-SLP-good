@@ -1,6 +1,5 @@
 'use client'
 
-import { BookOpenCheck, BookOpenText } from 'lucide-react'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import {
   getEtiquetaNarrativaCiudad,
@@ -30,99 +29,135 @@ export function ModuleEditorialBrief({
   if (!brief) return null
 
   return (
-    <section
-      className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-4 lg:p-5"
-      aria-label={`Lectura ejecutiva: ${brief.title}`}
+    <div
+      className="space-y-0"
+      aria-label={`Consideraciones del módulo: ${brief.title}`}
       data-testid={`module-editorial-brief-${moduleId}`}
     >
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-        <div className="min-w-0 flex-1">
-          {!suppressTitle ? (
-            <>
-              <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span
-                  className="inline-flex rounded-md border border-[#B9C8A6] bg-white/90 px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-[#2F5A0C]"
-                  title="Artículo de síntesis · contexto del módulo"
-                >
-                  S1
-                </span>
-                <h3 className="font-serif text-[clamp(1.125rem,2vw,1.375rem)] text-[#1C1B18]">{brief.title}</h3>
-              </div>
-            </>
-          ) : (
-            <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
-          )}
-          <p className="mt-3 w-full max-w-none text-[13px] leading-relaxed text-[#5A6347] lg:text-[14px] lg:leading-[1.55]">
-            {brief.situacion_actual}
+      {/* ── Situación actual ──────────────────────────────── */}
+      {!suppressTitle && (
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.07em] text-[#3B6D11]">
+          {brief.title}
+        </p>
+      )}
+
+      <div data-testid={`editorial-situacion-${moduleId}`}>
+        <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#A8A49C] mb-1">
+          Contexto del módulo
+        </p>
+        <p className="text-[12px] leading-[1.65] text-[#2C302A]">
+          {brief.situacion_actual}
+        </p>
+      </div>
+
+      {/* ── Observamos ────────────────────────────────────── */}
+      <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
+        <div className="border-l-2 border-[#3B6D11] pl-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#5A8A3A] mb-1">
+            Observamos
+          </p>
+          <p className="text-[12px] leading-[1.55] text-[#2C302A]">
+            {brief.observacion_alquimia}
           </p>
         </div>
-        <span className="inline-flex shrink-0 items-center gap-2 self-start rounded-full border border-[#D7E8C0] bg-white px-3 py-1 text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">
-          <BookOpenCheck size={13} aria-hidden />
-          Observación técnica
-        </span>
       </div>
 
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        <EditorialCard sectionId="S16" label="Qué observamos" value={brief.observacion_alquimia} density="compact" />
-        <EditorialCard sectionId="S15" label="Qué decisión habilita" value={brief.criterio_decision} density="compact" />
+      {/* ── Decisión que habilita ─────────────────────────── */}
+      <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
+        <div className="border-l-2 border-[#1A5FA8] pl-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#1A5FA8] mb-1">
+            Decisión que habilita
+          </p>
+          <p className="text-[12px] leading-[1.55] text-[#2C302A]">
+            {brief.criterio_decision}
+          </p>
+        </div>
       </div>
 
-      <div className="mt-3">
-        <EditorialCard label="Qué falta verificar" value={brief.siguiente_accion} density="comfortable" />
+      {/* ── Qué falta verificar ───────────────────────────── */}
+      <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
+        <div className="border-l-2 border-[#D4881E] pl-2.5">
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#D4881E] mb-1">
+            Qué verificar aún
+          </p>
+          <p className="text-[12px] leading-[1.55] text-[#2C302A]">
+            {brief.siguiente_accion}
+          </p>
+        </div>
       </div>
 
+      {/* ── Metodología §1–§4 ─────────────────────────────── */}
       {brief.metodologia_editorial && (
         <div
-          className="mt-4 border-t border-[#D7E8C0] pt-4"
+          className="pt-3 mt-3 border-t border-[#F0EDE5] space-y-3"
           aria-label="Metodología y fuentes"
           data-testid={`editorial-metodologia-${moduleId}`}
         >
-          <p className="mb-2 flex items-center gap-1.5 text-[10px] uppercase tracking-[0.06em] text-[#6B8C4A]">
-            <BookOpenText size={11} aria-hidden />
-            Cómo se calcula · consideraciones metodológicas
+          <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-[#6B8C4A]">
+            Metodología
           </p>
-          <p className="text-[12px] leading-[1.65] text-[#4A5041] lg:text-[13px]">
+
+          <MetodologiaItem n={1} label="Cómo se calcula">
             {brief.metodologia_editorial.como_se_calcula}
-          </p>
+          </MetodologiaItem>
+
+          <MetodologiaItem n={2} label="Origen de los datos">
+            {brief.metodologia_editorial.origen_datos}
+          </MetodologiaItem>
+
+          <MetodologiaItem n={3} label="Por qué este enfoque">
+            {brief.metodologia_editorial.por_que_este_enfoque}
+          </MetodologiaItem>
+
+          <MetodologiaItem n={4} label="Supuesto crítico" accent>
+            {brief.metodologia_editorial.supuesto_critico}
+          </MetodologiaItem>
         </div>
       )}
 
-      <div className="mt-3 grid gap-3 lg:grid-cols-2">
-        <div className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-3">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">Límite de interpretación</p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[#5A6347]">{brief.que_no_significa}</p>
+      {/* ── Footer: límite + fuente ───────────────────────── */}
+      <div className="pt-3 mt-3 border-t border-[#F0EDE5] space-y-2">
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#A8A49C] mb-0.5">
+            Límite de interpretación
+          </p>
+          <p className="text-[11px] leading-[1.5] text-[#6B6760]">
+            {brief.que_no_significa}
+          </p>
         </div>
-        <div className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-3">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">Fuente o evidencia</p>
-          <p className="mt-1 text-[12px] leading-relaxed text-[#5A6347]">{brief.fuente_o_evidencia}</p>
+        <div>
+          <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#A8A49C] mb-0.5">
+            Fuente o evidencia
+          </p>
+          <p className="text-[11px] leading-[1.5] text-[#6B6760]">
+            {brief.fuente_o_evidencia}
+          </p>
         </div>
       </div>
-    </section>
+    </div>
   )
 }
 
-function EditorialCard({
-  sectionId,
+function MetodologiaItem({
+  n,
   label,
-  value,
-  density,
+  accent = false,
+  children,
 }: {
-  sectionId?: string
+  n: number
   label: string
-  value: string
-  density: 'compact' | 'comfortable'
+  accent?: boolean
+  children: string
 }) {
-  const body = density === 'compact' ? 'text-[11px] leading-snug' : 'text-[12px] leading-relaxed'
   return (
-    <article className="rounded-[8px] border border-[#D7E8C0] bg-white px-3 py-2.5 md:px-3 md:py-3">
-      <p className="flex flex-wrap items-center gap-2 text-[10px] uppercase tracking-[0.06em] text-[#8CAA7A]">
-        {sectionId ? (
-          <span className="font-mono text-[9px] font-semibold tabular-nums text-[#5A7D3A]">{sectionId}</span>
-        ) : null}
-        <span>{label}</span>
+    <div>
+      <p className="text-[10px] font-medium text-[#6B8C4A] mb-0.5">
+        <span className="font-mono text-[9px] text-[#A8A49C] mr-1">§{n}</span>
+        {label}
       </p>
-      <p className={`mt-1.5 text-[#1C1B18] ${body}`}>{value}</p>
-    </article>
+      <p className={`text-[11px] leading-[1.55] ${accent ? 'text-[#2C302A] font-medium' : 'text-[#4A5041]'}`}>
+        {children}
+      </p>
+    </div>
   )
 }

@@ -560,20 +560,15 @@ export function CityBaselineStack() {
             )}
           </div>
 
-          {/* Lectura municipal — colapsada */}
-          <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-            <summary className="cursor-pointer px-4 py-3 flex items-center justify-between select-none hover:bg-[#FAFAF8] transition-colors text-[11px] font-medium text-[#6B6760]">
-              <span>Lectura municipal · {narrative.title}</span>
-              <ChevronDown size={14} className="text-[#A8A49C] shrink-0" />
-            </summary>
-            <div className="px-4 pb-4 pt-2 border-t border-[#F0EDE5]">
-              <div className="rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-                <p className="font-serif text-[14px] text-[#1C1B18] mb-1">{narrative.title}</p>
-                <p className="text-[11px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
-                <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
-              </div>
+          {/* Lectura municipal — siempre visible */}
+          <section className="pt-4 border-t border-[#F0EDE5]">
+            <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Lectura municipal</p>
+            <div className="border-l-2 border-[#3B6D11] pl-3">
+              <p className="font-serif text-[14px] text-[#1C1B18] mb-1">{narrative.title}</p>
+              <p className="text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
+              <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
             </div>
-          </details>
+          </section>
 
         </div>
 

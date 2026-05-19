@@ -505,7 +505,7 @@ function GuidancePanel({
   const activePropuesta = propuestaActivaIdx !== null ? propuestaSlots[propuestaActivaIdx] : null
 
   return (
-    <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
+    <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-white overflow-y-auto">
       {/* ── Header — always visible ───────────────────────────────────────── */}
       <div className="px-4 py-4 border-b border-[#E8E4DC]">
         <div className="flex items-center justify-between">
@@ -645,8 +645,8 @@ function GuidancePanel({
           </SidebarAccordion>
         )}
 
-        {/* Contexto editorial */}
-        <SidebarAccordion summary="Contexto editorial">
+        {/* Contexto editorial — siempre abierto */}
+        <SidebarAccordion summary="Consideraciones" defaultOpen={true}>
           <ModuleEditorialBrief moduleId={moduleId} suppressTitle />
         </SidebarAccordion>
 
