@@ -15,6 +15,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { cn, fmt } from '@/lib/utils'
+import { TRAJECTORY_HORIZON_HINTS, TRAJECTORY_UI } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
@@ -254,6 +255,13 @@ function ModuleContextHeader({
   const propuestaActivaIdx = useSimulatorStore(s => s.propuestaActivaIdx)
   const activePropuesta = propuestaActivaIdx !== null ? propuestaSlots[propuestaActivaIdx] : null
 
+  // Dynamic subtitle data for city_baseline
+  const horizonte = useSimulatorStore(s => s.horizonte)
+  const presetTrayectoria = useSimulatorStore(s => s.presetTrayectoria)
+  const horizonHint = TRAJECTORY_HORIZON_HINTS[horizonte] ?? TRAJECTORY_HORIZON_HINTS[10]
+  const activeTrajectoryLabel = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
+  const isRecommended = presetTrayectoria === horizonHint.presetId
+
   return (
     <header
       className="mb-5 pb-5 border-b border-[#E8E4DC]"
@@ -287,11 +295,40 @@ function ModuleContextHeader({
       >
         {title}
       </h2>
-      {brief?.subtitulo_catchy && (
-        <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
-          {brief.subtitulo_catchy}
-        </p>
+
+      {/* city_baseline: dynamic 2-sentence subtitle */}
+      {moduleId === 'city_baseline' && territorio ? (
+        <>
+          <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
+            Evaluando el escenario de{' '}
+            <span className="text-[#1C1B18]">{territorio}</span>
+            {' '}· horizonte{' '}
+            <span className="text-[#1C1B18]">{horizonte} años</span>
+            {' '}· trayectoria{' '}
+            <span className={cn('font-semibold', isRecommended ? 'text-[#1C1B18]' : 'text-[#D4881E]')}>
+              {activeTrajectoryLabel}
+            </span>
+            {!isRecommended && (
+              <span className="ml-1 text-[13px] text-[#D4881E]">↑</span>
+            )}
+          </p>
+          <p className="mt-1.5 text-[12px] text-[#6B6760] leading-snug max-w-3xl">
+            Para {horizonte} años se recomienda{' '}
+            <span className="font-medium text-[#1C1B18]">{horizonHint.recommended}</span>
+            {' '}— {horizonHint.reason}.
+            {!isRecommended && (
+              <span className="ml-1 text-[#D4881E]">La trayectoria activa difiere de la recomendada.</span>
+            )}
+          </p>
+        </>
+      ) : (
+        brief?.subtitulo_catchy && (
+          <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
+            {brief.subtitulo_catchy}
+          </p>
+        )
       )}
+
       {territorio && (
         <p className="mt-2.5 text-[12px] text-[#6B6760]">
           Territorio de lectura:{' '}
