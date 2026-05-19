@@ -53,10 +53,10 @@ describe('FuncionariosViviendaRsuModel', () => {
     expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
     expect(screen.getByText(/Captura global aplicada/)).toBeTruthy()
     expect(screen.getByText(/La composición por material queda fija/i)).toBeTruthy()
-    expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
-    expect(screen.getByText(/Dentro de condominio: departamento/)).toBeTruthy()
+    expect(screen.getByText(/Vivienda en edificio \(condominio \/ vertical\)/)).toBeTruthy()
+    expect(screen.getByText(/Dentro de edificio: departamento/)).toBeTruthy()
     expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
-    expect(screen.getByText(/Vivienda no sujeta a condominio/)).toBeTruthy()
+    expect(screen.getByText(/Vivienda en casa \(no condominio\)/)).toBeTruthy()
     expect(screen.getByText(/Ocupantes por vivienda del escenario/)).toBeTruthy()
     expect(screen.getAllByText(/Modelo operativo ALQUIMIA/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText(/no es porcentaje oficial INEGI/i).length).toBeGreaterThan(0)
@@ -104,13 +104,13 @@ describe('FuncionariosViviendaRsuModel', () => {
     const afterOccupants = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
     expect(afterOccupants).not.toBe(before)
 
-    fireEvent.change(screen.getByLabelText(/Vivienda en propiedad de condominio/), { target: { value: '80' } })
+    fireEvent.change(screen.getByLabelText(/Vivienda en edificio/), { target: { value: '80' } })
     const afterHousing = useSimulatorStore.getState().resultados?.rsuTotalTonDia ?? 0
     const afterHousingVertical = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
     expect(afterHousing).not.toBe(afterOccupants)
     expect(afterHousingVertical).toBeGreaterThan(0)
 
-    fireEvent.change(screen.getByLabelText(/Dentro de condominio: departamento/), { target: { value: '20' } })
+    fireEvent.change(screen.getByLabelText(/Dentro de edificio: departamento/), { target: { value: '20' } })
     const afterCondoSplit = useSimulatorStore.getState().resultados?.rsuPorTipo.vertical ?? 0
     expect(afterCondoSplit).toBeLessThan(afterHousingVertical)
   })
@@ -157,7 +157,7 @@ describe('FuncionariosViviendaRsuModel', () => {
     render(<FuncionariosViviendaRsuModel />)
 
     expect(screen.getAllByText(/Sin tabulado INEGI municipal/).length).toBe(1)
-    expect(screen.getByText(/Vivienda en propiedad de condominio/)).toBeTruthy()
+    expect(screen.getByText(/Vivienda en edificio/)).toBeTruthy()
     expect(screen.getByText(/Viviendas por porcentaje/)).toBeTruthy()
     expect(screen.getByTestId('captura-global-summary')).toBeTruthy()
   })
