@@ -1,14 +1,15 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { Check, Database, Lock } from 'lucide-react'
+import { Check, Database } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { PRECIOS_RANGO } from '@/lib/constants'
+import { PRECIOS_RANGO, RSU_SEMARNAT } from '@/lib/constants'
 import {
   getInegiHousingDistribution,
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
 import { cn, fmt, MATERIAL_LABELS } from '@/lib/utils'
+import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
 import type { PreciosMaterial } from '@/types'
 
 const MATERIALS: Array<keyof PreciosMaterial> = ['pet', 'hdpe', 'papel', 'vidrio', 'aluminio', 'organico']
@@ -112,13 +113,15 @@ export function FuncionariosViviendaRsuModel() {
           <MockupPanel
             number="1"
             title="Distribución de vivienda en condominio"
+            sourceTag="INEGI Censo 2020 + supuesto editorial"
             testId="vivienda-accordion-shell"
           >
+            {/* INEGI-sourced totals — read only */}
             {distribution ? (
               <div className="grid grid-cols-3 gap-2 mb-3">
                 <KpiChip label="Población estatal 2020" value={fmt.num0(distribution.statePopulation2020)} />
                 <KpiChip label="Viviendas habitadas 2020" value={fmt.num0(distribution.stateOccupiedDwellings2020)} />
-                <KpiChip label="Ocupantes/viv." value={distribution.stateAvgOccupants2020.toFixed(1)} />
+                <KpiChip label="Ocupantes/viv. base" value={distribution.stateAvgOccupants2020.toFixed(1)} />
               </div>
             ) : (
               <p className="mb-3 text-[11px] text-amber-800 rounded-[8px] border border-amber-200 bg-amber-50 px-2.5 py-1.5">
@@ -152,40 +155,49 @@ export function FuncionariosViviendaRsuModel() {
             </div>
 
             <div className="space-y-3">
-              <PercentSlider
-                id="vivienda-edificio-depto"
-                label="Departamentos"
-                value={viviendaCondominioDepartamentoPct}
-                onChange={setViviendaCondominioDepartamentoPct}
-              />
-              <PercentSlider
-                id="vivienda-condominio-casa"
-                label="Casas"
-                value={viviendaCondominioCasaPct}
-                onChange={v => setViviendaCondominioDepartamentoPct(100 - v)}
-              />
-              <div className="flex items-center justify-between rounded-[8px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1.5">
-                <span className="text-[11px] font-medium text-[#3B6D11]">Total condominio</span>
-                <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#23470A]">
-                  <Check size={12} aria-hidden />
-                  100%
-                </span>
-              </div>
+              {/* % total en condominio/edificio — editorial assumption, INEGI no desglosa */}
               <PercentSlider
                 id="vivienda-edificio-condominio"
-                label="Vivienda en edificio (condominio / vertical)"
+                label="% viviendas en edificio / condominio"
                 value={viviendaCondominioPct}
+                min={10}
+                max={60}
+                step={5}
                 onChange={setViviendaCondominioPct}
+                confidence="bibliography"
+                source="CONAVI Necesidades de Vivienda 2030 · mix urbano ZM México"
               />
-              <PercentSlider
-                id="vivienda-casa-independiente"
-                label="Vivienda en casa (no condominio)"
-                value={viviendaNoCondominioPct}
-                onChange={setViviendaNoCondominioPct}
-              />
+              {/* Derived read-only counterpart */}
+              <div className="flex items-center justify-between rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-1.5">
+                <span className="text-[11px] text-[#6B6760]">Casa independiente (derivado)</span>
+                <span className="font-mono text-[11px] font-semibold text-[#4A4642]">{viviendaNoCondominioPct.toFixed(0)}%</span>
+              </div>
+
+              <div className="pt-1 border-t border-[#F0EDE5]">
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">
+                  Desglose interno · solo viviendas en condominio
+                </p>
+                {/* Internal split: INEGI does not break apartments vs houses within condominium */}
+                <PercentSlider
+                  id="vivienda-edificio-depto"
+                  label="Departamentos (dentro de condominio)"
+                  value={viviendaCondominioDepartamentoPct}
+                  onChange={setViviendaCondominioDepartamentoPct}
+                  confidence="assumption"
+                  source="Desglose estimado · INEGI no desglosa tipo dentro de condominio"
+                />
+                <div className="flex items-center justify-between rounded-[8px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1.5 mt-2">
+                  <span className="text-[11px] text-[#6B6760]">Casas en condominio (derivado)</span>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-mono text-[#23470A]">
+                    <Check size={12} aria-hidden />
+                    {viviendaCondominioCasaPct.toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+
               <PercentSlider
                 id="ocupantes-vivienda"
-                label="Ocupantes por vivienda del escenario"
+                label="Ocupantes por vivienda (escenario)"
                 value={ocupantesEscenario}
                 min={1}
                 max={6}
@@ -193,6 +205,8 @@ export function FuncionariosViviendaRsuModel() {
                 suffix=""
                 display={ocupantesEscenario.toFixed(1)}
                 onChange={setOcupantesPorViviendaEscenario}
+                confidence="inegi"
+                source={`INEGI Censo 2020 base: ${ocupantesBase.toFixed(1)} ocup./viv. · ajustable`}
               />
             </div>
 
@@ -203,50 +217,149 @@ export function FuncionariosViviendaRsuModel() {
             </p>
           </MockupPanel>
 
-          <MockupPanel number="2" title="Ajustar RSU">
-            <p className="text-[11px] text-[#A8A49C] mb-3">2.1 Trayectoria de captura · preset en Módulo 3</p>
-            <div className="space-y-3">
-              <PercentSlider
-                id="funcionario-gen-percapita"
-                label="Generación RSU per cápita"
-                value={genPercapita}
-                min={0.65}
-                max={1.55}
-                step={0.05}
-                suffix=" kg/hab/día"
-                display={`${genPercapita.toFixed(2)}`}
-                onChange={setGenPercapita}
-              />
-              <div>
-                <p className="text-[11px] font-medium text-[#6B6760] mb-1.5">Horizonte del plan</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[3, 4, 5, 6, 7].map(year => (
-                    <button
-                      key={year}
-                      type="button"
-                      onClick={() => setHorizonte(year)}
-                      className={cn(
-                        'h-8 min-w-[2rem] rounded-full border px-2.5 text-[12px] font-medium',
-                        horizonte === year
-                          ? 'border-[#3B6D11] bg-[#3B6D11] text-white'
-                          : 'border-[#E8E4DC] bg-white text-[#6B6760]',
-                      )}
-                      aria-pressed={horizonte === year}
-                    >
-                      {year}
-                    </button>
-                  ))}
+          <MockupPanel
+            number="2"
+            title="Ajustar RSU"
+            sourceTag="SEMARNAT BDE + investigación de campo ALQUIMIA"
+          >
+            <div className="space-y-4">
+              {/* 2.1 Generación + horizonte */}
+              <div className="space-y-3">
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] font-semibold">
+                  2.1 Generación y horizonte
+                </p>
+                <PercentSlider
+                  id="funcionario-gen-percapita"
+                  label="Generación RSU per cápita"
+                  value={genPercapita}
+                  min={0.65}
+                  max={1.55}
+                  step={0.05}
+                  suffix=" kg/hab·día"
+                  display={`${genPercapita.toFixed(2)}`}
+                  onChange={setGenPercapita}
+                  confidence="bibliography"
+                  source="SEMARNAT BDE 2022 · rango nacional 0.65–1.55 kg/hab/día"
+                />
+                <div>
+                  <p className="text-[11px] font-medium text-[#6B6760] mb-1.5">Horizonte del plan (años)</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[3, 4, 5, 6, 7].map(year => (
+                      <button
+                        key={year}
+                        type="button"
+                        onClick={() => setHorizonte(year)}
+                        className={cn(
+                          'h-8 min-w-[2rem] rounded-full border px-2.5 text-[12px] font-medium',
+                          horizonte === year
+                            ? 'border-[#3B6D11] bg-[#3B6D11] text-white'
+                            : 'border-[#E8E4DC] bg-white text-[#6B6760]',
+                        )}
+                        aria-pressed={horizonte === year}
+                      >
+                        {year}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div
+                  className="flex items-center justify-between rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2"
+                  data-testid="captura-global-summary"
+                >
+                  <span className="text-[11px] text-[#6B6760]">2.2 Tasa de aprovechamiento global</span>
+                  <span className="font-mono text-[14px] font-semibold text-[#3B6D11]">
+                    {capturaBasePct.toFixed(0)}%
+                  </span>
                 </div>
               </div>
-              <div
-                className="flex items-center justify-between rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2"
-                data-testid="captura-global-summary"
-              >
-                <span className="text-[11px] text-[#6B6760]">2.2 Tasa de aprovechamiento global</span>
-                <span className="font-mono text-[14px] font-semibold text-[#3B6D11]">
-                  {capturaBasePct.toFixed(0)}%
-                </span>
+
+              {/* 2.3 + 2.4 Merma y precio — misma familia de variables RSU */}
+              <div className="pt-3 border-t border-[#F0EDE5]">
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] font-semibold mb-2">
+                  2.3 Merma · 2.4 Precio por tipo de RSU
+                </p>
+                <div className="grid grid-cols-[minmax(0,1fr)_76px_minmax(0,1fr)] gap-x-2 gap-y-1.5 items-center text-[9px] uppercase tracking-[0.05em] text-[#A8A49C] mb-1">
+                  <span>Material</span>
+                  <span className="text-center">Merma</span>
+                  <span className="text-right">Precio/kg</span>
+                </div>
+                <div className="space-y-2">
+                  {MATERIALS.map(material => {
+                    const range = PRECIOS_RANGO[material]
+                    const research = MATERIAL_PRICE_RESEARCH[material]
+                    return (
+                      <div key={material}>
+                        <div className="grid grid-cols-[minmax(0,1fr)_76px_minmax(0,1fr)] gap-x-2 items-center">
+                          <span className="text-[11px] text-[#1C1B18] truncate font-medium">
+                            {MATERIAL_LABEL[material]}
+                          </span>
+                          <div className="flex flex-col items-center gap-0.5">
+                            <span className="font-mono text-[10px] text-[#D4881E]">
+                              {(mermaPctPorMaterial[material] ?? 10).toFixed(0)}%
+                            </span>
+                            <input
+                              id={`merma-${material}`}
+                              type="range"
+                              min={0}
+                              max={60}
+                              step={5}
+                              value={mermaPctPorMaterial[material] ?? 10}
+                              onChange={e => setMermaMaterialPct(material, Number(e.target.value))}
+                              className="h-1 w-full cursor-pointer accent-[#D4881E]"
+                              aria-label={`Merma ${MATERIAL_LABEL[material]}`}
+                            />
+                          </div>
+                          <div>
+                            <span className="block text-right font-mono text-[10px] text-[#3B6D11] mb-0.5">
+                              ${precios[material].toFixed(2)}
+                            </span>
+                            <input
+                              id={`precio-${material}`}
+                              type="range"
+                              min={range.min}
+                              max={range.max}
+                              step={range.step}
+                              value={precios[material]}
+                              onChange={e => setPrecio(material, Number(e.target.value))}
+                              className="h-1 w-full cursor-pointer accent-[#3B6D11]"
+                            />
+                          </div>
+                        </div>
+                        {research && (
+                          <p className="mt-0.5 text-[8px] text-[#A8A49C] leading-tight pl-0 truncate">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#D4881E] inline-block mr-1 align-middle" />
+                            Bibliografía · {research.sourceSummary.split(',')[0]}
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+                <p className="sr-only">Mix fijo por material. {MATERIAL_PRICE_RESEARCH.pet.sourceRefs[0]}</p>
               </div>
+
+              {/* Composición base — resumen inline, no editable */}
+              <div className="pt-3 border-t border-[#F0EDE5]">
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] font-semibold mb-1.5">
+                  3. Composición base RSU · fija
+                </p>
+                <div className="flex flex-wrap gap-1.5">
+                  {[...RSU_SEMARNAT].map(item => (
+                    <span
+                      key={item.key}
+                      className="inline-flex items-center gap-1 rounded-full border border-[#E8E4DC] bg-[#FDFCFA] px-2 py-0.5 text-[9px] text-[#4A4642]"
+                    >
+                      <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: item.color }} />
+                      {item.name} {item.pct}%
+                    </span>
+                  ))}
+                </div>
+                <p className="mt-1 flex items-center gap-1 text-[9px] text-[#3B6D11]">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
+                  INEGI · SEMARNAT BDE 2022 · no medición municipal directa
+                </p>
+              </div>
+
               <p className="sr-only">
                 Captura global aplicada. La composición por material queda fija.{' '}
                 {toneladasCapturadasDia.toFixed(1)} t/día capturables.
@@ -255,81 +368,11 @@ export function FuncionariosViviendaRsuModel() {
           </MockupPanel>
         </div>
 
-        <div className="grid gap-3 lg:grid-cols-[1.4fr_0.6fr]">
-          <MockupPanel number="2" title="Merma y precio por tipo de RSU" className="lg:col-span-1">
-            <div className="grid grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] gap-x-3 gap-y-2 items-center text-[10px] uppercase tracking-[0.05em] text-[#A8A49C] mb-1">
-              <span>Material</span>
-              <span className="text-center">Merma · mix fijo</span>
-              <span className="text-right">Precio</span>
-            </div>
-            <div className="space-y-2 max-h-[240px] overflow-y-auto pr-0.5">
-              {MATERIALS.map(material => {
-                const range = PRECIOS_RANGO[material]
-                return (
-                  <div
-                    key={material}
-                    className="grid grid-cols-[minmax(0,1fr)_88px_minmax(0,1fr)] gap-x-3 gap-y-0.5 items-center"
-                  >
-                    <label htmlFor={`precio-${material}`} className="text-[11px] text-[#1C1B18] truncate">
-                      {MATERIAL_LABEL[material]}
-                    </label>
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="font-mono text-[10px] text-[#3B6D11]">
-                        {(mermaPctPorMaterial[material] ?? 10).toFixed(0)}%
-                      </span>
-                      <input
-                        id={`merma-${material}`}
-                        type="range"
-                        min={0}
-                        max={60}
-                        step={5}
-                        value={mermaPctPorMaterial[material] ?? 10}
-                        onChange={e => setMermaMaterialPct(material, Number(e.target.value))}
-                        className="h-1 w-full cursor-pointer accent-[#8CAA7A]"
-                        aria-label={`Merma ${MATERIAL_LABEL[material]}`}
-                      />
-                    </div>
-                    <div>
-                      <span className="block text-right font-mono text-[10px] text-[#3B6D11] mb-0.5">
-                        ${precios[material].toFixed(2)}/kg
-                      </span>
-                      <input
-                        id={`precio-${material}`}
-                        type="range"
-                        min={range.min}
-                        max={range.max}
-                        step={range.step}
-                        value={precios[material]}
-                        onChange={e => setPrecio(material, Number(e.target.value))}
-                        className="h-1 w-full cursor-pointer accent-[#3B6D11]"
-                      />
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-            <p className="sr-only">Mix fijo por material. Investigacion_Precios_RSU_SLP</p>
-          </MockupPanel>
-
-          <div
-            className="flex flex-col justify-center rounded-[10px] border border-dashed border-[#D7E8C0] bg-[#F6FAEF] px-4 py-4"
-            data-testid="rsu-composition-under-percapita"
-          >
-            <div className="flex items-start gap-2">
-              <Lock size={16} className="text-[#8CAA7A] shrink-0 mt-0.5" aria-hidden />
-              <div>
-                <p className="text-[11px] font-semibold text-[#3B6D11]">3. Composición base del RSU</p>
-                <p className="mt-1 text-[11px] text-[#6B6760]">Fija · no editable</p>
-                <p className="mt-1 text-[10px] text-[#A8A49C]">Ver gráfica en Módulo 1</p>
-              </div>
-            </div>
-            <p className="sr-only">
-              Composición RSU de referencia. No son medición oficial del municipio activo.
-            </p>
-          </div>
-        </div>
-
-        <MockupPanel number="4" title="Costo / comisión por tonelada enterrada">
+        <MockupPanel
+          number="4"
+          title="Costo / comisión por tonelada enterrada"
+          sourceTag="Supuesto · ref: tarifas Finanzas municipales SLP 2023"
+        >
           <div className="flex flex-wrap items-center gap-3">
             <button
               type="button"
@@ -377,15 +420,26 @@ export function FuncionariosViviendaRsuModel() {
   )
 }
 
+// Confidence levels: inegi = measured data, bibliography = published reference, assumption = editorial
+type SourceConfidence = 'inegi' | 'bibliography' | 'assumption'
+
+const CONFIDENCE_STYLE: Record<SourceConfidence, { dot: string; text: string; label: string }> = {
+  inegi:       { dot: 'bg-[#3B6D11]',  text: 'text-[#3B6D11]',  label: 'INEGI' },
+  bibliography:{ dot: 'bg-[#D4881E]',  text: 'text-[#D4881E]',  label: 'Bibliografía' },
+  assumption:  { dot: 'bg-[#A8A49C]',  text: 'text-[#6B6760]',  label: 'Supuesto editorial' },
+}
+
 function MockupPanel({
   number,
   title,
+  sourceTag,
   children,
   className,
   testId,
 }: {
   number: string
   title: string
+  sourceTag?: string
   children: ReactNode
   className?: string
   testId?: string
@@ -395,11 +449,18 @@ function MockupPanel({
       className={cn('rounded-[10px] border border-[#E8E4DC] bg-white p-4', className)}
       data-testid={testId}
     >
-      <h3 className="text-[13px] font-semibold text-[#1C1B18] leading-snug">
-        <span className="font-mono text-[#3B6D11] mr-1">{number}.</span>
-        {title}
-      </h3>
-      <div className="mt-3">{children}</div>
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <h3 className="text-[13px] font-semibold text-[#1C1B18] leading-snug">
+          <span className="font-mono text-[#3B6D11] mr-1">{number}.</span>
+          {title}
+        </h3>
+        {sourceTag && (
+          <span className="shrink-0 text-[8px] uppercase tracking-[0.06em] text-[#A8A49C] border border-[#E8E4DC] rounded-full px-2 py-0.5 leading-tight">
+            {sourceTag}
+          </span>
+        )}
+      </div>
+      {children}
     </article>
   )
 }
@@ -423,6 +484,8 @@ function PercentSlider({
   step = 5,
   suffix = '%',
   display,
+  source,
+  confidence = 'assumption',
 }: {
   id: string
   label: string
@@ -433,8 +496,11 @@ function PercentSlider({
   step?: number
   suffix?: string
   display?: string
+  source?: string
+  confidence?: SourceConfidence
 }) {
   const shown = display ?? `${value.toFixed(step < 1 ? 1 : 0)}${suffix}`
+  const cs = CONFIDENCE_STYLE[confidence]
   return (
     <div>
       <div className="flex items-center justify-between gap-2 mb-1">
@@ -453,6 +519,12 @@ function PercentSlider({
         onChange={e => onChange(Number(e.target.value))}
         className="h-2 w-full cursor-pointer accent-[#3B6D11]"
       />
+      {source && (
+        <p className={cn('mt-1 flex items-center gap-1 text-[9px] leading-snug', cs.text)}>
+          <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', cs.dot)} />
+          <span>{cs.label} · {source}</span>
+        </p>
+      )}
     </div>
   )
 }

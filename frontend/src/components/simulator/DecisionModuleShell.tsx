@@ -463,18 +463,10 @@ function GuidancePanel({
           </details>
         )}
 
-        {module.evidence && (
-          <div className={brief?.metodologia_editorial ? 'pt-3 border-t border-[#E8E4DC]' : ''}>
-            <p className="font-semibold text-[#1C1B18] mb-1.5">Qué sostiene el análisis</p>
-            <p className="text-[#6B6760] leading-relaxed">{module.evidence}</p>
-          </div>
-        )}
-        {module.next_action && (
-          <div className="pt-3 border-t border-[#E8E4DC]">
-            <p className="font-semibold text-[#1C1B18] mb-1.5">Siguiente paso</p>
-            <p className="text-[#6B6760] leading-relaxed">{module.next_action}</p>
-          </div>
-        )}
+        {/* Editorial brief — sits in Consideraciones, not in the center column */}
+        <div className="pt-3 border-t border-[#E8E4DC]">
+          <ModuleEditorialBrief moduleId={moduleId} suppressTitle />
+        </div>
 
         <div className="pt-3 border-t border-[#E8E4DC]">
           <p className="font-semibold text-[#1C1B18] mb-2">Condiciones de lectura</p>
@@ -656,7 +648,6 @@ export function DecisionModuleShell({
               </div>
             ) : (
               <div className="space-y-5">
-                <ModuleEditorialBrief moduleId={activeModule.module_id} suppressTitle />
                 <ModuleMetodologiaMobile
                   moduleId={activeModule.module_id}
                   activeChartId={activeChartId}
