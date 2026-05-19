@@ -11,6 +11,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { PRESETS_TRAYECTORIA, TRAJECTORY_UI, RSU_SEMARNAT } from '@/lib/constants'
 import { fmt, cn } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -204,6 +205,7 @@ export function CityBaselineStack() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
 
             {/* Col 1 — KPIs de volumen */}
+            <ExpandableChart chartId="volumen-rsu" title="Volumen y derrama económica" subtitle="Escenario municipal · simulación">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
               <SectionHeader n={1} title="Volumen y derrama" sub="Escenario municipal · simulación" />
 
@@ -232,8 +234,10 @@ export function CityBaselineStack() {
                 </div>
               )}
             </div>
+            </ExpandableChart>
 
             {/* Col 2 — Trayectoria de captura (uses store data) */}
+            <ExpandableChart chartId="trayectoria-captura" title="Trayectoria de captura" subtitle={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`}>
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
               <div className="flex items-start justify-between mb-3">
                 <SectionHeader n={2} title="Trayectoria de captura" sub={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`} />
@@ -253,7 +257,10 @@ export function CityBaselineStack() {
               </ResponsiveContainer>
             </div>
 
+            </ExpandableChart>
+
             {/* Col 3 — Composición RSU donut */}
+            <ExpandableChart chartId="composicion-rsu" title="Composición del RSU" subtitle="Referencia fija · SEMARNAT">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
               <div className="flex items-start justify-between mb-3">
                 <SectionHeader n={3} title="Composición del RSU" sub="Referencia fija · SEMARNAT" />
@@ -286,6 +293,7 @@ export function CityBaselineStack() {
                 </div>
               </div>
             </div>
+            </ExpandableChart>
           </div>
 
           {/* Section 4: Qué sí/no se ajusta + Estado del escenario */}

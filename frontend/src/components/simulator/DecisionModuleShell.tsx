@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import {
   AlertTriangle,
   BookOpen,
@@ -17,7 +17,9 @@ import {
 import { cn, fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import type { ChartBrief, MetodologiaEditorial } from '@/data/moduleEditorialBriefs'
+import { useChartSectionObserver } from '@/hooks/useChartSectionObserver'
 import {
   getEtiquetaNarrativaCiudad,
   getMunicipioMadurezVista,
@@ -237,12 +239,77 @@ function ModuleSubtitle({ moduleId }: { moduleId: string }) {
   )
 }
 
+// ─── Metodología (módulo o gráfica en foco) ───────────────────────────────────
+
+function MetodologiaSections({ meta }: { meta: MetodologiaEditorial }) {
+  return (
+    <div className="space-y-3">
+      <div>
+        <p className="text-[9px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-1.5 flex items-center gap-1">
+          <span>⟨f⟩</span> Cómo se calcula
+        </p>
+        <p className="text-[11px] leading-[1.65] text-[#5A6347]">{meta.como_se_calcula}</p>
+      </div>
+      <div className="pt-2.5 border-t border-[#EDE9E3]">
+        <p className="text-[9px] uppercase tracking-[0.08em] text-[#7A9FC0] font-semibold mb-1.5 flex items-center gap-1">
+          <span>◎</span> Origen de los datos
+        </p>
+        <p className="text-[11px] leading-[1.65] text-[#5A6060]">{meta.origen_datos}</p>
+      </div>
+      <div className="pt-2.5 border-t border-[#EDE9E3]">
+        <p className="text-[9px] uppercase tracking-[0.08em] text-[#9A7AC0] font-semibold mb-1.5 flex items-center gap-1">
+          <span>↗</span> Por qué este enfoque
+        </p>
+        <p className="text-[11px] leading-[1.65] text-[#5A5A70]">{meta.por_que_este_enfoque}</p>
+      </div>
+      <div className="pt-2.5 border-t border-[#F5DEB0]">
+        <p className="text-[9px] uppercase tracking-[0.08em] text-[#C07A2A] font-semibold mb-1.5 flex items-center gap-1">
+          <span>⚠</span> Supuesto crítico
+        </p>
+        <p className="text-[11px] leading-[1.65] text-[#6B5A2A] bg-[#FEF9EC] rounded-[6px] px-2.5 py-2">
+          {meta.supuesto_critico}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function ChartReferences({ refs }: { refs: ChartBrief['referencias'] }) {
+  if (!refs?.length) return null
+  return (
+    <div className="pt-2.5 border-t border-[#EDE9E3]">
+      <p className="text-[9px] uppercase tracking-[0.08em] text-[#6B6760] font-semibold mb-1.5">Referencias</p>
+      <ul className="space-y-1.5">
+        {refs.map((ref) => (
+          <li key={ref.clave} className="text-[10px] leading-snug text-[#6B6760]">
+            <span className="font-mono text-[#3B6D11]">{ref.clave}</span>{' '}
+            {ref.url ? (
+              <a href={ref.url} target="_blank" rel="noopener noreferrer" className="underline hover:text-[#3B6D11]">
+                {ref.texto}
+              </a>
+            ) : (
+              ref.texto
+            )}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ─── Right guidance panel ─────────────────────────────────────────────────────
 
-function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId: string }) {
+function GuidancePanel({
+  module,
+  moduleId,
+  activeChartId,
+}: {
+  module: DecisionModule
+  moduleId: string
+  activeChartId: string | null
+}) {
   const lectura = getLecturaEjecutiva(moduleId)
 
-  // Leer el brief editorial para obtener la narrativa metodológica del módulo activo
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
@@ -254,6 +321,8 @@ function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId:
     municipio,
     municipiosCount: municipiosActivos.length,
   })
+  const chartBrief = getChartBrief(brief, activeChartId)
+  const metodologia = chartBrief?.metodologia ?? brief?.metodologia_editorial
 
   return (
     <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-[#FDFCFA] overflow-y-auto">
@@ -262,53 +331,16 @@ function GuidancePanel({ module, moduleId }: { module: DecisionModule; moduleId:
           <BookOpen size={11} />
           Consideraciones
         </p>
+        {chartBrief && (
+          <p className="mt-2 text-[10px] text-[#3B6D11] font-medium leading-snug">
+            En foco: {chartBrief.chart_label}
+          </p>
+        )}
       </div>
 
       <div className="p-4 space-y-4 text-[11px]">
-        {/* Metodología estructurada en 4 secciones */}
-        {brief?.metodologia_editorial && typeof brief.metodologia_editorial === 'object' && (
-          <div className="space-y-3">
-            {/* ¿Cómo se calcula? */}
-            <div>
-              <p className="text-[9px] uppercase tracking-[0.08em] text-[#8CAA7A] font-semibold mb-1.5 flex items-center gap-1">
-                <span>⟨f⟩</span> Cómo se calcula
-              </p>
-              <p className="text-[11px] leading-[1.65] text-[#5A6347]">
-                {brief.metodologia_editorial.como_se_calcula}
-              </p>
-            </div>
-
-            {/* Origen de datos */}
-            <div className="pt-2.5 border-t border-[#EDE9E3]">
-              <p className="text-[9px] uppercase tracking-[0.08em] text-[#7A9FC0] font-semibold mb-1.5 flex items-center gap-1">
-                <span>◎</span> Origen de los datos
-              </p>
-              <p className="text-[11px] leading-[1.65] text-[#5A6060]">
-                {brief.metodologia_editorial.origen_datos}
-              </p>
-            </div>
-
-            {/* Por qué este enfoque */}
-            <div className="pt-2.5 border-t border-[#EDE9E3]">
-              <p className="text-[9px] uppercase tracking-[0.08em] text-[#9A7AC0] font-semibold mb-1.5 flex items-center gap-1">
-                <span>↗</span> Por qué este enfoque
-              </p>
-              <p className="text-[11px] leading-[1.65] text-[#5A5A70]">
-                {brief.metodologia_editorial.por_que_este_enfoque}
-              </p>
-            </div>
-
-            {/* Supuesto crítico */}
-            <div className="pt-2.5 border-t border-[#F5DEB0]">
-              <p className="text-[9px] uppercase tracking-[0.08em] text-[#C07A2A] font-semibold mb-1.5 flex items-center gap-1">
-                <span>⚠</span> Supuesto crítico
-              </p>
-              <p className="text-[11px] leading-[1.65] text-[#6B5A2A] bg-[#FEF9EC] rounded-[6px] px-2.5 py-2">
-                {brief.metodologia_editorial.supuesto_critico}
-              </p>
-            </div>
-          </div>
-        )}
+        {metodologia && <MetodologiaSections meta={metodologia} />}
+        {chartBrief && <ChartReferences refs={chartBrief.referencias} />}
 
         {/* Lectura ejecutiva — colapsada por default, solo para módulos con data */}
         {lectura && (
@@ -456,6 +488,8 @@ export function DecisionModuleShell({
 }: DecisionModuleShellProps) {
   const audienceSelected = useSimulatorStore(s => s.audience)
   const setActiveDecisionModuleId = useSimulatorStore(s => s.setActiveDecisionModuleId)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const activeChartId = useChartSectionObserver(contentRef, activeModule?.module_id ?? null)
 
   useEffect(() => {
     setActiveDecisionModuleId(activeModule?.module_id ?? null)
@@ -510,7 +544,7 @@ export function DecisionModuleShell({
         {/* Center content */}
         <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
           {/* Content area — flows naturally, page scrolls */}
-          <div className="px-6 py-6" id="decision-shell-title">
+          <div ref={contentRef} className="px-6 py-6" id="decision-shell-title">
             {/* Subtitle catchy del módulo activo */}
             <ModuleSubtitle moduleId={activeModule.module_id} />
             {activeModule.status === 'blocked' ? (
@@ -543,7 +577,11 @@ export function DecisionModuleShell({
         </div>
 
         {/* Right guidance panel */}
-        <GuidancePanel module={activeModule} moduleId={activeModule.module_id} />
+        <GuidancePanel
+          module={activeModule}
+          moduleId={activeModule.module_id}
+          activeChartId={activeChartId}
+        />
       </div>
     </div>
   )

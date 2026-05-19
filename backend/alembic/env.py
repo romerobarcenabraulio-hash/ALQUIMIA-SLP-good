@@ -24,7 +24,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 # Este import es crítico: Base.metadata contiene el esquema completo.
 # Si falla, Alembic no puede generar migraciones automáticas.
 try:
-    from app.db.base import Base  # noqa: F401 — importa todos los modelos
+    from app.db.base import Base, import_all_models
+
+    import_all_models()
     target_metadata = Base.metadata
 except ImportError as exc:
     print(f"[alembic/env.py] No se pudo importar Base: {exc}")

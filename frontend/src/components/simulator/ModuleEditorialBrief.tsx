@@ -71,7 +71,7 @@ export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
             Cómo se calcula · consideraciones metodológicas
           </p>
           <p className="text-[12px] leading-[1.65] text-[#4A5041] lg:text-[13px]">
-            {brief.metodologia_editorial}
+            {brief.metodologia_editorial.como_se_calcula}
           </p>
         </div>
       )}

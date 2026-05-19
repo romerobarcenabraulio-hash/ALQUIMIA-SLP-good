@@ -11,15 +11,6 @@ class Base(DeclarativeBase):
     pass
 
 
-# Importaciones de modelos — mantener aquí para que create_all() los encuentre
-from app.models.proyecto import (  # noqa: E402, F401
-    Cliente,
-    ProyectoMunicipal,
-    RevisionProyecto,
-    ActividadProyecto,
-    AlertaProyecto,
-    MapaActor,
-    ImpactoReal,
-    BenchmarkMunicipal,
-    CheckpointCostos,
-)
+def import_all_models() -> None:
+    """Registra modelos en Base.metadata sin import circular con proyecto.py."""
+    import app.models.proyecto  # noqa: F401

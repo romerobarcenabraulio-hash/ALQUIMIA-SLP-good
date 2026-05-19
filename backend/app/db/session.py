@@ -116,7 +116,9 @@ def create_all_tables() -> bool:
     if not _init_engine():
         return False
     try:
-        from app.db.base import Base  # noqa: F401 — importa todos los modelos
+        from app.db.base import Base, import_all_models
+
+        import_all_models()
         Base.metadata.create_all(bind=_engine)
         logger.info("Tablas verificadas/creadas en PostgreSQL")
         return True
