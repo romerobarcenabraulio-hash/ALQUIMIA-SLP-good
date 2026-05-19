@@ -107,7 +107,11 @@ def get_db() -> Generator:
 
 def create_all_tables() -> bool:
     """Crea todas las tablas en la BD si no existen.
-    Llamado en startup de FastAPI. Idempotente.
+
+    NOTA DE PRODUCCIÓN: En entornos de producción o staging, las migraciones
+    deben ejecutarse con Alembic (`alembic upgrade head` o `./db_migrate.sh`)
+    ANTES de arrancar el servidor. Esta función es un fallback de desarrollo
+    y no rastreará versiones de esquema.
     """
     if not _init_engine():
         return False

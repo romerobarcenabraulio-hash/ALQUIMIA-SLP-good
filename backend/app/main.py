@@ -215,10 +215,14 @@ app.include_router(standards_router, prefix="/api/v1/standards",  tags=["standar
 
 @app.on_event("startup")
 async def _create_tables():
-    """Crea tablas en PostgreSQL si están disponibles."""
+    """Fallback de desarrollo: crea tablas si aún no existen.
+    En producción correr: alembic upgrade head (o ./db_migrate.sh).
+    """
     try:
         from app.db.session import create_all_tables
-        create_all_tables()
+        created = create_all_tables()
+        if created:
+            logger.info("DB: tablas verificadas vía create_all (solo desarrollo).")
     except Exception as exc:
         logger.warning("DB startup table creation skipped: %s", exc)
 
