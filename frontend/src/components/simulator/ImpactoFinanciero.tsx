@@ -1,8 +1,8 @@
 'use client'
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { monteCarlo, tornadoAnalysis } from '@/lib/calculator'
-import { fmt } from '@/lib/utils'
+import { fmt, cn } from '@/lib/utils'
 import { WaterfallChart } from '@/components/charts/WaterfallChart'
 import { MonteCarloCChart } from '@/components/charts/MonteCarloChart'
 import { TornadoChart } from '@/components/charts/TornadoChart'
@@ -13,6 +13,143 @@ import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { describeMaterialPriceReference, PRICE_RESEARCH_SOURCE_LABEL } from '@/data/materialPriceResearch'
+import type { AñoResultados } from '@/types'
+
+// ── Monthly cost breakdown ────────────────────────────────────────────────────
+
+const MESES_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'] as const
+
+type MesDato = {
+  label: string
+  año: number
+  mes: number
+  capex: number
+  opex: number
+  ingreso: number
+  fcf: number
+  fcfAcumulado: number
+  isBreakeven: boolean
+}
+
+function buildMensualData(serieAnual: AñoResultados[], maxAños: number): MesDato[] {
+  const rows: MesDato[] = []
+  let fcfAcum = 0
+  let crossedZero = false
+
+  for (const año of serieAnual.slice(0, maxAños)) {
+    for (let mes = 0; mes < 12; mes++) {
+      // CAPEX: front-loaded — 50% month 1, 30% month 2, 20% month 3
+      let capexMes = 0
+      if (año.capex > 0) {
+        if (mes === 0) capexMes = año.capex * 0.50
+        else if (mes === 1) capexMes = año.capex * 0.30
+        else if (mes === 2) capexMes = año.capex * 0.20
+      }
+      const opexMes = año.opex / 12
+      const ingresoMes = año.ingresos / 12
+      const fcfMes = ingresoMes - opexMes - capexMes
+      const prevAcum = fcfAcum
+      fcfAcum += fcfMes
+
+      const isBreakeven = !crossedZero && prevAcum < 0 && fcfAcum >= 0
+      if (isBreakeven) crossedZero = true
+
+      rows.push({
+        label: `${MESES_ES[mes]} · Año ${año.año}`,
+        año: año.año,
+        mes,
+        capex: capexMes,
+        opex: opexMes,
+        ingreso: ingresoMes,
+        fcf: fcfMes,
+        fcfAcumulado: fcfAcum,
+        isBreakeven,
+      })
+    }
+  }
+  return rows
+}
+
+function MensualCostTable({ serieAnual }: { serieAnual: AñoResultados[] }) {
+  const maxAños = Math.min(serieAnual.length, 3)
+  const [showAll, setShowAll] = useState(false)
+  const data = useMemo(() => buildMensualData(serieAnual, maxAños), [serieAnual, maxAños])
+  const visibleRows = showAll ? data : data.slice(0, 12)
+
+  function mxnK(v: number) {
+    if (Math.abs(v) >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`
+    if (Math.abs(v) >= 1_000)     return `$${(v / 1_000).toFixed(0)}K`
+    return `$${v.toFixed(0)}`
+  }
+
+  return (
+    <div className="rounded-[10px] border border-[#E8E4DC] overflow-hidden">
+      <div className="px-4 py-2.5 bg-[#FAFAF8] border-b border-[#F0EDE5] flex items-center justify-between">
+        <div>
+          <p className="text-[11px] font-semibold text-[#1C1B18]">Flujo mensual de caja · primeros {maxAños} años</p>
+          <p className="text-[9px] text-[#A8A49C] mt-0.5">CAPEX concentrado meses 1–3 · OPEX e ingreso distribuidos por mes · MXN nominales</p>
+        </div>
+        {data.length > 12 && (
+          <button
+            type="button"
+            onClick={() => setShowAll(v => !v)}
+            className="text-[10px] font-medium text-[#3B6D11] hover:underline shrink-0 ml-3"
+          >
+            {showAll ? `Mostrar solo Año 1` : `Ver ${maxAños} años`}
+          </button>
+        )}
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[10px]">
+          <thead>
+            <tr className="bg-[#F4F2ED] border-b border-[#F0EDE5]">
+              <th className="text-left px-3 py-2 font-semibold text-[#6B6760] whitespace-nowrap">Mes</th>
+              <th className="text-right px-3 py-2 font-semibold text-[#3B6D11] whitespace-nowrap">Ingreso</th>
+              <th className="text-right px-3 py-2 font-semibold text-[#C0392B] whitespace-nowrap">CAPEX</th>
+              <th className="text-right px-3 py-2 font-semibold text-[#D4881E] whitespace-nowrap">OPEX</th>
+              <th className="text-right px-3 py-2 font-semibold text-[#1C1B18] whitespace-nowrap">FCF mes</th>
+              <th className="text-right px-3 py-2 font-semibold text-[#1A5FA8] whitespace-nowrap">FCF acum.</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleRows.map((row, i) => (
+              <>
+                {row.isBreakeven && (
+                  <tr key={`break-${i}`} className="bg-[#EAF3DE]">
+                    <td colSpan={6} className="px-3 py-1 text-[9px] font-semibold text-[#3B6D11] text-center">
+                      ✓ Punto de equilibrio alcanzado
+                    </td>
+                  </tr>
+                )}
+                <tr
+                  key={row.label}
+                  className={cn(
+                    'border-b border-[#F0EDE5] last:border-0',
+                    row.mes === 0 && row.año > 1 && 'border-t-2 border-t-[#E8E4DC]',
+                    row.fcf >= 0 ? 'bg-white' : 'bg-[#FEF7F7]',
+                  )}
+                >
+                  <td className="px-3 py-1.5 text-[#4A4740] whitespace-nowrap font-medium">{row.label}</td>
+                  <td className="px-3 py-1.5 text-right font-mono text-[#3B6D11]">{mxnK(row.ingreso)}</td>
+                  <td className="px-3 py-1.5 text-right font-mono text-[#C0392B]">
+                    {row.capex > 0 ? mxnK(row.capex) : <span className="text-[#E8E4DC]">—</span>}
+                  </td>
+                  <td className="px-3 py-1.5 text-right font-mono text-[#D4881E]">{mxnK(row.opex)}</td>
+                  <td className={cn('px-3 py-1.5 text-right font-mono font-semibold', row.fcf >= 0 ? 'text-[#3B6D11]' : 'text-[#C0392B]')}>
+                    {mxnK(row.fcf)}
+                  </td>
+                  <td className={cn('px-3 py-1.5 text-right font-mono', row.fcfAcumulado >= 0 ? 'text-[#1A5FA8]' : 'text-[#A8A49C]')}>
+                    {mxnK(row.fcfAcumulado)}
+                  </td>
+                </tr>
+              </>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
 
 export function ImpactoFinanciero() {
   const { resultados, wacc, setWacc, tipoCambio, setTipoCambio,
@@ -227,6 +364,22 @@ export function ImpactoFinanciero() {
           />
         )}
       </div>
+
+      {/* Monthly cashflow breakdown */}
+      {r?.serieAnual && r.serieAnual.length > 0 && (
+        <details className="mb-6 rounded-[12px] border border-[#E8E4DC] overflow-hidden">
+          <summary className="cursor-pointer bg-[#F6FAEF] px-4 py-3 text-[11px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between hover:bg-[#EDF7E0] transition-colors">
+            <span>Desglose mes a mes · CAPEX / OPEX / Ingreso / FCF</span>
+            <span className="text-[9px] text-[#8CAA7A]">▾</span>
+          </summary>
+          <div className="p-4 border-t border-[#D7E8C0] bg-white">
+            <p className="text-[11px] text-[#6B6760] mb-3 leading-snug">
+              El primer año concentra la inversión en capital (CAPEX) en los meses de arranque, mientras el ingreso crece con la adopción ciudadana. Las filas en rojo indican meses con flujo negativo — esperable hasta alcanzar el punto de equilibrio.
+            </p>
+            <MensualCostTable serieAnual={r.serieAnual} />
+          </div>
+        </details>
+      )}
 
       {/* Stress test */}
       <div>

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { useEffect, useRef, useState } from 'react'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import type { Audience } from '@/types'
 import { isCircularityBaselineReadyForUi } from '@/lib/baselinePresentation'
 
@@ -34,6 +34,7 @@ function exportPdfTitle(pathname: string, audience: Audience | null, baselineRea
 }
 
 export function Header() {
+  const router = useRouter()
   const pathname = usePathname()
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
@@ -222,7 +223,7 @@ export function Header() {
                 </span>
                 <button
                   type="button"
-                  onClick={resetAudience}
+                  onClick={() => { resetAudience(); router.push('/acceso') }}
                   className="shrink-0 font-medium text-[#3B6D11] hover:underline"
                 >
                   Cambiar

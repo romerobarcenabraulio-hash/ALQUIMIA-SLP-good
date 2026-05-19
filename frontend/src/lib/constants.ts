@@ -108,6 +108,15 @@ export const TRAJECTORY_UI = [
   { presetId: 'Pesimista',   label: 'Pesimista',    color: '#C0392B', badge: 'bg-[#FDE8E8] text-[#C0392B] border-[#C0392B]/30' },
 ] as const
 
+// ─── Trajectory recommendation by horizon ─────────────────────────────────────
+/** Maps available horizon values to the recommended trajectory and the reason why. */
+export const TRAJECTORY_HORIZON_HINTS: Record<number, { recommended: string; presetId: string; reason: string }> = {
+  3:  { recommended: 'Ambicioso',    presetId: 'Agresivo',    reason: 'horizonte corto — maximiza impacto antes del cambio de administración' },
+  5:  { recommended: 'Ambicioso',    presetId: 'Agresivo',    reason: 'horizonte medio-corto — ritmo acelerado aún viable con 5 años de margen' },
+  10: { recommended: 'Moderado',     presetId: 'Realista',    reason: 'horizonte estándar — equilibrio entre viabilidad operativa y alcance de captura' },
+  15: { recommended: 'Conservador',  presetId: 'Conservador', reason: 'horizonte largo — margen para consolidar hábito ciudadano antes de escalar' },
+}
+
 // ─── Estacionalidad mensual (§3.4) ────────────────────────────────────────────
 export const ESTACIONALIDAD = [
   -0.08, -0.05, 0.02, 0.05, 0.08, 0.03,
