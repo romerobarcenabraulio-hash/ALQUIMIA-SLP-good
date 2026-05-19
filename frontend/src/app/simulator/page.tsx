@@ -177,9 +177,6 @@ export default function SimulatorPage() {
                     <CityFirstSelector compact />
                     <PropuestasSimulatorBar />
                   </div>
-                  {(activeDecisionModuleId === 'city_baseline' || activeDecisionModuleId === null) ? (
-                    <FuncionariosViviendaRsuModel />
-                  ) : null}
                 </div>
               )}
               <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">

@@ -34,7 +34,13 @@ const MATERIAL_LABEL: Record<keyof PreciosMaterial, string> = {
   organico: 'Orgánicos',
 }
 
+// Inputs now live inside CityBaselineStack — this standalone component is deprecated.
 export function FuncionariosViviendaRsuModel() {
+  return null
+}
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _FuncionariosViviendaRsuModel_unused() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const tiposVivienda = useSimulatorStore(s => s.tiposVivienda)

@@ -296,31 +296,24 @@ function ModuleContextHeader({
         {title}
       </h2>
 
-      {/* city_baseline: dynamic 2-sentence subtitle */}
+      {/* city_baseline: compact inline chip — territory is contextual metadata, not hero text */}
       {moduleId === 'city_baseline' && territorio ? (
-        <>
-          <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
-            Evaluando el escenario de{' '}
-            <span className="text-[#1C1B18]">{territorio}</span>
-            {' '}· horizonte{' '}
-            <span className="text-[#1C1B18]">{horizonte} años</span>
-            {' '}· trayectoria{' '}
-            <span className={cn('font-semibold', isRecommended ? 'text-[#1C1B18]' : 'text-[#D4881E]')}>
-              {activeTrajectoryLabel}
-            </span>
-            {!isRecommended && (
-              <span className="ml-1 text-[13px] text-[#D4881E]">↑</span>
-            )}
-          </p>
-          <p className="mt-1.5 text-[12px] text-[#6B6760] leading-snug max-w-3xl">
-            Para {horizonte} años se recomienda{' '}
-            <span className="font-medium text-[#1C1B18]">{horizonHint.recommended}</span>
-            {' '}— {horizonHint.reason}.
-            {!isRecommended && (
-              <span className="ml-1 text-[#D4881E]">La trayectoria activa difiere de la recomendada.</span>
-            )}
-          </p>
-        </>
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#6B6760] bg-[#F4F2ED] border border-[#E8E4DC] rounded-full px-2 py-0.5">
+            {territorio}
+          </span>
+          <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#6B6760] bg-[#F4F2ED] border border-[#E8E4DC] rounded-full px-2 py-0.5">
+            {horizonte}a
+          </span>
+          <span className={cn(
+            'inline-flex items-center gap-1 text-[10px] font-mono rounded-full px-2 py-0.5 border',
+            isRecommended
+              ? 'bg-[#EAF3DE] border-[#C4DFA0] text-[#23470A]'
+              : 'bg-[#FEF7E7] border-[#F5D98A] text-[#6B4800]',
+          )}>
+            {activeTrajectoryLabel}{!isRecommended && ' ↑'}
+          </span>
+        </div>
       ) : (
         brief?.subtitulo_catchy && (
           <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
@@ -329,7 +322,7 @@ function ModuleContextHeader({
         )
       )}
 
-      {territorio && (
+      {territorio && moduleId !== 'city_baseline' && (
         <p className="mt-2.5 text-[12px] text-[#6B6760]">
           Territorio de lectura:{' '}
           <span className="font-medium text-[#1C1B18]">{territorio}</span>
