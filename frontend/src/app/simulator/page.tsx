@@ -7,7 +7,6 @@ import { cn } from '@/lib/utils'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
-import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
@@ -166,19 +165,10 @@ export default function SimulatorPage() {
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">
           <main className="px-4 sm:px-6 py-4 w-full">
-            {/* City selector: inside the 2-col grid for functionary, standalone for citizen */}
-            {audience !== 'functionary' && <CityFirstSelector compact />}
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
             <div className="mt-3 space-y-3">
-              {audience === 'functionary' && (
-                <div className="space-y-3">
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
-                    <CityFirstSelector compact />
-                    <PropuestasSimulatorBar />
-                  </div>
-                </div>
-              )}
+              {audience === 'functionary' && <PropuestasSimulatorBar />}
               <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
                 <DecisionModuleShell
                   modules={filteredModules}

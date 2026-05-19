@@ -30,9 +30,6 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
   const [inegiAudit, setInegiAudit] = useState<InegiMunicipalSourceAudit | null>(null)
   const [inegiAuditLoading, setInegiAuditLoading] = useState(false)
   const [inegiAuditError, setInegiAuditError] = useState<string | null>(null)
-  // In compact mode: hide selectors once a city is loaded; show them only on demand
-  const [selectorOpen, setSelectorOpen] = useState(false)
-
   const zm = useMemo(() => ZMS.find(z => z.id === zmActiva), [zmActiva])
   const lecturaTerritorio = useMemo(
     () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
@@ -112,34 +109,21 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
         </>
       )}
 
-      {/* ── Compact chip when city is already loaded ─────────────────────── */}
-      {cityLoaded && !selectorOpen && (
+      {/* ── Compact read-only badge when city is already loaded ─────────── */}
+      {cityLoaded && (
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA]">
           <span className="flex-1 text-[12px] text-[#1C1B18] font-medium truncate">
             {seleccionMunicipioCatalog!.nombre}
           </span>
           <span className="text-[11px] text-[#A8A49C] shrink-0">{zmActiva}</span>
-          <button
-            type="button"
-            onClick={() => setSelectorOpen(true)}
-            className="text-[11px] text-[#1A5FA8] hover:underline shrink-0"
-          >
-            Cambiar
-          </button>
-          {/* Reglamento status — inline chip, no block */}
-          <details className="relative">
-            <summary className="cursor-pointer text-[10px] text-[#6B6760] hover:text-[#1C1B18] list-none select-none border border-[#E8E4DC] rounded-full px-2 py-0.5">
-              Reglamento ▾
-            </summary>
-            <div className="absolute right-0 top-6 z-10 w-80 bg-white rounded-[10px] border border-[#E8E4DC] shadow-lg p-3">
-              <ReglamentoCargaCiudadPanel />
-            </div>
-          </details>
+          <span className="text-[9px] uppercase tracking-wide text-[#A8A49C] shrink-0">
+            Módulo 1 para cambiar
+          </span>
         </div>
       )}
 
-      {/* ── Full selector panel ───────────────────────────────────────────── */}
-      {(!cityLoaded || selectorOpen) && (
+      {/* ── Full selector panel (used in Module 1 non-compact context) ───── */}
+      {!cityLoaded && (
         <>
           {loading && (
             <div className={cn('rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] text-[12px] text-[#6B6760]', compact ? 'px-3 py-2' : 'px-4 py-3')}>
@@ -159,12 +143,6 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
                 <p className="text-[11px] font-semibold uppercase tracking-[0.05em] text-[#6B6760]">
                   Catálogo INEGI Estado–Municipio
                 </p>
-              )}
-              {compact && selectorOpen && (
-                <div className="flex items-center justify-between mb-1">
-                  <p className="text-[11px] font-medium text-[#6B6760]">Cambiar municipio de trabajo</p>
-                  <button type="button" onClick={() => setSelectorOpen(false)} className="text-[11px] text-[#A8A49C] hover:text-[#1C1B18]">✕ Cerrar</button>
-                </div>
               )}
               <div className="flex flex-col sm:flex-row gap-3">
                 <label className="flex-1 flex flex-col gap-1 text-[11px] text-[#6B6760]">

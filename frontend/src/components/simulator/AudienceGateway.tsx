@@ -212,7 +212,7 @@ export function AudienceGateway() {
 
         {/* Footnote */}
         <p className="mt-8 text-[11px] text-[#A8A49C] max-w-xl">
-          Tu selección se guarda localmente y puedes cambiarla desde el encabezado del simulador en cualquier momento.
+          Tu selección se guarda localmente. Para cambiarla, vuelve al inicio.
           Escenarios generados como propuesta técnica — no constituyen dictamen oficial.
         </p>
       </div>
