@@ -5,6 +5,7 @@ import {
   ZMS,
 } from './constants'
 import { resolveSimulationGeography } from './zmPopulationScale'
+import { OPEX_CA, ESTRUCTURA_DEUDA, RECICLADORAS, SUPUESTOS_GENERALES } from './capexOpexData'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -272,6 +273,46 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     otros:    roundUp((volCapturablePorMat.otros ?? 0)    / state.capCamionTon / 2),
   }
 
+  // ─── Break-even dinámico: OPEX fijo mensual del CA-P / precio prom kg ─────
+  const opexFijoCaP = OPEX_CA.P.totalOPEXMes
+  const precioPromKg = (state.precios.pet * 0.35 + state.precios.papel * 0.30 + state.precios.hdpe * 0.20 + state.precios.vidrio * 0.15)
+  const breakEvenKgDia = precioPromKg > 0
+    ? Math.round(opexFijoCaP / precioPromKg / SUPUESTOS_GENERALES.diasOperativosMes)
+    : 1850
+
+  // ─── Payback descontado: suma FCF/(1+WACC)^t hasta cubrir CAPEX ────────────
+  let paybackDesc = 999
+  if (capexTotal > 0) {
+    let acumDesc = 0
+    for (let t = 0; t < serieAnual.length; t++) {
+      acumDesc += serieAnual[t].fcf / Math.pow(1 + state.wacc / 100, t + 1)
+      if (acumDesc >= capexTotal) {
+        const prevAcum = t > 0
+          ? acumDesc - serieAnual[t].fcf / Math.pow(1 + state.wacc / 100, t + 1)
+          : 0
+        const frac = (capexTotal - prevAcum) / (serieAnual[t].fcf / Math.pow(1 + state.wacc / 100, t + 1))
+        paybackDesc = (t + frac) * 12
+        break
+      }
+    }
+  }
+
+  // ─── TIR Equity (Modigliani-Miller): apalanca TIR con estructura D/E ──────
+  const deudaPct = caG > 0 ? ESTRUCTURA_DEUDA.G.deudaEquity.split('/').map(Number)[0]! / 100
+    : caM > 0 ? ESTRUCTURA_DEUDA.M.deudaEquity.split('/').map(Number)[0]! / 100
+    : ESTRUCTURA_DEUDA.P.deudaEquity.split('/').map(Number)[0]! / 100
+  const tasaDeuda = caG > 0 ? ESTRUCTURA_DEUDA.G.tasaInteres
+    : caM > 0 ? ESTRUCTURA_DEUDA.M.tasaInteres
+    : ESTRUCTURA_DEUDA.P.tasaInteres
+  const equityPct = 1 - deudaPct
+  const tirEquityCalc = equityPct > 0
+    ? tir + (tir - tasaDeuda * 100) * (deudaPct / equityPct)
+    : tir
+
+  // ─── Empleo recicladoras: 20 empleos/planta × 4 plantas Fase A (orgánicos, PET, vidrio, aluminio)
+  const empleosRecicladoras = (['pet', 'vidrio', 'aluminio', 'organicos'] as const)
+    .reduce((sum, g) => sum + RECICLADORAS[g].empleosPorPlanta, 0)
+
   return {
     pobActiva: popActiva, vivActivas, rsuTotalTonDia, rsuPorTipo,
     volCapturablePorMat,
@@ -279,26 +320,21 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     ocupacionCAs: Math.min(100, volTotalDia / Math.max(1,
       caP * CA_CONFIG.P.capTonDia + caM * CA_CONFIG.M.capTonDia + caG * CA_CONFIG.G.capTonDia
     ) * 100),
-    breakEvenCAP: 1850,
+    breakEvenCAP: breakEvenKgDia,
     dscr: ebitda > 0 ? ebitda / Math.max(1, capexTotal * 0.1) : 0,
     serieAnual,
     ingresosBrutos, capexTotal, opexAnual, ebitda, margenEbitda,
-    vpn, tir, tirEquity: tir * 1.15, moic: capexTotal > 0 ? vpn / capexTotal : 0,
-    paybackMeses, paybackDescontado: paybackMeses * 1.3,
+    vpn, tir, tirEquity: tirEquityCalc, moic: capexTotal > 0 ? vpn / capexTotal : 0,
+    paybackMeses, paybackDescontado: paybackDesc,
     ingresoCarbono, ingresoBiogas: kwhBiogas * OPEX_PARAMS.precioKwh, ahorroDisposicion: ahorroDisp,
-    // empleosDirectosRecic: pepenadores formalizables — Anaya-Palacios (2024) estima 1 recuperador
-    // por cada 2,200 hab. en México urbano (León, Gto. como referencia). ENOE T1 2024: 110-150K nacionales.
-    // derramaSalarial: tabulador IMSS 2025 rama 37 (recolección y reciclaje): $14,298/mes promedio.
-    empleosDirectosCAs, empleosDirectosRecic: Math.round(zm.totalPop / 2200),
-    empleosTotalesDirectos: empleosDirectosCAs + Math.round(zm.totalPop / 2200),
+    empleosDirectosCAs, empleosDirectosRecic: empleosRecicladoras,
+    empleosTotalesDirectos: empleosDirectosCAs + empleosRecicladoras,
     empleosIndirectos, pepenadoresFormalizados: pepenadoresForm,
-    derramaSalarial: empleosDirectosCAs * 14298 * 12,
-    // Ambiental — Bug 1 fix: separar anual (KPI principal) de horizonte (dato secundario)
-    co2eEvitadasTon:          co2eEvitadasHorizonte,  // acumulado horizonte
-    co2eEvitadasAnualTon:     co2eEvitadasAnual,       // año final — usar en header y S15
-    co2eEvitadasHorizonteTon: co2eEvitadasHorizonte,   // alias explícito
+    derramaSalarial: empleosDirectosCAs * 14298 * 12 + empleosRecicladoras * 12500 * 12,
+    co2eEvitadasTon:          co2eEvitadasHorizonte,
+    co2eEvitadasAnualTon:     co2eEvitadasAnual,
+    co2eEvitadasHorizonteTon: co2eEvitadasHorizonte,
     pm25EvitadoTon: pm25Evit, kwhBiogas,
-    // Bug 2 fix: extensión relleno basada en ratio de desvío actual, capped en 15 años
     extensionRelleno: extensionRellenoAnios,
     casosIRAEvitados: casosIRA, casosDengueEvitados: casosDengue, avadEvitados: casosIRA * 0.006 + casosDengue * 0.003,
     ahorroSalud,
@@ -307,7 +343,6 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     valorPropiedad: ingresosBrutos * MULTIPLICADORES.valorPropiedad,
     inversionPrivada: ingresosBrutos * MULTIPLICADORES.inversionPrivada,
     derremaTotal, scorePolitico,
-    // Bug 4 fix: ESG score normalizado 0-100, no co2eEvitadas/1000
     ratingESGDelta: ratingESGNorm,
   }
 }

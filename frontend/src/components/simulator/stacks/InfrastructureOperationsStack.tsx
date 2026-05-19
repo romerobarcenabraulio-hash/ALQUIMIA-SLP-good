@@ -18,14 +18,16 @@ import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 import { CapacitacionTab } from '@/components/simulator/CapacitacionTab'
+import { CapexOpexBreakdown } from '@/components/simulator/CapexOpexBreakdown'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-type TabId = 'infraestructura' | 'flujos' | 'capacitacion'
+type TabId = 'infraestructura' | 'flujos' | 'capacitacion' | 'capex_opex'
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'infraestructura', label: 'Infraestructura en espacio-tiempo' },
   { id: 'flujos',          label: 'Flujos y hoja de ruta operativa' },
   { id: 'capacitacion',    label: 'Capacitación y adopción' },
+  { id: 'capex_opex',      label: 'CAPEX / OPEX detallado' },
 ]
 
 const FASE_COLORS = ['#C8E6A4', '#A5C97A', '#7DA84A', '#5A8C2C', '#3B6D11', '#1A4200']
@@ -527,6 +529,13 @@ export function InfrastructureOperationsStack() {
 
       {/* ── Tab 3: Capacitación y adopción ─────────────────────────────── */}
       {tab === 'capacitacion' && <CapacitacionTab />}
+
+      {/* ── Tab 4: CAPEX / OPEX detallado ───────────────────────────────── */}
+      {tab === 'capex_opex' && (
+        <div className="pt-4">
+          <CapexOpexBreakdown />
+        </div>
+      )}
 
       <ModuleBottomBar onProfundizar={() => setTab('capacitacion')} />
     </div>
