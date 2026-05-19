@@ -6,6 +6,7 @@ import {
   AreaChart, Area, CartesianGrid,
 } from 'recharts'
 import { Shield, Users, AlertTriangle, CheckCircle, TrendingUp } from 'lucide-react'
+import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { calcularScoresRiesgo } from '@/lib/calculator'
@@ -280,25 +281,31 @@ export function MarketTraceabilityStack() {
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
           <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Variables críticas (drivers del riesgo)</p>
           <p className="text-[10px] text-[#A8A49C] mb-3">Impacto relativo sobre la probabilidad de éxito.</p>
-          <ResponsiveContainer width="100%" height={200}>
-            <BarChart
-              data={VARIABLES_CRITICAS}
-              layout="vertical"
-              margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
-            >
-              <XAxis type="number" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 0.3]} tickFormatter={(v: number) => v.toFixed(2)} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#4A4740' }} tickLine={false} axisLine={false} width={160} />
-              <Tooltip
-                formatter={(v: number) => [v.toFixed(2), 'Impacto relativo']}
-                contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-              />
-              <Bar dataKey="impact" radius={[0, 3, 3, 0]}>
-                {VARIABLES_CRITICAS.map((_, i) => (
-                  <Cell key={i} fill={i < 3 ? '#C0392B' : i < 6 ? '#D4881E' : '#3B6D11'} />
-                ))}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <ExpandableChart
+            chartId="m05-variables-criticas"
+            title="Variables críticas — drivers del riesgo"
+            subtitle="Impacto relativo sobre probabilidad de éxito · modelo interno"
+          >
+            <ResponsiveContainer width="100%" height={200}>
+              <BarChart
+                data={VARIABLES_CRITICAS}
+                layout="vertical"
+                margin={{ top: 0, right: 12, left: 8, bottom: 0 }}
+              >
+                <XAxis type="number" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 0.3]} tickFormatter={(v: number) => v.toFixed(2)} />
+                <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#4A4740' }} tickLine={false} axisLine={false} width={160} />
+                <Tooltip
+                  formatter={(v: number) => [v.toFixed(2), 'Impacto relativo']}
+                  contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                />
+                <Bar dataKey="impact" radius={[0, 3, 3, 0]}>
+                  {VARIABLES_CRITICAS.map((_, i) => (
+                    <Cell key={i} fill={i < 3 ? '#C0392B' : i < 6 ? '#D4881E' : '#3B6D11'} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </ExpandableChart>
         </div>
 
         {/* Success distribution histogram (dynamic bell curve) */}
@@ -321,25 +328,29 @@ export function MarketTraceabilityStack() {
             <span className="text-[#3B6D11]">Ambicioso →</span>
           </div>
 
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={successDist} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-              <XAxis dataKey="pct" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-              <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={28} />
-              <Tooltip
-                formatter={(v: number, name: string) => [
-                  `${v.toFixed(1)}`,
-                  name === 'freqBelow50' ? 'P(éxito < 50%) — zona de riesgo' : 'Frecuencia',
-                ]}
-                labelFormatter={(l: number) => `${l}% éxito`}
-                contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-              />
-              {/* Main distribution curve */}
-              <Area type="monotone" dataKey="freq" stroke="#3B6D11" fill="#EAF3DE" strokeWidth={2} fillOpacity={0.6} />
-              {/* Shaded risk zone: P(éxito < 50%) */}
-              <Area type="monotone" dataKey="freqBelow50" stroke="#C0392B" fill="#FDE8E8" strokeWidth={0} fillOpacity={0.7} />
-            </AreaChart>
-          </ResponsiveContainer>
+          <ExpandableChart
+            chartId="m05-distribucion-exito"
+            title="Distribución de probabilidad de éxito"
+            subtitle={`Monte Carlo · horizonte ${horizonte} años · escenario activo`}
+          >
+            <ResponsiveContainer width="100%" height={160}>
+              <AreaChart data={successDist} margin={{ top: 4, right: 12, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                <XAxis dataKey="pct" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={28} />
+                <Tooltip
+                  formatter={(v: number, name: string) => [
+                    `${v.toFixed(1)}`,
+                    name === 'freqBelow50' ? 'P(éxito < 50%) — zona de riesgo' : 'Frecuencia',
+                  ]}
+                  labelFormatter={(l: number) => `${l}% éxito`}
+                  contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                />
+                <Area type="monotone" dataKey="freq" stroke="#3B6D11" fill="#EAF3DE" strokeWidth={2} fillOpacity={0.6} />
+                <Area type="monotone" dataKey="freqBelow50" stroke="#C0392B" fill="#FDE8E8" strokeWidth={0} fillOpacity={0.7} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </ExpandableChart>
 
           {/* Legend */}
           <div className="flex items-center gap-4 mt-2 text-[9px] text-[#6B6760]">

@@ -401,31 +401,37 @@ export function CityBaselineStack() {
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
             <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Trayectorias de captura RSU — 4 escenarios</p>
             <p className="text-[10px] text-[#A8A49C] mb-4">Porcentaje de captura por año · horizonte {horizonte} años</p>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={comparativeLines} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} label={{ value: 'Año', position: 'insideBottom', offset: -2, fontSize: 9, fill: '#A8A49C' }} />
-                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={32} />
-                <Tooltip
-                  formatter={(v: number, name: string) => [`${v.toFixed(1)}%`, name]}
-                  labelFormatter={(l: number) => `Año ${l}`}
-                  contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                />
-                <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-                {TRAJECTORY_UI.map(s => (
-                  <Line
-                    key={s.label}
-                    type="monotone"
-                    dataKey={s.label}
-                    stroke={s.color}
-                    strokeWidth={presetTrayectoria === s.presetId ? 2.5 : 1.5}
-                    strokeDasharray={presetTrayectoria === s.presetId ? undefined : '4 2'}
-                    dot={false}
-                    activeDot={{ r: 4 }}
+            <ExpandableChart
+              chartId="m01-trayectorias-captura"
+              title="Trayectorias de captura RSU — 4 escenarios"
+              subtitle={`Porcentaje de captura por año · horizonte ${horizonte} años`}
+            >
+              <ResponsiveContainer width="100%" height={200}>
+                <LineChart data={comparativeLines} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                  <XAxis dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} label={{ value: 'Año', position: 'insideBottom', offset: -2, fontSize: 9, fill: '#A8A49C' }} />
+                  <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={32} />
+                  <Tooltip
+                    formatter={(v: number, name: string) => [`${v.toFixed(1)}%`, name]}
+                    labelFormatter={(l: number) => `Año ${l}`}
+                    contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
                   />
-                ))}
-              </LineChart>
-            </ResponsiveContainer>
+                  <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
+                  {TRAJECTORY_UI.map(s => (
+                    <Line
+                      key={s.label}
+                      type="monotone"
+                      dataKey={s.label}
+                      stroke={s.color}
+                      strokeWidth={presetTrayectoria === s.presetId ? 2.5 : 1.5}
+                      strokeDasharray={presetTrayectoria === s.presetId ? undefined : '4 2'}
+                      dot={false}
+                      activeDot={{ r: 4 }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </ExpandableChart>
           </div>
 
           {/* Comparison table */}

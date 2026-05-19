@@ -1,21 +1,27 @@
 'use client'
 
-import type React from 'react'
-import { useMemo } from 'react'
-import { BookOpenCheck, ClipboardCheck } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { BookOpenCheck, ClipboardCheck, Filter, X } from 'lucide-react'
 import { SOURCE_VERIFICATION_MATRIX, SOURCE_VERIFICATION_STATUS_LABEL } from '@/data/sourceVerificationMatrix'
 import type { SourceVerificationStatus } from '@/data/sourceVerificationMatrix'
 import { FuentesDatos } from '@/components/simulator/FuentesDatos'
 import { SocialContextExportPreviewSection } from '@/components/simulator/SocialContextExportPreviewSection'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { fmt } from '@/lib/utils'
+import { fmt, cn } from '@/lib/utils'
 
 const STATUS_CLASS: Record<SourceVerificationStatus, string> = {
   verificado: 'border-[#3B6D11]/30 bg-[#EAF3DE] text-[#23470A]',
   condicionado: 'border-[#D4881E]/35 bg-[#FEF7E7] text-[#8B5A00]',
   corregido: 'border-[#1A5FA8]/25 bg-[#E7F0FA] text-[#1A5FA8]',
   pendiente: 'border-red-200 bg-red-50 text-red-800',
+}
+
+const STATUS_ACTIVE_BTN: Record<SourceVerificationStatus, string> = {
+  verificado: 'border-[#3B6D11] bg-[#3B6D11] text-white',
+  condicionado: 'border-[#D4881E] bg-[#D4881E] text-white',
+  corregido: 'border-[#1A5FA8] bg-[#1A5FA8] text-white',
+  pendiente: 'border-red-600 bg-red-600 text-white',
 }
 
 export function ReferenciasCalculos() {
@@ -25,6 +31,9 @@ export function ReferenciasCalculos() {
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
 
+  /** null = show all; otherwise filter to specific status */
+  const [activeFilter, setActiveFilter] = useState<SourceVerificationStatus | null>(null)
+
   const socialBlock = useMemo(
     () => buildSociodemographicScaffoldBlock(municipiosActivos),
     [municipiosActivos],
@@ -33,6 +42,13 @@ export function ReferenciasCalculos() {
   const counts = SOURCE_VERIFICATION_MATRIX.reduce<Record<SourceVerificationStatus, number>>(
     (acc, row) => ({ ...acc, [row.status]: acc[row.status] + 1 }),
     { verificado: 0, condicionado: 0, corregido: 0, pendiente: 0 },
+  )
+
+  const filteredRows = useMemo(
+    () => activeFilter
+      ? SOURCE_VERIFICATION_MATRIX.filter(r => r.status === activeFilter)
+      : SOURCE_VERIFICATION_MATRIX,
+    [activeFilter],
   )
 
   return (
@@ -57,13 +73,27 @@ export function ReferenciasCalculos() {
           </div>
         </div>
 
+        {/* Status summary + interactive filter buttons */}
         <div className="mt-4 grid gap-2 sm:grid-cols-4">
-          {(Object.keys(counts) as SourceVerificationStatus[]).map(status => (
-            <div key={status} className={`rounded-[8px] border px-3 py-2 ${STATUS_CLASS[status]}`}>
-              <p className="text-[10px] uppercase tracking-[0.06em] opacity-80">{SOURCE_VERIFICATION_STATUS_LABEL[status]}</p>
-              <p className="mt-1 font-mono text-[18px]">{counts[status]}</p>
-            </div>
-          ))}
+          {(Object.keys(counts) as SourceVerificationStatus[]).map(status => {
+            const isActive = activeFilter === status
+            return (
+              <button
+                key={status}
+                type="button"
+                onClick={() => setActiveFilter(isActive ? null : status)}
+                aria-pressed={isActive}
+                className={cn(
+                  'rounded-[8px] border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
+                  isActive ? STATUS_ACTIVE_BTN[status] : STATUS_CLASS[status],
+                  'hover:opacity-90',
+                )}
+              >
+                <p className="text-[10px] uppercase tracking-[0.06em] opacity-80">{SOURCE_VERIFICATION_STATUS_LABEL[status]}</p>
+                <p className="mt-1 font-mono text-[18px]">{counts[status]}</p>
+              </button>
+            )
+          })}
         </div>
 
         <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
@@ -82,7 +112,27 @@ export function ReferenciasCalculos() {
           </div>
         </div>
 
-        <div className="mt-4 overflow-x-auto rounded-[10px] border border-[#E8E4DC] bg-white">
+        {/* Active filter indicator */}
+        {activeFilter && (
+          <div className="mt-3 flex items-center gap-2">
+            <Filter size={12} className="text-[#6B6760]" aria-hidden />
+            <span className="text-[11px] text-[#6B6760]">
+              Mostrando <strong>{filteredRows.length}</strong> de {SOURCE_VERIFICATION_MATRIX.length} filas
+              — estado: <strong>{SOURCE_VERIFICATION_STATUS_LABEL[activeFilter]}</strong>
+            </span>
+            <button
+              type="button"
+              onClick={() => setActiveFilter(null)}
+              aria-label="Quitar filtro"
+              className="ml-auto flex items-center gap-1 rounded-[6px] border border-[#E8E4DC] bg-white px-2 py-0.5 text-[10px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+            >
+              <X size={10} aria-hidden />
+              Quitar filtro
+            </button>
+          </div>
+        )}
+
+        <div className="mt-4 overflow-x-auto rounded-[10px] border border-[#E8E4DC] bg-white" data-chart-id="m09-source-matrix">
           <table className="min-w-[1180px] w-full border-collapse text-left text-[11px]">
             <thead className="bg-[#F8F6F1] text-[#6B6760]">
               <tr>
@@ -98,7 +148,7 @@ export function ReferenciasCalculos() {
               </tr>
             </thead>
             <tbody>
-              {SOURCE_VERIFICATION_MATRIX.map(row => (
+              {filteredRows.map(row => (
                 <tr key={row.id} className="border-t border-[#F0EDE5] align-top">
                   <Td strong>{row.tema}</Td>
                   <Td>{row.afirmacion}</Td>

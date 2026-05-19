@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, Legend } from 'recharts'
+import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { Truck, Building2, AlertTriangle, TrendingUp, Users, Star } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_CA } from '@/lib/constants'
@@ -16,13 +17,15 @@ import { OperacionPERBitacora } from '@/components/simulator/OperacionPERBitacor
 import { PortalEmpresarial } from '@/components/simulator/PortalEmpresarial'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+import { CapacitacionTab } from '@/components/simulator/CapacitacionTab'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-type TabId = 'infraestructura' | 'flujos'
+type TabId = 'infraestructura' | 'flujos' | 'capacitacion'
 const TABS: Array<{ id: TabId; label: string }> = [
   { id: 'infraestructura', label: 'Infraestructura en espacio-tiempo' },
   { id: 'flujos',          label: 'Flujos y hoja de ruta operativa' },
+  { id: 'capacitacion',    label: 'Capacitación y adopción' },
 ]
 
 const FASE_COLORS = ['#C8E6A4', '#A5C97A', '#7DA84A', '#5A8C2C', '#3B6D11', '#1A4200']
@@ -178,27 +181,33 @@ export function InfrastructureOperationsStack() {
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
               <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Despliegue de infraestructura por fase</p>
               <p className="text-[10px] text-[#A8A49C] mb-4">Centros de Acopio (CA) y Recicladoras habilitadas por fase operativa</p>
-              <ResponsiveContainer width="100%" height={160}>
-                <BarChart data={despliegueLineData} margin={{ top: 2, right: 16, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={24} />
-                  <Tooltip
-                    formatter={(v: number, name: string) => [v, name === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras']}
-                    labelFormatter={(l: string) => `${l} — ${despliegueLineData.find(d => d.name === l)?.label ?? ''}`}
-                    contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
-                    formatter={(v: string) => v === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras'}
-                  />
-                  <Bar dataKey="centrosAcopio" name="centrosAcopio" fill="#3B6D11" radius={[3, 3, 0, 0]}>
-                    {despliegueLineData.map((d, i) => (
-                      <Cell key={i} fill={d.esOptimo ? '#3B6D11' : FASE_COLORS[i] ?? '#3B6D11'} />
-                    ))}
-                  </Bar>
-                  <Bar dataKey="recicladoras" name="recicladoras" fill="#1A5FA8" radius={[3, 3, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <ExpandableChart
+                chartId="m04-despliegue-infraestructura"
+                title="Despliegue de infraestructura por fase"
+                subtitle="Centros de Acopio y Recicladoras por fase operativa"
+              >
+                <ResponsiveContainer width="100%" height={160}>
+                  <BarChart data={despliegueLineData} margin={{ top: 2, right: 16, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                    <XAxis dataKey="name" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+                    <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={24} />
+                    <Tooltip
+                      formatter={(v: number, name: string) => [v, name === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras']}
+                      labelFormatter={(l: string) => `${l} — ${despliegueLineData.find(d => d.name === l)?.label ?? ''}`}
+                      contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 10, paddingTop: 8 }}
+                      formatter={(v: string) => v === 'centrosAcopio' ? 'Centros de Acopio' : 'Recicladoras'}
+                    />
+                    <Bar dataKey="centrosAcopio" name="centrosAcopio" fill="#3B6D11" radius={[3, 3, 0, 0]}>
+                      {despliegueLineData.map((d, i) => (
+                        <Cell key={i} fill={d.esOptimo ? '#3B6D11' : FASE_COLORS[i] ?? '#3B6D11'} />
+                      ))}
+                    </Bar>
+                    <Bar dataKey="recicladoras" name="recicladoras" fill="#1A5FA8" radius={[3, 3, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ExpandableChart>
             </div>
 
             {/* Centros propuestos card grid */}
@@ -516,7 +525,10 @@ export function InfrastructureOperationsStack() {
         </div>
       )}
 
-      <ModuleBottomBar onProfundizar={() => setTab('flujos')} />
+      {/* ── Tab 3: Capacitación y adopción ─────────────────────────────── */}
+      {tab === 'capacitacion' && <CapacitacionTab />}
+
+      <ModuleBottomBar onProfundizar={() => setTab('capacitacion')} />
     </div>
   )
 }

@@ -141,6 +141,113 @@ export const GLOSARIO: GlosarioEntry[] = [
     definicion: 'Suma de ingresos directos (venta materiales) + ahorro de disposición + empleo generado. Mide el impacto económico local del programa.',
     fuente: 'Modelo ALQUIMIA — Bootstrap §2.8',
   },
+
+  // ── Social / Demográfico ────────────────────────────────────────────────────
+  {
+    termino: 'rezago social',
+    definicion: 'Índice CONEVAL que agrega carencias en educación, salud, vivienda y servicios básicos. Classifica municipios en 5 grados: muy bajo a muy alto.',
+    fuente: 'CONEVAL Índice de Rezago Social 2020',
+    url: 'https://www.coneval.org.mx/Medicion/IRS/Paginas/Indice_Rezago_Social_2020.aspx',
+  },
+  {
+    termino: 'CONEVAL',
+    definicion: 'Consejo Nacional de Evaluación de la Política de Desarrollo Social. Organismo autónomo que mide la pobreza y evalúa programas sociales en México.',
+    fuente: 'DOF Ley General de Desarrollo Social',
+    url: 'https://www.coneval.org.mx',
+  },
+  {
+    termino: 'ENOE',
+    definicion: 'Encuesta Nacional de Ocupación y Empleo. Publicada trimestralmente por INEGI; es la fuente oficial de estimaciones del sector informal de recuperación.',
+    fuente: 'INEGI ENOE 2024',
+    url: 'https://www.inegi.org.mx/programas/enoe/15ymas/',
+  },
+  {
+    termino: 'ENIGH',
+    definicion: 'Encuesta Nacional de Ingresos y Gastos de los Hogares. Bienal, INEGI. Fuente del 35% de hogares sin espacio para contenedores diferenciados.',
+    fuente: 'INEGI ENIGH 2022',
+    url: 'https://www.inegi.org.mx/programas/enigh/nc/2022/',
+  },
+  {
+    termino: 'sector informal de recuperación',
+    definicion: 'Trabajadores sin contrato que recolectan materiales reciclables. ENOE 2024 estima 110,000–150,000 en México; su integración al programa es clave para evitar resistencia operativa.',
+    fuente: 'INEGI ENOE T1 2024',
+  },
+  {
+    termino: 'separación en origen',
+    definicion: 'Práctica de clasificar los residuos por tipo (orgánico, inorgánico) en el hogar o negocio antes de entregarlos al recolector. Base de cualquier programa de reciclaje efectivo.',
+    fuente: 'LGPGIR Art. 10, SEMARNAT',
+  },
+
+  // ── Planeación / PERT ──────────────────────────────────────────────────────
+  {
+    termino: 'holgura',
+    definicion: 'Tiempo de retraso máximo que puede absorber una tarea sin afectar la fecha de entrega del proyecto. Tareas con holgura = 0 forman la ruta crítica.',
+    fuente: 'CPM — Project Management Institute',
+  },
+  {
+    termino: 'hito de proyecto',
+    definicion: 'Evento clave de cero duración que marca el inicio o fin de una fase importante. Ejemplo: "Permiso de uso de suelo obtenido" es un hito en la fase de habilitación legal.',
+    fuente: 'PMBOK 6ª edición',
+  },
+  {
+    termino: 'horizonte de evaluación',
+    definicion: 'Número de años sobre el que se calculan los flujos de efectivo del proyecto. ALQUIMIA permite 3–7 años; BANOBRAS recomienda mínimo 5 años para infraestructura municipal.',
+    fuente: 'BANOBRAS Guía de Evaluación de Proyectos 2022',
+  },
+
+  // ── Financiero avanzado ────────────────────────────────────────────────────
+  {
+    termino: 'BCR',
+    definicion: 'Benefit-Cost Ratio — cociente entre el valor presente de beneficios y costos. BCR ≥ 1.006 es el umbral mínimo viable para proyectos RSU según Al-Salem et al. (2024).',
+    fuente: 'Al-Salem et al. (2024), Sustainability 16(3):1127',
+  },
+  {
+    termino: 'Monte Carlo',
+    definicion: 'Método de simulación que corre miles de escenarios con variables aleatorias para estimar rangos de resultados (TIR P10/P50/P90). No es garantía, sino rango de posibilidades.',
+    fuente: 'Al-Salem et al. (2024); PMBOK 6ª ed.',
+  },
+  {
+    termino: 'distribución triangular',
+    definicion: 'Distribución de probabilidad definida por tres puntos: mínimo, moda y máximo. Usada en Monte Carlo cuando no hay datos históricos suficientes para una distribución normal.',
+    fuente: 'Al-Salem et al. (2024) — parámetros estándar para RSU',
+  },
+  {
+    termino: 'payback descontado',
+    definicion: 'Tiempo para recuperar la inversión considerando el valor del dinero en el tiempo (con tasa de descuento). Siempre mayor al payback simple; más conservador y riguroso.',
+    fuente: 'Evaluación financiera de proyectos — SHCP',
+  },
+  {
+    termino: 'tasa de descuento social',
+    definicion: 'Tasa que el gobierno usa para evaluar el costo de oportunidad del dinero público. SHCP México: 10% en términos reales para proyectos de inversión pública.',
+    fuente: 'SHCP Lineamientos de Análisis Costo-Beneficio 2021',
+  },
+  {
+    termino: 'multiplicador económico',
+    definicion: 'Efecto amplificador de cada peso invertido en la economía local. Un centro de acopio genera $1.40 en actividad económica indirecta por cada $1 de ingreso directo (MULTIPLICADORES ALQUIMIA).',
+    fuente: 'Modelo ALQUIMIA — Bootstrap §2.8',
+  },
+
+  // ── Ambiental ─────────────────────────────────────────────────────────────
+  {
+    termino: 'biogás',
+    definicion: 'Gas combustible producido por la digestión anaeróbica de residuos orgánicos. Compuesto principalmente de metano (CH₄). Se puede convertir en electricidad o calor.',
+    fuente: 'INECC Manual de biogás municipal 2019',
+  },
+  {
+    termino: 'factor de emisión',
+    definicion: 'Toneladas de CO₂e evitadas al reciclar una tonelada de material específico. Ejemplo: reciclaje de aluminio evita ~9 t CO₂e/t; papel ~1 t CO₂e/t.',
+    fuente: 'INECC Factores de emisión 2024',
+  },
+  {
+    termino: 'relleno sanitario',
+    definicion: 'Sitio de disposición final de RSU que opera con técnica sanitaria: impermeabilización, captación de lixiviados y biogás. Alternativa al tiradero a cielo abierto.',
+    fuente: 'SEMARNAT NOM-083-SEMARNAT-2003',
+  },
+  {
+    termino: 'economía circular',
+    definicion: 'Modelo económico que mantiene materiales en uso el mayor tiempo posible, reduciendo residuos. Tasa de circularidad de México: 9.63% (INECC 2024, meta OCDE: ≥30%).',
+    fuente: 'INECC Diagnóstico Circularidad México 2024',
+  },
 ]
 
 /** Busca una entrada del glosario por término exacto o parcial (case-insensitive). */
