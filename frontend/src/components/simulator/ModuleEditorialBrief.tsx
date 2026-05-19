@@ -8,7 +8,13 @@ import {
 } from '@/lib/municipioMadurezContexto'
 import { useSimulatorStore } from '@/store/simulatorStore'
 
-export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
+export function ModuleEditorialBrief({
+  moduleId,
+  suppressTitle = false,
+}: {
+  moduleId: string
+  suppressTitle?: boolean
+}) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
@@ -31,16 +37,22 @@ export function ModuleEditorialBrief({ moduleId }: { moduleId: string }) {
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            <span
-              className="inline-flex rounded-md border border-[#B9C8A6] bg-white/90 px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-[#2F5A0C]"
-              title="Artículo de síntesis · contexto del módulo"
-            >
-              S1
-            </span>
-            <h3 className="font-serif text-[clamp(1.125rem,2vw,1.375rem)] text-[#1C1B18]">{brief.title}</h3>
-          </div>
+          {!suppressTitle ? (
+            <>
+              <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span
+                  className="inline-flex rounded-md border border-[#B9C8A6] bg-white/90 px-2 py-0.5 font-mono text-[10px] font-semibold tabular-nums text-[#2F5A0C]"
+                  title="Artículo de síntesis · contexto del módulo"
+                >
+                  S1
+                </span>
+                <h3 className="font-serif text-[clamp(1.125rem,2vw,1.375rem)] text-[#1C1B18]">{brief.title}</h3>
+              </div>
+            </>
+          ) : (
+            <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura ejecutiva del módulo</p>
+          )}
           <p className="mt-3 w-full max-w-none text-[13px] leading-relaxed text-[#5A6347] lg:text-[14px] lg:leading-[1.55]">
             {brief.situacion_actual}
           </p>

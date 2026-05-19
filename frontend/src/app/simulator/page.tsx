@@ -161,16 +161,14 @@ export default function SimulatorPage() {
 
             <div className="mt-3 space-y-3">
               {audience === 'functionary' && (
-                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-3 items-start">
-                  {/* Left: city chip + scenario cards */}
-                  <div className="space-y-2">
+                <div className="space-y-3">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start">
                     <CityFirstSelector compact />
                     <PropuestasSimulatorBar />
                   </div>
-                  {/* Right: RSU parameter sliders */}
-                  {activeDecisionModuleId !== 'municipal_context'
-                    ? <FuncionariosViviendaRsuModel />
-                    : <div />}
+                  {activeDecisionModuleId !== 'municipal_context' ? (
+                    <FuncionariosViviendaRsuModel />
+                  ) : null}
                 </div>
               )}
               <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">

@@ -122,7 +122,10 @@ export function RiskTrendsPanel() {
       </section>
 
       {/* ── Panel de fórmulas documentadas ────────────────────────────── */}
-      <section className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-5 space-y-4">
+      <section
+        className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-5 space-y-4"
+        data-chart-id="score-riesgo-total"
+      >
         <div>
           <h3 className="font-serif text-[18px] text-[#1C1B18]">Cómo se calculan los riesgos</h3>
           <p className="text-[11px] text-[#5A6347] mt-1">

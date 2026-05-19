@@ -42,6 +42,12 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
     evidence: 'Zonas, rutas, centros de acopio, bitácora PER y flujo material conectado al territorio.',
     next_action: 'Validar responsables, rutas, evidencia operativa y capacidad instalada.',
   },
+  risk_trends: {
+    label: 'Riesgos y tendencias',
+    decision: 'Cuantificar riesgos de mercado, políticos, operativos y regulatorios antes de comprometer el programa.',
+    evidence: 'Fórmulas documentadas por dimensión, score ponderado y tendencias externas con trazabilidad.',
+    next_action: 'Revisar dimensiones en rojo y validar supuestos con equipo jurídico y operativo.',
+  },
   market_traceability: {
     label: 'Mercado, causalidad y riesgos',
     decision: 'Validar mercado, trazabilidad y compradores antes de cerrar el escenario.',

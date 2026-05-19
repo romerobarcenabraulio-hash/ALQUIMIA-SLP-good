@@ -16,8 +16,10 @@ import {
 } from 'lucide-react'
 import { cn, fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { GlosarioTooltip } from '@/components/ui/GlosarioTooltip'
+import { buscarTermino } from '@/data/glosario'
 import type { ChartBrief, MetodologiaEditorial } from '@/data/moduleEditorialBriefs'
 import { useChartSectionObserver } from '@/hooks/useChartSectionObserver'
 import {
@@ -35,10 +37,11 @@ const MODULE_NUMBERS: Record<string, string> = {
   impact_finance:           '3',
   future_goals:             '3',
   infrastructure_operations:'4',
-  inspeccion_predios:       '5',
   market_traceability:      '5',
-  scenarios_export:         '6',
-  source_traceability:      '7',
+  risk_trends:              '6',
+  inspeccion_predios:       '7',
+  scenarios_export:         '8',
+  source_traceability:      '9',
   organization_profile:     '1',
   containers_provider:      '2',
   organization_report:      '3',
@@ -224,18 +227,63 @@ function getLecturaEjecutiva(moduleId: string): LecturaEjecutiva | null {
 
 // ─── Module subtitle (catchy) ─────────────────────────────────────────────────
 
-function ModuleSubtitle({ moduleId }: { moduleId: string }) {
+function ModuleContextHeader({
+  module,
+  moduleId,
+}: {
+  module: DecisionModule
+  moduleId: string
+}) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
   const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope = municipiosActivos.length === 0 ? 'sin_municipio' as const : municipiosActivos.length === 1 ? 'municipio' as const : 'zm' as const
-  const brief = getModuleEditorialBrief(moduleId, { territorio, scope, municipio, municipiosCount: municipiosActivos.length })
-  if (!brief?.subtitulo_catchy) return null
+  const scope =
+    municipiosActivos.length === 0 ? ('sin_municipio' as const) : municipiosActivos.length === 1 ? ('municipio' as const) : ('zm' as const)
+  const brief = getModuleEditorialBrief(moduleId, {
+    territorio,
+    scope,
+    municipio,
+    municipiosCount: municipiosActivos.length,
+  })
+  const num = moduleNumber(moduleId)
+  const title = brief?.title ?? module.label
+  const rsuEntry = buscarTermino('RSU')
+
   return (
-    <div className="mb-4 pb-3 border-b border-[#F0EDE5]">
-      <p className="text-[11px] text-[#7A8A6A] italic leading-snug">{brief.subtitulo_catchy}</p>
-    </div>
+    <header
+      className="mb-5 pb-5 border-b border-[#E8E4DC]"
+      data-testid="module-context-header"
+    >
+      <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold">
+        Módulo {num} · {module.label}
+      </p>
+      <h2
+        id="decision-shell-title"
+        className="mt-2 font-serif text-[clamp(1.35rem,2.5vw,1.85rem)] font-medium text-[#1C1B18] leading-tight tracking-tight"
+      >
+        {title}
+      </h2>
+      {brief?.subtitulo_catchy && (
+        <p className="mt-3 text-[15px] sm:text-[16px] font-medium text-[#2D5409] leading-snug max-w-3xl">
+          {brief.subtitulo_catchy}
+        </p>
+      )}
+      {territorio && (
+        <p className="mt-2.5 text-[12px] text-[#6B6760]">
+          Territorio de lectura:{' '}
+          <span className="font-medium text-[#1C1B18]">{territorio}</span>
+          {rsuEntry && (
+            <span className="ml-2">
+              ·{' '}
+              <GlosarioTooltip termino={rsuEntry.termino} entry={rsuEntry}>
+                RSU
+              </GlosarioTooltip>
+            </span>
+          )}
+        </p>
+      )}
+    </header>
   )
 }
 
@@ -294,6 +342,52 @@ function ChartReferences({ refs }: { refs: ChartBrief['referencias'] }) {
         ))}
       </ul>
     </div>
+  )
+}
+
+function ModuleMetodologiaMobile({
+  moduleId,
+  activeChartId,
+}: {
+  moduleId: string
+  activeChartId: string | null
+}) {
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
+  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
+  const brief = getModuleEditorialBrief(moduleId, {
+    territorio,
+    scope,
+    municipio,
+    municipiosCount: municipiosActivos.length,
+  })
+  const chartBrief = getChartBrief(brief, activeChartId)
+  const metodologia = chartBrief?.metodologia ?? brief?.metodologia_editorial
+  if (!metodologia) return null
+
+  return (
+    <details className="xl:hidden mb-5 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] overflow-hidden">
+      <summary className="cursor-pointer px-4 py-3 text-[12px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between">
+        <span className="flex items-center gap-1.5">
+          <BookOpen size={13} />
+          Consideraciones y metodología
+        </span>
+        <span className="text-[9px] text-[#A8A49C]">▾</span>
+      </summary>
+      <div className="px-4 pb-4 border-t border-[#E8E4DC]">
+        {chartBrief && (
+          <p className="pt-3 text-[10px] text-[#3B6D11] font-medium leading-snug">
+            En foco: {chartBrief.chart_label}
+          </p>
+        )}
+        <div className="pt-3">
+          <MetodologiaSections meta={metodologia} />
+        </div>
+        {chartBrief && <ChartReferences refs={chartBrief.referencias} />}
+      </div>
+    </details>
   )
 }
 
@@ -544,9 +638,8 @@ export function DecisionModuleShell({
         {/* Center content */}
         <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
           {/* Content area — flows naturally, page scrolls */}
-          <div ref={contentRef} className="px-6 py-6" id="decision-shell-title">
-            {/* Subtitle catchy del módulo activo */}
-            <ModuleSubtitle moduleId={activeModule.module_id} />
+          <div ref={contentRef} className="px-6 py-6">
+            <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />
             {activeModule.status === 'blocked' ? (
               <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
                 <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
@@ -563,6 +656,11 @@ export function DecisionModuleShell({
               </div>
             ) : (
               <div className="space-y-5">
+                <ModuleEditorialBrief moduleId={activeModule.module_id} suppressTitle />
+                <ModuleMetodologiaMobile
+                  moduleId={activeModule.module_id}
+                  activeChartId={activeChartId}
+                />
                 {renderModule(activeModule)}
               </div>
             )}
