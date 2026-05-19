@@ -166,7 +166,7 @@ export default function SimulatorPage() {
                     <CityFirstSelector compact />
                     <PropuestasSimulatorBar />
                   </div>
-                  {activeDecisionModuleId !== 'municipal_context' ? (
+                  {(activeDecisionModuleId === 'city_baseline' || activeDecisionModuleId === null) ? (
                     <FuncionariosViviendaRsuModel />
                   ) : null}
                 </div>
