@@ -10,6 +10,20 @@
  * Salarios base: tabulador IMSS rama 37 (recolección y reciclaje), 2025/2026.
  * Factor prestaciones sociales: 1.35× (IMSS patronal + ISN + SAR + Infonavit + vacaciones + aguinaldo).
  *
+ * Verificación de precios de maquinaria (mayo 2026):
+ *   - Contenedor 1100L: mercado MX $9,240-$12,290 MXN (Grupo Zuma / Reciclamas / E4 Solutions).
+ *     Modelo actualizado a $9,500/unidad (sin IVA, precio competitivo mayoreo).
+ *   - Báscula Torrey PLP-1000: mercado $12,070-$12,983 MXN (Cocoisa / Chefs Toys / KitchenMax).
+ *     Modelo actualizado a $12,500/unidad.
+ *   - Montacargas Toyota 8FGU25 dual Gas LP: USD $34,950 ~ $39,950 (losmontacargas.mx 2025).
+ *     A TC $17.1 = $597,645-$682,545 MXN. Modelo actualizado a $530,000 (conservador).
+ *   - Montacargas HELI CPQD25 dual Gas LP: $470,500 MXN confirmado (rte.mx 2025).
+ *     Modelo anterior ($589,500) era sobreestimado; corregido a $470,500.
+ *   - Lavadora PET + trituradora + secador: total línea $2.07M MXN ≈ $121K USD.
+ *     Benchmark Energycle (2025): línea 500 kg/h = $100K-$160K USD. ✓ DENTRO DE RANGO.
+ *   - Báscula Torrey PLP-3000: $19,000 vs mercado $16,075-$20,847 MXN. ✓ SIN CAMBIO.
+ *   - Separador óptico vidrio: $580K MXN vs mercado industrial $300K-$550K. Plausible.
+ *
  * Toda modificación a este archivo debe citar fuente y fecha de actualización.
  */
 
@@ -188,6 +202,85 @@ export const BENCHMARKS_EXTERNOS = {
       fuente: 'Computrabajo / Sercanto RECO Recycling 2025',
     },
   },
+
+  /**
+   * Verificación de precios de maquinaria — mayo 2026.
+   * Para cada equipo: precio del modelo, rango de mercado encontrado, fuente y veredicto.
+   * Equipos con precio NO encontrado en fuentes abiertas MX mantienen precio Excel de referencia.
+   */
+  preciosEquipoVerificados: {
+    fechaVerificacion: 'mayo 2026',
+    tipoCambioUsado: 17.1,
+    equipos: [
+      {
+        nombre: 'Contenedor 1100L (HDPE, 4 ruedas)',
+        precioModeloMXN: 9_500,
+        rangoPrecioMercadoMXN: { min: 9_240, max: 12_290 },
+        veredicto: 'CORREGIDO — precio anterior ($5,500) era 41% bajo mercado. Actualizado a $9,500 sin IVA (precio mayoreo).',
+        fuentes: ['grupozuma.com.mx ($9,240.28 IVA incl.)', 'reciclamas.com.mx ($9,249.29+IVA)', 'e4solutions.com.mx ($12,289.97 IVA incl.)'],
+      },
+      {
+        nombre: 'Báscula Torrey PLP-1000 (1,000 kg)',
+        precioModeloMXN: 12_500,
+        rangoPrecioMercadoMXN: { min: 12_070, max: 12_983 },
+        veredicto: 'CORREGIDO — precio anterior ($10,000) era 21% bajo mercado. Actualizado a $12,500.',
+        fuentes: ['cocoisa.mx ($12,071)', 'chefstoys.com.mx ($12,071)', 'kitchenmax.mx ($12,876 c/desc.)'],
+      },
+      {
+        nombre: 'Báscula Torrey PLP-3000 (3,000 kg)',
+        precioModeloMXN: 19_000,
+        rangoPrecioMercadoMXN: { min: 16_075, max: 20_848 },
+        veredicto: 'VALIDADO — precio del modelo ($19,000) dentro del rango de mercado.',
+        fuentes: ['direyco.com.mx ($19,263)', 'kitchenmax.mx ($17,860)', 'basculasyrefacciones.com ($18,762)'],
+      },
+      {
+        nombre: 'Montacargas Toyota 8FGU25 (2.5 t, Dual Gas LP)',
+        precioModeloMXN: 530_000,
+        rangoPrecioMercadoUSD: { min: 34_950, max: 39_950 },
+        rangoPrecioMercadoMXN: { min: 597_645, max: 682_545 },
+        veredicto: 'CORREGIDO — precio anterior ($425,000) era 29-38% bajo mercado. Actualizado a $530,000 (precio base conservador, sin opciones).',
+        fuentes: ['losmontacargas.mx (USD $39,950)', 'losmontacargas.mx (USD $34,950 Nissan Unicarrier equiv.)'],
+      },
+      {
+        nombre: 'Montacargas HELI CPQD25 (2.5 t, Dual Gas LP)',
+        precioModeloMXN: 470_500,
+        rangoPrecioMercadoMXN: { min: 470_500, max: 470_500 },
+        veredicto: 'CORREGIDO — precio anterior ($589,500) era sobreestimado en 25%. Precio confirmado: $470,500 MXN.',
+        fuentes: ['rte.mx — HELI CPQD25 Dual Gas LP: $470,500 MXN (precio de lista 2025)'],
+      },
+      {
+        nombre: 'Lavadora PET (línea completa 500 kg/h)',
+        precioModeloMXN: null,
+        notaLinea: 'El modelo desglosa la línea en equipos separados: lavadora $380K + trituradora $520K + secador $180K + bandas $90K + extrusora $850K = $2,073K MXN ≈ USD $121K',
+        rangoPrecioMercadoUSD: { min: 100_000, max: 160_000 },
+        rangoPrecioMercadoMXN: { min: 1_710_000, max: 2_736_000 },
+        veredicto: 'VALIDADO (con extrusora) — total línea $2.07M MXN = $121K USD dentro del rango Energycle $100K-$160K para 500 kg/h.',
+        fuentes: ['energycle.com — Guía precio línea PET 500 kg/h: $100K-$160K USD (2025)', 'solimaq.mx — Líneas LPET disponibles en México'],
+      },
+      {
+        nombre: 'Separador óptico por color (vidrio cullet)',
+        precioModeloMXN: 580_000,
+        rangoPrecioMercadoUSD: { min: 17_600, max: 32_000 },
+        rangoPrecioMercadoMXN: { min: 300_960, max: 547_200 },
+        veredicto: 'PRECIO ALTO — el modelo ($580K MXN = $33.9K USD) excede ligeramente el rango de fabricantes chinos. Justificado si se elige equipo europeo (PELLENC/MOGENSEN ~€40K-€60K). Se mantiene como precio estimado para equipo de calidad media-alta.',
+        fuentes: ['wenyaocolorsorter.com (USD $17,600-$18,600/u)', 'wenyaocolorsorter.com WYDB4 (USD $31,000-$32,000/u)'],
+      },
+      {
+        nombre: 'Prensa compactadora 15HP (CA-P)',
+        precioModeloMXN: 215_000,
+        rangoPrecioMercadoMXN: { min: 119_000, max: 250_000 },
+        veredicto: 'PLAUSIBLE — referencia Dierkla D-50 vertical $119K; horizontales equivalentes típicamente $150K-$250K. Precio del modelo conservador pero razonable.',
+        fuentes: ['dierkla.com (D-50 prensa vertical: $119,000 MXN)', 'AACE International Class 4 equipment estimates ±30%'],
+      },
+      {
+        nombre: 'Prensa horizontal embolsadora (CA-G, 22 kW)',
+        precioModeloMXN: 850_000,
+        rangoPrecioMercadoMXN: { min: 680_000, max: 1_200_000 },
+        veredicto: 'PLAUSIBLE — no se encontró precio publicado para prensas horizontales >15 t. Rango estimado por comparación con modelos similares y factor potencia. Mantener como referencia.',
+        fuentes: ['Estimación por analogía con prensa papel/cartón TEVA/Imabe y factores de escala potencia'],
+      },
+    ],
+  },
 } as const
 
 // ─── Salarios base (IMSS Rama 37, 2025/2026) ────────────────────────────────
@@ -244,10 +337,10 @@ export const PERSONAL_CA: Record<TamañoCA, NominaDetalle> = {
 export const EQUIPOS_CA: Record<TamañoCA, EquipoCatalogo[]> = {
   P: [
     { nombre: 'Prensa compactadora 15HP', marca: 'Genérica nacional', cantidad: 1, precioUnitMXN: 215_000, totalMXN: 215_000, potenciaKW: 11.19, factorUtil: 0.70, horasEfectDia: 5.6, diasMes: 25, kwhMes: 1567, kwhConContingencia: 1723, costoEnergiaMes: 5170 },
-    { nombre: 'Báscula plataforma 1,000kg', marca: 'Torrey PLP1000', cantidad: 1, precioUnitMXN: 10_000, totalMXN: 10_000, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26 },
+    { nombre: 'Báscula plataforma 1,000kg', marca: 'Torrey PLP1000', cantidad: 1, precioUnitMXN: 12_500, totalMXN: 12_500, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26, nota: 'Precio verificado: $12,070-$12,983 MXN (Cocoisa/KitchenMax may-2026)' },
     { nombre: 'Báscula plataforma 500kg', marca: 'Rhino BAPCA-500', cantidad: 1, precioUnitMXN: 3_800, totalMXN: 3_800, potenciaKW: 0.05, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 4, kwhConContingencia: 4, costoEnergiaMes: 13 },
     { nombre: 'Patín hidráulico 3 ton', marca: 'Genérico', cantidad: 2, precioUnitMXN: 8_000, totalMXN: 16_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Manual' },
-    { nombre: 'Contenedores 1100L (5 fracciones)', marca: 'Genérico', cantidad: 10, precioUnitMXN: 5_500, totalMXN: 55_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
+    { nombre: 'Contenedores 1100L (5 fracciones)', marca: 'Greenbin/Weber', cantidad: 10, precioUnitMXN: 9_500, totalMXN: 95_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Precio verificado: $9,240-$12,290 MXN (grupozuma.com.mx / reciclamas.com.mx may-2026)' },
     { nombre: 'Mesa clasificación manual 3m', marca: 'Fabricación local', cantidad: 1, precioUnitMXN: 25_000, totalMXN: 25_000, potenciaKW: 0.2, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 34, kwhConContingencia: 37, costoEnergiaMes: 112 },
     { nombre: 'Herramienta menor', marca: 'Varios', cantidad: 1, precioUnitMXN: 15_000, totalMXN: 15_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
   ],
@@ -257,9 +350,9 @@ export const EQUIPOS_CA: Record<TamañoCA, EquipoCatalogo[]> = {
     { nombre: 'Báscula 3,000kg', marca: 'Torrey PLP3000', cantidad: 1, precioUnitMXN: 19_000, totalMXN: 19_000, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26 },
     { nombre: 'Báscula 500kg', marca: 'Rhino BAPCA-500', cantidad: 2, precioUnitMXN: 3_800, totalMXN: 7_600, potenciaKW: 0.05, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26 },
     { nombre: 'Banda transportadora 8m', marca: 'Nacional', cantidad: 1, precioUnitMXN: 120_000, totalMXN: 120_000, potenciaKW: 2.2, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 374, kwhConContingencia: 411, costoEnergiaMes: 1234 },
-    { nombre: 'Montacargas Toyota 8FGU25', marca: 'Toyota/Hangcha', cantidad: 1, precioUnitMXN: 425_000, totalMXN: 425_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 4.8, diasMes: 25, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 5550, nota: 'Gas LP: 2.5 kg/hora' },
+    { nombre: 'Montacargas Toyota 8FGU25', marca: 'Toyota/Hangcha', cantidad: 1, precioUnitMXN: 530_000, totalMXN: 530_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 4.8, diasMes: 25, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 5550, nota: 'Gas LP: 2.5 kg/hora. Precio verificado: USD $34,950-$39,950 (losmontacargas.mx may-2026), TC $17.1 = $597K-$682K; modelo usa $530K conservador.' },
     { nombre: 'Patín hidráulico 3 ton', marca: 'Genérico', cantidad: 3, precioUnitMXN: 8_000, totalMXN: 24_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
-    { nombre: 'Contenedores 1100L', marca: 'Genérico', cantidad: 25, precioUnitMXN: 5_500, totalMXN: 137_500, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
+    { nombre: 'Contenedores 1100L', marca: 'Greenbin/Weber', cantidad: 25, precioUnitMXN: 9_500, totalMXN: 237_500, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Precio verificado: $9,240-$12,290 MXN (grupozuma.com.mx may-2026)' },
     { nombre: 'Mesa clasificación 5m', marca: 'Fabricación local', cantidad: 2, precioUnitMXN: 35_000, totalMXN: 70_000, potenciaKW: 0.3, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 102, kwhConContingencia: 112, costoEnergiaMes: 337 },
     { nombre: 'Herramienta menor', marca: 'Varios', cantidad: 1, precioUnitMXN: 30_000, totalMXN: 30_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
   ],
@@ -269,9 +362,9 @@ export const EQUIPOS_CA: Record<TamañoCA, EquipoCatalogo[]> = {
     { nombre: 'Báscula 3,000kg', marca: 'Torrey PLP3000', cantidad: 2, precioUnitMXN: 19_000, totalMXN: 38_000, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 16, kwhConContingencia: 18, costoEnergiaMes: 53 },
     { nombre: 'Báscula camionera 40 ton (renta anual)', marca: 'Nacional', cantidad: 1, precioUnitMXN: 180_000, totalMXN: 180_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
     { nombre: 'Banda transportadora 15m', marca: 'Nacional', cantidad: 2, precioUnitMXN: 350_000, totalMXN: 700_000, potenciaKW: 4.0, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 1360, kwhConContingencia: 1496, costoEnergiaMes: 4488 },
-    { nombre: 'Montacargas HELI CPQD25', marca: 'HELI', cantidad: 2, precioUnitMXN: 589_500, totalMXN: 1_179_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 4.8, diasMes: 25, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 11100, nota: 'Gas LP' },
+    { nombre: 'Montacargas HELI CPQD25', marca: 'HELI', cantidad: 2, precioUnitMXN: 470_500, totalMXN: 941_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 4.8, diasMes: 25, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 11100, nota: 'Gas LP. Precio verificado: $470,500 MXN (rte.mx may-2026). Corrección: modelo anterior sobreestimaba en 25%.' },
     { nombre: 'Patín hidráulico 3 ton', marca: 'Genérico', cantidad: 5, precioUnitMXN: 8_000, totalMXN: 40_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
-    { nombre: 'Contenedores 1100L', marca: 'Genérico', cantidad: 60, precioUnitMXN: 5_500, totalMXN: 330_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
+    { nombre: 'Contenedores 1100L', marca: 'Greenbin/Weber', cantidad: 60, precioUnitMXN: 9_500, totalMXN: 570_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Precio verificado: $9,240-$12,290 MXN (grupozuma.com.mx may-2026)' },
     { nombre: 'Tolvas de recepción', marca: 'Fabricación local', cantidad: 3, precioUnitMXN: 45_000, totalMXN: 135_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
     { nombre: 'Herramienta menor', marca: 'Varios', cantidad: 1, precioUnitMXN: 60_000, totalMXN: 60_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
   ],
@@ -283,29 +376,32 @@ export const EQUIPOS_CA: Record<TamañoCA, EquipoCatalogo[]> = {
 // Capital de trabajo: 3 meses de OPEX — mínimo recomendado World Bank / Energycle para cubrir
 // el gap entre recuperación de material y cobro al comprador ancla.
 export const CAPEX_CA: Record<TamañoCA, CAPEXDesglose> = {
+  // Equipamiento actualizado mayo 2026: contenedores +$9,500/u (verificado mercado), báscula PLP1000 +$12,500 (verificado)
   P: {
-    equipamiento:        339_800,
+    equipamiento:        382_300,  // Actualizado: contenedores $95K (+$40K), báscula $12.5K (+$2.5K)
     adecuacionNave:      120_000,
     gastosPreoperativos:  45_000,
-    contingencia:         45_980,  // 10% × (339,800 + 120,000)
+    contingencia:         50_230,  // 10% × (382,300 + 120,000)
     capitalTrabajo:      332_514,  // 3 meses × OPEX 110,838
-    totalCAPEX:          883_294,
+    totalCAPEX:          930_044,
   },
+  // Equipamiento actualizado mayo 2026: montacargas Toyota $530K (+$105K), contenedores $237.5K (+$100K)
   M: {
-    equipamiento:       1_473_100,
+    equipamiento:       1_678_100,  // Actualizado: Toyota $530K (+$105K), contenedores $237.5K (+$100K)
     adecuacionNave:       350_000,
     gastosPreoperativos:   65_000,
-    contingencia:         182_310,  // 10% × (1,473,100 + 350,000)
+    contingencia:         202_810,  // 10% × (1,678,100 + 350,000)
     capitalTrabajo:       961_062,  // 3 meses × OPEX 320,354
-    totalCAPEX:         3_031_472,
+    totalCAPEX:         3_256_972,
   },
+  // Equipamiento actualizado mayo 2026: HELI $470.5K (-$119K×2), contenedores $570K (+$240K) → neto +$2K
   G: {
-    equipamiento:       4_512_000,
+    equipamiento:       4_514_000,  // Actualizado: HELI corregido a $470.5K (-$238K), contenedores $570K (+$240K)
     adecuacionNave:       950_000,
     gastosPreoperativos:   95_000,
-    contingencia:         546_200,  // 10% × (4,512,000 + 950,000)
+    contingencia:         546_400,  // 10% × (4,514,000 + 950,000)
     capitalTrabajo:     2_361_984,  // 3 meses × OPEX 787,328
-    totalCAPEX:         8_465_184,
+    totalCAPEX:         8_467_384,
   },
 }
 
@@ -376,7 +472,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       { nombre: 'Secador de flake centrífugo', marca: 'Genérico', cantidad: 1, precioUnitMXN: 180_000, totalMXN: 180_000, potenciaKW: 15.0, factorUtil: 0.75, horasEfectDia: 6, diasMes: 25, kwhMes: 2250, kwhConContingencia: 2475, costoEnergiaMes: 7425 },
       { nombre: 'Banda transportadora 6m', marca: 'Nacional', cantidad: 2, precioUnitMXN: 45_000, totalMXN: 90_000, potenciaKW: 1.5, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 510, kwhConContingencia: 561, costoEnergiaMes: 1683 },
       { nombre: 'Extrusora pellet (esc 80%)', marca: 'Genérica', cantidad: 1, precioUnitMXN: 850_000, totalMXN: 850_000, potenciaKW: 75.0, factorUtil: 0.75, horasEfectDia: 6, diasMes: 25, kwhMes: 11250, kwhConContingencia: 12375, costoEnergiaMes: 37125, nota: 'Solo escenario 80%' },
-      { nombre: 'Báscula 1,000kg', marca: 'Torrey PLP1000', cantidad: 1, precioUnitMXN: 10_000, totalMXN: 10_000, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26 },
+      { nombre: 'Báscula 1,000kg', marca: 'Torrey PLP1000', cantidad: 1, precioUnitMXN: 12_500, totalMXN: 12_500, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26, nota: 'Precio verificado: $12,070-$12,983 MXN (Cocoisa/KitchenMax may-2026)' },
       { nombre: 'Patín hidráulico', marca: 'Genérico', cantidad: 2, precioUnitMXN: 8_000, totalMXN: 16_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
       { nombre: 'Herramienta menor', marca: 'Varios', cantidad: 1, precioUnitMXN: 25_000, totalMXN: 25_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
     ],
@@ -390,10 +486,11 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 116_775,
     },
-    // contingencia 10%×(equip+nave)=$227,100; capital trabajo 3 meses×OPEX sin CMV: 757,497×3=não viable → usamos 2 meses OPEX total (distinto de CAs: recicladoras tienen CMV alto que ya es capital circulante del negocio)
-    capex: { equipamiento: 2_071_000, adecuacionNave: 200_000, gastosPreoperativos: 55_000, contingencia: 227_100, capitalTrabajo: 1_514_995, totalCAPEX: 4_068_095 },
+    // contingencia 10%×(equip+nave)=$227,350; capital trabajo 3 meses×OPEX sin CMV: 757,497×3=não viable → usamos 2 meses OPEX total (distinto de CAs: recicladoras tienen CMV alto que ya es capital circulante del negocio)
+    // Equipamiento actualizado mayo 2026: báscula PLP1000 $12,500 (+$2,500)
+    capex: { equipamiento: 2_073_500, adecuacionNave: 200_000, gastosPreoperativos: 55_000, contingencia: 227_350, capitalTrabajo: 1_514_995, totalCAPEX: 4_070_845 },
     opex: { cmvCompraMPMes: 2_694_384, rentaMes: 19_500, energiaElectricaMes: 79_424, combustibleGasLPMes: 0, nominaConPrestaciones: 116_775, transporteCombustible: 15_000, mantenimientoEquipo: 4_315, insumosQuimicos: 128_449, aguaServicios: 4_500, seguros: 946, fleteComprador: 380_589, consumiblesLinea: 8_000, totalOPEXMes: 3_451_881 },
-    capexTotal: 3_840_995,
+    capexTotal: 3_843_495,  // = equipamiento + nave + preop + capital_trabajo (sin contingencia)
     opexMes: 3_451_881,
     ingresoMesA3Esc40: 4_281_621,
     ebitdaA3: 9_956_877,
@@ -416,7 +513,7 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       { nombre: 'Guillotina/Trituradora cartón', marca: 'Nacional', cantidad: 1, precioUnitMXN: 280_000, totalMXN: 280_000, potenciaKW: 15.0, factorUtil: 0.70, horasEfectDia: 5.6, diasMes: 25, kwhMes: 2100, kwhConContingencia: 2310, costoEnergiaMes: 6930 },
       { nombre: 'Banda transportadora 10m', marca: 'Nacional', cantidad: 2, precioUnitMXN: 55_000, totalMXN: 110_000, potenciaKW: 2.2, factorUtil: 0.85, horasEfectDia: 6.8, diasMes: 25, kwhMes: 748, kwhConContingencia: 823, costoEnergiaMes: 2468 },
       { nombre: 'Báscula 3,000kg', marca: 'Torrey PLP3000', cantidad: 1, precioUnitMXN: 19_000, totalMXN: 19_000, potenciaKW: 0.1, factorUtil: 0.40, horasEfectDia: 3.2, diasMes: 25, kwhMes: 8, kwhConContingencia: 9, costoEnergiaMes: 26 },
-      { nombre: 'Montacargas gas LP', marca: 'Toyota 8FGU25', cantidad: 1, precioUnitMXN: 425_000, totalMXN: 425_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Gas LP: 2.5 kg/hora' },
+      { nombre: 'Montacargas gas LP', marca: 'Toyota 8FGU25', cantidad: 1, precioUnitMXN: 530_000, totalMXN: 530_000, potenciaKW: 0, factorUtil: 0.60, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0, nota: 'Gas LP: 2.5 kg/hora. Precio verificado: USD $34,950-$39,950 (losmontacargas.mx may-2026).' },
       { nombre: 'Herramienta menor', marca: 'Varios', cantidad: 1, precioUnitMXN: 30_000, totalMXN: 30_000, potenciaKW: 0, factorUtil: 0, horasEfectDia: 0, diasMes: 0, kwhMes: 0, kwhConContingencia: 0, costoEnergiaMes: 0 },
     ],
     nomina: {
@@ -429,9 +526,10 @@ export const RECICLADORAS: Record<GiroRecicladora, RecicladoreDataGiro> = {
       factorPrestaciones: 1.35,
       totalConPrestaciones: 175_500,
     },
-    capex: { equipamiento: 1_544_000, adecuacionNave: 280_000, gastosPreoperativos: 55_000, contingencia: 182_400, capitalTrabajo: 1_517_734, totalCAPEX: 3_579_134 },
+    // Equipamiento actualizado mayo 2026: montacargas Toyota $530K (+$105K)
+    capex: { equipamiento: 1_649_000, adecuacionNave: 280_000, gastosPreoperativos: 55_000, contingencia: 192_900, capitalTrabajo: 1_517_734, totalCAPEX: 3_694_634 },
     opex: { cmvCompraMPMes: 3_265_920, rentaMes: 39_000, energiaElectricaMes: 20_315, combustibleGasLPMes: 0, nominaConPrestaciones: 175_500, transporteCombustible: 25_000, mantenimientoEquipo: 3_217, insumosQuimicos: 122_276, aguaServicios: 4_500, seguros: 760, fleteComprador: 362_299, consumiblesLinea: 6_000, totalOPEXMes: 4_024_787 },
-    capexTotal: 3_396_734,
+    capexTotal: 3_501_734,  // = equipamiento + nave + preop + capital_trabajo (sin contingencia)
     opexMes: 4_024_787,
     ingresoMesA3Esc40: 4_075_868,
     ebitdaA3: 612_975,
