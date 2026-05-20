@@ -814,8 +814,7 @@ export const CIUDADES_DISPONIBLES: Record<string, string> = {
   slp: 'San Luis Potosí',
   sol: 'Soledad de Graciano Sánchez',
   csp: 'Cerro de San Pedro',
-  // 'vip' (Villa de Pozos) eliminado: no es municipio independiente según INEGI 2020;
-  // es localidad (AGEB) dentro del municipio de San Luis Potosí.
+  vip: 'Villa de Pozos',  // municipio desde 23-jul-2024, clave INEGI 24059
   mty: 'Monterrey',
   qro: 'Querétaro',
   /** Catálogo simulador ZM MTY */

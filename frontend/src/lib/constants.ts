@@ -207,18 +207,23 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
   {
     id: 'SLP', nombre: 'ZM San Luis Potosí', estado: 'San Luis Potosí',
     // Fuente: INEGI Censo de Población y Vivienda 2020. Clave geoestadística verificada.
-    // Nota: Villa de Pozos NO es municipio independiente — es localidad dentro del municipio
-    // de San Luis Potosí (AGEB 010010001). Eliminada para evitar doble conteo de población.
+    // Villa de Pozos: municipio creado el 23-jul-2024 por decreto LXIII Legislatura SLP.
+    // Clave INEGI 24059. Población del Censo 2020 correspondiente al territorio: 148,165 hab.
+    // Al separarse, el municipio de SLP queda con 1,040,403 − 148,165 = 892,238 hab.
     municipios: [
-      // SLP municipio: INEGI Censo 2020 — 1,040,403 hab; viv=pop/ocu=288,998≈289,000
-      { id: 'slp', nombre: 'San Luis Potosí', estado: 'SLP', pop: 1_040_403, viv: 289_000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
-      // Soledad: INEGI Censo 2020 — 323,409 hab confirmado
+      // SLP municipio (post-separación VIP): 1,040,403 − 148,165 = 892,238; viv=892,238/3.6=247,844
+      { id: 'slp', nombre: 'San Luis Potosí', estado: 'SLP', pop: 892_238, viv: 247_844, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
+      // Soledad: INEGI Censo 2020 — 323,409 hab; viv=89,836
       { id: 'sol', nombre: 'Soledad de Graciano Sánchez', estado: 'SLP', pop: 323_409, viv: 89_836, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
       // Cerro de San Pedro: INEGI Censo 2020 — 3,527 hab; viv=953
       { id: 'csp', nombre: 'Cerro de San Pedro', estado: 'SLP', pop: 3_527, viv: 953, ocu: 3.7, genKgDia: 0.85, crecPct: 0.8 },
+      // Villa de Pozos: municipio desde 23-jul-2024 (clave 24059). Población Censo 2020
+      // del territorio: 148,165 hab. viv=148,165/3.6=41,157. crecPct elevado por urbanización.
+      { id: 'vip', nombre: 'Villa de Pozos', estado: 'SLP', pop: 148_165, viv: 41_157, ocu: 3.6, genKgDia: 0.90, crecPct: 1.5 },
     ],
-    // totalPop = suma municipios ZM: 1,040,403 + 323,409 + 3,527 = 1,367,339
-    totalPop: 1_367_339, totalViv: 379_789, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2,
+    // totalPop = 892,238 + 323,409 + 3,527 + 148,165 = 1,367,339 (igual al total corregido)
+    // totalViv = 247,844 + 89,836 + 953 + 41,157 = 379,790
+    totalPop: 1_367_339, totalViv: 379_790, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2,
     mixVivienda: { vertical: 0.50, casa: 0.50, residencial: 0.00 },
     costoTerrenoM2: 1600, rellenoVidaUtil: 12, pepenadoresActivos: 540,
   },
