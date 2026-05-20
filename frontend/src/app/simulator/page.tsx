@@ -19,6 +19,7 @@ import {
   enrichFunctionaryModules,
   SOURCE_TRACEABILITY_MODULE,
   SOCIAL_STUDY_MODULE,
+  GUIA_CIRCULARIDAD_MODULE,
   LOGISTICA_MODULE,
   ESQUEMA_CONCESION_MODULE,
   DOBLE_MATERIALIDAD_MODULE,
@@ -93,6 +94,11 @@ export default function SimulatorPage() {
 
     // Inyectar módulos client-side que no vienen del backend
     let result = [...enriched]
+
+    // guia_circularidad siempre como primer módulo (obligatorio)
+    if (!result.some(m => m.module_id === 'guia_circularidad')) {
+      result = [GUIA_CIRCULARIDAD_MODULE, ...result]
+    }
 
     // social_study después de municipal_context
     if (!result.some(m => m.module_id === 'social_study')) {

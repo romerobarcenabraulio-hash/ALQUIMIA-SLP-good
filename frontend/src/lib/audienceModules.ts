@@ -19,10 +19,12 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
     'citizen_inputs',
     'impact_finance', // se simplifica a Ambiental + Multiplicadores en page.tsx
   ],
-  // Funcionario — journey narrativo en 4 etapas.
-  // Etapa 1 Diagnóstico: M01-M03 | Etapa 2 Planeación: M04-M08
+  // Funcionario — journey narrativo en 4 etapas con guía introductoria obligatoria.
+  // M00 Guía → Etapa 1 Diagnóstico: M01-M03 | Etapa 2 Planeación: M04-M08
   // Etapa 3 Ejecución: M09-M11  | Etapa 4 Monitoreo: M12-M13
   functionary: [
+    // Guía de lectura — Steps for Circularity (obligatorio, 100% literario)
+    'guia_circularidad',
     // Etapa 1 — Diagnóstico
     'city_baseline',
     'municipal_context',

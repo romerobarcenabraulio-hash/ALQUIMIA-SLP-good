@@ -59,6 +59,15 @@ const RiskTrendsPanel = dynamic(
   },
 )
 
+const GuiaCircularidadStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/GuiaCircularidadStack').then(m => ({ default: m.GuiaCircularidadStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando la guía de circularidad…</p>,
+  },
+)
+
 const LogisticaOperativaStack = dynamic(
   () =>
     import('@/components/simulator/stacks/LogisticaOperativaStack').then(m => ({ default: m.LogisticaOperativaStack })),
@@ -128,6 +137,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
   }
 
   switch (module.module_id) {
+    case 'guia_circularidad':
+      return <GuiaCircularidadStack />
     case 'city_baseline':
       return <CityBaselineStack />
     case 'municipal_context':

@@ -73,6 +73,25 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
   const operativa = ctx.municipio?.lineaOperativa
 
   switch (moduleId) {
+    case 'guia_circularidad':
+      return {
+        moduleId,
+        title: 'Steps for Circularity — Guía de lectura',
+        subtitulo_catchy: 'Un recorrido editorial que explica el simulador antes de interpretar los datos.',
+        situacion_actual: `${territorio} genera residuos que podrían convertirse en valor económico, empleos y calidad de vida. Esta guía explica paso a paso cómo el simulador construye ese argumento — desde el diagnóstico territorial hasta el monitoreo de resultados.`,
+        observacion_alquimia: 'ALQUIMIA sigue la filosofía Analizar → Diagnosticar → Planear → Ejecutar → Monitorear. Este módulo introductorio no contiene gráficas ni cálculos; es contexto narrativo para que cualquier lector entienda el propósito de cada sección antes de verla.',
+        criterio_decision: 'No aplica — este módulo es de lectura obligatoria, no de decisión.',
+        que_no_significa: 'No sustituye los módulos técnicos. Es el mapa de ruta para leerlos con criterio.',
+        siguiente_accion: 'Leer la guía completa y navegar al Módulo 01 — Línea Base.',
+        fuente_o_evidencia: 'Filosofía de consultoría ALQUIMIA, marco PMBOK 7ª ed., estándares GRI 306 y ESRS E5.',
+        metodologia_editorial: {
+          como_se_calcula: 'No hay cálculos en este módulo. La narrativa se construye interpolando datos del simulador para dar contexto.',
+          origen_datos: 'Los datos mostrados (RSU, empleos, ingresos) provienen de los módulos M01–M13 en tiempo real.',
+          por_que_este_enfoque: 'Un simulador sin contexto narrativo es ilegible para stakeholders no técnicos. La guía reduce la curva de aprendizaje.',
+          supuesto_critico: 'Ninguno — todos los supuestos se documentan en los módulos que contienen los cálculos.',
+        },
+        chart_briefs: [],
+      }
     case 'city_baseline':
       return {
         moduleId,

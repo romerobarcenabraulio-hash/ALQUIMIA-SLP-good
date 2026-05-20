@@ -34,6 +34,8 @@ import type { DecisionModule, PortalEntry } from '@/types'
 // ─── Module number mapping ────────────────────────────────────────────────────
 
 const MODULE_NUMBERS: Record<string, string> = {
+  // Guía introductoria (antes de Etapa 1)
+  guia_circularidad:        '00',
   // Etapa 1 — Diagnóstico
   city_baseline:            '01',
   municipal_context:        '02',

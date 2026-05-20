@@ -1,5 +1,16 @@
 import type { DecisionModule } from '@/types'
 
+/** Módulo introductorio literario — Steps for Circularity. Guía obligatoria antes de M01. */
+export const GUIA_CIRCULARIDAD_MODULE: DecisionModule = {
+  module_id: 'guia_circularidad',
+  label: 'Steps for Circularity — Guía de lectura',
+  audience_mode: 'city_team',
+  decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador antes de interpretar los datos.',
+  evidence: 'Narrativa editorial estructurada en 5 pasos: Analizar, Diagnosticar, Planear, Ejecutar, Monitorear. Sin gráficas ni cálculos — solo contexto.',
+  status: 'ready',
+  next_action: 'Leer la guía completa. Luego navegar al Módulo 01 — Línea Base.',
+}
+
 /** Módulo de Logística Operativa — cliente-side, M06 en la nueva arquitectura narrativa. */
 export const LOGISTICA_MODULE: DecisionModule = {
   module_id: 'logistica_operativa',
@@ -63,6 +74,12 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
   string,
   Pick<DecisionModule, 'label' | 'decision' | 'evidence' | 'next_action'>
 > = {
+  guia_circularidad: {
+    label: 'Steps for Circularity — Guía de lectura',
+    decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador.',
+    evidence: 'Narrativa editorial en 5 pasos: Analizar, Diagnosticar, Planear, Ejecutar, Monitorear.',
+    next_action: 'Leer la guía completa y navegar al Módulo 01 — Línea Base.',
+  },
   city_baseline: {
     label: 'Problema y resumen ejecutivo',
     decision: 'Entender el costo municipal, sanitario y económico de no separar antes de plantear metas.',
