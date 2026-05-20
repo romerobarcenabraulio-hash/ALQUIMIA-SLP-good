@@ -318,7 +318,75 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
   )
 }
 
+// ── RiskAccordionList ─────────────────────────────────────────────────────────
+// Shows all 12 risks as collapsible rows inside the right rail.
+// Expands in-place — no page scroll required.
+
+const PROB_LEVEL_LABEL: Record<string, string> = {
+  muy_bajo: 'Muy baja', bajo: 'Baja', medio: 'Media', alto: 'Alta', muy_alto: 'Muy alta',
+}
+const PROB_LEVEL_COLOR: Record<string, string> = {
+  muy_bajo: '#A8A49C', bajo: '#8DB87A', medio: '#D4881E', alto: '#C0392B', muy_alto: '#7A0000',
+}
+const IMP_LEVEL_COLOR: Record<string, string> = {
+  muy_bajo: '#A8A49C', bajo: '#8DB87A', medio: '#D4881E', alto: '#C0392B', muy_alto: '#7A0000',
+}
+
+function RiskAccordionList({ filterCat }: { filterCat?: string }) {
+  const [openId, setOpenId] = useState<string | null>(null)
+  const risks = filterCat ? RISKS_M05.filter(r => r.cat === filterCat) : RISKS_M05
+
+  return (
+    <div className="divide-y divide-[#EDE9E3]">
+      {risks.map(r => {
+        const isOpen = openId === r.id
+        const catColor = CAT_COLORS[r.cat] ?? '#6B6760'
+        return (
+          <div key={r.id}>
+            <button
+              type="button"
+              onClick={() => setOpenId(isOpen ? null : r.id)}
+              className="w-full flex items-center gap-2 py-2.5 px-1 text-left hover:bg-[#F4F2ED] transition-colors rounded-[4px]"
+            >
+              {/* Dimension color dot */}
+              <span className="w-2 h-2 rounded-full shrink-0" style={{ background: catColor }} />
+              {/* Risk ID + title */}
+              <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-semibold text-[#1C1B18] truncate leading-tight">{r.id} · {r.nombre}</p>
+                <p className="text-[9px] text-[#A8A49C]">{r.cat}</p>
+              </div>
+              {/* Prob/impact chips */}
+              <div className="flex gap-1 shrink-0">
+                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: PROB_LEVEL_COLOR[r.probLvl] + '22', color: PROB_LEVEL_COLOR[r.probLvl] }}>
+                  P {r.prob}%
+                </span>
+                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: IMP_LEVEL_COLOR[r.impLvl] + '22', color: IMP_LEVEL_COLOR[r.impLvl] }}>
+                  {r.impacto}
+                </span>
+              </div>
+              <ChevronDown className={cn('w-3 h-3 text-[#A8A49C] shrink-0 transition-transform', isOpen && 'rotate-180')} />
+            </button>
+
+            {isOpen && (
+              <div className="px-2 pb-3 space-y-2 text-[10px] text-[#6B6760]">
+                <div className="rounded-[6px] bg-[#FAFAF8] border border-[#F0EDE5] p-2 space-y-1.5">
+                  <p><span className="font-semibold text-[#1C1B18]">Causa: </span>{r.causa}</p>
+                  <p><span className="font-semibold text-[#1C1B18]">Efecto: </span>{r.efecto}</p>
+                  <p><span className="font-semibold text-[#3B6D11]">Mitigación: </span>{r.mitigacion}</p>
+                  <p><span className="font-semibold text-[#1C1B18]">Responsable: </span>{r.dueno}</p>
+                </div>
+                <p className="text-[9px] text-[#A8A49C]">Módulos: {r.modulo} · Fuente: {r.fuente}</p>
+              </div>
+            )}
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 function RightRail({ page }: { page: number }) {
+  const [showRisks, setShowRisks] = useState(false)
   const conf = [45, 68, 45]
   const c = conf[page - 1] ?? 45
   const contents = {
@@ -341,59 +409,87 @@ function RightRail({ page }: { page: number }) {
       calculo: 'Cada mitigación reduce la probabilidad del riesgo residual en puntos porcentuales estimados (benchmark de efectividad LATAM). El plan 30/60/90 es un cronograma táctico, no estratégico.',
       metodologia: 'Análisis de causalidad riesgo → mitigación → efecto esperado → decisión. Tendencias externas evaluadas con lectura de presión (alta/media/baja) y riesgos afectados.',
       fuentes: 'Revisión de mitigaciones exitosas en 12 municipios LATAM 2018-2024. Fuentes internas de benchmark ALQUIMIA.',
-      limites: 'El nivel de preparación (62%) es estimado. La confianza del dictamen sube cuando se validan las condiciones pendientes.',
+      limites: 'El nivel de preparación es estimado. La confianza del dictamen sube cuando se validan las condiciones pendientes.',
     },
   } as const
 
   const cc = contents[page as 1|2|3] ?? contents[1]
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <div className="flex items-center justify-between mb-3 px-1">
-        <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
-        <span className={cn('text-[9px] font-bold px-2 py-0.5 rounded', c >= 60 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]')}>
-          Confianza {c}%
-        </span>
-      </div>
-      <RailSection title="Consideraciones" open><p>{cc.consid}</p></RailSection>
-      <RailSection title="Cómo se calcula"><p>{cc.calculo}</p></RailSection>
-      <RailSection title="Metodología"><p>{cc.metodologia}</p></RailSection>
-      <RailSection title="Fuentes principales">
-        <p>{cc.fuentes}</p>
-        {page === 2 && <p className="text-[#3B6D11] font-semibold mt-1">Fuentes principales: Recicladoras y transformadoras regionales. Cámaras y asociaciones (CANACINTRA, ARCA, ANIPAC, ANS). Bancos financieros: HSBC, BANAMEX, FxdMarkets, Plásticos Exchange México</p>}
-      </RailSection>
-      <RailSection title="Límites de interpretación"><p>{cc.limites}</p></RailSection>
-      <RailSection title="Nivel de confianza">
-        <div className="flex items-center gap-2 mb-1">
-          <div className="flex-1 h-1.5 bg-[#E8E4DC] rounded-full overflow-hidden">
-            <div className="h-full rounded-full" style={{ width: `${c}%`, background: c >= 60 ? '#3B6D11' : '#D4881E' }} />
-          </div>
-          <span className={cn('font-bold text-[11px]', c >= 60 ? 'text-[#3B6D11]' : 'text-[#D4881E]')}>{c}%</span>
+    // sticky + max-h so the rail scrolls independently — never pushes the page
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] sticky top-4 overflow-y-auto"
+      style={{ maxHeight: 'calc(100vh - 120px)' }}>
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-3 px-1">
+          <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
+          <span className={cn('text-[9px] font-bold px-2 py-0.5 rounded', c >= 60 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]')}>
+            Confianza {c}%
+          </span>
         </div>
-        <p className="text-[9px] text-[#A8A49C]">{c >= 60 ? 'Medio-alto' : 'Condicionada'} · validar con datos municipales reales.</p>
-      </RailSection>
-      {page === 2 && (
-        <div className="mt-3">
-          <button type="button" className="w-full rounded-[8px] border border-[#3B6D11] text-[#3B6D11] text-[10px] font-semibold py-2 hover:bg-[#EAF3DE] transition-colors">
-            Ver fuentes y referencias
-          </button>
-        </div>
-      )}
-      {page === 3 && (
-        <div className="mt-3 space-y-2">
-          <p className="text-[10px] font-semibold text-[#1C1B18] px-1">Nivel de completarse: condicionado</p>
-          <div className="flex items-center gap-2 px-1">
+        <RailSection title="Consideraciones" open><p>{cc.consid}</p></RailSection>
+        <RailSection title="Cómo se calcula"><p>{cc.calculo}</p></RailSection>
+        <RailSection title="Metodología"><p>{cc.metodologia}</p></RailSection>
+        <RailSection title="Fuentes principales">
+          <p>{cc.fuentes}</p>
+          {page === 2 && <p className="text-[#3B6D11] font-semibold mt-1">Recicladoras y transformadoras regionales. CANACINTRA, ARCA, ANIPAC, ANS. FxdMarkets, Plásticos Exchange México.</p>}
+        </RailSection>
+        <RailSection title="Límites de interpretación"><p>{cc.limites}</p></RailSection>
+        <RailSection title="Nivel de confianza">
+          <div className="flex items-center gap-2 mb-1">
             <div className="flex-1 h-1.5 bg-[#E8E4DC] rounded-full overflow-hidden">
-              <div className="h-full bg-[#D4881E] rounded-full" style={{ width: '43%' }} />
+              <div className="h-full rounded-full" style={{ width: `${c}%`, background: c >= 60 ? '#3B6D11' : '#D4881E' }} />
             </div>
-            <span className="text-[11px] font-bold text-[#D4881E]">43%</span>
+            <span className={cn('font-bold text-[11px]', c >= 60 ? 'text-[#3B6D11]' : 'text-[#D4881E]')}>{c}%</span>
           </div>
-          <p className="text-[9px] text-[#A8A49C] px-1">Mayoría de riesgos con segmentos informales. Conversar en horas políticas y académicas.</p>
-          <button type="button" className="w-full rounded-[8px] border border-[#3B6D11] text-[#3B6D11] text-[10px] font-semibold py-2 hover:bg-[#EAF3DE] transition-colors">
-            Ver fuentes y referencias
-          </button>
-        </div>
-      )}
+          <p className="text-[9px] text-[#A8A49C]">{c >= 60 ? 'Medio-alto' : 'Condicionada'} · validar con datos municipales reales.</p>
+        </RailSection>
+
+        {/* Risk accordion — available on pages 1 and 2 */}
+        {(page === 1 || page === 2) && (
+          <div className="mt-3 border-t border-[#EDE9E3] pt-3">
+            <button
+              type="button"
+              onClick={() => setShowRisks(s => !s)}
+              className="w-full flex items-center justify-between px-1 py-2 rounded-[6px] hover:bg-[#F4F2ED] transition-colors"
+            >
+              <p className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#6B6760]">
+                Ver los {RISKS_M05.length} riesgos
+              </p>
+              <ChevronDown className={cn('w-3.5 h-3.5 text-[#A8A49C] transition-transform', showRisks && 'rotate-180')} />
+            </button>
+            {showRisks && (
+              <div className="mt-1">
+                <RiskAccordionList />
+              </div>
+            )}
+          </div>
+        )}
+
+        {page === 3 && (
+          <div className="mt-3 space-y-2 border-t border-[#EDE9E3] pt-3">
+            <p className="text-[10px] font-semibold text-[#1C1B18] px-1">Nivel de completarse: condicionado</p>
+            <div className="flex items-center gap-2 px-1">
+              <div className="flex-1 h-1.5 bg-[#E8E4DC] rounded-full overflow-hidden">
+                <div className="h-full bg-[#D4881E] rounded-full" style={{ width: '43%' }} />
+              </div>
+              <span className="text-[11px] font-bold text-[#D4881E]">43%</span>
+            </div>
+            <p className="text-[9px] text-[#A8A49C] px-1">Mayoría de riesgos con segmentos informales. Requiere validación política y técnica.</p>
+            {/* Mitigation risk quick-view */}
+            <div className="mt-2 border-t border-[#EDE9E3] pt-2">
+              <button
+                type="button"
+                onClick={() => setShowRisks(s => !s)}
+                className="w-full flex items-center justify-between px-1 py-1.5 rounded-[6px] hover:bg-[#F4F2ED] transition-colors"
+              >
+                <p className="text-[9px] font-bold uppercase tracking-[0.08em] text-[#6B6760]">Ver riesgos priorizados</p>
+                <ChevronDown className={cn('w-3 h-3 text-[#A8A49C] transition-transform', showRisks && 'rotate-180')} />
+              </button>
+              {showRisks && <div className="mt-1"><RiskAccordionList filterCat={undefined} /></div>}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
