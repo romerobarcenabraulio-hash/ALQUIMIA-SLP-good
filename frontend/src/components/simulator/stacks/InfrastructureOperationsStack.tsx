@@ -4,6 +4,7 @@ import { useState, useMemo } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   LineChart, Line, Legend, Cell, ReferenceLine,
+  ComposedChart, Area,
 } from 'recharts'
 import {
   AlertTriangle, CheckCircle, Clock, DollarSign, Users, MapPin,
@@ -14,6 +15,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI, CA_CONFIG, FASES_CA, COMPOSICION_RSU, ESTACIONALIDAD } from '@/lib/constants'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { CapexOpexBreakdown } from '@/components/simulator/CapexOpexBreakdown'
+import { FASES_INVERSION } from '@/lib/capexOpexData'
 
 // ── Constants & static data ───────────────────────────────────────────────────
 
@@ -391,9 +394,16 @@ function RightRail({ page }: { page: number }) {
       metodologia: 'Parámetros por tamaño de centro, precios de referencia: ANIPAC, CEMPRE México, IMSS Ramo 37, CFE GDMTH. Factor de prestaciones 1.35x.',
       confianza: 65,
     },
+    5: {
+      observamos: 'El sistema de centros genera derrama positiva desde la Fase 1. El punto de inflexión empleo-inversión ocurre en la Fase 4 al incorporar recicladoras.',
+      contexto: 'Los datos CAPEX/OPEX provienen de modelos CFO verificados (Centros_Acopio_v2.xlsx, Recicladoras_por_Giro.xlsx). TIR y payback calculados por escenario de captura efectiva al 40%.',
+      que_habilita: 'Comparar rentabilidad y derrama por tipología y giro para priorizar qué centros y recicladoras abrir primero.',
+      metodologia: 'Empleo indirecto: multiplicador 2.5× sobre empleos directos (BID/CEPAL — sector residuos y economía circular). Ahorros al municipio: flujo EBITDA anual estimado como ahorro en costo de disposición final evitado.',
+      confianza: 72,
+    },
   } as const
 
-  const c = content[page as 1|2|3|4] ?? content[1]
+  const c = content[page as 1|2|3|4|5] ?? content[1]
 
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
@@ -1279,10 +1289,134 @@ function Page4() {
   )
 }
 
+// ── DerramaEconomicaChart ─────────────────────────────────────────────────────
+// All data derived from FASES_INVERSION — no hardcoded values.
+// Indirect employment: BID/CEPAL 2.5× multiplier (waste & circular economy sector).
+// Municipal savings proxy: annualized system EBITDA (avoided landfill disposal cost).
+
+function DerramaEconomicaChart() {
+  const data = FASES_INVERSION.map(f => ({
+    fase:             `F${f.fase}`,
+    faseLabel:        f.nombre,
+    empleoDirecto:    f.empleosTotales,
+    empleoIndirecto:  Math.round(f.empleosTotales * 2.5),
+    inversionAcum:    +(f.capexTotalSistema / 1_000_000).toFixed(1),
+    ahorrosMunicipio: +((f.ebitdaMesSistema * 12) / 1_000_000).toFixed(1),
+    esOptimo:         f.nombre.includes('Madurez') || f.nombre.includes('Óptimo'),
+  }))
+
+  return (
+    <div className="space-y-4">
+      {/* KPI resumen al cierre (fase máxima) */}
+      {(() => {
+        const last = data[data.length - 1]
+        return (
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { label: 'Empleo directo (cierre)',   value: last.empleoDirecto.toLocaleString('es-MX'),   color: '#3B6D11', sub: 'personas en el sistema' },
+              { label: 'Empleo indirecto estimado', value: last.empleoIndirecto.toLocaleString('es-MX'),  color: '#8DB87A', sub: 'multiplicador 2.5× BID/CEPAL' },
+              { label: 'Inversión acumulada',       value: `$${last.inversionAcum}M MXN`,                 color: '#C0392B', sub: 'CAs + Recicladoras' },
+              { label: 'Ahorros municipio / año',   value: `$${last.ahorrosMunicipio}M MXN`,              color: '#1A5FA8', sub: 'flujo EBITDA anual est.' },
+            ].map(k => (
+              <div key={k.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
+                <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C] leading-none mb-1">{k.label}</p>
+                <p className="font-mono text-[17px] font-semibold" style={{ color: k.color }}>{k.value}</p>
+                <p className="text-[9px] text-[#A8A49C] mt-0.5">{k.sub}</p>
+              </div>
+            ))}
+          </div>
+        )
+      })()}
+
+      {/* Multi-line / area chart */}
+      <ExpandableChart chartId="m04-derrama-empleo" title="Empleo directo e indirecto por fase" subtitle="Personas creadas en el sistema de centros de acopio y recicladoras">
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Creación de empleo por fase de despliegue</p>
+          <p className="text-[10px] text-[#A8A49C] mb-3">Directo (sistema) · Indirecto (2.5× multiplicador BID/CEPAL)</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+              <XAxis dataKey="fase" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="emp" orientation="left" tick={{ fontSize: 10 }} tickFormatter={v => v.toLocaleString('es-MX')} label={{ value: 'Personas', angle: -90, position: 'insideLeft', style: { fontSize: 9 } }} />
+              <Tooltip formatter={(v: number, name: string) => [v.toLocaleString('es-MX'), name]} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <ReferenceLine yAxisId="emp" x={data.find(d => d.esOptimo)?.fase} stroke="#3B6D11" strokeDasharray="4 2" label={{ value: '★ Fase óptima', position: 'top', style: { fontSize: 9, fill: '#3B6D11' } }} />
+              <Area yAxisId="emp" type="monotone" dataKey="empleoIndirecto" name="Empleo indirecto" fill="#D7EFC5" stroke="#8DB87A" strokeWidth={2} strokeDasharray="4 2" />
+              <Line yAxisId="emp" type="monotone" dataKey="empleoDirecto"   name="Empleo directo"   stroke="#3B6D11"  strokeWidth={2.5} dot={{ r: 4, fill: '#3B6D11' }} />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      </ExpandableChart>
+
+      <ExpandableChart chartId="m04-derrama-financiera" title="Inversión acumulada y ahorros al municipio" subtitle="Millones de MXN por fase de despliegue">
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Flujo de caja invertido y derrama al municipio</p>
+          <p className="text-[10px] text-[#A8A49C] mb-3">Inversión acumulada (CAPEX CAs + Recicladoras) · Ahorros municipio (EBITDA anual est.)</p>
+          <ResponsiveContainer width="100%" height={220}>
+            <ComposedChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+              <XAxis dataKey="fase" tick={{ fontSize: 10 }} />
+              <YAxis yAxisId="fin" orientation="left" tick={{ fontSize: 10 }} tickFormatter={v => `$${v}M`} label={{ value: 'M MXN', angle: -90, position: 'insideLeft', style: { fontSize: 9 } }} />
+              <Tooltip formatter={(v: number, name: string) => [`$${v}M MXN`, name]} />
+              <Legend wrapperStyle={{ fontSize: 10 }} />
+              <ReferenceLine yAxisId="fin" x={data.find(d => d.esOptimo)?.fase} stroke="#3B6D11" strokeDasharray="4 2" label={{ value: '★ Fase óptima', position: 'top', style: { fontSize: 9, fill: '#3B6D11' } }} />
+              <Area yAxisId="fin" type="monotone" dataKey="inversionAcum"    name="Inversión acumulada" fill="#FDDEDE" stroke="#C0392B" strokeWidth={2} fillOpacity={0.5} />
+              <Area yAxisId="fin" type="monotone" dataKey="ahorrosMunicipio" name="Ahorros municipio"   fill="#DBE9FA" stroke="#1A5FA8" strokeWidth={2} fillOpacity={0.5} />
+            </ComposedChart>
+          </ResponsiveContainer>
+          <p className="text-[9px] text-[#A8A49C] mt-2">
+            Fuente datos: Centros_Acopio_v2.xlsx · Recicladoras_por_Giro.xlsx. Los valores son estimaciones del modelo — deben validarse con la tesorería municipal antes de compromisos presupuestales.
+          </p>
+        </div>
+      </ExpandableChart>
+    </div>
+  )
+}
+
+// ── Page 5 — CAPEX · OPEX · TIR · Derrama Económica ─────────────────────────
+
+function Page5() {
+  return (
+    <div className="space-y-8">
+      <div>
+        <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold mb-1">Página 5 de 5</p>
+        <h3 className="font-serif text-[20px] text-[#1C1B18] leading-tight">
+          CAPEX · OPEX · TIR · ROI · VAR y Derrama Económica
+        </h3>
+        <p className="text-[11px] text-[#6B6760] mt-1">
+          Centros de acopio y recicladoras por giro · Sistema integrado por fase de escalamiento
+        </p>
+        <p className="text-[10px] text-[#A8A49C] mt-0.5">
+          Datos verificados desde modelos financieros CFO. Precios referencia: mar 2026 (ANIPAC / CEMPRE México). Salarios: IMSS Rama 37, 2025.
+        </p>
+      </div>
+
+      {/* Sección 1 — Tablas CAPEX/OPEX/TIR restauradas */}
+      <CapexOpexBreakdown />
+
+      {/* Separador */}
+      <div className="border-t border-[#E8E4DC] pt-6">
+        <h4 className="font-serif text-[17px] text-[#1C1B18] mb-1">Derrama Económica del Sistema</h4>
+        <p className="text-[11px] text-[#6B6760] mb-4">
+          Proyección de creación de empleo, inversión acumulada y ahorros al municipio por fase de despliegue.
+        </p>
+        <DerramaEconomicaChart />
+      </div>
+    </div>
+  )
+}
+
 // ── PageNavFooter ─────────────────────────────────────────────────────────────
 
 function PageNavFooter({ page, setPage }: { page: number; setPage: (p: number) => void }) {
-  const labels = ['Infraestructura y capacidad', 'Flujos y cierre de ciclo', 'Logística y operación', 'Habilitadores y costos']
+  const labels = [
+    'Infraestructura y capacidad',
+    'Flujos y cierre de ciclo',
+    'Logística y operación',
+    'Habilitadores y costos',
+    'CAPEX · OPEX · TIR · Derrama',
+  ]
+  const TOTAL = labels.length
   return (
     <div className="mt-8 pt-5 border-t border-[#E8E4DC] flex items-center justify-between gap-2 flex-wrap">
       <div className="flex gap-2">
@@ -1292,13 +1426,13 @@ function PageNavFooter({ page, setPage }: { page: number; setPage: (p: number) =
             ← {labels[page - 2]}
           </button>
         )}
-        {page < 4 && (
+        {page < TOTAL && (
           <button type="button" onClick={() => setPage(page + 1)}
             className="px-4 py-2 rounded-[8px] bg-[#3B6D11] border border-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D] transition-colors">
             {labels[page]} →
           </button>
         )}
-        {page === 4 && (
+        {page === TOTAL && (
           <button type="button" className="px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D] transition-colors">
             Módulo 5 →
           </button>
@@ -1344,6 +1478,7 @@ export function InfrastructureOperationsStack() {
     'Flujos y cierre de ciclo',
     'Logística y operación',
     'Habilitadores y costos',
+    'CAPEX · OPEX · TIR · Derrama',
   ]
 
   return (
@@ -1383,6 +1518,7 @@ export function InfrastructureOperationsStack() {
           {page === 2 && <Page2 rsuDia={rsuDia} />}
           {page === 3 && <Page3 rsuDia={rsuDia} />}
           {page === 4 && <Page4 />}
+          {page === 5 && <Page5 />}
           <PageNavFooter page={page} setPage={setPage} />
         </div>
         <RightRail page={page} />
