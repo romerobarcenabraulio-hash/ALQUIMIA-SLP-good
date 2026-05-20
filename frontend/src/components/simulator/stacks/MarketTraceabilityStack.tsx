@@ -297,7 +297,7 @@ function RiskKpiRow({ prob, riskScore, mktRisk, socialRisk, opRisk }: {
       {chips.map(c => (
         <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
           <div className="flex items-center gap-1.5 mb-1.5"><c.icon className="w-3.5 h-3.5" style={{ color: c.color }} /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">{c.label}</p></div>
-          <p className="font-bold text-[15px]" style={{ color: c.color }}>{c.value}</p>
+          <p className="font-bold text-[22px]" style={{ color: c.color }}>{c.value}</p>
           <p className="text-[9px] text-[#A8A49C] mt-0.5">{c.sub}</p>
         </div>
       ))}
@@ -868,7 +868,7 @@ function Page3() {
         ].map(c => (
           <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
             <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] mb-1">{c.label}</p>
-            <p className="font-bold text-[15px]" style={{ color: c.color }}>{c.value}</p>
+            <p className="font-bold text-[20px]" style={{ color: c.color }}>{c.value}</p>
             <p className="text-[9px] text-[#A8A49C] mt-0.5">{c.sub}</p>
           </div>
         ))}

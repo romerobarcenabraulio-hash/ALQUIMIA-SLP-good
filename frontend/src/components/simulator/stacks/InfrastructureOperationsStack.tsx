@@ -258,32 +258,32 @@ function InfrastructureKpiRow({
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-5">
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
         <div className="flex items-center gap-1.5 mb-1.5"><Package className="w-3.5 h-3.5 text-[#1A5FA8]" /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">RSU capturable</p></div>
-        <p className="font-bold text-[16px] text-[#1A5FA8]">{fmt.kgd(rsuDia)}</p>
+        <p className="font-bold text-[22px] text-[#1A5FA8]">{fmt.kgd(rsuDia)}</p>
         <p className="text-[9px] text-[#A8A49C]">100% del potencial</p>
       </div>
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
         <div className="flex items-center gap-1.5 mb-1.5"><Building2 className="w-3.5 h-3.5 text-[#3B6D11]" /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">Capacidad instalada</p></div>
-        <p className="font-bold text-[16px] text-[#3B6D11]">{fmt.kgd(capInstalada)}</p>
+        <p className="font-bold text-[22px] text-[#3B6D11]">{fmt.kgd(capInstalada)}</p>
         <p className="text-[9px] text-[#A8A49C]">{rsuDia > 0 ? Math.round((capInstalada / rsuDia) * 100) : 0}% del potencial</p>
       </div>
       <div className={cn('rounded-[10px] border p-3.5', hasBrecha ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#E8E4DC] bg-white')}>
         <div className="flex items-center gap-1.5 mb-1.5"><AlertTriangle className={cn('w-3.5 h-3.5', hasBrecha ? 'text-[#C0392B]' : 'text-[#A8A49C]')} /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">Brecha operativa</p></div>
-        <p className={cn('font-bold text-[16px]', hasBrecha ? 'text-[#C0392B]' : 'text-[#3B6D11]')}>{fmt.kgd(Math.abs(brecha))}</p>
+        <p className={cn('font-bold text-[22px]', hasBrecha ? 'text-[#C0392B]' : 'text-[#3B6D11]')}>{fmt.kgd(Math.abs(brecha))}</p>
         <p className="text-[9px] text-[#A8A49C]">{hasBrecha ? `${Math.round((brecha / rsuDia) * 100)}% sin cubrir` : 'Sin brecha'}</p>
       </div>
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
         <div className="flex items-center gap-1.5 mb-1.5"><Users className="w-3.5 h-3.5 text-[#8B6B4A]" /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">Empleos al cierre</p></div>
-        <p className="font-bold text-[16px] text-[#8B6B4A]">{empleos}</p>
+        <p className="font-bold text-[22px] text-[#8B6B4A]">{empleos}</p>
         <p className="text-[9px] text-[#A8A49C]">Directos + indirectos</p>
       </div>
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
         <div className="flex items-center gap-1.5 mb-1.5"><MapPin className="w-3.5 h-3.5 text-[#1A5FA8]" /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">Centros objetivo</p></div>
-        <p className="font-bold text-[16px] text-[#1A5FA8]">{centrosObj}</p>
+        <p className="font-bold text-[22px] text-[#1A5FA8]">{centrosObj}</p>
         <p className="text-[9px] text-[#A8A49C]">En horizonte {5} años</p>
       </div>
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
         <div className="flex items-center gap-1.5 mb-1.5"><Target className="w-3.5 h-3.5 text-[#D4881E]" /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">Cobertura estimada</p></div>
-        <p className="font-bold text-[16px] text-[#D4881E]">{cobertura}%</p>
+        <p className="font-bold text-[22px] text-[#D4881E]">{cobertura}%</p>
         <p className="text-[9px] text-[#A8A49C]">Población atendida</p>
       </div>
     </div>
@@ -487,7 +487,7 @@ function Page1({ rsuDia, capInstalada, brecha, centros }: {
             : (
               <div key={b.label} className="flex-1 min-w-[130px] rounded-[10px] border px-3 py-2.5" style={{ borderColor: b.border, background: b.bg }}>
                 <p className="text-[8px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
-                <p className="text-[15px] font-bold leading-none mb-0.5" style={{ color: b.color }}>{b.value}</p>
+                <p className="text-[20px] font-bold leading-none mb-0.5" style={{ color: b.color }}>{b.value}</p>
                 <p className="text-[9px] text-[#6B6760]">{b.sub}</p>
               </div>
             )
@@ -739,22 +739,22 @@ function Page2({ rsuDia }: { rsuDia: number }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
           <p className="text-[9px] uppercase text-[#A8A49C] mb-1">% Circularidad real actual</p>
-          <p className="text-[16px] font-bold text-[#3B6D11]">{circReal.toFixed(1)}%</p>
+          <p className="text-[22px] font-bold text-[#3B6D11]">{circReal.toFixed(1)}%</p>
           <p className="text-[9px] text-[#A8A49C]">Valorizado / RSU generado</p>
         </div>
         <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
           <p className="text-[9px] uppercase text-[#A8A49C] mb-1">% Circularidad potencial</p>
-          <p className="text-[16px] font-bold text-[#1A5FA8]">{Math.min(circPot, 95).toFixed(1)}%</p>
+          <p className="text-[22px] font-bold text-[#1A5FA8]">{Math.min(circPot, 95).toFixed(1)}%</p>
           <p className="text-[9px] text-[#A8A49C]">Si se cierran brechas infra/mercado</p>
         </div>
         <div className="rounded-[10px] border border-[#FCA5A5] bg-[#FFF5F5] p-3.5">
           <p className="text-[9px] uppercase text-[#A8A49C] mb-1">Recuperable perdido</p>
-          <p className="text-[16px] font-bold text-[#C0392B]">{perdido.toFixed(1)} t/día</p>
+          <p className="text-[22px] font-bold text-[#C0392B]">{perdido.toFixed(1)} t/día</p>
           <p className="text-[9px] text-[#A8A49C]">Val. que hoy va a relleno</p>
         </div>
         <div className="rounded-[10px] border border-[#FDE68A] bg-[#FEF7E7] p-3.5">
           <p className="text-[9px] uppercase text-[#A8A49C] mb-1">Oportunidad anual</p>
-          <p className="text-[16px] font-bold text-[#D4881E]">${(oportunidad / 1e6).toFixed(1)} M MXN</p>
+          <p className="text-[22px] font-bold text-[#D4881E]">${(oportunidad / 1e6).toFixed(1)} M MXN</p>
           <p className="text-[9px] text-[#A8A49C]">Valor rec. potencial/año</p>
         </div>
       </div>
@@ -890,7 +890,7 @@ function Page3({ rsuDia }: { rsuDia: number }) {
             ].map(c => (
               <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
                 <div className="flex items-center gap-1.5 mb-1"><c.icon className="w-3.5 h-3.5 shrink-0" style={{ color: c.color }} /><p className="text-[9px] uppercase text-[#A8A49C]">{c.label}</p></div>
-                <p className="text-[15px] font-bold" style={{ color: c.color }}>{c.value}</p>
+                <p className="text-[20px] font-bold" style={{ color: c.color }}>{c.value}</p>
                 <p className="text-[9px] text-[#A8A49C]">{c.sub}</p>
               </div>
             ))}
@@ -1147,7 +1147,7 @@ function Page4() {
             ].map(c => (
               <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
                 <p className="text-[9px] uppercase text-[#A8A49C] mb-1">{c.label}</p>
-                <p className="text-[15px] font-bold" style={{ color: c.color }}>{c.value}</p>
+                <p className="text-[20px] font-bold" style={{ color: c.color }}>{c.value}</p>
               </div>
             ))}
           </div>

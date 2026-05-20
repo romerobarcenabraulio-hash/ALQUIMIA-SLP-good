@@ -560,7 +560,7 @@ function PlanningKpi({
         <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: alert ? '#C0392B' : color }} strokeWidth={2} />
         <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">{label}</p>
       </div>
-      <p className="font-bold text-[16px] leading-none mb-0.5" style={{ color: alert ? '#C0392B' : color }}>{value}</p>
+      <p className="font-bold text-[22px] leading-none mb-0.5" style={{ color: alert ? '#C0392B' : color }}>{value}</p>
       {sub && <p className="text-[9px] text-[#A8A49C]">{sub}</p>}
     </div>
   )
