@@ -610,8 +610,47 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
       {tab === 'cobertura' && (
         <div className="space-y-4">
 
+          {/* MAP — elemento central de la página, per mockup MODUO 2 PAG 2 */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Cobertura normativa por municipio</p>
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Cobertura legal territorial</p>
+                <p className="text-[10px] text-[#A8A49C]">Lectura territorial de la regulación vigente · ZM seleccionada</p>
+              </div>
+              <span className="text-[9px] bg-[#EBF3FB] border border-[#B0D0F5] text-[#0D3B7A] rounded px-2 py-0.5 font-medium shrink-0">Mapa de cobertura</span>
+            </div>
+            <CoberturaNacional />
+          </div>
+
+          {/* Hallazgos + Acciones */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+              <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Hallazgos territoriales</p>
+              <ul className="space-y-2.5">
+                {legal.hallazgos.map(h => (
+                  <li key={h} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
+                    <AlertTriangle className="w-3 h-3 text-[#D4881E] mt-0.5 shrink-0" />
+                    {h}
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] p-4">
+              <p className="text-[11px] font-semibold text-[#3B6D11] mb-3">Acción regulatoria sugerida</p>
+              <ul className="space-y-2.5">
+                {legal.acciones.map(a => (
+                  <li key={a} className="flex items-start gap-2 text-[11px] text-[#3B5F23]">
+                    <CheckCircle className="w-3 h-3 text-[#3B6D11] mt-0.5 shrink-0" />
+                    {a}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          {/* Coverage bars — secondary, below map */}
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Diagnóstico regulatorio por municipio</p>
             <p className="text-[10px] text-[#A8A49C] mb-4">% de cobertura actual · objetivo 85% · ordenado de mayor a menor</p>
             <ExpandableChart
               chartId="m02-cobertura-normativa"
@@ -646,35 +685,9 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Hallazgos territoriales</p>
-              <ul className="space-y-2.5">
-                {legal.hallazgos.map(h => (
-                  <li key={h} className="flex items-start gap-2 text-[11px] text-[#6B6760]">
-                    <AlertTriangle className="w-3 h-3 text-[#D4881E] mt-0.5 shrink-0" />
-                    {h}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] p-4">
-              <p className="text-[11px] font-semibold text-[#3B6D11] mb-3">Acciones regulatorias prioritarias</p>
-              <ul className="space-y-2.5">
-                {legal.acciones.map(a => (
-                  <li key={a} className="flex items-start gap-2 text-[11px] text-[#3B5F23]">
-                    <CheckCircle className="w-3 h-3 text-[#3B6D11] mt-0.5 shrink-0" />
-                    {a}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
           {block && (
             <SocialDemographicContextPanel block={block} moduleAnchor={moduleAnchor ?? 'municipal_context'} />
           )}
-          <CoberturaNacional />
         </div>
       )}
 
