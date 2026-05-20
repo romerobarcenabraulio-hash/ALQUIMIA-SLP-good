@@ -31,7 +31,7 @@ function AuthModule() {
       })
       const data = await res.json() as { ok: boolean; error?: string }
       if (data.ok) {
-        router.push('/acceso?next=/simulator')
+        router.push('/acceso?next=/simulator&skip_code=1')
       } else {
         setLoginError(data.error ?? 'Código incorrecto.')
       }

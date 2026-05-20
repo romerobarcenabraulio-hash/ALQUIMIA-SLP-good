@@ -140,10 +140,12 @@ function AccesoForm() {
   const nextPath = searchParams.get('next') ?? '/simulator'
   const setAudience = useSimulatorStore(s => s.setAudience)
 
+  const skipCode = searchParams.get('skip_code') === '1'
+
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [step, setStep] = useState<'code' | 'role'>('code')
+  const [step, setStep] = useState<'code' | 'role'>(skipCode ? 'role' : 'code')
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()

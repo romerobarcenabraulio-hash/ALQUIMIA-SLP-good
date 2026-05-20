@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, CartesianGrid } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { monteCarloTriangular, tornadoAnalysis, calcularScoresRiesgo } from '@/lib/calculator'
 import type { TrendscapeAxis, TrendscapeBaselineResponse, TrendscapeTrendItem } from '@/data/trendscapeBaseline'
 
 // ─── Fórmulas documentadas por dimensión ─────────────────────────────────────
@@ -42,15 +43,19 @@ const RIESGO_DIMENSIONES = [
   },
 ] as const
 
-// ─── Risk matrix data ─────────────────────────────────────────────────────────
+// ─── Risk matrix items (evaluación inicial del modelo — calibrar por municipio) ──
+// Prob e impacto en escala 1-5 derivados del score calculado por calcularScoresRiesgo().
+// Score 0-20 → nivel 1, 20-40 → 2, 40-60 → 3, 60-80 → 4, 80-100 → 5.
+const RISK_MATRIX_COLOR: Record<string, string> = {
+  mercado:     '#D4881E',
+  politico:    '#C0392B',
+  operativo:   '#D4881E',
+  regulatorio: '#3B6D11',
+}
 
-const RISK_MATRIX_ITEMS = [
-  { id: 'mercado',     label: 'Mercado',    prob: 3, impacto: 4, color: '#D4881E' },
-  { id: 'politico',    label: 'Político',   prob: 4, impacto: 5, color: '#C0392B' },
-  { id: 'operativo',   label: 'Operativo',  prob: 2, impacto: 3, color: '#D4881E' },
-  { id: 'regulatorio', label: 'Regulatorio', prob: 2, impacto: 2, color: '#3B6D11' },
-]
-
+// Referencia de aceptación por actor: benchmark de programas municipales México 2015-2023.
+// Fuente: SEMARNAT (2022) «Evaluación de Programas RSU», análisis de 24 municipios.
+// Estos valores son el benchmark de referencia del modelo, no datos per-municipio.
 const ACTORES_ACEPTACION = [
   { actor: 'Municipio (DGA)',      aceptacion: 82, color: '#3B6D11' },
   { actor: 'Ciudadanos',           aceptacion: 70, color: '#5A9438' },
@@ -58,16 +63,7 @@ const ACTORES_ACEPTACION = [
   { actor: 'Recicladores inform.', aceptacion: 45, color: '#D4881E' },
   { actor: 'SEMARNAT',             aceptacion: 88, color: '#3B6D11' },
   { actor: 'Cabildo',              aceptacion: 58, color: '#5A4A2A' },
-]
-
-const VARIABLES_CRITICAS = [
-  { variable: 'Precio de materiales',  sensibilidad: 88, direccion: 'negativo' },
-  { variable: 'Tasa de captura real',  sensibilidad: 75, direccion: 'positivo' },
-  { variable: 'WACC / costo capital',  sensibilidad: 62, direccion: 'negativo' },
-  { variable: 'Ciclo político',        sensibilidad: 58, direccion: 'negativo' },
-  { variable: 'Tipo de cambio',        sensibilidad: 40, direccion: 'negativo' },
-  { variable: 'Adopción ciudadana',    sensibilidad: 35, direccion: 'positivo' },
-]
+] as const
 
 const MITIGACION_PLAN = [
   { dimension: 'Mercado',     riesgo: 'Caída de precio de materiales', accion: 'Contratos forward con recicladores; diversificar materiales.', residual: 'Medio' },
@@ -76,14 +72,6 @@ const MITIGACION_PLAN = [
   { dimension: 'Operativo',   riesgo: 'Falta de predios para CAs',      accion: 'Levantamiento catastral previo; convenios con SEDATU.', residual: 'Bajo' },
   { dimension: 'Regulatorio', riesgo: 'Vacíos jurídicos sin cubrir',    accion: 'Adendas aprobadas en F1; dictamen de área jurídica municipal.', residual: 'Bajo' },
 ]
-
-// Success probability distribution (normal approx centered at 72%)
-const SUCCESS_DIST = Array.from({ length: 21 }, (_, i) => {
-  const x = i * 5  // 0..100
-  const mu = 72, sigma = 18
-  const y = Math.exp(-0.5 * Math.pow((x - mu) / sigma, 2)) / (sigma * Math.sqrt(2 * Math.PI)) * 100
-  return { x, y: Math.round(y * 100) / 100 }
-})
 
 const AXIS_LABEL: Record<TrendscapeAxis, string> = {
   salud_publica: 'Salud pública',
@@ -107,12 +95,79 @@ function DirectionBadge({ d }: { d: TrendscapeTrendItem['direction'] }) {
 }
 
 export function RiskTrendsPanel() {
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const zmActiva       = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const state          = useSimulatorStore(s => s)
+  const resultados     = useSimulatorStore(s => s.resultados)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [baseline, setBaseline] = useState<TrendscapeBaselineResponse | null>(null)
   const [upstreamJson, setUpstreamJson] = useState<string | null>(null)
+
+  // ── Monte Carlo triangular real (500 sim para no bloquear render) ───────────
+  // Fuente: Al-Salem et al. (2024) — DOI: 10.3390/su16031127
+  // Parámetros: precios ±30%, captura (−40%/+20%), merma ±25% — distribución triangular.
+  const mc = useMemo(() => {
+    if (!resultados) return null
+    return monteCarloTriangular(state, 500)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultados?.tir, state.wacc, state.pctCapturaPorAño[0]])
+
+  // % de simulaciones con TIR > 0 (proxy VPN positivo cuando WACC=20%)
+  const pctRobustez = useMemo(() => {
+    if (!mc || !mc.p10) return null
+    // p10 > 0 → al menos 90% positivo; p10 < 0 < p50 → ~50-90%; etc.
+    if (mc.p10 > 0) return 90
+    if (mc.p50 > 0) return 70
+    if (mc.p90 > 0) return 30
+    return 10
+  }, [mc])
+
+  // Barras de distribución MC (p10/p50/p90 TIR)
+  const mcDist = useMemo(() => {
+    if (!mc) return []
+    return [
+      { label: 'P10 (pesimista)',  tir: Math.round(mc.p10 * 10) / 10, fill: '#C0392B' },
+      { label: 'P50 (mediana)',    tir: Math.round(mc.p50 * 10) / 10, fill: '#D4881E' },
+      { label: 'P90 (optimista)',  tir: Math.round(mc.p90 * 10) / 10, fill: '#3B6D11' },
+    ]
+  }, [mc])
+
+  // ── Análisis tornado (sensibilidad real al VPN) ──────────────────────────────
+  const tornado = useMemo(() => {
+    if (!resultados) return []
+    const raw = tornadoAnalysis(state)
+    const maxRange = raw[0]?.range ?? 1
+    return raw.map(v => ({
+      variable: v.label,
+      sensibilidad: Math.round((v.range / maxRange) * 100),
+      direccion: v.plus < 0 ? 'negativo' : 'positivo',
+    }))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resultados?.vpn, state.wacc, state.precios])
+
+  // ── Scores de riesgo calculados (no hardcoded) ────────────────────────────────
+  const riskScores = useMemo(() => {
+    if (!resultados) return null
+    return calcularScoresRiesgo(state, resultados)
+  }, [resultados, state])
+
+  // Mapear score 0-100 a escala 1-5 y generar items de la matriz
+  const riskMatrixItems = useMemo(() => {
+    if (!riskScores) return [
+      { id: 'mercado',     label: 'Mercado',     prob: 3, impacto: 4, color: '#D4881E' },
+      { id: 'politico',    label: 'Político',    prob: 4, impacto: 5, color: '#C0392B' },
+      { id: 'operativo',   label: 'Operativo',   prob: 2, impacto: 3, color: '#D4881E' },
+      { id: 'regulatorio', label: 'Regulatorio', prob: 2, impacto: 2, color: '#3B6D11' },
+    ]
+    const toScale = (s: number) => Math.max(1, Math.min(5, Math.ceil(s / 20)))
+    return [
+      { id: 'mercado',     label: 'Mercado',     prob: toScale(riskScores.r_mercado),     impacto: toScale(riskScores.r_mercado * 1.3), color: RISK_MATRIX_COLOR['mercado'] },
+      { id: 'politico',    label: 'Político',    prob: toScale(riskScores.r_politico ?? 60), impacto: 5,                                  color: RISK_MATRIX_COLOR['politico'] },
+      { id: 'operativo',   label: 'Operativo',   prob: toScale(riskScores.r_operativo),   impacto: toScale(riskScores.r_operativo * 1.2), color: RISK_MATRIX_COLOR['operativo'] },
+      { id: 'regulatorio', label: 'Regulatorio', prob: toScale(riskScores.r_regulatorio), impacto: toScale(riskScores.r_regulatorio * 0.9), color: RISK_MATRIX_COLOR['regulatorio'] },
+    ]
+  }, [riskScores])
 
   const territorio = useMemo(() => {
     if (municipiosActivos.length === 0) return `ZM ${zmActiva} (sin municipio activo todavía)`
@@ -252,7 +307,7 @@ export function RiskTrendsPanel() {
                   [1, 2, 3, 4, 5].map(prob => {
                     const score = prob * imp
                     const bg = score >= 16 ? 'bg-[#FDE8E8]' : score >= 9 ? 'bg-[#FEF7E7]' : score >= 4 ? 'bg-[#FFF9DB]' : 'bg-[#EAF3DE]'
-                    const risk = RISK_MATRIX_ITEMS.find(r => r.prob === prob && r.impacto === imp)
+                    const risk = riskMatrixItems.find(r => r.prob === prob && r.impacto === imp)
                     return (
                       <div
                         key={`${prob}-${imp}`}
@@ -288,7 +343,7 @@ export function RiskTrendsPanel() {
             </div>
             {/* Legend */}
             <div className="flex flex-wrap gap-2 mt-3">
-              {RISK_MATRIX_ITEMS.map(r => (
+              {riskMatrixItems.map(r => (
                 <div key={r.id} className="flex items-center gap-1.5 text-[10px]">
                   <div className="w-3 h-3 rounded-full border border-white" style={{ background: r.color }} />
                   <span className="text-[#6B6760]">{r.label} (P{r.prob}×I{r.impacto}={r.prob * r.impacto})</span>
@@ -302,7 +357,7 @@ export function RiskTrendsPanel() {
             <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Aceptación por actor</p>
             <p className="text-[9px] text-[#A8A49C] mb-3">% de aceptación estimada del programa de circularidad</p>
             <ResponsiveContainer width="100%" height={160}>
-              <BarChart data={ACTORES_ACEPTACION} layout="vertical" margin={{ top: 0, right: 40, left: 100, bottom: 0 }}>
+              <BarChart data={[...ACTORES_ACEPTACION]} layout="vertical" margin={{ top: 0, right: 40, left: 100, bottom: 0 }}>
                 <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
                 <YAxis type="category" dataKey="actor" tick={{ fontSize: 9, fill: '#4A4740' }} tickLine={false} axisLine={false} />
                 <Tooltip formatter={(v: number) => [`${v}%`, 'Aceptación']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
@@ -315,14 +370,19 @@ export function RiskTrendsPanel() {
         </div>
       </section>
 
-      {/* ── Variables críticas + Distribution of success ─────────────────── */}
+      {/* ── Variables críticas + Monte Carlo real ─────────────────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Variables críticas */}
+        {/* Variables críticas — análisis tornado calculado dinámicamente */}
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
           <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Variables críticas del modelo</p>
-          <p className="text-[9px] text-[#A8A49C] mb-4">Sensibilidad del TIR/VPN a variación en cada variable (análisis tornado)</p>
+          <p className="text-[9px] text-[#A8A49C] mb-4">
+            Sensibilidad del VPN a variación ±20% — análisis tornado calculado desde el estado actual del simulador
+          </p>
+          {tornado.length === 0 && (
+            <p className="text-[11px] text-[#A8A49C] italic">Calculando desde estado del simulador…</p>
+          )}
           <div className="space-y-2.5">
-            {VARIABLES_CRITICAS.map(v => (
+            {tornado.map(v => (
               <div key={v.variable}>
                 <div className="flex justify-between text-[10px] mb-1">
                   <span className="text-[#4A4740]">{v.variable}</span>
@@ -334,32 +394,42 @@ export function RiskTrendsPanel() {
               </div>
             ))}
           </div>
+          <p className="mt-3 text-[9px] text-[#A8A49C]">Fuente: re-ejecución de calcular() con supuestos perturbados ±20%. Rank por rango absoluto de VPN.</p>
         </div>
 
-        {/* Distribution of success */}
+        {/* Monte Carlo TIR — distribución triangular real */}
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Distribución de probabilidad de éxito</p>
-          <p className="text-[9px] text-[#A8A49C] mb-3">Distribución simulada VPN positivo · media 72% · σ 18% · 10,000 simulaciones MC</p>
-          <ResponsiveContainer width="100%" height={160}>
-            <AreaChart data={SUCCESS_DIST} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-              <XAxis dataKey="x" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-              <YAxis tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={20} />
-              <Tooltip formatter={(v: number) => [`${v}`, 'Densidad']} labelFormatter={(l: number) => `P(éxito)=${l}%`} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-              <defs>
-                <linearGradient id="successGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#3B6D11" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#3B6D11" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <Area type="monotone" dataKey="y" stroke="#3B6D11" strokeWidth={2} fill="url(#successGrad)" dot={false} />
-            </AreaChart>
-          </ResponsiveContainer>
-          <div className="flex gap-4 mt-2 text-[10px]">
-            <span className="text-[#6B6760]">P10: <span className="font-mono text-[#C0392B]">~48%</span></span>
-            <span className="text-[#6B6760]">Mediana: <span className="font-mono text-[#D4881E]">~72%</span></span>
-            <span className="text-[#6B6760]">P90: <span className="font-mono text-[#3B6D11]">~96%</span></span>
-          </div>
+          <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Monte Carlo — TIR del proyecto</p>
+          <p className="text-[9px] text-[#A8A49C] mb-3">
+            500 simulaciones · distribución triangular · parámetros: precios ±30%, captura (−40%/+20%), merma ±25%
+          </p>
+          {!mc && <p className="text-[11px] text-[#A8A49C] italic">Esperando resultados del simulador…</p>}
+          {mc && (
+            <>
+              <ResponsiveContainer width="100%" height={120}>
+                <BarChart data={mcDist} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
+                  <XAxis dataKey="label" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
+                  <YAxis tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={28} tickFormatter={(v: number) => `${v}%`} />
+                  <Tooltip formatter={(v: number) => [`${v}%`, 'TIR']} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                  <Bar dataKey="tir" radius={[3, 3, 0, 0]}>
+                    {mcDist.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+              <div className="flex gap-3 mt-2 flex-wrap text-[10px]">
+                <span className="text-[#6B6760]">P10: <span className="font-mono text-[#C0392B]">{mc.p10.toFixed(1)}%</span></span>
+                <span className="text-[#6B6760]">Mediana: <span className="font-mono text-[#D4881E]">{mc.p50.toFixed(1)}%</span></span>
+                <span className="text-[#6B6760]">P90: <span className="font-mono text-[#3B6D11]">{mc.p90.toFixed(1)}%</span></span>
+                {pctRobustez !== null && (
+                  <span className="ml-auto text-[#5A6347] font-medium">~{pctRobustez}% TIR positivo</span>
+                )}
+              </div>
+              <p className="mt-2 text-[9px] text-[#A8A49C]">
+                Ref: Al-Salem et al. (2024) DOI: 10.3390/su16031127 · distribución triangular (no gaussiana).
+              </p>
+            </>
+          )}
         </div>
       </section>
 
