@@ -20,30 +20,34 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
     'impact_finance', // se simplifica a Ambiental + Multiplicadores en page.tsx
   ],
   // Funcionario — journey narrativo en 4 capítulos con guía introductoria obligatoria.
-  // M00 Guía → Cap 1 Diagnóstico: M01-M03 | Cap 2 Planificación: M04-M08
-  // Cap 3 Modelo: M09-M11  | Cap 4 Control: M12-M15
+  // M00 Guía → Cap 1 Diagnóstico: M01-M04 | Cap 2 Planificación: M05-M10
+  // Cap 3 Modelo: M11-M15 | Cap 4 Control: M16-M19
   functionary: [
     // Guía de lectura — Steps for Circularity (obligatorio, pre-capítulo)
     'guia_circularidad',
-    // Cap 1 — Diagnóstico Base: ¿Qué tenemos y dónde estamos?
+    // Cap 1 — Diagnóstico: ¿Cuál es el punto de partida real?
     'city_baseline',        // M01 Línea base territorial y RSU
     'social_study',         // M02 Diagnóstico social y aceptación ciudadana
     'municipal_context',    // M03 Marco legal y brechas normativas
-    // Cap 2 — Planificación Estratégica: ¿Qué necesitamos construir?
-    'future_goals',              // M04 Metas y trayectorias de captura
-    'infrastructure_operations', // M05 Infraestructura y centros de acopio
-    'logistica_operativa',       // M06 Logística, rutas y diseño de piloto
-    'costos_programa',           // M07 Tabla maestra CAPEX/OPEX
-    'market_traceability',       // M08 Mercado de materiales y compradores
-    // Cap 3 — Diseño del Modelo: ¿Quién paga, quién opera, es viable?
-    'esquema_concesion',   // M09 Esquema de concesión y árbol de decisión
-    'scenarios_export',    // M10 Escenarios financieros y exportación
-    'risk_trends',         // M11 Riesgos del modelo completo
-    // Cap 4 — Ejecución y Control: ¿Cómo arrancamos y cómo medimos?
-    'inspeccion_predios',  // M12 Inspección y cumplimiento
-    'monitoreo_real',      // M13 Monitoreo proyectado vs. real
-    'doble_materialidad',  // M14 Doble materialidad y reporte ESG
-    'source_traceability', // M15 Trazabilidad de fuentes y fórmulas
+    'costo_omision',        // M04 Costo de la omisión — contrafactual 10 años
+    // Cap 2 — Planificación: ¿Qué necesitamos construir?
+    'future_goals',              // M05 Metas y trayectorias de captura
+    'infrastructure_operations', // M06 Infraestructura — dimensionamiento CAs
+    'organigrama_programa',      // M07 Organigrama y estructura operativa
+    'logistica_operativa',       // M08 Logística, rutas y PER
+    'costos_programa',           // M09 Tabla maestra CAPEX/OPEX
+    'market_traceability',       // M10 Mercado de materiales y compradores
+    // Cap 3 — Modelo: ¿Quién paga, quién opera y es viable?
+    'esquema_concesion',     // M11 Esquema de concesión y modelo de negocio
+    'scenarios_export',      // M12 Escenarios financieros — TIR/VPN/Monte Carlo
+    'arbol_financiamiento',  // M13 Árbol de financiamiento — 6 caminos
+    'risk_trends',           // M14 Riesgos del modelo completo
+    'expediente_cabildo',    // M15 Expediente completo para Cabildo
+    // Cap 4 — Control: ¿Cómo arrancamos y cómo medimos?
+    'inspeccion_predios',  // M16 Inspección y cumplimiento
+    'monitoreo_real',      // M17 Monitoreo proyectado vs. real
+    'doble_materialidad',  // M18 Doble materialidad y reporte ESG
+    'source_traceability', // M19 Trazabilidad de fuentes y fórmulas
   ],
   // Empresario — perfil organización + trazabilidad + reporte.
   entrepreneur: [

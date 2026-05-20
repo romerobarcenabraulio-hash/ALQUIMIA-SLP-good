@@ -82,6 +82,50 @@ export const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
  * después de `municipal_context` para el recorrido de funcionario.
  * Integra los 16 componentes Social* del sistema ALQUIMIA.
  */
+/** Módulo de Costo de la Omisión — contrafactual 10 años, cliente-side, M04. */
+export const COSTO_OMISION_MODULE: DecisionModule = {
+  module_id: 'costo_omision',
+  label: 'Costo de la omisión — ¿cuánto cuesta NO actuar?',
+  audience_mode: 'city_team',
+  decision: 'Cuantificar el pasivo ambiental, sanitario y económico de no implementar el programa en los próximos 10 años.',
+  evidence: 'Análisis contrafactual 10 años: costo acumulado de disposición, daño a salud (OPS/INSP), cuenta regresiva relleno sanitario, multas PROFEPA estimadas, pérdida de elegibilidad para financiamiento verde.',
+  status: 'ready',
+  next_action: 'Presentar este análisis antes de discutir presupuesto — establece el costo de NO decidir.',
+}
+
+/** Módulo de Organigrama del Programa — estructura operativa, cliente-side, M07. */
+export const ORGANIGRAMA_MODULE: DecisionModule = {
+  module_id: 'organigrama_programa',
+  label: 'Organigrama y estructura operativa del programa',
+  audience_mode: 'city_team',
+  decision: 'Definir la estructura de gobierno, roles, responsabilidades y plantilla de personal del programa antes de lanzar.',
+  evidence: 'Organigrama jerárquico, matriz RACI, plantilla por tipo de CA (P/M/G), fases de capacitación y OPEX de personal dinámico.',
+  status: 'ready',
+  next_action: 'Validar la estructura con la Dirección de Servicios Públicos y asignar responsables nominales antes del arranque.',
+}
+
+/** Módulo de Árbol de Financiamiento — 6 caminos, cliente-side, M13. */
+export const ARBOL_FINANCIAMIENTO_MODULE: DecisionModule = {
+  module_id: 'arbol_financiamiento',
+  label: 'Árbol de financiamiento — 6 caminos de capital',
+  audience_mode: 'city_team',
+  decision: 'Seleccionar el esquema de financiamiento más adecuado según la capacidad institucional, el costo de capital y los requisitos de elegibilidad.',
+  evidence: 'Árbol de decisión interactivo: Municipal Directo, Concesión Privada, APP, Fideicomiso Municipal, BID/CAF, Deuda Verde BANOBRAS — con criterios, costo de capital y pros/contras.',
+  status: 'ready',
+  next_action: 'Confirmar esquema con el tesorero y el síndico antes de abrir cualquier proceso de licitación o crédito.',
+}
+
+/** Módulo de Expediente para Cabildo — panel de gobernanza y exportación, cliente-side, M15. */
+export const EXPEDIENTE_CABILDO_MODULE: DecisionModule = {
+  module_id: 'expediente_cabildo',
+  label: 'Expediente completo para Cabildo',
+  audience_mode: 'city_team',
+  decision: 'Consolidar toda la documentación necesaria para presentar y obtener aprobación del Cabildo municipal.',
+  evidence: 'Panel de gobernanza, lista de verificación pre-lanzamiento, generación de documentos ejecutivos (PDF, XLSX, JSON), acuerdo de Cabildo.',
+  status: 'ready',
+  next_action: 'Verificar que todos los checks de la lista estén en verde antes de agendar sesión de Cabildo.',
+}
+
 export const SOCIAL_STUDY_MODULE: DecisionModule = {
   module_id: 'social_study',
   label: 'Estudio demográfico y contexto social',
@@ -188,6 +232,30 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
     decision: 'Comparar proyecciones con datos reales de operación.',
     evidence: 'Dashboard semáforo, datos de campo, historial de desviaciones.',
     next_action: 'Capturar datos del primer mes de operación.',
+  },
+  costo_omision: {
+    label: 'Costo de la omisión — ¿cuánto cuesta NO actuar?',
+    decision: 'Cuantificar el pasivo ambiental, sanitario y económico de no implementar el programa en los próximos 10 años.',
+    evidence: 'Costo acumulado de disposición, daño a salud (OPS/INSP), cuenta regresiva relleno, multas PROFEPA, pérdida de financiamiento verde.',
+    next_action: 'Usar este análisis para abrir la conversación de presupuesto — primero el costo de no decidir.',
+  },
+  organigrama_programa: {
+    label: 'Organigrama y estructura operativa',
+    decision: 'Definir la estructura de gobierno, roles y plantilla de personal antes del arranque.',
+    evidence: 'Organigrama jerárquico, matriz RACI, plantilla por tipo CA (P/M/G), fases de capacitación, OPEX de personal.',
+    next_action: 'Validar con la Dirección de Servicios Públicos y asignar responsables nominales.',
+  },
+  arbol_financiamiento: {
+    label: 'Árbol de financiamiento — 6 caminos de capital',
+    decision: 'Seleccionar el esquema de financiamiento según capacidad institucional y costo de capital.',
+    evidence: 'Municipal Directo, Concesión Privada, APP, Fideicomiso Municipal, BID/CAF, Deuda Verde BANOBRAS.',
+    next_action: 'Confirmar esquema con el tesorero y síndico antes de cualquier licitación o crédito.',
+  },
+  expediente_cabildo: {
+    label: 'Expediente completo para Cabildo',
+    decision: 'Consolidar toda la documentación para presentar ante el Cabildo municipal.',
+    evidence: 'Panel de gobernanza, checklist pre-lanzamiento, exportación de documentos ejecutivos.',
+    next_action: 'Verificar que todos los checks estén en verde antes de agendar la sesión de Cabildo.',
   },
 }
 
