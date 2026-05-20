@@ -57,9 +57,19 @@ async def simulate(
 
 
 async def fetch_live_prices(precios: dict) -> dict:
+    """
+    Stub para actualización de precios vía Serper.
+
+    ESTADO ACTUAL: La función realiza el fetch pero no parsea la respuesta HTML/JSON
+    de búsqueda para extraer precios reales — devuelve los precios de entrada sin cambios.
+
+    PENDIENTE (P9): Implementar extracción con regex o LLM sobre resp.text para actualizar
+    precios.pet, precios.papel, etc., cuando SERPER_API_KEY esté disponible.
+    Hasta entonces, los precios provienen del usuario vía simulatorStore.
+    """
     from app.config import settings
     if not settings.SERPER_API_KEY:
-        return precios  # Fallback honesto — sin key, sin datos
+        return precios  # Sin key → sin fetch; precios del usuario intactos
 
     try:
         async with httpx.AsyncClient(timeout=5.0) as client:
@@ -69,8 +79,9 @@ async def fetch_live_prices(precios: dict) -> dict:
                 json={"q": "precio PET reciclado México 2025 MXN kg"},
             )
             if resp.status_code == 200:
-                logger.info("Precios actualizados desde Serper")
+                # TODO: parsear resp.json()["organic"][0]["snippet"] para extraer precio
+                logger.info("Serper fetch OK — parsing pendiente (stub activo, precios sin cambio)")
     except Exception as e:
         logger.warning(f"Serper API no disponible: {e}")
 
-    return precios
+    return precios  # Devuelve precios originales hasta implementar el parser

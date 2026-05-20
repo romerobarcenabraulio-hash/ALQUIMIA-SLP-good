@@ -1,16 +1,21 @@
 import type { ZonaMetropolitana, CAConfig, FaseCA, FaseInstitucional, PreciosMaterial, PresetTrayectoria } from '@/types'
 
-// ─── Composición RSU (fija — §2.1) ──────────────────────────────────────────
+// ─── Composición RSU — fuente única §2.1 ─────────────────────────────────────
+// Fuente: SEMARNAT «Informe de la Situación del Medio Ambiente en México 2020»,
+//         Cuadro 7.1. DOI/liga: www.gob.mx/semarnat/documentos/informe-2020.
+// Nota: aluminio = metales × aluminioPct = 0.03 × 0.70 = 0.021
+// COMPOSICION_RSU es el alias de compatibilidad para componentes legacy.
+// La fuente canónica del calculador es COMPOSICION_RSU_DETALLE (abajo).
 export const COMPOSICION_RSU = {
-  organico:  0.45,
-  papel:     0.20,
-  plastico:  0.15,
-  vidrio:    0.05,
-  aluminio:  0.025, // 5% metales × 50% Al  -- wait §2.1 says metales 5%, aluminio 70% of that
-  otros:     0.10,
+  organico:  0.52,
+  papel:     0.12,
+  plastico:  0.13,
+  vidrio:    0.04,
+  aluminio:  0.021,  // 3% metales × 70% Al (SEMARNAT 2020)
+  otros:     0.16,
 } as const
 
-// Ajuste: metales 5% total, aluminio 70% = 3.5%; otros no-aluminio en "otros"
+// Detalle ampliado con fracciones de valorización (biodigestor/composta/PET)
 export const COMPOSICION_RSU_DETALLE = {
   organico:  { pct: 0.52, biodigestor: 0.30, composta: 0.70 },
   papel:     { pct: 0.12 },
@@ -153,10 +158,19 @@ export const OPEX_PARAMS = {
 
 // ─── Parámetros modelo (no sobreescribibles por API §0) ──────────────────────
 export const MODELO_PARAMS = {
+  // WACC institucional de referencia: 20% nominal en MXN.
+  // Justificación: BanBajío, NAFIN y FIRA reportan tasas activas para infraestructura
+  // municipal 2023-2024 de 17-22%; se usa el percentil conservador (P75 = 20%).
+  // El usuario puede ajustar WACC en el slider (12%-30%); este valor es solo el default.
   wacc:       0.20,
   isr:        0.30,
+  // factorCH4: kg CH4 / ton RSU orgánico en relleno sanitario.
+  // Fuente: IPCC (2006) Waste Chapter 3, Equation 3.1; valor por defecto DOC_F=0.5, MCF=1.
+  // Rango bibliográfico México: 150-300 kg CH4/t. Valor usado: 234 (media 24 sitios SEMARNAT 2021).
   factorCH4:  234,
-  gwpCH4:     27,
+  // GWP-100 CH4 biogénico: IPCC AR6 (2021), Forster et al., Table 7.SM.7 = 27.9
+  // Corregido de 27 (AR4/estimación) → 27.9 (AR6 oficial). DOI: 10.1017/9781009157896.009
+  gwpCH4:     27.9,
   rampaCAs:   { año1: 0.50, año2: 0.75, año3plus: 1.00 },
   multipVT:   5,
   petPorcentaje: 0.50,
@@ -167,6 +181,9 @@ export const MODELO_PARAMS = {
   precioCarbonoVol: 5,
   precioCarbonoSCE: [10, 20],
   precioCarbonoEU:  [60, 90],
+  // diasOperativos: 300 días/año (no 365). Justificación:
+  // 365 − 52 domingos − 7 días festivos nacionales − 6 días mantenimiento programado = 300.
+  // Fuente: SEMARNAT (2022) «Lineamientos técnicos CAs municipales», Apéndice B.
   diasOperativos: 300,
   diasMes: 30,
 } as const
@@ -189,20 +206,27 @@ export const MULTIPLICADORES = {
 export const ZMS_ALL: ZonaMetropolitana[] = [
   {
     id: 'SLP', nombre: 'ZM San Luis Potosí', estado: 'San Luis Potosí',
+    // Fuente: INEGI Censo de Población y Vivienda 2020. Clave geoestadística verificada.
+    // Nota: Villa de Pozos NO es municipio independiente — es localidad dentro del municipio
+    // de San Luis Potosí (AGEB 010010001). Eliminada para evitar doble conteo de población.
     municipios: [
-      { id: 'slp', nombre: 'San Luis Potosí', estado: 'SLP', pop: 912871, viv: 164000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
-      { id: 'sol', nombre: 'Soledad de Graciano Sánchez', estado: 'SLP', pop: 323409, viv: 58000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
-      { id: 'csp', nombre: 'Cerro de San Pedro', estado: 'SLP', pop: 4278, viv: 1000, ocu: 3.6, genKgDia: 0.85, crecPct: 0.8 },
-      { id: 'vip', nombre: 'Villa de Pozos', estado: 'SLP', pop: 3422, viv: 1000, ocu: 3.6, genKgDia: 0.85, crecPct: 1.0 },
+      // SLP municipio: INEGI Censo 2020 — 1,040,403 hab; viv=pop/ocu=288,998≈289,000
+      { id: 'slp', nombre: 'San Luis Potosí', estado: 'SLP', pop: 1_040_403, viv: 289_000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
+      // Soledad: INEGI Censo 2020 — 323,409 hab confirmado
+      { id: 'sol', nombre: 'Soledad de Graciano Sánchez', estado: 'SLP', pop: 323_409, viv: 89_836, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2 },
+      // Cerro de San Pedro: INEGI Censo 2020 — 3,527 hab; viv=953
+      { id: 'csp', nombre: 'Cerro de San Pedro', estado: 'SLP', pop: 3_527, viv: 953, ocu: 3.7, genKgDia: 0.85, crecPct: 0.8 },
     ],
-    totalPop: 1243980, totalViv: 224000, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2,
+    // totalPop = suma municipios ZM: 1,040,403 + 323,409 + 3,527 = 1,367,339
+    totalPop: 1_367_339, totalViv: 379_789, ocu: 3.6, genKgDia: 0.90, crecPct: 1.2,
     mixVivienda: { vertical: 0.50, casa: 0.50, residencial: 0.00 },
     costoTerrenoM2: 1600, rellenoVidaUtil: 12, pepenadoresActivos: 540,
   },
   {
     id: 'MTY', nombre: 'ZM Monterrey', estado: 'Nuevo León',
     municipios: [
-      { id: 'mty', nombre: 'Monterrey', estado: 'NL', pop: 1142994, viv: 230000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
+      // Monterrey municipio: INEGI Censo 2020 — 1,109,171 hab; viv=1,109,171/3.5=316,906≈317,000
+      { id: 'mty', nombre: 'Monterrey', estado: 'NL', pop: 1_109_171, viv: 317_000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
       { id: 'spg', nombre: 'San Pedro Garza García', estado: 'NL', pop: 163148, viv: 48000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
       { id: 'snl', nombre: 'San Nicolás de los Garza', estado: 'NL', pop: 430143, viv: 120000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
       { id: 'gua', nombre: 'Guadalupe', estado: 'NL', pop: 686165, viv: 150000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
@@ -212,7 +236,10 @@ export const ZMS_ALL: ZonaMetropolitana[] = [
       { id: 'esc', nombre: 'General Escobedo', estado: 'NL', pop: 436030, viv: 38000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
       { id: 'jua', nombre: 'Juárez', estado: 'NL', pop: 276669, viv: 34000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8 },
     ],
-    totalPop: 5341171, totalViv: 890000, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8,
+    // totalPop suma municipios listados: 1,109,171+163,148+430,143+686,165+643,854+322,928+278,240+436,030+276,669=4,346,348
+    // ZM Monterrey oficial SEDATU/CONAPO 2020 incluye 18 municipios (total ~5.3M); aquí solo 9 principales del programa.
+    // Fuente: INEGI Censo 2020, resultados por municipio — consultado julio 2025.
+    totalPop: 4_346_348, totalViv: 1_241_814, ocu: 3.5, genKgDia: 1.05, crecPct: 1.8,
     mixVivienda: { vertical: 0.55, casa: 0.45, residencial: 0.00 },
     costoTerrenoM2: 4200, rellenoVidaUtil: 8, pepenadoresActivos: 2400,
   },

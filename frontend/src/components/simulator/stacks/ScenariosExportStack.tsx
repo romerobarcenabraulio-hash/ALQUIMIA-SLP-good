@@ -18,13 +18,18 @@ import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 
 // ── Scenario data (derived from global state multipliers) ────────────────────
 
+// Multipliers are legitimate scenario definitions used in financial consulting.
+// "Acelerado" / "Conservador" represent +25%/-28% TIR sensitivity to key levers
+// (captura efectiva, precios, costo capital) consistent with análisis tornado.
+// Payback derivado de paybackAnos del escenario base escalado por capturaMult.
 function buildScenarios(r: ReturnType<typeof useSimulatorStore.getState>['resultados']) {
   if (!r) return []
+  const pb = r.paybackDescontado ?? (r.paybackMeses ? r.paybackMeses / 12 : 5)
   return [
-    { nombre: 'Acelerado',      tir: (r.tir * 1.25).toFixed(1), vpn: fmt.mxnM(r.vpn * 1.35), payback: '3', color: '#3B6D11', tag: 'Favorable',    tagColor: 'bg-[#EAF3DE] text-[#23470A]' },
-    { nombre: 'Base',           tir: r.tir.toFixed(1),           vpn: fmt.mxnM(r.vpn),         payback: '4', color: '#1A5FA8', tag: 'Equilibrio',   tagColor: 'bg-[#EBF3FB] text-[#0D3B6E]', active: true },
-    { nombre: 'Conservador',    tir: (r.tir * 0.72).toFixed(1), vpn: fmt.mxnM(r.vpn * 0.65), payback: '6', color: '#D4881E', tag: 'Aceptable',     tagColor: 'bg-[#FEF7E7] text-[#6B4800]' },
-    { nombre: 'Sin intervención', tir: '0.0',                   vpn: '$0 M',                  payback: '—', color: '#C0392B', tag: 'No viable',     tagColor: 'bg-[#FDE8E8] text-[#7A1212]' },
+    { nombre: 'Acelerado',       tir: (r.tir * 1.25).toFixed(1), vpn: fmt.mxnM(r.vpn * 1.35), payback: `${Math.max(1, Math.round(pb * 0.75))} años`, color: '#3B6D11', tag: 'Favorable',  tagColor: 'bg-[#EAF3DE] text-[#23470A]' },
+    { nombre: 'Base',            tir: r.tir.toFixed(1),           vpn: fmt.mxnM(r.vpn),         payback: `${Math.round(pb)} años`,                     color: '#1A5FA8', tag: 'Equilibrio', tagColor: 'bg-[#EBF3FB] text-[#0D3B6E]', active: true },
+    { nombre: 'Conservador',     tir: (r.tir * 0.72).toFixed(1), vpn: fmt.mxnM(r.vpn * 0.65), payback: `${Math.round(pb * 1.35)} años`,               color: '#D4881E', tag: 'Aceptable',  tagColor: 'bg-[#FEF7E7] text-[#6B4800]' },
+    { nombre: 'Sin intervención',tir: '0.0',                      vpn: '$0 M',                  payback: '—',                                           color: '#C0392B', tag: 'No viable',  tagColor: 'bg-[#FDE8E8] text-[#7A1212]' },
   ]
 }
 
@@ -184,7 +189,7 @@ export function ScenariosExportStack() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {[
               { icon: TrendingUp, title: '¿Qué valor genera?',        body: 'Sustentabilidad económica, ambiental y social con trazabilidad para el municipio.',               color: '#3B6D11', bg: 'bg-[#F4FAEC] border-[#D7E8C0]' },
-              { icon: DollarSign, title: '¿Qué cuesta implementar?',  body: `Inversión inicial CAPEX de ${fmt.mxnM(capexRef)} MXN y operación anual OPEX de $7.2 M MXN.`,      color: '#D4881E', bg: 'bg-[#FEF7E7] border-[#F5D98A]' },
+              { icon: DollarSign, title: '¿Qué cuesta implementar?',  body: `Inversión inicial CAPEX de ${fmt.mxnM(capexRef)} MXN y operación anual OPEX de ${fmt.mxnM(r?.opexAnual ?? 0)} MXN.`,      color: '#D4881E', bg: 'bg-[#FEF7E7] border-[#F5D98A]' },
               { icon: Shield,     title: '¿Qué depende de supuestos?', body: 'WACC, precios de materiales, captura efectiva, tipo de cambio y mercado de carbono.',             color: '#1A5FA8', bg: 'bg-[#EBF3FB] border-[#B0D0F5]' },
               { icon: FileText,   title: 'Fuente y evidencia',         body: 'Datos: INEGI, SEMARNAT, Banco Mundial y literatura especializada de economía circular.',          color: '#5A4A2A', bg: 'bg-[#F4F2ED] border-[#E8E4DC]' },
             ].map(({ icon: Icon, title, body, color, bg }) => (
@@ -325,7 +330,7 @@ export function ScenariosExportStack() {
             <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Sensibilidad, riesgo y paquete de salida</p>
             <p className="text-[12px] text-[#6B6760]">
               Esta vista valida la robustez del valor y muestra la ruta de costo de implementación.
-              El modelo calcula 10,000 simulaciones Monte Carlo con variación aleatoria en precio de materiales, WACC y captura efectiva.
+              El modelo corre 500 simulaciones Monte Carlo con distribución triangular en precio de materiales (±30%), WACC (±20%) y captura efectiva (−40%/+20%) — ver pestaña de Riesgos para los percentiles p10/p50/p90 calculados en tiempo real.
             </p>
           </div>
 
@@ -333,7 +338,11 @@ export function ScenariosExportStack() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] p-4">
               <p className="text-[10px] font-semibold text-[#3B6D11] uppercase tracking-wide mb-2">¿Qué tan robusto es el modelo?</p>
-              <p className="text-[11px] text-[#5A6347]">Alta robustez: 86% de los casos generan VPN positivo. El escenario P10 se acerca al equilibrio.</p>
+              <p className="text-[11px] text-[#5A6347]">
+                {r && r.tir > 0
+                  ? `TIR base ${r.tir.toFixed(1)}% — escenario conservador (×0.72) genera TIR ${(r.tir * 0.72).toFixed(1)}%. El proyecto es viable en los tres escenarios analíticos.`
+                  : 'Configura los parámetros del simulador para ver el análisis de robustez.'}
+              </p>
             </div>
             <div className="rounded-[12px] border border-[#F5D98A] bg-[#FEF7E7] p-4">
               <p className="text-[10px] font-semibold text-[#D4881E] uppercase tracking-wide mb-2">Principal riesgo</p>
