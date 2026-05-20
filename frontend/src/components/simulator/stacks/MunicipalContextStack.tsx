@@ -26,6 +26,132 @@ type AdendaItem = {
   impacto: string
 }
 
+// ── Adendo lifecycle workflow states ─────────────────────────────────────────
+
+type AdendoEstado =
+  | 'borrador'
+  | 'en_revision_juridica'
+  | 'agendado_cabildo'
+  | 'aprobado'
+  | 'publicado_gaceta'
+  | 'vigente'
+
+const ADENDO_ESTADOS: { id: AdendoEstado; label: string; desc: string }[] = [
+  { id: 'borrador',            label: 'Borrador',           desc: 'Texto propuesto por el equipo técnico.' },
+  { id: 'en_revision_juridica',label: 'Revisión jurídica',  desc: 'Síndico / asesor legal validan el texto.' },
+  { id: 'agendado_cabildo',    label: 'Agendado en cabildo',desc: 'Punto de acuerdo en agenda oficial.' },
+  { id: 'aprobado',            label: 'Aprobado',           desc: 'Votación favorable del cabildo.' },
+  { id: 'publicado_gaceta',    label: 'Publicado en gaceta',desc: 'Publicación en gaceta oficial municipal.' },
+  { id: 'vigente',             label: 'Vigente',            desc: 'Reglamento en vigor con fuerza legal plena.' },
+]
+
+type AdendoRecord = AdendaItem & { estado: AdendoEstado }
+
+function AdendoWorkflowPanel({ adendas }: { adendas: AdendaItem[] }) {
+  const [registros, setRegistros] = useState<AdendoRecord[]>(
+    adendas.slice(0, 4).map(a => ({ ...a, estado: 'borrador' as AdendoEstado }))
+  )
+
+  const todasAprobadas = registros.length > 0 && registros.every(r =>
+    ['aprobado', 'publicado_gaceta', 'vigente'].includes(r.estado)
+  )
+
+  function avanzarEstado(id: string) {
+    setRegistros(prev => prev.map(r => {
+      if (r.id !== id) return r
+      const idx = ADENDO_ESTADOS.findIndex(e => e.id === r.estado)
+      const next = ADENDO_ESTADOS[idx + 1]
+      return next ? { ...r, estado: next.id } : r
+    }))
+  }
+
+  return (
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+      <div className="px-5 py-3 border-b border-[#F0EDE5] flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Ciclo de vida de adendos prioritarios</p>
+          <p className="text-[10px] text-[#A8A49C] mt-0.5">
+            Seguimiento del estado legislativo · 6 etapas hasta vigencia plena
+          </p>
+        </div>
+        {todasAprobadas ? (
+          <span className="shrink-0 text-[9px] font-semibold bg-[#EAF3DE] text-[#23470A] border border-[#C9DDB1] rounded px-2 py-0.5">
+            ✓ Todos aprobados
+          </span>
+        ) : (
+          <span className="shrink-0 text-[9px] font-semibold bg-[#FEF7E7] text-[#6B4800] border border-[#F5DCA0] rounded px-2 py-0.5">
+            En proceso
+          </span>
+        )}
+      </div>
+
+      {/* Etapa pipeline indicator */}
+      <div className="px-5 pt-3 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-1 min-w-max">
+          {ADENDO_ESTADOS.map((e, i) => (
+            <div key={e.id} className="flex items-center gap-1">
+              {i > 0 && <span className="text-[#C8C4BC] text-[9px]">→</span>}
+              <span className="text-[9px] font-medium text-[#A8A49C] uppercase tracking-[0.06em] px-1.5 py-0.5 rounded bg-[#F4F2ED]">
+                {e.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {!todasAprobadas && (
+        <div className="mx-5 mb-3 rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2">
+          <p className="text-[11px] text-amber-800 font-medium">
+            ⚠ Gate de Ejecución bloqueado — los adendos del programa deben alcanzar estado &quot;Aprobado&quot; antes de iniciar la etapa de Ejecución (M09-M11).
+          </p>
+        </div>
+      )}
+
+      <div className="divide-y divide-[#F0EDE5]">
+        {registros.map(r => {
+          const etapaIdx = ADENDO_ESTADOS.findIndex(e => e.id === r.estado)
+          const isVigente = r.estado === 'vigente'
+          return (
+            <div key={r.id} className="px-5 py-3 flex items-center gap-3">
+              <span className="font-mono text-[10px] font-semibold text-[#3B6D11] shrink-0 w-20">{r.articulo}</span>
+              <div className="flex-1 min-w-0">
+                <p className="text-[11px] text-[#4A4740] truncate">{r.descripcion}</p>
+                <div className="flex items-center gap-1 mt-0.5">
+                  {ADENDO_ESTADOS.map((e, i) => (
+                    <span
+                      key={e.id}
+                      className={cn(
+                        'w-2 h-2 rounded-full',
+                        i <= etapaIdx
+                          ? isVigente ? 'bg-[#3B6D11]' : 'bg-[#6FA832]'
+                          : 'bg-[#E8E4DC]',
+                      )}
+                      title={e.label}
+                    />
+                  ))}
+                  <span className="ml-1 text-[10px] text-[#6B6760]">
+                    {ADENDO_ESTADOS[etapaIdx]?.label}
+                  </span>
+                </div>
+              </div>
+              {!isVigente && (
+                <button
+                  type="button"
+                  onClick={() => avanzarEstado(r.id)}
+                  className="shrink-0 text-[10px] font-medium text-[#3B6D11] hover:text-[#2D5A0D] border border-[#C9DDB1] rounded px-2 py-1 transition-colors"
+                >
+                  Avanzar →
+                </button>
+              )}
+              {isVigente && <CheckCircle size={14} className="shrink-0 text-[#3B6D11]" />}
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ── Static legal diagnostic per ZM ──────────────────────────────────────────
 
 const LEGAL_BY_ZM: Record<string, {
@@ -476,6 +602,9 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
               </div>
             )}
           </div>
+
+          {/* F. Panel de estados del adendo — ciclo de vida legislativo */}
+          <AdendoWorkflowPanel adendas={altasPriority} />
 
           {/* Coverage gauge + hallazgos + acciones */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">

@@ -12,7 +12,8 @@ Metodología:
 from __future__ import annotations
 
 import math
-from typing import Any, Dict, List, Optional
+from datetime import date, timedelta
+from typing import Any, Dict, List, Optional, Tuple
 
 from app.agents.schemas import (
     GanttPlan,
@@ -493,3 +494,201 @@ def build_raci(
         scenario_id=scenario_id,
         filas=filas,
     )
+
+
+# ─── Desglose diario y mapeo a calendario ─────────────────────────────────────
+
+# Días festivos federales México (mes-día, fijos)
+_FESTIVOS_MX = {
+    (1, 1), (2, 5), (3, 21), (9, 16), (11, 2), (11, 20), (12, 25)
+}
+
+
+def _es_dia_habil(d: date) -> bool:
+    """Retorna True si la fecha es un día hábil (lunes-viernes, no festivo federal)."""
+    if d.weekday() >= 5:  # sábado=5, domingo=6
+        return False
+    if (d.month, d.day) in _FESTIVOS_MX:
+        return False
+    return True
+
+
+def _añadir_dias_habiles(start: date, dias: int) -> date:
+    """Avanza `dias` días hábiles desde `start`."""
+    current = start
+    added = 0
+    while added < dias:
+        current += timedelta(days=1)
+        if _es_dia_habil(current):
+            added += 1
+    return current
+
+
+# Plantillas de actividades diarias por tarea (15 tareas del Gantt Maestro)
+_DAILY_TEMPLATES: Dict[str, List[str]] = {
+    "T01": [
+        "Reunión kick-off con DGA — recopilación de datos RSU existentes",
+        "Descarga y revisión de reportes INEGI / CONAGUA previos",
+        "Recorrido de campo zona norte — levantamiento predial",
+        "Recorrido de campo zona sur — levantamiento predial",
+        "Recorrido de campo zona centro — identificación colonias clave",
+        "Entrevistas con operadores actuales del servicio de limpia",
+        "Entrevistas con Dirección de Medio Ambiente",
+        "Análisis de composición RSU: revisión de datos históricos",
+        "Análisis de rutas actuales: eficiencia y frecuencia",
+        "Mapeo de actores: pepenadores, recicladores, líderes comunitarios",
+        "Análisis SIG: densidad habitacional por colonia",
+        "Diagnóstico de estado del relleno sanitario / tiradero",
+        "Redacción del diagnóstico técnico — borrador 1",
+        "Revisión interna del diagnóstico con equipo ALQUIMIA",
+        "Entrega formal del diagnóstico técnico al municipio",
+    ],
+    "T02": [
+        "Revisión de normas técnicas: NOM-083, NMX-AA-061, Guía SEMARNAT 2022",
+        "Definición de tipología de CAs según composición RSU",
+        "Selección de terrenos candidatos — análisis de viabilidad",
+        "Visita técnica a terrenos candidatos con equipo de obras",
+        "Elaboración de programa arquitectónico del CA",
+        "Desarrollo de planos arquitectónicos (planta baja)",
+        "Desarrollo de planos de instalaciones hidráulicas",
+        "Desarrollo de planos eléctricos y de iluminación",
+        "Especificaciones técnicas de equipamiento fijo",
+        "Especificaciones técnicas de báscula y sistemas de pesaje",
+        "Revisión con Dirección de Obras Públicas",
+        "Ajustes post-revisión — planos definitivos",
+        "Elaboración de presupuesto de obra detallado",
+        "Entrega del proyecto ejecutivo al municipio",
+        "Presentación ante cabildo — validación de diseño",
+        "Ajustes finales por observaciones de cabildo",
+        "Firma de aprobación del proyecto ejecutivo",
+        "Preparación de documentos para licitación",
+        "Registro del proyecto en SINFRA / plataforma estatal",
+        "Cierre de paquete de licitación",
+    ],
+    "T03": [
+        "Publicación de convocatoria en DiarioOficial / portal municipal",
+        "Junta de aclaraciones con licitantes — sesión 1",
+        "Junta de aclaraciones — sesión 2 (si aplica)",
+        "Recepción de propuestas técnicas",
+        "Revisión de propuestas técnicas — evaluación interna",
+        "Recepción de propuestas económicas",
+        "Análisis comparativo de propuestas económicas",
+        "Elaboración del dictamen de adjudicación",
+        "Revisión del dictamen con síndico municipal",
+        "Notificación del fallo a todos los participantes",
+        "Firma del contrato con empresa ganadora",
+        "Entrega de anticipo (si aplica)",
+        "Inicio formal de obra: acta de inicio",
+        "Registro del contrato en CompraNet / sistema estatal",
+        "Briefing operativo a empresa contratista",
+    ],
+    "T04": [
+        "Limpieza y preparación del terreno",
+        "Trazo y nivelación",
+        "Excavación de cimientos",
+        "Colado de cimientos y contratrabes",
+        "Levantamiento de muros perimetrales",
+        "Levantamiento de muros internos",
+        "Instalación de cubierta / techumbre",
+        "Instalaciones hidráulicas — red de agua",
+        "Instalaciones sanitarias — drenaje",
+        "Instalaciones eléctricas — acometida",
+        "Instalaciones eléctricas — circuitos internos",
+        "Iluminación LED de área de trabajo",
+        "Piso industrial antiderrapante — zona de pesaje",
+        "Piso industrial — zona de almacenamiento",
+        "Acabados: aplanados y pintura",
+        "Señalética de seguridad e identificación de materiales",
+        "Instalación de portones y accesos",
+        "Área verde perimetral (si aplica)",
+        "Conexión a servicios municipales (agua, drenaje, luz)",
+        "Pruebas hidráulicas y eléctricas",
+        "Limpieza de obra y retiro de escombro",
+        "Supervisión final: lista de pendientes",
+        "Corrección de observaciones",
+        "Entrega física del inmueble al municipio",
+    ],
+    "T05": [
+        "Recepción y cotejo de equipo de báscula mayor",
+        "Instalación de báscula de piso (camiones)",
+        "Recepción de báscula de mostrador (sacos)",
+        "Instalación de bandas clasificadoras",
+        "Recepción de prensa hidráulica para plástico",
+        "Instalación y prueba de prensa plástico",
+        "Recepción de prensa para cartón/papel",
+        "Instalación y prueba de prensa cartón",
+        "Recepción de trituradora de vidrio",
+        "Instalación y prueba de trituradora vidrio",
+        "Recepción de contenedores diferenciados (6 fracciones)",
+        "Distribución de contenedores en zonas internas",
+        "Instalación de sistema de CCTV",
+        "Instalación de red de datos / WiFi",
+        "Prueba integral de todo el equipamiento",
+        "Capacitación al personal operativo en equipos",
+        "Elaboración de manual de operación del CA",
+        "Entrega de documentación técnica de equipos",
+        "Acta de entrega-recepción del equipamiento",
+        "Inicio de operación en modo prueba (soft launch)",
+    ],
+}
+
+# Para tareas sin template específico, usar actividades genéricas
+_DAILY_TEMPLATE_GENERICO = [
+    "Revisión de avances con equipo técnico",
+    "Actualización de bitácora de proyecto",
+    "Coordinación con responsables municipales",
+    "Seguimiento de entregables pendientes",
+    "Informe de avance semanal",
+]
+
+
+def build_daily_breakdown(
+    tasks: List[PlanningTask],
+    fecha_inicio: date,
+) -> List[Dict[str, Any]]:
+    """
+    Expande las tareas del Gantt en actividades diarias con fechas de calendario reales.
+
+    Args:
+        tasks: Lista de PlanningTask del Gantt Maestro.
+        fecha_inicio: Fecha de inicio del programa (primer día hábil).
+
+    Returns:
+        Lista de dicts con: task_id, subtarea_id, nombre_tarea, actividad_diaria,
+        dia_relativo (1-based), fecha_calendario (ISO str), es_hito.
+    """
+    resultado: List[Dict[str, Any]] = []
+
+    for task in tasks:
+        dias_habiles = task.duracion_semanas * 5  # ≈ 5 días hábiles por semana
+        template = _DAILY_TEMPLATES.get(task.task_id, _DAILY_TEMPLATE_GENERICO)
+
+        # Calcular fecha de inicio real de esta tarea
+        tarea_inicio = _añadir_dias_habiles(fecha_inicio, (task.inicio_semana - 1) * 5)
+
+        for dia in range(1, dias_habiles + 1):
+            actividad_idx = min(dia - 1, len(template) - 1)
+            actividad = template[actividad_idx]
+
+            # Fecha calendario del día hábil
+            fecha_dia = _añadir_dias_habiles(tarea_inicio, dia - 1)
+
+            resultado.append({
+                "task_id": task.task_id,
+                "subtarea_id": f"{task.task_id}-D{dia:02d}",
+                "nombre_tarea": task.nombre,
+                "actividad_diaria": actividad,
+                "dia_relativo": dia,
+                "semana_relativa": math.ceil(dia / 5),
+                "fecha_calendario": fecha_dia.isoformat(),
+                "dia_semana": fecha_dia.strftime("%A"),
+                "es_hito": dia == dias_habiles,  # último día = hito de cierre
+                "responsable": task.responsable,
+            })
+
+    return resultado
+
+
+def semanas_a_fecha(semanas: int, fecha_inicio: date) -> date:
+    """Convierte un número de semanas relativas a una fecha real de calendario."""
+    return _añadir_dias_habiles(fecha_inicio, (semanas - 1) * 5)

@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { AlertTriangle, RefreshCw, CheckCircle2, Clock } from 'lucide-react'
+import { useEffect, useState, useCallback } from 'react'
+import { AlertTriangle, RefreshCw, CheckCircle2, Clock, Download, Calendar } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { buildPlanningAll, type GanttPlan, type PertPlan, type RACIPlan } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -19,12 +19,49 @@ export function GanttMaestroView() {
   const capex      = (resultados?.capexTotal as number | undefined) ?? 1_500_000
   const scenarioId = `${zm}-${municipio}-${Date.now()}`
 
+  const fechaInicioPrograma = useSimulatorStore(s => s.fechaInicioPrograma)
+  const setFechaInicioPrograma = useSimulatorStore(s => s.setFechaInicioPrograma)
+
   const [tab, setTab]         = useState<InnerTab>('gantt')
   const [loading, setLoading] = useState(false)
   const [error, setError]     = useState<string | null>(null)
   const [gantt, setGantt]     = useState<GanttPlan | null>(null)
   const [pert, setPert]       = useState<PertPlan | null>(null)
   const [raci, setRaci]       = useState<RACIPlan | null>(null)
+
+  const exportarClickUp = useCallback(() => {
+    if (!gantt) return
+    // Generate ClickUp-compatible CSV
+    const headers = ['Task Name', 'List', 'Assignee', 'Due Date', 'Start Date', 'Priority', 'Status', 'Description']
+    const startDate = fechaInicioPrograma ? new Date(fechaInicioPrograma) : new Date()
+    const addDays = (d: Date, days: number) => {
+      const r = new Date(d); r.setDate(r.getDate() + days); return r
+    }
+    const fmtDate = (d: Date) =>
+      `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`
+
+    const rows = gantt.tasks.map(t => {
+      const taskStart = addDays(startDate, (t.inicio_semana - 1) * 7)
+      const taskEnd   = addDays(taskStart, t.duracion_semanas * 7)
+      return [
+        t.nombre,
+        'ALQUIMIA - Programa Municipal',
+        t.responsable,
+        fmtDate(taskEnd),
+        fmtDate(taskStart),
+        t.es_critica ? 'High' : 'Normal',
+        'To Do',
+        t.descripcion ?? '',
+      ].map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')
+    })
+
+    const csv = [headers.join(','), ...rows].join('\n')
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a'); a.href = url
+    a.download = `gantt-alquimia-${municipio}-${new Date().toISOString().slice(0,10)}.csv`
+    a.click(); URL.revokeObjectURL(url)
+  }, [gantt, fechaInicioPrograma, municipio])
 
   useEffect(() => {
     let cancelled = false
@@ -76,6 +113,35 @@ export function GanttMaestroView() {
 
   return (
     <div className="space-y-4">
+      {/* Controles de fecha de inicio y exportación */}
+      <div className="flex flex-wrap items-center gap-3 px-1">
+        <div className="flex items-center gap-2">
+          <Calendar size={14} className="text-[#3B6D11]" />
+          <label className="text-[11px] font-medium text-[#6B6760]">Fecha de inicio del programa:</label>
+          <input
+            type="date"
+            value={fechaInicioPrograma ?? ''}
+            onChange={e => setFechaInicioPrograma(e.target.value || null)}
+            className="text-[11px] border border-[#E8E4DC] rounded px-2 py-1 text-[#1C1B18] focus:outline-none focus:border-[#3B6D11]"
+          />
+        </div>
+        {fechaInicioPrograma && gantt && (
+          <div className="text-[11px] text-[#3B6D11] font-medium">
+            Oleada operativa: ~{new Date(new Date(fechaInicioPrograma).getTime() + 18 * 7 * 24 * 3600 * 1000).toLocaleDateString('es-MX', { year:'numeric',month:'long',day:'numeric' })}
+          </div>
+        )}
+        {gantt && (
+          <button
+            type="button"
+            onClick={exportarClickUp}
+            className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#EAF3DE] border border-[#C9DDB1] text-[#3B6D11] text-[11px] font-semibold hover:bg-[#D4ECBD] transition-colors"
+          >
+            <Download size={12} />
+            Exportar a ClickUp CSV
+          </button>
+        )}
+      </div>
+
       {/* Sub-tabs */}
       <nav className="flex gap-1 rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-1">
         {(['gantt', 'pert', 'raci'] as InnerTab[]).map(t => (

@@ -19,16 +19,26 @@ export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
     'citizen_inputs',
     'impact_finance', // se simplifica a Ambiental + Multiplicadores en page.tsx
   ],
-  // Funcionario — sala de mando institucional.
+  // Funcionario — journey narrativo en 4 etapas.
+  // Etapa 1 Diagnóstico: M01-M03 | Etapa 2 Planeación: M04-M08
+  // Etapa 3 Ejecución: M09-M11  | Etapa 4 Monitoreo: M12-M13
   functionary: [
+    // Etapa 1 — Diagnóstico
     'city_baseline',
     'municipal_context',
     'social_study',
+    // Etapa 2 — Planeación
     'future_goals',
     'infrastructure_operations',
+    'logistica_operativa',
     'market_traceability',
-    'inspeccion_predios',
+    'risk_trends',
+    // Etapa 3 — Ejecución
+    'esquema_concesion',
     'scenarios_export',
+    'inspeccion_predios',
+    // Etapa 4 — Monitoreo y Reporte
+    'doble_materialidad',
     'source_traceability',
   ],
   // Empresario — perfil organización + trazabilidad + reporte.

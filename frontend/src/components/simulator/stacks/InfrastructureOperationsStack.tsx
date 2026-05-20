@@ -30,15 +30,39 @@ const LEGAL_ZM: Record<string, { fase: string }> = {
   GDL: { fase: 'Diagnóstico y reforma' },
 }
 
-// Proposed center table
-const CENTERS_TABLE = [
-  { id: 'CA-01 Juntis',   zona: 'Poniente', tipo: 'Pequeño',  estado: 'En diseño',    uso: 'Residencial',    vial: 'Adecuada',    permiso: 'En trámite', prioridad: 'Alta',  cap: 5,  fase: 'F2' },
-  { id: 'CA-02 Júnez',    zona: 'Poniente', tipo: 'Mediano',  estado: 'En gestión',   uso: 'Mixto',          vial: 'Buena',       permiso: 'Aprobado',   prioridad: 'Alta',  cap: 15, fase: 'F2' },
-  { id: 'CA-03 Girasoles', zona: 'Norte',   tipo: 'Pequeño',  estado: 'Planeación',   uso: 'Residencial',    vial: 'Compatible',  permiso: 'Pendiente',  prioridad: 'Media', cap: 5,  fase: 'F3' },
-  { id: 'CA-04 Santa Rita', zona: 'Norte',  tipo: 'Grande',   estado: 'En diseño',    uso: 'Industrial',     vial: 'Muy buena',   permiso: 'En trámite', prioridad: 'Alta',  cap: 50, fase: 'F3' },
-  { id: 'CA-05 Corregidora', zona: 'Sur',   tipo: 'Mediano',  estado: 'Planeación',   uso: 'Mixto',          vial: 'Adecuada',    permiso: 'Pendiente',  prioridad: 'Media', cap: 15, fase: 'F4' },
-  { id: 'CA-06 Centro Sur', zona: 'Sur',    tipo: 'Pequeño',  estado: 'Planeación',   uso: 'Residencial',    vial: 'Compatible',  permiso: 'Pendiente',  prioridad: 'Baja',  cap: 5,  fase: 'F4' },
-]
+// Proposed center table — generado dinámicamente en el componente según mixCAs del municipio activo
+// Mantenemos los datos de ejemplo solo como fallback; la tabla real se genera con generateCentersTable()
+type CenterRow = {
+  id: string; zona: string; tipo: string; estado: string
+  uso: string; vial: string; permiso: string; prioridad: string; cap: number; fase: string
+}
+
+const ZONAS_GENERICAS = ['Norte', 'Sur', 'Poniente', 'Oriente', 'Centro', 'Periférico']
+const LETRAS_ZONA = ['A','B','C','D','E','F','G','H']
+
+function generateCentersTable(mixCAs: { P: number; M: number; G: number }): CenterRow[] {
+  const rows: CenterRow[] = []
+  let idx = 1
+  const zonaIdx = () => ZONAS_GENERICAS[(idx - 1) % ZONAS_GENERICAS.length] ?? 'Norte'
+  const letraIdx = () => LETRAS_ZONA[(idx - 1) % LETRAS_ZONA.length] ?? 'A'
+  const addRow = (tipo: string, cap: number, prioridad: string, fase: string) => {
+    rows.push({
+      id: `CA-${String(idx).padStart(2,'0')} Zona ${letraIdx()}`,
+      zona: zonaIdx(), tipo, estado: idx <= 2 ? 'En diseño' : 'Planeación',
+      uso: tipo === 'Grande' ? 'Industrial/Mixto' : 'Residencial',
+      vial: tipo === 'Grande' ? 'Muy buena' : tipo === 'Mediano' ? 'Buena' : 'Adecuada',
+      permiso: idx === 2 ? 'Aprobado' : idx === 1 ? 'En trámite' : 'Pendiente',
+      prioridad, cap, fase,
+    })
+    idx++
+  }
+  for (let i = 0; i < (mixCAs.P ?? 0); i++) addRow('Pequeño', 5, i < 2 ? 'Alta' : 'Media', i < 2 ? 'F2' : 'F3')
+  for (let i = 0; i < (mixCAs.M ?? 0); i++) addRow('Mediano', 15, i < 1 ? 'Alta' : 'Media', 'F2')
+  for (let i = 0; i < (mixCAs.G ?? 0); i++) addRow('Grande', 50, 'Alta', 'F3')
+  // Minimum 1 row for display
+  if (rows.length === 0) addRow('Pequeño', 5, 'Alta', 'F2')
+  return rows
+}
 
 // Material flows
 type FuenteId = 'todos' | 'residencial' | 'comercial' | 'privado' | 'institucional'
@@ -62,27 +86,29 @@ const TRUCKS_BY_MATERIAL = [
   { material: 'Otros',            volDia: 36.1,  camiones: 1,  frecuencia: '2×/sem', riesgo: 'Bajo', obs: 'Consolidar con ruta de residuos mixtos' },
 ]
 
-// PER routes
-const PER_ROUTES = [
-  {
-    id: 'QRO-Z1', material: 'Orgánicos',  presion: 'Saturación en zona sur. Carga 110% de capacidad.',
-    estado: 'Programada. Unidad RSU-01. Lun-Mié-Vie 07:00.',
-    respuesta: 'Ajuste en frecuencia. Agregar 1 recorrido. Revisar bitácora semanal.',
-    bitacora: 'Últimas visitas: 19 may · 16 may · 14 may', estado_chip: 'alerta' as const,
-  },
-  {
-    id: 'QRO-Z3', material: 'Reciclables', presion: 'Ruta incompleta; 2 colonias fuera de cobertura.',
-    estado: 'En operación. Unidad RSU-04. Mar-Jue 08:00.',
-    respuesta: 'Monitoreo de precio. Monitoreo calidad de separación.',
-    bitacora: 'Últimas visitas: 18 may · 12 may · 7 may', estado_chip: 'info' as const,
-  },
-]
+// PER routes — IDs generados dinámicamente según municipio activo
+function generatePERRoutes(municipioPrefix: string) {
+  return [
+    {
+      id: `${municipioPrefix}-Z1`, material: 'Orgánicos',  presion: 'Saturación en zona sur. Carga 110% de capacidad.',
+      estado: 'Programada. Unidad RSU-01. Lun-Mié-Vie 07:00.',
+      respuesta: 'Ajuste en frecuencia. Agregar 1 recorrido. Revisar bitácora semanal.',
+      bitacora: 'Últimas visitas recientes', estado_chip: 'alerta' as const,
+    },
+    {
+      id: `${municipioPrefix}-Z2`, material: 'Reciclables', presion: 'Ruta incompleta; 2 colonias fuera de cobertura.',
+      estado: 'En operación. Unidad RSU-04. Mar-Jue 08:00.',
+      respuesta: 'Monitoreo de precio. Monitoreo calidad de separación.',
+      bitacora: 'Últimas visitas recientes', estado_chip: 'info' as const,
+    },
+  ]
+}
 
-// Bottlenecks
+// Bottlenecks — referencias a zonas sin nombres hardcoded
 const BOTTLENECKS_LOG = [
-  { zona: 'Zona sur con saturación',      gravedad: 'Alto',  causa: 'Carga superior a capacidad instalada', impacto: 'Retrasos y desbordamiento', accion: 'Desviar rutas a CA-02 Júnez temporalmente' },
-  { zona: 'Ruta de orgánicos incompleta', gravedad: 'Medio', causa: 'Pérdida de material orgánico fresco',  impacto: 'Pérdida de valor compostal',  accion: 'Completar ruta en circuito 25 y 22' },
-  { zona: 'Ventana de descarga insuficiente', gravedad: 'Medio', causa: 'Tiempo de descarga > ventana operativa', impacto: 'Tiempos muertos y filas', accion: 'Ampliar horario CA-01 a 6:00 am' },
+  { zona: 'Zona sur con saturación',      gravedad: 'Alto',  causa: 'Carga superior a capacidad instalada', impacto: 'Retrasos y desbordamiento', accion: 'Desviar rutas al CA mediano de zona norte temporalmente' },
+  { zona: 'Ruta de orgánicos incompleta', gravedad: 'Medio', causa: 'Pérdida de material orgánico fresco',  impacto: 'Pérdida de valor compostal',  accion: 'Completar ruta en colonias pendientes de cobertura' },
+  { zona: 'Ventana de descarga insuficiente', gravedad: 'Medio', causa: 'Tiempo de descarga > ventana operativa', impacto: 'Tiempos muertos y filas', accion: 'Ampliar horario del CA principal a 6:00 am' },
 ]
 
 // Adoption phases
@@ -458,8 +484,9 @@ function RightRail({ page }: { page: number }) {
 
 // ── Page 1 — Infraestructura y capacidad ─────────────────────────────────────
 
-function Page1({ rsuDia, capInstalada, brecha, centros }: {
+function Page1({ rsuDia, capInstalada, brecha, centros, centersTable }: {
   rsuDia: number; capInstalada: number; brecha: number; centros: number
+  centersTable: CenterRow[]
 }) {
   // Phase deployment chart data from FASES_CA
   const phaseData = FASES_CA.map(f => ({
@@ -641,7 +668,7 @@ function Page1({ rsuDia, capInstalada, brecha, centros }: {
                 </tr>
               </thead>
               <tbody>
-                {CENTERS_TABLE.map((c, i) => {
+                {centersTable.map((c, i) => {
                   const prioColor = c.prioridad === 'Alta' ? 'bg-[#FDE8E8] text-[#B91C1C]' : c.prioridad === 'Media' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#F4F2ED] text-[#6B6760]'
                   const estadoColor = c.estado === 'En diseño' ? 'text-[#1A5FA8]' : c.estado === 'En gestión' ? 'text-[#D4881E]' : 'text-[#6B6760]'
                   return (
@@ -680,7 +707,7 @@ function Page1({ rsuDia, capInstalada, brecha, centros }: {
               { label: 'Recomendación', value: 'Plan moderado F3–F5', color: '#3B6D11' },
               { label: 'Riesgo principal', value: 'Predios y permisos',    color: '#C0392B' },
               { label: 'Condición crítica', value: 'Operador contratado',  color: '#D4881E' },
-              { label: 'Siguiente acción', value: 'Gestionar predios CA-01', color: '#1A5FA8' },
+              { label: 'Siguiente acción', value: 'Gestionar predios del CA principal', color: '#1A5FA8' },
             ].map(c => (
               <div key={c.label} className="rounded-[8px] border border-[#C4DFA0] bg-white px-2.5 py-2">
                 <p className="text-[8px] uppercase text-[#A8A49C]">{c.label}</p>
@@ -830,7 +857,7 @@ function Page2({ rsuDia }: { rsuDia: number }) {
 
 // ── Page 3 — Logística y operación ───────────────────────────────────────────
 
-function Page3({ rsuDia }: { rsuDia: number }) {
+function Page3({ rsuDia, perRoutes }: { rsuDia: number; perRoutes: ReturnType<typeof generatePERRoutes> }) {
   const seasonData = MESES.map((m, i) => {
     const base = rsuDia * 30
     const factor = 1 + (ESTACIONALIDAD[i] ?? 0)
@@ -962,7 +989,7 @@ function Page3({ rsuDia }: { rsuDia: number }) {
       {/* PER routes */}
       <div className="space-y-3">
         <p className="text-[12px] font-semibold text-[#1C1B18]">PER — Presión, estado y respuesta por ruta crítica</p>
-        {PER_ROUTES.map(r => (
+        {perRoutes.map(r => (
           <div key={r.id} className={cn('rounded-[10px] border p-4', r.estado_chip === 'alerta' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#BDD7F5] bg-[#EBF3FB]')}>
             <div className="flex items-center gap-2 mb-3">
               <span className="font-mono text-[10px] font-bold bg-[#1C2B15] text-white px-2 py-0.5 rounded">{r.id}</span>
@@ -1455,6 +1482,10 @@ export function InfrastructureOperationsStack() {
 
   const trayectoria = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
   const municipio   = seleccionMunicipioCatalog?.nombre ?? zmActiva
+
+  // Dynamic tables — no hardcoded SLP/QRO references
+  const centersTable = useMemo(() => generateCentersTable(mixCAs), [mixCAs])
+  const perRoutes    = useMemo(() => generatePERRoutes(zmActiva.slice(0, 3).toUpperCase()), [zmActiva])
   const rsuDia      = resultados?.rsuTotalTonDia ?? 379.3
 
   const capInstalada = useMemo(() =>
@@ -1514,9 +1545,9 @@ export function InfrastructureOperationsStack() {
             rsuDia={rsuDia} capInstalada={capInstalada} brecha={brecha}
             empleos={empleos} centrosObj={targetCA} cobertura={cobertura}
           />
-          {page === 1 && <Page1 rsuDia={rsuDia} capInstalada={capInstalada} brecha={brecha} centros={targetCA} />}
+          {page === 1 && <Page1 rsuDia={rsuDia} capInstalada={capInstalada} brecha={brecha} centros={targetCA} centersTable={centersTable} />}
           {page === 2 && <Page2 rsuDia={rsuDia} />}
-          {page === 3 && <Page3 rsuDia={rsuDia} />}
+          {page === 3 && <Page3 rsuDia={rsuDia} perRoutes={perRoutes} />}
           {page === 4 && <Page4 />}
           {page === 5 && <Page5 />}
           <PageNavFooter page={page} setPage={setPage} />

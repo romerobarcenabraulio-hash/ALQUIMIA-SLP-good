@@ -186,6 +186,13 @@ interface SimulatorStore extends SimulatorState {
   // ── Estudio social — encuesta de campo ────────────────────────────────────
   setCasaViaPublicaPct: (v: number) => void
   fetchEncuestaResultados: (municipioId: string) => Promise<void>
+
+  // ── Esquema de concesión ──────────────────────────────────────────────────
+  setEsquemaConcesion: (v: import('@/types').EsquemaConcesion) => void
+  setPctCuotaConcesion: (v: number) => void
+  setPctSocioPublico: (v: number) => void
+  setArbolDecisionAnswer: (key: keyof import('@/types').ArbolDecisionAnswers, value: boolean | null) => void
+  setFechaInicioPrograma: (v: string | null) => void
 }
 
 const defaultState: SimulatorState = {
@@ -234,6 +241,16 @@ const defaultState: SimulatorState = {
   indicePreparacionCiudadana: null, // null = sin encuesta de campo; usa benchmark SEMARNAT 2022 (70)
   indexAceptacionVP: null,
   encuestaResultados: null,
+  // Esquema de concesión / modelo de negocio
+  esquemaConcesion: 'A',           // Default: Municipal Directo
+  pctCuotaConcesion: 10,           // 10% cuota concesión (esquemas B/C)
+  pctSocioPublico: 50,             // 50% para socio público en APP (esquema C)
+  arbolDecisionAnswers: {
+    tienepresupuesto: null,
+    existeConcesionario: null,
+    aceptaRenegociar: null,
+  },
+  fechaInicioPrograma: null,
 }
 
 /** Plantilla de estado inicial (tests Q-024 y fixtures). */
@@ -770,6 +787,25 @@ export const useSimulatorStore = create<SimulatorStore>()(
         setCasaViaPublicaPct: (v) => {
           set({ casaViaPublicaPct: Math.max(0, Math.min(100, v)) })
           get().recalcular()
+        },
+
+        setEsquemaConcesion: (v) => {
+          set({ esquemaConcesion: v })
+          get().recalcular()
+        },
+        setPctCuotaConcesion: (v) => {
+          set({ pctCuotaConcesion: Math.max(1, Math.min(50, v)) })
+          get().recalcular()
+        },
+        setPctSocioPublico: (v) => {
+          set({ pctSocioPublico: Math.max(10, Math.min(90, v)) })
+          get().recalcular()
+        },
+        setArbolDecisionAnswer: (key, value) => {
+          set(s => ({ arbolDecisionAnswers: { ...s.arbolDecisionAnswers, [key]: value } }))
+        },
+        setFechaInicioPrograma: (v) => {
+          set({ fechaInicioPrograma: v })
         },
 
         fetchEncuestaResultados: async (municipioId) => {

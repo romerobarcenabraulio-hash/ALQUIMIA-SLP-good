@@ -1,6 +1,17 @@
 // ─── ZMs y Municipios ───────────────────────────────────────────────────────
 
 export type MaterialKey = 'organico' | 'papel' | 'plastico' | 'vidrio' | 'aluminio' | 'otros'
+
+/** Esquema institucional de operación del CA.
+ * A = Municipal Directo, B = Concesionado Privado, C = APP, D = Fideicomiso BANOBRAS */
+export type EsquemaConcesion = 'A' | 'B' | 'C' | 'D'
+
+/** Respuestas del árbol de decisión de financiamiento institucional */
+export interface ArbolDecisionAnswers {
+  tienepresupuesto: boolean | null
+  existeConcesionario: boolean | null
+  aceptaRenegociar: boolean | null
+}
 export type TipoVivienda = 'vertical' | 'casa' | 'residencial'
 export type TamañoCA    = 'P' | 'M' | 'G'
 export type PrecioCarbonoEscenario = 'voluntario' | 'sce' | 'eu'
@@ -584,6 +595,20 @@ export interface SimulatorState {
 
   /** Resultado completo de la última consulta al endpoint /survey/{municipio}/resultados. */
   encuestaResultados: EncuestaResultados | null
+
+  // ── Esquema de concesión / modelo de negocio ───────────────────────────────
+  /** Esquema institucional de operación seleccionado. Default: 'A' (municipal directo). */
+  esquemaConcesion: EsquemaConcesion
+  /** % de ingresos brutos que va al municipio como cuota de concesión (solo esquemas B y C). */
+  pctCuotaConcesion: number
+  /** % del ingreso asignado al socio público en esquema C (APP). */
+  pctSocioPublico: number
+  /** Respuestas del árbol de decisión institucional (para pre-seleccionar esquema). */
+  arbolDecisionAnswers: ArbolDecisionAnswers
+
+  // ── Informe / exportación ──────────────────────────────────────────────────
+  /** Fecha de inicio del programa para proyecciones de calendario (Gantt). */
+  fechaInicioPrograma: string | null
 }
 
 export interface SeleccionMunicipioCatalog {
@@ -690,8 +715,32 @@ export interface ResultadosCalculados {
   paybackMeses:        number
   paybackDescontado:   number
   ingresoCarbono:      number
+  /** Potencial técnico de biogás — NO incluido en ingresos base (requiere permiso CRE autoconsumo).
+   *  Fuente: CRE Resolución RES/2/2016. Mantenido como indicador informativo. */
   ingresoBiogas:       number
   ahorroDisposicion:   number
+
+  // ── Modelo de concesión — distribución de valor ────────────────────────────
+  /** Ingresos que van directamente al municipio según esquema (A=100%, B=cuota%, C=pctSocio%, D=post-deuda). */
+  ingresosMunicipioOperativo: number
+  /** Ingresos fiscales al municipio: ISN + derechos de operación + predial (cuando aplica). */
+  ingresosMunicipioFiscal: number
+  /** Total ingresos municipio = operativo + fiscal. Responde la pregunta del cabildo. */
+  ingresosMunicipioTotal: number
+
+  // ── Derrama por industria (sustituye multiplicador flat 1.4x) ─────────────
+  derramaIndustrialPorSector: {
+    reciclaje:  number   // PET + papel + vidrio procesado localmente
+    acerera:    number   // metales → industria siderúrgica (CANACERO 2023: 3.2 empleos/kt)
+    agricola:   number   // composta → fertilizante equivalente (SAGARPA/SIAP 2023)
+  }
+  /** Empleos por sector industrial (para presentación diferenciada al cabildo). */
+  empleosPorSector: {
+    centrosAcopio: number
+    recicladoras:  number
+    acerera:       number
+    agricola:      number
+  }
 
   // Empleos
   empleosDirectosCAs:       number

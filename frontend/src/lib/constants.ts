@@ -194,13 +194,71 @@ export const MULTIPLICADORES = {
   empleoIndirecto:    [2.5, 3.5],
   cadenaProveedores:  0.25,
   valorPropiedad:     0.12,
-  revenueFiscal:      0.16,
+  revenueFiscal:      0.16,  // LEGACY — solo para backward compat; usar ingresosMunicipioFiscal
   inversionPrivada:   1.40,
   ahorroSaludHabAño:  145,
   carbonCredVolUSD:   5,
   carbonCredSCEUSD:   15,
   carbonCredEUUSD:    75,
 } as const
+
+// ─── Tasas ISN por estado (Impuesto Sobre Nómina) ────────────────────────────
+// Fuente: Leyes de Hacienda de cada estado — vigentes 2025.
+export const TASAS_ISN: Record<string, number> = {
+  'San Luis Potosí': 0.020,  // Ley de Hacienda SLP, Art. 48: 2.0%
+  'Nuevo León':      0.030,  // Ley de Hacienda NL, Art. 32: 3.0%
+  'Querétaro':       0.020,  // Ley de Hacienda QRO, Art. 33: 2.0%
+  default:           0.020,  // Fallback conservador
+} as const
+
+// ─── Derechos de operación de CA (tarifa municipal anual por CA) ─────────────
+// Estimación: SEMARNAT Guía Técnica CAs 2022, §7.3 — tarifas de licencia operativa.
+export const DERECHOS_OPERACION_CA_AÑO = 15_000  // MXN/año/CA — solo si hay operador privado
+
+// ─── Parámetros de composta / sector agrícola ─────────────────────────────────
+// Fuente: SAGARPA/SADER SIAP 2023 — precios mercado mayorista composta granel México.
+export const COMPOSTA = {
+  // Rendimiento: 1 ton orgánico húmedo → 0.35 ton composta seca (pérdida por evaporación).
+  // Fuente: SEMARNAT Guía Compostaje Municipal 2020, p. 44.
+  factorCompostaje:  0.35,
+  // Precio a granel: MXN/ton — rango verificado SIAP 2023 (1,800–2,200). Conservador.
+  precioTonMxn:      1_800,
+  // Ha fertilizadas por tonelada de composta (aplicación 5 t/ha/año — FIRA 2022).
+  haEquivalentePorTon: 0.20,
+  // Empleos en agricultura por ha adicional cultivada (SIAP 2023: 2.1 emp/ha temporales).
+  empleosPorHa:      2.1,
+} as const
+
+// ─── Factores de empleo sectorial ─────────────────────────────────────────────
+export const FACTORES_EMPLEO_SECTORIAL = {
+  // Acerera: empleos directos por kt de chatarra procesada.
+  // Fuente: CANACERO (Cámara Nacional del Acero) Informe 2023, p. 18.
+  acereroEmpPorKt:   3.2,
+  // Salario promedio mensual planta acerera (IMSS 2024 sector siderúrgico).
+  acereroSalMes:     18_500,
+  // Reciclaje plástico/papel/vidrio: empleos por planta × plantas requeridas.
+  // Fuente: ANIPAC 2023 — promedio planta pequeña México: 18 empleos directos.
+  recicladoraEmpPorPlanta: 18,
+  recicladoraSalMes: 12_500,
+} as const
+
+// ─── Parámetros fiscales para esquema de concesión ───────────────────────────
+export const CONCESION_DEFAULTS = {
+  pctCuotaDefault:   10,   // % de ingresos brutos al municipio (esquemas B/C)
+  pctSocioPublicoDefault: 50, // % para el socio público en APP (esquema C)
+  // Tasa deuda fiduciaria BANOBRAS Programa CCA 2024 (fuente: BANOBRAS Catálogo 2024).
+  tasaFideicomisoBanobras: 0.085,
+  plazoFideicomisoBanobras: 10,
+} as const
+
+// ─── Marco legal de concesión por estado ─────────────────────────────────────
+// Fuente: leyes orgánicas municipales vigentes 2025.
+export const MARCO_LEGAL_CONCESION: Record<string, { ley: string; articulo: string }> = {
+  'San Luis Potosí': { ley: 'Ley Orgánica Municipal del Estado de SLP', articulo: 'Art. 78' },
+  'Nuevo León':      { ley: 'Ley de Gobierno Municipal del Estado de NL', articulo: 'Art. 23' },
+  'Querétaro':       { ley: 'Ley de Municipios del Estado de Querétaro', articulo: 'Art. 91' },
+  default:           { ley: 'Ley Orgánica Municipal del estado correspondiente', articulo: 'Art. aplicable' },
+}
 
 // ─── ZMs (Fase A — en memoria, §4.1) ─────────────────────────────────────────
 export const ZMS_ALL: ZonaMetropolitana[] = [

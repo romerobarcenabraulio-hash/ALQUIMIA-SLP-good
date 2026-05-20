@@ -1,8 +1,9 @@
-import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos, TipoVivienda, RiskScores, MonteCarloPercentiles } from '@/types'
+import type { SimulatorState, ResultadosCalculados, AñoResultados, SnapshotDatos, TipoVivienda, RiskScores, MonteCarloPercentiles, EsquemaConcesion } from '@/types'
 import {
   COMPOSICION_RSU_DETALLE, OPEX_PARAMS, MODELO_PARAMS,
   MULTIPLICADORES, FACTORES_EMISION, CA_CONFIG, ESTACIONALIDAD,
-  ZMS,
+  ZMS, TASAS_ISN, DERECHOS_OPERACION_CA_AÑO, COMPOSTA,
+  FACTORES_EMPLEO_SECTORIAL, CONCESION_DEFAULTS, MARCO_LEGAL_CONCESION,
 } from './constants'
 import { resolveSimulationGeography } from './zmPopulationScale'
 import { OPEX_CA, ESTRUCTURA_DEUDA, RECICLADORAS, SUPUESTOS_GENERALES } from './capexOpexData'
@@ -121,15 +122,19 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     }
 
     // Ingresos anuales (300 días operativos)
+    // NOTA: biogás excluido del escenario base — requiere permiso CRE autoconsumo (Res. RES/2/2016).
+    // El orgánico va 100% a ruta de composta a granel.
     const d = MODELO_PARAMS.diasOperativos
     const p = state.precios
+    // Composta: volOrg (t/día) × factorCompostaje × precioCompostaMXN/ton × días × 1000 kg/t
+    const ingresosComposta = volOrg * COMPOSTA.factorCompostaje * COMPOSTA.precioTonMxn * d
     const ingresos =
       volPlas * COMPOSICION_RSU_DETALLE.plastico.petPct * p.pet * d * 1000 +
       volPlas * (1 - COMPOSICION_RSU_DETALLE.plastico.petPct) * p.hdpe * d * 1000 +
       volPap  * p.papel  * d * 1000 +
       volVid  * p.vidrio * d * 1000 +
       volMet  * COMPOSICION_RSU_DETALLE.metales.aluminioPct * p.aluminio * d * 1000 +
-      volOrg  * COMPOSICION_RSU_DETALLE.organico.composta * p.organico * d * 1000
+      ingresosComposta  // composta sustituye el precio p.organico anterior
 
     // CAPEX este año (CAs en proporción a tasa de captura)
     const caP = state.mixCAs.P ?? 0; const caM = state.mixCAs.M ?? 0; const caG = state.mixCAs.G ?? 0
@@ -264,8 +269,77 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   const casosDengue   = (últimoAño?.volTonDia.organico ?? 0) * 0.003 * MODELO_PARAMS.diasOperativos
   const ahorroSalud   = casosIRA * 450 + casosDengue * 8200 + popActiva * 145 * 0.20
 
-  // Derrama
-  const derremaTotal  = ingresosBrutos * 1.4 + ingresoCarbono + kwhBiogas * 0.001 + ahorroDisp + ahorroSalud
+  // ─── Empleo recicladoras (declarado aquí para uso en modelo de concesión) ────
+  const empleosRecicladoras = (['pet', 'vidrio', 'aluminio', 'organicos'] as const)
+    .reduce((sum, g) => sum + RECICLADORAS[g].empleosPorPlanta, 0)
+
+  // ─── Modelo de concesión — distribución de valor por esquema ────────────────
+  const esquema: EsquemaConcesion = (state as typeof state & { esquemaConcesion?: EsquemaConcesion }).esquemaConcesion ?? 'A'
+  const pctCuota = clamp(((state as typeof state & { pctCuotaConcesion?: number }).pctCuotaConcesion ?? CONCESION_DEFAULTS.pctCuotaDefault) / 100, 0.05, 0.50)
+  const pctSocioPublico = clamp(((state as typeof state & { pctSocioPublico?: number }).pctSocioPublico ?? CONCESION_DEFAULTS.pctSocioPublicoDefault) / 100, 0.10, 0.90)
+
+  // Ingreso operativo al municipio (según esquema)
+  const ingresosMunicipioOperativo = (() => {
+    if (esquema === 'A') return ingresosBrutos            // 100% al municipio
+    if (esquema === 'B') return ingresosBrutos * pctCuota  // cuota concesión 5-15%
+    if (esquema === 'C') return ingresosBrutos * pctSocioPublico // % convenido APP
+    // Esquema D — fideicomiso: ingreso post-servicio de deuda
+    const servicioDeudaAnual = capexTotal * CONCESION_DEFAULTS.tasaFideicomisoBanobras
+    const ingresoPostDeuda = Math.max(0, ingresosBrutos - servicioDeudaAnual)
+    return ingresoPostDeuda
+  })()
+
+  // Ingreso fiscal al municipio (ISN + derechos de operación — solo si hay operador privado)
+  const zmEstado = getZM(state.zmActiva)?.estado ?? ''
+  const tasaISN = TASAS_ISN[zmEstado] ?? TASAS_ISN['default'] ?? 0.020
+  const nCAsTotal = (state.mixCAs.P ?? 0) + (state.mixCAs.M ?? 0) + (state.mixCAs.G ?? 0)
+  const salarioBrutoPromAño = (esquema === 'A' ? 0 : (empleosDirectosCAs + empleosRecicladoras) * 14_298 * 12)
+  const ingresoISN = esquema === 'A' ? 0 : salarioBrutoPromAño * tasaISN
+  const ingresoDerechos = esquema === 'A' ? 0 : nCAsTotal * DERECHOS_OPERACION_CA_AÑO
+  const ingresosMunicipioFiscal = ingresoISN + ingresoDerechos
+  const ingresosMunicipioTotal = ingresosMunicipioOperativo + ingresosMunicipioFiscal
+
+  // ─── Derrama por industria (sustituye multiplicador flat 1.4×) ───────────────
+  // Reciclaje: ingresos de plástico + papel + vidrio = ya están en ingresosBrutos
+  const ingresosReciclaje = serieAnual.reduce((s, a) => {
+    const vt = a.volTonDia
+    return s + (
+      (vt.plastico ?? 0) * state.precios.pet * MODELO_PARAMS.diasOperativos * 1000 +
+      (vt.papel ?? 0)    * state.precios.papel * MODELO_PARAMS.diasOperativos * 1000 +
+      (vt.vidrio ?? 0)   * state.precios.vidrio * MODELO_PARAMS.diasOperativos * 1000
+    )
+  }, 0)
+
+  // Acerera: volumen metálico total acumulado × precio chatarra × multiplicador CANACERO
+  const volMetTotalHorizonte = serieAnual.reduce((s, a) =>
+    s + (a.volTonDia.aluminio ?? 0) * MODELO_PARAMS.diasOperativos, 0)
+  const ingresoAcerera = volMetTotalHorizonte * state.precios.aluminio * 1000 * 1.8  // 1.8x efecto multiplicador cadena
+
+  // Agrícola: composta generada × precio bulk × multiplicador FIRA
+  const volOrgTotalHorizonte = serieAnual.reduce((s, a) =>
+    s + (a.volTonDia.organico ?? 0) * MODELO_PARAMS.diasOperativos, 0)
+  const compostatTotalHorizonte = volOrgTotalHorizonte * COMPOSTA.factorCompostaje
+  const ingresoAgricola = compostatTotalHorizonte * COMPOSTA.precioTonMxn * 1.3  // 1.3x insumos agro sustitutos
+
+  const derramaIndustrialPorSector = {
+    reciclaje: ingresosReciclaje,
+    acerera:   ingresoAcerera,
+    agricola:  ingresoAgricola,
+  }
+
+  // ─── Empleos por sector industrial ──────────────────────────────────────────
+  const empleosAcerera = Math.round(volMetTotalHorizonte / 1000 * FACTORES_EMPLEO_SECTORIAL.acereroEmpPorKt)
+  const hectareasCompost = compostatTotalHorizonte * COMPOSTA.haEquivalentePorTon
+  const empleosAgricola = Math.round(hectareasCompost * COMPOSTA.empleosPorHa)
+  const empleosPorSector = {
+    centrosAcopio: empleosDirectosCAs,
+    recicladoras:  empleosRecicladoras,
+    acerera:       empleosAcerera,
+    agricola:      empleosAgricola,
+  }
+
+  // Derrama total — ahora es la suma de las derramas sectoriales + salud + carbono + ahorro disp.
+  const derremaTotal = ingresoAgricola + ingresosReciclaje + ingresoAcerera + ingresoCarbono + ahorroDisp + ahorroSalud
 
   // Score político (heurística)
   const scorePolitico = Math.min(100, Math.round(
@@ -331,10 +405,6 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     ? tir + (tir - tasaDeuda * 100) * (deudaPct / equityPct)
     : tir
 
-  // ─── Empleo recicladoras: 20 empleos/planta × 4 plantas Fase A (orgánicos, PET, vidrio, aluminio)
-  const empleosRecicladoras = (['pet', 'vidrio', 'aluminio', 'organicos'] as const)
-    .reduce((sum, g) => sum + RECICLADORAS[g].empleosPorPlanta, 0)
-
   return {
     pobActiva: popActiva, vivActivas, rsuTotalTonDia, rsuPorTipo,
     volCapturablePorMat,
@@ -348,7 +418,16 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     ingresosBrutos, capexTotal, opexAnual, ebitda, margenEbitda,
     vpn, tir, tirEquity: tirEquityCalc, moic: capexTotal > 0 ? vpn / capexTotal : 0,
     paybackMeses, paybackDescontado: paybackDesc,
-    ingresoCarbono, ingresoBiogas: kwhBiogas * OPEX_PARAMS.precioKwh, ahorroDisposicion: ahorroDisp,
+    ingresoCarbono,
+    // Biogás: potencial técnico informativo — excluido de ingresos base (requiere permiso CRE)
+    ingresoBiogas: kwhBiogas * OPEX_PARAMS.precioKwh,
+    ahorroDisposicion: ahorroDisp,
+    // Modelo de concesión
+    ingresosMunicipioOperativo,
+    ingresosMunicipioFiscal,
+    ingresosMunicipioTotal,
+    derramaIndustrialPorSector,
+    empleosPorSector,
     empleosDirectosCAs, empleosDirectosRecic: empleosRecicladoras,
     empleosTotalesDirectos: empleosDirectosCAs + empleosRecicladoras,
     empleosIndirectos, pepenadoresFormalizados: pepenadoresForm,

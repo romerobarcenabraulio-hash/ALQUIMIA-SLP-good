@@ -1,5 +1,38 @@
 import type { DecisionModule } from '@/types'
 
+/** Módulo de Logística Operativa — cliente-side, M06 en la nueva arquitectura narrativa. */
+export const LOGISTICA_MODULE: DecisionModule = {
+  module_id: 'logistica_operativa',
+  label: 'Logística operativa y diseño de piloto',
+  audience_mode: 'city_team',
+  decision: 'Diseñar la zona piloto, calcular rutas y definir la operación diaria antes de lanzar el programa.',
+  evidence: 'Matriz de selección de piloto (5 criterios ponderados), rutas calculadas dinámicamente, bitácora PER, análisis de cuellos de botella.',
+  status: 'ready',
+  next_action: 'Validar zona piloto con el equipo de campo y confirmar disponibilidad de camiones antes de la primera oleada.',
+}
+
+/** Módulo de Esquema de Concesión — cliente-side, M09 en la nueva arquitectura narrativa. */
+export const ESQUEMA_CONCESION_MODULE: DecisionModule = {
+  module_id: 'esquema_concesion',
+  label: 'Esquema de concesión y modelo de negocio',
+  audience_mode: 'city_team',
+  decision: 'Definir quién opera el CA, cómo se distribuyen los ingresos y cuánto recibe el municipio.',
+  evidence: 'Árbol de decisión institucional, distribución de ingresos por esquema (A/B/C/D), derrama industrial por sector (reciclaje, acerera, agrícola), empleos por sector.',
+  status: 'ready',
+  next_action: 'Seleccionar esquema con presidencia y síndico municipal. Preparar instrumento legal correspondiente.',
+}
+
+/** Módulo de Doble Materialidad — cliente-side, M12 en la nueva arquitectura narrativa. */
+export const DOBLE_MATERIALIDAD_MODULE: DecisionModule = {
+  module_id: 'doble_materialidad',
+  label: 'Doble materialidad y reporte ESG',
+  audience_mode: 'city_team',
+  decision: 'Reportar el programa bajo estándares internacionales (GRI 306, ESRS E5) para acceso a financiamiento verde.',
+  evidence: 'Matriz de doble materialidad CSRD, GRI 306 Disclosures derivados del simulador, KPIs proyectado vs. real, template de reporte BID/GCF.',
+  status: 'ready',
+  next_action: 'Generar informe GRI 306 y compartir con BANOBRAS / financiadores internacionales.',
+}
+
 /** Módulo solo de cliente: no viene en el JSON de `/city/journey/steps`. */
 export const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
   module_id: 'source_traceability',
@@ -86,6 +119,24 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
     decision: 'Integrar lectura sociodemográfica trazable (INEGI, CONEVAL, ENOE) antes de diseñar la estrategia de participación ciudadana.',
     evidence: 'Indicadores versionados con fuente, matriz de riesgo social, bitácora de supuestos y panel exportable.',
     next_action: 'Revisar rezago social, informalidad del sector y riesgo reputacional antes de cerrar diseño del programa.',
+  },
+  logistica_operativa: {
+    label: 'Logística operativa y diseño de piloto',
+    decision: 'Diseñar la zona piloto con criterios objetivos y calcular las rutas antes del arranque.',
+    evidence: 'Matriz de selección (densidad, vialidad, actor aliado, composición RSU, apoyo político), rutas dinámicas por capacidad de camión, operación PER, cuellos de botella estacionales.',
+    next_action: 'Confirmar zona piloto con el equipo de campo antes de la primera oleada operativa.',
+  },
+  esquema_concesion: {
+    label: 'Esquema de concesión y modelo de negocio',
+    decision: 'Definir quién opera el CA y cuánto recibe el municipio — la pregunta que el cabildo realmente vota.',
+    evidence: 'Árbol de decisión institucional (3 preguntas), distribución de ingresos por esquema A/B/C/D, ingresos fiscales reales (ISN+derechos), derrama industrial y empleos por sector.',
+    next_action: 'Presentar esquema recomendado a presidencia y síndico. Iniciar instrumento legal correspondiente.',
+  },
+  doble_materialidad: {
+    label: 'Doble materialidad y reporte ESG',
+    decision: 'Convertir los resultados del programa en lenguaje de financiadores (GRI 306, ESRS E5) para acceder a crédito verde.',
+    evidence: 'Matriz doble materialidad CSRD, disclosures GRI 306 derivados del simulador, KPIs proyectado vs. real, template BID/GCF.',
+    next_action: 'Enviar informe GRI 306 a BANOBRAS o financiador seleccionado como paso previo a solicitud de crédito.',
   },
 }
 

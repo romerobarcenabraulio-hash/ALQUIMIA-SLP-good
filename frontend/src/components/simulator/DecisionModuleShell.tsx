@@ -34,21 +34,46 @@ import type { DecisionModule, PortalEntry } from '@/types'
 // ─── Module number mapping ────────────────────────────────────────────────────
 
 const MODULE_NUMBERS: Record<string, string> = {
-  city_baseline:            '1',
-  municipal_context:        '2',
-  citizen_inputs:           '2',
-  impact_finance:           '3',
-  future_goals:             '3',
-  infrastructure_operations:'4',
-  market_traceability:      '5',
-  risk_trends:              '6',
-  inspeccion_predios:       '7',
-  scenarios_export:         '8',
-  source_traceability:      '9',
-  organization_profile:     '1',
-  containers_provider:      '2',
-  organization_report:      '3',
+  // Etapa 1 — Diagnóstico
+  city_baseline:            '01',
+  municipal_context:        '02',
+  social_study:             '03',
+  citizen_inputs:           '02',
+  // Etapa 2 — Planeación
+  future_goals:             '04',
+  infrastructure_operations:'05',
+  logistica_operativa:      '06',
+  market_traceability:      '07',
+  risk_trends:              '08',
+  // Etapa 3 — Ejecución
+  esquema_concesion:        '09',
+  scenarios_export:         '10',
+  inspeccion_predios:       '11',
+  // Etapa 4 — Monitoreo
+  doble_materialidad:       '12',
+  source_traceability:      '13',
+  impact_finance:           '03',
+  // Empresario
+  organization_profile:     '01',
+  containers_provider:      '02',
+  organization_report:      '03',
 }
+
+// Etapa de cada módulo (1=Diagnóstico, 2=Planeación, 3=Ejecución, 4=Monitoreo)
+const MODULE_ETAPA: Record<string, 1 | 2 | 3 | 4> = {
+  city_baseline: 1, municipal_context: 1, social_study: 1, citizen_inputs: 1,
+  future_goals: 2, infrastructure_operations: 2, logistica_operativa: 2,
+  market_traceability: 2, risk_trends: 2,
+  esquema_concesion: 3, scenarios_export: 3, inspeccion_predios: 3,
+  doble_materialidad: 4, source_traceability: 4, impact_finance: 4,
+}
+
+const ETAPAS = [
+  { num: 1 as const, label: 'Diagnóstico',  modulos: ['city_baseline', 'municipal_context', 'social_study'] },
+  { num: 2 as const, label: 'Planeación',   modulos: ['future_goals', 'infrastructure_operations', 'logistica_operativa', 'market_traceability', 'risk_trends'] },
+  { num: 3 as const, label: 'Ejecución',    modulos: ['esquema_concesion', 'scenarios_export', 'inspeccion_predios'] },
+  { num: 4 as const, label: 'Monitoreo',    modulos: ['doble_materialidad', 'source_traceability'] },
+]
 
 function moduleNumber(id: string): string {
   return MODULE_NUMBERS[id] ?? '·'
@@ -877,8 +902,45 @@ export function DecisionModuleShell({
   }
 
   // ── Main layout ─────────────────────────────────────────────────────────────
+  const activeEtapa = MODULE_ETAPA[activeModule.module_id] ?? null
+  const visitedIds = new Set(modules.map(m => m.module_id))
+
   return (
     <div className="flex flex-col" aria-labelledby="decision-shell-title">
+      {/* Etapas bar — narrativa en 4 pasos (solo para funcionario con módulos de etapas) */}
+      {activeEtapa && audienceSelected === 'functionary' && (
+        <nav
+          aria-label="Etapas del programa"
+          className="flex items-center gap-1 px-4 py-2.5 border-b border-[#E8E4DC] bg-[#FAFAF8] overflow-x-auto"
+        >
+          {ETAPAS.map((etapa, i) => {
+            const isActive = etapa.num === activeEtapa
+            const allVisited = etapa.modulos.every(id => visitedIds.has(id))
+            const firstModId = etapa.modulos.find(id => modules.some(m => m.module_id === id))
+            return (
+              <div key={etapa.num} className="flex items-center gap-1 shrink-0">
+                {i > 0 && <span className="text-[#C8C4BC] text-[10px] select-none">→</span>}
+                <button
+                  type="button"
+                  onClick={() => firstModId && onModuleChange(firstModId)}
+                  className={cn(
+                    'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.08em] font-medium transition-colors',
+                    isActive
+                      ? 'bg-[#EAF3DE] text-[#23470A] border border-[#C9DDB1]'
+                      : 'bg-[#F4F2ED] text-[#A8A49C] border border-transparent hover:text-[#6B6760]',
+                  )}
+                >
+                  {allVisited && !isActive && (
+                    <CheckCircle2 size={10} className="text-[#3B6D11]" />
+                  )}
+                  <span>E{etapa.num} {etapa.label}</span>
+                </button>
+              </div>
+            )
+          })}
+        </nav>
+      )}
+
       {/* Mobile module selector */}
       {activeModule && (
         <MobileModuleSelect

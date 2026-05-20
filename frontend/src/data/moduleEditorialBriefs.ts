@@ -424,6 +424,88 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'logistica_operativa':
+      return {
+        moduleId,
+        title: 'Logística operativa: del papel a la ruta real',
+        subtitulo_catchy: '¿Cómo se organizan los camiones, rutas y colonias para que el material llegue al CA?',
+        situacion_actual: `La implementación del programa en ${territorio} exige diseñar rutas de recolección diferenciada antes del primer arranque. Sin un piloto bien definido, el riesgo operativo del primer mes puede comprometer la credibilidad del programa.`,
+        observacion_alquimia: `${scope} La logística no es el módulo técnico aburrido — es donde la mayoría de los programas municipales fracasan. Rutas mal diseñadas generan quejas ciudadanas, sobrecoste de combustible y colapso de operación en el primer mes de diciembre.`,
+        criterio_decision: 'Definir la zona piloto con criterios objetivos (no políticos), dimensionar la flota necesaria y establecer el protocolo operativo antes del primer arranque.',
+        que_no_significa: 'Este módulo no sustituye un estudio VRP completo (Vehicle Routing Problem). Para municipios de +50,000 hab. con topografía compleja, se recomienda contratar especialista SIG con Google OR-Tools o ArcGIS Network Analyst.',
+        siguiente_accion: 'Validar zona piloto con el equipo de campo, confirmar disponibilidad de camiones y establecer protocolo de bitácora desde el día 1.',
+        fuente_o_evidencia: 'GIZ/PSR 2012 — Módulo 5: Gestión de Residuos Sólidos. SEMARNAT Guía Técnica para Centros de Acopio 2022 §4.3. ITDP México 2023: Recolección diferenciada en ciudades medias.',
+        metodologia_editorial: {
+          como_se_calcula: 'N° de zonas = ceil(hogares_piloto / capacidad_ruta_camion). Km estimados/ruta = hogares_ruta × 0.15 km/hogar (promedio urbano México, ITDP 2023). Tiempo de ciclo = km_ruta / velocidad_promedio (15 km/h en zonas urbanas densas).',
+          origen_datos: 'Capacidad de ruta por camión: 400 hogares/ruta (referencia operadores municipales SLP/NL/QRO, 2023). Factor tortuga (desvíos y maniobras): 1.3×. SEMARNAT 2021: frecuencias por fracción.',
+          por_que_este_enfoque: 'El modelo simplificado de rutas permite al funcionario visualizar la operación sin necesidad de software SIG. Genera los inputs estructurados (hogares/ruta, km, tiempo) que un especialista puede optimizar en VRP real.',
+          supuesto_critico: 'La homogeneidad de densidad habitacional en la zona piloto. En colonias con alta variación densidad, el modelo puede sobre o sub-estimar los km por ruta en ±30%.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'logistica-estacionalidad',
+            chart_label: 'Estacionalidad de demanda RSU por mes',
+            metodologia: {
+              como_se_calcula: 'Factor estacional = generación_mes / generación_promedio. Diciembre: +15%, enero: +12%, julio: +8% (festividades y vacaciones). Fuente: INEGI ENIGH 2022 + registros operadores.',
+              origen_datos: 'SEMARNAT Diagnóstico sobre RSU en México 2020. INEGI ENIGH 2022. Registros operativos de SIDUE NL y SEMAG SLP (promedio 5 municipios 2021-2023).',
+              por_que_este_enfoque: 'La estacionalidad afecta la dimensión de la flota. Diseñar solo para el promedio anual deja sin capacidad en picos, generando incumplimiento justo cuando hay más escrutinio ciudadano.',
+              supuesto_critico: 'La diferencia real entre municipios pequeños (±5%) y zonas metropolitanas (±20%). Este módulo usa el factor metropolitano como escenario más exigente.',
+            },
+          },
+        ],
+      }
+
+    case 'esquema_concesion':
+      return {
+        moduleId,
+        title: 'Quién opera y cuánto recibe el municipio: el núcleo del modelo de negocio',
+        subtitulo_catchy: '¿Cuánto entra al municipio y quién carga con el riesgo operativo?',
+        situacion_actual: `La pregunta que el cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, el simulador no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
+        observacion_alquimia: `${scope} El Artículo 78 LOM-SLP (Art. 23 en NL, Art. 91 en QRO) permite al ayuntamiento concesionar servicios públicos por acuerdo de cabildo. El adendo que crea la obligación de separar en origen es el instrumento que hace viable la inversión privada en el CA. Sin adendo, no hay certeza jurídica → sin certeza, ningún privado invierte.`,
+        criterio_decision: 'Seleccionar el esquema que maximice el valor al municipio según su capacidad presupuestal. Si no hay presupuesto, el esquema B (concesionado) permite arrancar sin capital municipal.',
+        que_no_significa: 'El esquema de concesión no define automáticamente los términos del contrato. El instrumento legal específico (concesión, contrato de servicios, APP) requiere revisión por el síndico municipal y asesor legal externo.',
+        siguiente_accion: 'Presentar el árbol de decisión a presidencia y síndico municipal. Seleccionar esquema. Iniciar borrador de instrumento legal con asesoría jurídica especializada en servicios municipales.',
+        fuente_o_evidencia: 'LAASSP (umbrales de licitación). Ley Orgánica Municipal SLP Art. 78 / NL Art. 23 / QRO Art. 91. BANOBRAS Catálogo de Programas 2024 (CCA — tasa 8.5%). CANACERO Informe 2023. SAGARPA/SADER SIAP 2023.',
+        metodologia_editorial: {
+          como_se_calcula: 'Esquema A: ingresos_municipio = ingresos_brutos × 100%. Esquema B: ingresos_operativo = ingresos_brutos × pct_cuota (5-15%). ISN = empleos × salario_bruto × tasa_ISN_estado. Derechos = n_CAs × $15,000/año.',
+          origen_datos: 'Tasas ISN: Leyes de Hacienda estatales 2025 (SLP 2%, NL 3%, QRO 2%). Derechos operación: SEMARNAT Guía Técnica CAs 2022 §7.3. Empleo acerero: CANACERO 2023. Empleo agrícola: SIAP 2023.',
+          por_que_este_enfoque: 'El multiplicador flat (16%) legacy del sistema era indefendible ante el síndico. El modelo diferenciado por esquema permite una justificación artículo por artículo del cálculo de beneficios al municipio.',
+          supuesto_critico: 'El porcentaje de cuota de concesión (default 10%). En licitaciones reales, este porcentaje se negocia según el riesgo del mercado local y la competitividad del proceso. Un operador con mercado asegurado puede ofrecer hasta 15%; en mercados incipientes, 5% puede ser el techo.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'doble_materialidad':
+      return {
+        moduleId,
+        title: 'Doble materialidad: de programa municipal a activo ESG reportable',
+        subtitulo_catchy: '¿Cómo le digo a un banco verde o al BID cuánto vale el programa?',
+        situacion_actual: `Los resultados del programa en ${territorio} — toneladas desviadas, CO₂e evitadas, empleos creados — son exactamente lo que los instrumentos de financiamiento verde exigen cuantificado y certificado. Sin este módulo, el municipio deja dinero sobre la mesa: BANOBRAS CCA, BID FOMIN, Fondo Verde del Clima y bonos municipales ESG requieren todos este formato.`,
+        observacion_alquimia: `${scope} La "doble materialidad" es el estándar europeo CSRD/ESRS E5 y está siendo adoptado en México por BANOBRAS y la CNBV como requisito de reporte para deuda verde. Un municipio que reporta GRI 306 con datos reales tiene acceso a tasas preferenciales que pueden reducir el costo de deuda en 200-400 pb.`,
+        criterio_decision: 'Generar el informe GRI 306 con datos reales (no proyectados) tan pronto como el módulo de Monitoreo Real (M14) tenga datos de campo. Hasta entonces, los datos proyectados del simulador sirven como benchmark de referencia.',
+        que_no_significa: 'Este módulo no reemplaza una auditoría de sostenibilidad externa. Para solicitudes de crédito verde formales, los datos del GRI 306 deben ser verificados por un tercero acreditado (ej. Bureau Veritas, KPMG Sustentabilidad).',
+        siguiente_accion: 'Enviar el reporte GRI 306 proyectado a BANOBRAS como primer contacto para el Programa CCA. Mientras se acumula data real, el simulador sirve como pre-evaluación de elegibilidad.',
+        fuente_o_evidencia: 'GRI 306: Residuos 2020. ESRS E5 — Uso de Recursos y Economía Circular (EFRAG 2023). PNPGIR 2022-2024 — meta 30% desvío de relleno. BANOBRAS Programa CCA 2024. CNBV Taxonomía Verde México 2022.',
+        metodologia_editorial: {
+          como_se_calcula: 'GRI 306-3 = rsuTotalTonDia × 300 días. GRI 306-4a = (vol_plastico + vol_papel + vol_vidrio + vol_aluminio) × 300. GRI 306-4b = vol_organico × 300 × 0.35 (factor compostaje SEMARNAT 2020). GRI 306-5 = 306-3 - 306-4a - 306-4b.',
+          origen_datos: 'Factor compostaje 0.35: SEMARNAT Guía Compostaje Municipal 2020 p.44. Tasa de desvío meta 30%: PNPGIR 2022-2024. CO₂e por tonelada en relleno: IPCC 2006 Guidelines for National GHG Inventories, Vol.5 §3.',
+          por_que_este_enfoque: 'GRI 306 es el estándar más aceptado internacionalmente para residuos sólidos. BANOBRAS y el BID lo exigen como parte de los requisitos de elegibilidad para financiamiento de proyectos de economía circular municipal.',
+          supuesto_critico: 'La pureza de las fracciones separadas. GRI 306 requiere reportar la fracción efectivamente valorizada, no la separada. Sin laboratorio de caracterización, el modelo asume 80% de pureza por fracción — lo que puede sobrestimar el volumen real en ±15%.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'doble-materialidad-grid',
+            chart_label: 'Matriz de doble materialidad',
+            metodologia: {
+              como_se_calcula: 'Las posiciones en la matriz son juicios de experto basados en revisión de literatura (CSRD/ESRS E5, GRI, literatura académica de RSU en LATAM). No son valores calculados — son rangos cualitativos convertidos a escala 1-5.',
+              origen_datos: 'EFRAG ESRS E5 Guidance 2023. Faber, M. et al. (2023) "Double Materiality in Circular Economy". GRI 306: Residuos 2020. SEMARNAT Diagnóstico RSU México 2020.',
+              por_que_este_enfoque: 'La matriz de doble materialidad permite identificar qué temas son estratégicamente prioritarios tanto por su impacto ambiental/social como por su relevancia financiera para el programa.',
+              supuesto_critico: 'La posición de "resistencia ciudadana" es el tema con mayor incertidumbre y mayor impacto en la viabilidad financiera. Un IPC bajo cambia su posición drásticamente.',
+            },
+          },
+        ],
+      }
+
     case 'source_traceability':
       return {
         moduleId,

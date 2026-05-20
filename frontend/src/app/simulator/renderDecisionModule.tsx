@@ -59,6 +59,33 @@ const RiskTrendsPanel = dynamic(
   },
 )
 
+const LogisticaOperativaStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/LogisticaOperativaStack').then(m => ({ default: m.LogisticaOperativaStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando logística operativa…</p>,
+  },
+)
+
+const EsquemaConcesionPanel = dynamic(
+  () =>
+    import('@/components/simulator/stacks/EsquemaConcesionStack').then(m => ({ default: m.EsquemaConcesionStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando esquema de concesión…</p>,
+  },
+)
+
+const DobleMaterialidadStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/DobleMaterialidadStack').then(m => ({ default: m.DobleMaterialidadStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando análisis de doble materialidad…</p>,
+  },
+)
+
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
   const { module, audience, isOrganizationJourney, sociodemographicBlock } = ctx
 
@@ -115,6 +142,12 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <MarketTraceabilityStack />
     case 'risk_trends':
       return <RiskTrendsPanel />
+    case 'logistica_operativa':
+      return <LogisticaOperativaStack />
+    case 'esquema_concesion':
+      return <EsquemaConcesionPanel />
+    case 'doble_materialidad':
+      return <DobleMaterialidadStack />
     case 'inspeccion_predios':
       return <InspeccionStack />
     case 'scenarios_export':

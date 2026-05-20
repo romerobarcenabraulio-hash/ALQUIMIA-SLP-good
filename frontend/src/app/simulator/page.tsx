@@ -19,6 +19,9 @@ import {
   enrichFunctionaryModules,
   SOURCE_TRACEABILITY_MODULE,
   SOCIAL_STUDY_MODULE,
+  LOGISTICA_MODULE,
+  ESQUEMA_CONCESION_MODULE,
+  DOBLE_MATERIALIDAD_MODULE,
 } from '@/lib/simulator/functionaryJourneyEnrichment'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
@@ -88,17 +91,42 @@ export default function SimulatorPage() {
     if (audience !== 'functionary') return portalJourney
     const enriched = enrichFunctionaryModules(portalJourney)
 
-    // Inyectar social_study después de municipal_context si no viene del backend
-    let withSocial = enriched
-    if (!enriched.some(m => m.module_id === SOCIAL_STUDY_MODULE.module_id)) {
-      const mcIdx = enriched.findIndex(m => m.module_id === 'municipal_context')
-      withSocial = mcIdx >= 0
-        ? [...enriched.slice(0, mcIdx + 1), SOCIAL_STUDY_MODULE, ...enriched.slice(mcIdx + 1)]
-        : [SOCIAL_STUDY_MODULE, ...enriched]
-    }
+    // Inyectar módulos client-side que no vienen del backend
+    let result = [...enriched]
 
-    if (withSocial.some(m => m.module_id === SOURCE_TRACEABILITY_MODULE.module_id)) return withSocial
-    return [...withSocial, SOURCE_TRACEABILITY_MODULE]
+    // social_study después de municipal_context
+    if (!result.some(m => m.module_id === 'social_study')) {
+      const idx = result.findIndex(m => m.module_id === 'municipal_context')
+      result = idx >= 0
+        ? [...result.slice(0, idx + 1), SOCIAL_STUDY_MODULE, ...result.slice(idx + 1)]
+        : [SOCIAL_STUDY_MODULE, ...result]
+    }
+    // logistica_operativa después de infrastructure_operations
+    if (!result.some(m => m.module_id === 'logistica_operativa')) {
+      const idx = result.findIndex(m => m.module_id === 'infrastructure_operations')
+      result = idx >= 0
+        ? [...result.slice(0, idx + 1), LOGISTICA_MODULE, ...result.slice(idx + 1)]
+        : [...result, LOGISTICA_MODULE]
+    }
+    // esquema_concesion antes de scenarios_export
+    if (!result.some(m => m.module_id === 'esquema_concesion')) {
+      const idx = result.findIndex(m => m.module_id === 'scenarios_export')
+      result = idx >= 0
+        ? [...result.slice(0, idx), ESQUEMA_CONCESION_MODULE, ...result.slice(idx)]
+        : [...result, ESQUEMA_CONCESION_MODULE]
+    }
+    // doble_materialidad después de scenarios_export
+    if (!result.some(m => m.module_id === 'doble_materialidad')) {
+      const idx = result.findIndex(m => m.module_id === 'scenarios_export')
+      result = idx >= 0
+        ? [...result.slice(0, idx + 1), DOBLE_MATERIALIDAD_MODULE, ...result.slice(idx + 1)]
+        : [...result, DOBLE_MATERIALIDAD_MODULE]
+    }
+    // source_traceability siempre al final
+    if (!result.some(m => m.module_id === 'source_traceability')) {
+      result = [...result, SOURCE_TRACEABILITY_MODULE]
+    }
+    return result
   }, [audience, portalJourney])
 
   // ── Module nav state (lifted from DecisionModuleShell) ──────────────────────
