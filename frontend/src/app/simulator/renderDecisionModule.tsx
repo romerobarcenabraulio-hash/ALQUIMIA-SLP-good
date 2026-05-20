@@ -114,7 +114,7 @@ const DobleMaterialidadStack = dynamic(
 )
 
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
-  const { module, audience, isOrganizationJourney, sociodemographicBlock } = ctx
+  const { module, audience, isOrganizationJourney, sociodemographicBlock, onNavigate } = ctx
 
   if (isOrganizationJourney || audience === 'entrepreneur') {
     switch (module.module_id) {
@@ -156,7 +156,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
 
   switch (module.module_id) {
     case 'guia_circularidad':
-      return <GuiaCircularidadStack />
+      return <GuiaCircularidadStack onNavigate={onNavigate} />
     case 'city_baseline':
       return <CityBaselineStack />
     case 'municipal_context':
@@ -186,7 +186,12 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'scenarios_export':
       return <ScenariosExportStack />
     case 'source_traceability':
-      return <ReferenciasCalculos />
+      return (
+        <div className="space-y-8">
+          <ReferenciasCalculos />
+          <CierreSimulador onNavigate={onNavigate} />
+        </div>
+      )
     default:
       return <ModuleEmpty module={module} />
   }
@@ -216,5 +221,54 @@ function ModuleEmpty({ module }: { module: DecisionModule }) {
       <p className="text-[12px] font-semibold text-[#1C1B18]">Sin herramienta conectada para este paso del recorrido.</p>
       <p className="mt-1 text-[12px] text-[#6B6760]">{module.next_action}</p>
     </div>
+  )
+}
+
+function CierreSimulador({ onNavigate }: { onNavigate?: (id: string) => void }) {
+  return (
+    <section
+      className="rounded-[14px] border border-[#C9DDB1] bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white p-8 text-center relative overflow-hidden"
+      aria-label="Cierre del análisis"
+    >
+      <div className="absolute inset-0 opacity-5 flex items-center justify-center pointer-events-none select-none">
+        <span className="font-serif text-[200px] leading-none">✓</span>
+      </div>
+      <div className="relative z-10">
+        <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#A8D78A] mb-4">
+          Análisis completo · M15 de 15
+        </span>
+        <h2 className="font-serif text-[24px] font-bold mb-3">
+          Has recorrido el argumento completo
+        </h2>
+        <p className="text-[14px] leading-[1.75] text-white/85 max-w-2xl mx-auto mb-6">
+          Diagnóstico, planificación, modelo de negocio y control — los 4 capítulos del método consultivo están
+          completos. Cada cifra de este análisis tiene fuente, fórmula y nivel de certeza documentados.
+          El próximo paso es exportar el Informe Maestro y llevarlo a sesión de cabildo.
+        </p>
+        <div className="flex items-center justify-center gap-3 flex-wrap">
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('scenarios_export')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-white text-[#1C2B15] text-[13px] font-semibold hover:bg-[#F1F8EC] transition-colors"
+            >
+              Exportar escenarios financieros →
+            </button>
+          )}
+          {onNavigate && (
+            <button
+              type="button"
+              onClick={() => onNavigate('guia_circularidad')}
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] border border-white/30 text-white text-[13px] hover:bg-white/10 transition-colors"
+            >
+              Volver al inicio
+            </button>
+          )}
+        </div>
+        <p className="mt-5 text-[11px] text-white/50">
+          ALQUIMIA Platform · Residuos Sólidos Urbanos · Análisis prospectivo — no dictamen oficial
+        </p>
+      </div>
+    </section>
   )
 }

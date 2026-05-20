@@ -233,6 +233,7 @@ export default function SimulatorPage() {
                       audience,
                       isOrganizationJourney,
                       sociodemographicBlock,
+                      onNavigate: setActiveModuleId,
                     })
                   }
                 />

@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
+import { ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   BookOpen,
@@ -31,6 +31,7 @@ import {
 } from '@/lib/municipioMadurezContexto'
 import type { DecisionModule, PortalEntry } from '@/types'
 import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
+import { ChapterSeparator, MODULE_CHAPTER } from '@/components/simulator/ChapterSeparator'
 
 // ─── Module number mapping ────────────────────────────────────────────────────
 
@@ -888,6 +889,28 @@ export function DecisionModuleShell({
   const contentRef = useRef<HTMLDivElement>(null)
   const activeChartId = useChartSectionObserver(contentRef, activeModule?.module_id ?? null)
 
+  // Chapter separator state — shows interstitial screen on chapter transitions
+  const [chapterSep, setChapterSep] = useState<{ fromId: string; toId: string } | null>(null)
+
+  /** Intercepts navigation: shows ChapterSeparator when crossing chapter boundaries */
+  const handleModuleChange = useCallback((toId: string) => {
+    const fromId = activeModule?.module_id
+    if (!fromId) { onModuleChange(toId); return }
+    const fromChap = MODULE_CHAPTER[fromId]
+    const toChap   = MODULE_CHAPTER[toId]
+    // Only show separator when both modules have chapters and they differ
+    if (fromChap && toChap && fromChap !== toChap) {
+      setChapterSep({ fromId, toId })
+    } else {
+      onModuleChange(toId)
+    }
+  }, [activeModule?.module_id, onModuleChange])
+
+  useEffect(() => {
+    // Clear chapter separator when activeModule changes externally (e.g. sidebar click)
+    setChapterSep(null)
+  }, [activeModule?.module_id])
+
   useEffect(() => {
     setActiveDecisionModuleId(activeModule?.module_id ?? null)
     return () => { setActiveDecisionModuleId(null) }
@@ -969,57 +992,71 @@ export function DecisionModuleShell({
         <MobileModuleSelect
           modules={modules}
           activeId={activeModule.module_id}
-          onChange={onModuleChange}
+          onChange={handleModuleChange}
         />
       )}
 
-      {/* Two-column body: content | guidance */}
-      <div className="flex">
-        {/* Center content */}
-        <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
-          {/* Content area — flows naturally, page scrolls */}
-          <div ref={contentRef} className="px-6 py-6">
-            <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />
-            {activeModule.status === 'blocked' ? (
-              <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
-                <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
-                  <AlertTriangle size={15} />
-                  Módulo bloqueado
-                </p>
-                <p className="mt-2 text-[12px] leading-relaxed text-amber-800">
-                  {activeModule.blocker ?? 'Este módulo requiere una condición previa.'}
-                </p>
-                <div className="mt-4 pt-3 border-t border-amber-200">
-                  <p className="text-[11px] font-semibold text-amber-900">Siguiente acción</p>
-                  <p className="mt-1 text-[11px] text-amber-800">{activeModule.next_action}</p>
+      {/* Chapter Separator — interstitial when crossing chapter boundaries */}
+      {chapterSep ? (
+        <ChapterSeparator
+          fromModuleId={chapterSep.fromId}
+          toModuleId={chapterSep.toId}
+          onContinue={() => {
+            const toId = chapterSep.toId
+            setChapterSep(null)
+            onModuleChange(toId)
+          }}
+          onBack={() => setChapterSep(null)}
+        />
+      ) : (
+        /* Two-column body: content | guidance */
+        <div className="flex">
+          {/* Center content */}
+          <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
+            {/* Content area — flows naturally, page scrolls */}
+            <div ref={contentRef} className="px-6 py-6">
+              <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />
+              {activeModule.status === 'blocked' ? (
+                <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
+                  <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
+                    <AlertTriangle size={15} />
+                    Módulo bloqueado
+                  </p>
+                  <p className="mt-2 text-[12px] leading-relaxed text-amber-800">
+                    {activeModule.blocker ?? 'Este módulo requiere una condición previa.'}
+                  </p>
+                  <div className="mt-4 pt-3 border-t border-amber-200">
+                    <p className="text-[11px] font-semibold text-amber-900">Siguiente acción</p>
+                    <p className="mt-1 text-[11px] text-amber-800">{activeModule.next_action}</p>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-5">
-                <ModuleMetodologiaMobile
-                  moduleId={activeModule.module_id}
-                  activeChartId={activeChartId}
-                />
-                {renderModule(activeModule)}
-              </div>
-            )}
+              ) : (
+                <div className="space-y-5">
+                  <ModuleMetodologiaMobile
+                    moduleId={activeModule.module_id}
+                    activeChartId={activeChartId}
+                  />
+                  {renderModule(activeModule)}
+                </div>
+              )}
+            </div>
+
+            {/* Bottom bar */}
+            <BottomBar
+              modules={modules}
+              activeId={activeModule.module_id}
+              onChange={handleModuleChange}
+            />
           </div>
 
-          {/* Bottom bar */}
-          <BottomBar
-            modules={modules}
-            activeId={activeModule.module_id}
-            onChange={onModuleChange}
+          {/* Right guidance panel */}
+          <GuidancePanel
+            module={activeModule}
+            moduleId={activeModule.module_id}
+            activeChartId={activeChartId}
           />
         </div>
-
-        {/* Right guidance panel */}
-        <GuidancePanel
-          module={activeModule}
-          moduleId={activeModule.module_id}
-          activeChartId={activeChartId}
-        />
-      </div>
+      )}
     </div>
   )
 }

@@ -8,4 +8,6 @@ export interface DecisionModuleRenderContext {
   audience: Audience | null
   isOrganizationJourney: boolean
   sociodemographicBlock: SociodemographicBlock
+  /** Navega programáticamente a un módulo por su module_id */
+  onNavigate?: (moduleId: string) => void
 }
