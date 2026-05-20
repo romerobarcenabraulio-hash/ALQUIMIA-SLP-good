@@ -852,7 +852,11 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
         <ExpandableChart chartId="m05-tornado" title="Sensibilidad del ingreso — análisis tornado" subtitle="Cambio en ingreso anual y probabilidad de éxito por variable">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-5 py-4">
             <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Sensibilidad del ingreso (tornado)</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">Cambio en ingreso anual (M MXN) al estresar cada variable</p>
+            <p className="text-[10px] text-[#A8A49C] mb-1">Cambio en ingreso anual (M MXN) al estresar cada variable</p>
+            <p className="text-[9px] text-[#1A5FA8] mb-3">
+              Este tornado mide sensibilidad del <strong>ingreso por venta de materiales</strong>.
+              Ver también: sensibilidad del <strong>VPN</strong> en M12 · Retorno Financiero → Análisis de riesgo.
+            </p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={SENSITIVITY_VARS} layout="vertical" margin={{ top: 0, right: 40, left: 140, bottom: 0 }}>
                 <XAxis type="number" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `${v} M`} />

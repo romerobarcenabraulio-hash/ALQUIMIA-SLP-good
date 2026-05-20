@@ -1,355 +1,274 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  Cell, Line, Legend,
 } from 'recharts'
+import {
+  AlertTriangle, Truck, Clock, TrendingUp, ChevronDown, MapPin,
+} from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { cn, fmt } from '@/lib/utils'
+import { cn } from '@/lib/utils'
+import { ESTACIONALIDAD } from '@/lib/constants'
+import { ExpandableChart } from '@/components/ui/ExpandableChart'
 
-// ── Constants ─────────────────────────────────────────────────────────────────
+const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
-const TABS = ['Diseño de Piloto', 'Rutas Calculadas', 'Operación PER', 'Cuellos de Botella']
-
-const MESES_ABREV = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
-
-const CRITERIOS = [
-  { id: 'densidad',      label: 'Densidad habitacional (hogares/km²)',                 peso: 25 },
-  { id: 'accesibilidad', label: 'Accesibilidad vial (ancho calle ≥ 4 m)',              peso: 20 },
-  { id: 'actor',         label: 'Actor aliado presente (admin condo/líder colonia)',   peso: 25 },
-  { id: 'composicion',   label: 'Composición RSU conocida (antecedente muestreo)',     peso: 15 },
-  { id: 'politico',      label: 'Apoyo político (riesgo bajo de veto)',                peso: 15 },
+const TRUCKS_BY_MATERIAL = [
+  { material: 'Materia orgánica', volDia: 188.7, camiones: 9, frecuencia: 'Diaria', riesgo: 'Alto', obs: 'Perecible — no retrasar recolección' },
+  { material: 'Papel / cartón', volDia: 60.5, camiones: 3, frecuencia: '3×/sem', riesgo: 'Medio', obs: 'Compactar para reducir viajes' },
+  { material: 'Plásticos', volDia: 67.9, camiones: 3, frecuencia: '3×/sem', riesgo: 'Alto', obs: 'Alta densidad variable; revisar carga' },
+  { material: 'Vidrio', volDia: 19.8, camiones: 1, frecuencia: '2×/sem', riesgo: 'Bajo', obs: 'Pesado — camión de bajo perfil' },
+  { material: 'Metales', volDia: 6.7, camiones: 1, frecuencia: '1×/sem', riesgo: 'Bajo', obs: 'Alto valor por peso; prioritario' },
+  { material: 'Otros', volDia: 36.1, camiones: 1, frecuencia: '2×/sem', riesgo: 'Bajo', obs: 'Consolidar con ruta de residuos mixtos' },
 ]
 
-// Estacionalidad mensual relativa (índice multiplicador sobre base)
-const ESTACIONALIDAD_FACTORES = [
-  1.15, 1.10, 0.92, 0.92, 1.00, 1.00, 1.15, 1.00, 1.00, 1.00, 1.00, 1.15,
+const BOTTLENECKS_LOG = [
+  { zona: 'Zona sur con saturación', gravedad: 'Alto', causa: 'Carga superior a capacidad instalada', impacto: 'Retrasos y desbordamiento', accion: 'Desviar rutas al CA mediano de zona norte temporalmente' },
+  { zona: 'Ruta de orgánicos incompleta', gravedad: 'Medio', causa: 'Pérdida de material orgánico fresco', impacto: 'Pérdida de valor compostal', accion: 'Completar ruta en colonias pendientes de cobertura' },
+  { zona: 'Ventana de descarga insuficiente', gravedad: 'Medio', causa: 'Tiempo de descarga > ventana operativa', impacto: 'Tiempos muertos y filas', accion: 'Ampliar horario del CA principal a 6:00 am' },
 ]
 
-// ── Component ─────────────────────────────────────────────────────────────────
+function generatePERRoutes(municipioPrefix: string) {
+  return [
+    {
+      id: `${municipioPrefix}-Z1`, material: 'Orgánicos', presion: 'Saturación en zona sur. Carga 110% de capacidad.',
+      estado: 'Programada. Unidad RSU-01. Lun-Mié-Vie 07:00.',
+      respuesta: 'Ajuste en frecuencia. Agregar 1 recorrido. Revisar bitácora semanal.',
+      bitacora: 'Últimas visitas recientes', estado_chip: 'alerta' as const,
+    },
+    {
+      id: `${municipioPrefix}-Z2`, material: 'Reciclables', presion: 'Ruta incompleta; 2 colonias fuera de cobertura.',
+      estado: 'En operación. Unidad RSU-04. Mar-Jue 08:00.',
+      respuesta: 'Monitoreo de precio. Monitoreo calidad de separación.',
+      bitacora: 'Últimas visitas recientes', estado_chip: 'info' as const,
+    },
+  ]
+}
+
+function RailSection({ title, children, open: defaultOpen = false }: { title: string; children: React.ReactNode; open?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border-b border-[#EDE9E3] last:border-b-0">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between py-3 px-1 text-left">
+        <span className="text-[10px] uppercase tracking-[0.08em] text-[#6B6760] font-bold">{title}</span>
+        <ChevronDown className={cn('w-3.5 h-3.5 text-[#A8A49C] transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && <div className="pb-3 px-1 text-[11px] leading-relaxed text-[#6B6760] space-y-1">{children}</div>}
+    </div>
+  )
+}
 
 export function LogisticaOperativaStack() {
-  const { zmActiva, municipiosActivos, resultados } = useSimulatorStore()
+  const { zmActiva, resultados } = useSimulatorStore()
 
-  const [tab, setTab] = useState(1)
-  const [scores, setScores] = useState<Record<string, number>>({
-    densidad: 3, accesibilidad: 3, actor: 3, composicion: 3, politico: 3,
+  const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
+  const capInstalada = rsuDia * 0.61
+
+  const perRoutes = useMemo(() => generatePERRoutes(zmActiva.slice(0, 3).toUpperCase()), [zmActiva])
+
+  const seasonData = MESES.map((m, i) => {
+    const base = rsuDia * 30
+    const factor = 1 + (ESTACIONALIDAD[i] ?? 0)
+    return { mes: m, rsu: Math.round(base * factor), cap: Math.round(rsuDia * 30 * 0.61) }
   })
-  const [hogaresEnPiloto, setHogaresEnPiloto] = useState(1000)
-
-  const municipio = municipiosActivos[0] ?? zmActiva
-
-  // Weighted score
-  const puntajeTotal = CRITERIOS.reduce(
-    (acc, c) => acc + (scores[c.id] ?? 3) * c.peso / 100,
-    0,
-  )
-
-  // Route calculations
-  const nZonas = Math.ceil(hogaresEnPiloto / 400)
-  const hogaresPerZona = Math.round(hogaresEnPiloto / nZonas)
-  const kmPorRuta = +(hogaresPerZona * 0.15).toFixed(1)
-
-  // Seasonal bottleneck data
-  const rsuBase = resultados?.rsuTotalTonDia ?? 0
-  const seasonalData = MESES_ABREV.map((mes, i) => {
-    const factor = ESTACIONALIDAD_FACTORES[i] ?? 1
-    const vol = Math.round(rsuBase * factor * 30)
-    return { mes, vol, base: Math.round(rsuBase * 30) }
-  })
-
-  // Fleet capacity proxy (camiones × 12 t × 30 días)
-  const camionesTotal = resultados?.camionesRequeridos
-    ? Object.values(resultados.camionesRequeridos).reduce((a, b) => a + b, 0)
-    : nZonas
-  const fleetCapMes = camionesTotal * 12 * 30
-  const hasPeakAlert = fleetCapMes > 0 && seasonalData.some(d => d.vol > fleetCapMes * 0.85)
 
   return (
     <div className="pb-4">
-      {/* Tabs */}
-      <div className="flex flex-wrap gap-1.5 mb-6">
-        {TABS.map((label, i) => {
-          const p = i + 1
-          return (
-            <button key={p} type="button" onClick={() => setTab(p)}
-              className={cn(
-                'flex items-center gap-2 px-4 py-2 rounded-[8px] text-[11px] font-semibold border transition-colors',
-                tab === p
-                  ? 'bg-[#1C2B15] text-white border-[#1C2B15]'
-                  : 'bg-white text-[#6B6760] border-[#E8E4DC] hover:bg-[#F4F2ED]',
-              )}>
-              <span className={cn(
-                'w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-bold',
-                tab === p ? 'bg-[#3B6D11]' : 'bg-[#E8E4DC] text-[#6B6760]',
-              )}>{p}</span>
-              <span className="hidden sm:block">{label}</span>
-            </button>
-          )
-        })}
-      </div>
-
-      {/* ── Tab 1: Diseño de Piloto ─────────────────────────────────────────── */}
-      {tab === 1 && (
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
         <div className="space-y-5">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">Matriz de selección de zona piloto</p>
-              <p className="text-[10px] text-[#A8A49C] mt-0.5">5 criterios ponderados · escala 1–5 · referencia GIZ/PSR 2012</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                    {['Criterio', 'Peso', 'Calificación (1–5)', 'Puntaje'].map(h => (
-                      <th key={h} className="text-left px-4 py-2.5 font-bold text-[#1C1B18] text-[10px] uppercase tracking-[0.06em]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {CRITERIOS.map((c, i) => {
-                    const s = scores[c.id] ?? 3
-                    const puntaje = (s * c.peso / 100).toFixed(2)
-                    return (
-                      <tr key={c.id} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                        <td className="px-4 py-2.5 text-[#1C1B18] font-medium">{c.label}</td>
-                        <td className="px-4 py-2.5 font-mono text-[#D4881E] font-semibold">{c.peso}%</td>
-                        <td className="px-4 py-2.5">
-                          <div className="flex items-center gap-2">
-                            <input type="range" min={1} max={5} step={1} value={s}
-                              onChange={e => setScores(prev => ({ ...prev, [c.id]: Number(e.target.value) }))}
-                              className="w-28 accent-green-700" />
-                            <span className="font-mono font-bold text-[#3B6D11] text-[12px]">{s}</span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-2.5 font-mono font-semibold text-[#1C1B18]">{puntaje}</td>
-                      </tr>
-                    )
-                  })}
-                  <tr className="bg-[#1C2B15]">
-                    <td colSpan={3} className="px-4 py-2.5 font-bold text-white text-[11px]">Puntaje total ponderado</td>
-                    <td className="px-4 py-2.5 font-mono font-bold text-white text-[14px]">{puntajeTotal.toFixed(2)}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+
+          {/* Logistics KPIs */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            {[
+              { label: 'Camiones requeridos', value: '18', sub: 'para el horizonte', icon: Truck, color: '#1A5FA8' },
+              { label: 'Visitas mensuales', value: '13.0', sub: 'por ruta piloto', icon: Clock, color: '#3B6D11' },
+              { label: 'Merma logística', value: '18%', sub: 'del vol. movilizado', icon: AlertTriangle, color: '#C0392B' },
+              { label: 'Presión operativa', value: 'Media-alta', sub: 'en cond. actuales', icon: TrendingUp, color: '#D4881E' },
+            ].map(c => (
+              <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
+                <div className="flex items-center gap-1.5 mb-1"><c.icon className="w-3.5 h-3.5 shrink-0" style={{ color: c.color }} /><p className="text-[9px] uppercase text-[#A8A49C]">{c.label}</p></div>
+                <p className="text-[20px] font-bold" style={{ color: c.color }}>{c.value}</p>
+                <p className="text-[9px] text-[#A8A49C]">{c.sub}</p>
+              </div>
+            ))}
           </div>
 
-          {/* NarrativeBridge */}
-          <div className={cn(
-            'rounded-[10px] border px-5 py-4',
-            puntajeTotal >= 3.5 ? 'border-[#C9DDB1] bg-[#EAF3DE]' : 'border-[#FDE68A] bg-[#FEF7E7]',
-          )}>
-            <p className="text-[12px] font-semibold mb-1" style={{ color: puntajeTotal >= 3.5 ? '#2D5A0D' : '#92400E' }}>
-              {puntajeTotal >= 3.5 ? '✓ Zona apta para piloto' : '⚠ Zona con restricciones'}
-            </p>
-            <p className="text-[11px]" style={{ color: puntajeTotal >= 3.5 ? '#3B6D11' : '#D4881E' }}>
-              {puntajeTotal >= 3.5
-                ? 'Arranque recomendado: 500–2,000 hogares (referencia GIZ/PSR 2012).'
-                : 'Resolver criterios críticos antes del arranque.'}
-            </p>
-          </div>
-
-          {/* Hogares slider */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-5 py-4 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Tamaño del piloto</p>
-            <div className="flex items-center gap-4 flex-wrap">
-              <label className="text-[10px] text-[#6B6760]">Hogares en piloto</label>
-              <input type="range" min={500} max={2000} step={100} value={hogaresEnPiloto}
-                onChange={e => setHogaresEnPiloto(Number(e.target.value))}
-                className="w-40 accent-green-700" />
-              <span className="font-mono font-bold text-[#3B6D11] text-[14px]">{hogaresEnPiloto.toLocaleString('es-MX')}</span>
-            </div>
-            <p className="text-[9px] text-[#A8A49C] mt-2 uppercase tracking-[0.06em]">
-              Rango 500–2,000 · medibilidad garantizada en 90 días (GIZ/PSR 2012)
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Tab 2: Rutas Calculadas ─────────────────────────────────────────── */}
-      {tab === 2 && (
-        <div className="space-y-5">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">Rutas calculadas — zona piloto</p>
-              <p className="text-[10px] text-[#A8A49C] mt-0.5">
-                {hogaresEnPiloto.toLocaleString('es-MX')} hogares · 400 hogares/ruta · ventana 06:00–10:00 · {municipio}
-              </p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                    {['Zona', 'Material', 'Frecuencia', 'Ventana', 'Hogares/zona', 'Km est./ruta'].map(h => (
-                      <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] text-[9px] uppercase tracking-[0.06em]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {Array.from({ length: nZonas }, (_, i) => (
-                    <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                      <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">Zona {i + 1}</td>
-                      <td className="px-3 py-2.5 text-[#6B6760]">Orgánicos + Valorizable</td>
-                      <td className="px-3 py-2.5">
-                        <span className="text-[#3B6D11] font-semibold">Org. 3×/sem</span>
-                        <span className="text-[#A8A49C]"> · </span>
-                        <span className="text-[#1A5FA8] font-semibold">Val. 2×/sem</span>
-                      </td>
-                      <td className="px-3 py-2.5 text-[#6B6760]">06:00–10:00</td>
-                      <td className="px-3 py-2.5 font-mono">{hogaresPerZona}</td>
-                      <td className="px-3 py-2.5 font-mono">{kmPorRuta} km</td>
-                    </tr>
+          {/* Map placeholder */}
+          <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle="Rutas orgánicas · reciclables · mixtas · zonas cubiertas">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+              <div className="px-5 py-3 border-b border-[#F0EDE5]">
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Mapa de rutas y cobertura operativa</p>
+                <p className="text-[10px] text-[#A8A49C]">Rutas activas · colonias cubiertas · brechas críticas</p>
+              </div>
+              <div className="p-4">
+                <div className="h-48 rounded-[10px] bg-gradient-to-br from-[#EBF3FB] to-[#DBEAFE] border border-[#BDD7F5] relative overflow-hidden">
+                  {[['22%', '30%', '75%', '50%', '#3B6D11', 'Orgánica'], ['35%', '60%', '80%', '30%', '#1A5FA8', 'Reciclable'], ['50%', '20%', '70%', '70%', '#D4881E', 'Mixta']].map(([x1, y1, x2, y2, c, n]) => (
+                    <svg key={n} className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
+                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c as string} strokeWidth="2" strokeDasharray="6,3" />
+                    </svg>
                   ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="px-5 py-3 border-t border-[#F0EDE5] bg-[#FAFAF8]">
-              <div className="flex flex-wrap gap-5 text-[10px]">
-                <span className="text-[#6B6760]">Zonas: <strong className="text-[#1C1B18]">{nZonas}</strong></span>
-                <span className="text-[#6B6760]">Km/ruta: <strong className="text-[#1C1B18]">{kmPorRuta}</strong></span>
-                <span className="text-[#6B6760]">Camiones est.: <strong className="text-[#1C1B18]">{camionesTotal}</strong></span>
-                <span className="text-[#6B6760]">Fuente frecuencias: <strong className="text-[#1C1B18]">SEMARNAT Guía 2021</strong></span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-white/90 backdrop-blur rounded-[8px] border border-[#BDD7F5] p-3 text-center shadow">
+                      <MapPin className="w-5 h-5 text-[#1A5FA8] mx-auto mb-1" />
+                      <p className="text-[11px] font-semibold text-[#1A5FA8]">Municipio</p>
+                      <p className="text-[9px] text-[#6B6760]">Integrar con M06 CAs para ver rutas reales</p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-3 mt-3 text-[10px]">
+                  {[['12', 'Rutas activas'], ['3× sem', 'Frecuencia semanal'], ['80 rec.', 'Colonias cubiertas'], ['4', 'Brechas críticas']].map(([v, l]) => (
+                    <div key={l} className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5">
+                      <p className="font-bold text-[#1C1B18]">{v}</p>
+                      <p className="text-[8px] text-[#A8A49C]">{l}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-          <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] px-5 py-4">
-            <p className="text-[10px] font-semibold text-[#1C1B18] mb-1">Nota metodológica</p>
-            <p className="text-[10px] text-[#6B6760]">
-              Para optimización VRP real (Google OR-Tools / ArcGIS), este módulo genera los inputs estructurados que
-              un especialista SIG puede usar. Factor de 0.15 km/hogar promedio urbano México.
-            </p>
-          </div>
-        </div>
-      )}
+          </ExpandableChart>
 
-      {/* ── Tab 3: Operación PER ────────────────────────────────────────────── */}
-      {tab === 3 && (
-        <div className="space-y-5">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">Calendario semanal de operación PER</p>
-              <p className="text-[10px] text-[#A8A49C] mt-0.5">Presión · Estado · Respuesta — {municipio}</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                    {['Día', 'Turno mañana', 'Material recolectado', 'Protocolo inicio de semana'].map(h => (
-                      <th key={h} className="text-left px-4 py-2.5 font-bold text-[#1C1B18] text-[9px] uppercase tracking-[0.06em]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { dia: 'Lunes',     mat: 'Orgánicos',   proto: 'Verificación de unidades + registro bitácora inicial' },
-                    { dia: 'Martes',    mat: 'Valorizable',  proto: '—' },
-                    { dia: 'Miércoles', mat: 'Orgánicos',   proto: '—' },
-                    { dia: 'Jueves',    mat: 'Valorizable',  proto: '—' },
-                    { dia: 'Viernes',   mat: 'Orgánicos',   proto: 'Cierre semanal · revisión bitácora + reporte incidencias' },
-                  ].map(({ dia, mat, proto }, i) => (
-                    <tr key={dia} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                      <td className="px-4 py-2.5 font-semibold text-[#1C1B18]">{dia}</td>
-                      <td className="px-4 py-2.5 text-[#6B6760]">Recolección diferenciada (ruta asignada)</td>
-                      <td className="px-4 py-2.5">
-                        <span className={cn(
-                          'px-2 py-0.5 rounded-full text-[9px] font-semibold',
-                          mat === 'Orgánicos' ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#EBF3FB] text-[#1A5FA8]',
-                        )}>{mat}</span>
-                      </td>
-                      <td className="px-4 py-2.5 text-[#6B6760] text-[9px]">{proto}</td>
+          {/* Trucks table */}
+          <ExpandableChart chartId="m08-trucks" title="Camiones requeridos por material" subtitle="Volumen · unidades · frecuencia · riesgo logístico">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+              <div className="px-5 py-4 border-b border-[#F0EDE5]">
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Camiones requeridos por material</p>
+                <p className="text-[10px] text-[#A8A49C]">Vol. t/día · unidades · frecuencia · riesgo · observación</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[10px]">
+                  <thead>
+                    <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
+                      {['Material', 'Vol. t/día', 'Camiones', 'Frecuencia', 'Riesgo logístico', 'Observación'].map(h => (
+                        <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[9px]">{h}</th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {TRUCKS_BY_MATERIAL.map((t, i) => {
+                      const rColor = t.riesgo === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : t.riesgo === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]'
+                      return (
+                        <tr key={t.material} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
+                          <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">{t.material}</td>
+                          <td className="px-3 py-2.5 font-mono">{t.volDia}</td>
+                          <td className="px-3 py-2.5 font-bold text-[#1A5FA8] font-mono">{t.camiones}</td>
+                          <td className="px-3 py-2.5 text-[#6B6760]">{t.frecuencia}</td>
+                          <td className="px-3 py-2.5"><span className={cn('px-1.5 py-0.5 rounded font-semibold text-[9px]', rColor)}>{t.riesgo}</span></td>
+                          <td className="px-3 py-2.5 text-[9px] text-[#6B6760]">{t.obs}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-          <div className="rounded-[10px] border border-[#C9DDB1] bg-[#EAF3DE] px-5 py-4">
-            <p className="text-[10px] text-[#3B5F23]">
-              Las colonias específicas se configuran en el sistema de gestión municipal.
-              Este calendario aplica la estructura PER (Presión–Estado–Respuesta) del programa piloto
-              de separación en origen — {municipio}.
-            </p>
-          </div>
-        </div>
-      )}
+          </ExpandableChart>
 
-      {/* ── Tab 4: Cuellos de Botella ───────────────────────────────────────── */}
-      {tab === 4 && (
-        <div className="space-y-5">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <p className="font-serif text-[14px] font-semibold text-[#1C1B18] mb-1">Estacionalidad de la demanda — RSU mensual (t)</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">
-              Picos: Dic/Ene/Jul +15% · Bajos: Mar/Abr −8% · Base: {fmt.kgd(rsuBase)}
-            </p>
-            {rsuBase > 0 ? (
+          {/* Seasonality chart */}
+          <ExpandableChart chartId="m08-seasonality" title="Estacionalidad y capacidad de servicio" subtitle="RSU mensual esperado vs. capacidad instalada (t/mes)">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
+              <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Estacionalidad y capacidad de servicio</p>
+              <p className="text-[10px] text-[#A8A49C] mb-4">Mayo y diciembre presentan picos — la capacidad instalada no cubre la demanda en esos meses</p>
               <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={seasonalData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                <BarChart data={seasonData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
                   <XAxis dataKey="mes" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
                   <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                    formatter={(v: number) => [`${v.toLocaleString('es-MX')} t`, 'Vol. mensual']}
-                  />
-                  <Bar dataKey="vol" name="Vol. mensual (t)" radius={[3, 3, 0, 0]}>
-                    {seasonalData.map((d, idx) => (
-                      <Cell key={idx} fill={d.vol > d.base * 1.1 ? '#D4881E' : '#3B6D11'} />
+                  <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                    formatter={(v: number, n: string) => [`${v.toLocaleString()} t`, n === 'rsu' ? 'RSU mensual' : 'Cap. instalada']} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="rsu" name="RSU mensual (t)" fill="#1A5FA8" radius={[3, 3, 0, 0]}>
+                    {seasonData.map((d, i) => (
+                      <Cell key={i} fill={d.rsu > d.cap ? '#C0392B' : '#1A5FA8'} />
                     ))}
                   </Bar>
+                  <Line type="monotone" dataKey="cap" name="Cap. instalada" stroke="#3B6D11" strokeWidth={2} dot={false} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="h-[200px] flex items-center justify-center text-[10px] text-[#A8A49C]">
-                Sin datos de cálculo activo — configure el escenario en el módulo principal.
+              <p className="text-[9px] text-[#A8A49C] mt-2">Barras rojas = meses donde la demanda supera capacidad instalada</p>
+            </div>
+          </ExpandableChart>
+
+          {/* PER routes */}
+          <div className="space-y-3">
+            <p className="text-[12px] font-semibold text-[#1C1B18]">PER — Presión, estado y respuesta por ruta crítica</p>
+            {perRoutes.map(r => (
+              <div key={r.id} className={cn('rounded-[10px] border p-4', r.estado_chip === 'alerta' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#BDD7F5] bg-[#EBF3FB]')}>
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="font-mono text-[10px] font-bold bg-[#1C2B15] text-white px-2 py-0.5 rounded">{r.id}</span>
+                  <span className="text-[11px] font-semibold text-[#1C1B18]">{r.material}</span>
+                  {r.estado_chip === 'alerta' && <AlertTriangle className="w-3.5 h-3.5 text-[#C0392B] ml-auto" />}
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
+                  {[['Presión', r.presion, '#C0392B'], ['Estado', r.estado, '#1A5FA8'], ['Respuesta', r.respuesta, '#3B6D11']].map(([k, v, c]) => (
+                    <div key={k as string}>
+                      <p className="font-bold uppercase tracking-wide text-[8px] mb-0.5" style={{ color: c as string }}>{k as string}</p>
+                      <p className="text-[#4A4740] leading-snug">{v as string}</p>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[9px] text-[#A8A49C] mt-2 pt-2 border-t border-current/10">{r.bitacora}</p>
               </div>
-            )}
-            <p className="text-[9px] text-[#A8A49C] mt-2 uppercase tracking-[0.06em]">
-              Barras ámbar = meses con demanda &gt;10% sobre la base mensual
-            </p>
+            ))}
           </div>
 
-          {hasPeakAlert && (
-            <div className="rounded-[10px] border border-[#FDE68A] bg-[#FEF7E7] px-5 py-4">
-              <p className="text-[11px] font-semibold text-[#92400E] mb-1">
-                ⚠ Demanda pico supera el 85% de la capacidad de flota estimada
-              </p>
-              <p className="text-[10px] text-[#D4881E]">
-                Considerar: camiones adicionales · reducción de frecuencia · priorización de rutas críticas.
-              </p>
+          {/* Bottlenecks */}
+          <div className="space-y-2.5">
+            <p className="text-[12px] font-semibold text-[#1C1B18]">Cuellos de botella detectados</p>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+              {BOTTLENECKS_LOG.map(b => {
+                const gColor = b.gravedad === 'Alto' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#FDE68A] bg-[#FEF7E7]'
+                const tColor = b.gravedad === 'Alto' ? 'text-[#C0392B]' : 'text-[#D4881E]'
+                return (
+                  <div key={b.zona} className={cn('rounded-[10px] border p-4', gColor)}>
+                    <div className="flex items-start justify-between gap-2 mb-2">
+                      <p className="text-[11px] font-semibold text-[#1C1B18] leading-snug">{b.zona}</p>
+                      <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0', b.gravedad === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-[#FEF3C7] text-[#92400E]')}>{b.gravedad}</span>
+                    </div>
+                    <p className="text-[9px] text-[#6B6760] mb-1">Causa: {b.causa}</p>
+                    <p className={cn('text-[9px] font-semibold mb-2', tColor)}>Impacto: {b.impacto}</p>
+                    <p className="text-[9px] text-[#4A4740]">→ {b.accion}</p>
+                  </div>
+                )
+              })}
             </div>
-          )}
+          </div>
 
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-5 py-4 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Plan de contingencia</p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {[
-                {
-                  titulo: 'Camiones adicionales',
-                  desc: 'Contrato de reserva con proveedor externo para meses pico (Dic/Ene/Jul).',
-                  color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5',
-                },
-                {
-                  titulo: 'Frecuencia reducida',
-                  desc: 'Ajuste temporal a 2×/sem en rutas de menor prioridad durante picos estacionales.',
-                  color: '#D4881E', bg: '#FEF7E7', border: '#FDE68A',
-                },
-                {
-                  titulo: 'Priorización de rutas',
-                  desc: 'Orgánicos mantienen frecuencia; valorizable puede diferirse hasta 1 día sin pérdida de calidad.',
-                  color: '#3B6D11', bg: '#EAF3DE', border: '#C9DDB1',
-                },
-              ].map(item => (
-                <div key={item.titulo} className="rounded-[10px] border px-4 py-3 text-[10px]"
-                  style={{ borderColor: item.border, background: item.bg }}>
-                  <p className="font-semibold mb-1" style={{ color: item.color }}>{item.titulo}</p>
-                  <p className="text-[#6B6760] text-[9px]">{item.desc}</p>
-                </div>
-              ))}
-            </div>
+          {/* Cross-reference to VPN tornado */}
+          <div className="rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3 text-[11px] text-[#1A5FA8]">
+            <span className="font-semibold">Ver también:</span> La sensibilidad del <strong>VPN</strong> ante cambios en variables operativas se analiza en M13 · Retorno Financiero → Análisis de riesgo.
           </div>
         </div>
-      )}
+
+        {/* Right rail */}
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+          <div className="flex items-center justify-between mb-3 px-1">
+            <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
+            <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Confianza 35%</span>
+          </div>
+          <RailSection title="Cómo se calcula" open>
+            <p>Camiones basados en 12 t/camión/día. Factores de estacionalidad del modelo de generación. PER basado en bitácoras operativas del piloto.</p>
+          </RailSection>
+          <RailSection title="Decisión que habilita">
+            <p>Dimensionar la flota y aprobar las rutas piloto antes de la primera fase de operación.</p>
+          </RailSection>
+          <RailSection title="Metodología">
+            <p>Análisis logístico con supuesto de 12 t/camión/día. Estacionalidad del modelo de generación RSU (M01). PER con bitácoras operativas del piloto.</p>
+          </RailSection>
+          <RailSection title="Módulos relacionados">
+            <p>M06: Infraestructura que estas rutas sirven. M07: Personal que opera las rutas. M11: Mercado que recibe el material.</p>
+          </RailSection>
+          <RailSection title="Qué verificar aún">
+            <ul className="space-y-1">
+              {['Topografía y restricciones de acceso en zonas específicas.', 'Capacidad real de las unidades de recolección existentes.'].map(v => (
+                <li key={v} className="flex items-start gap-1.5"><span className="mt-1 w-1 h-1 rounded-full bg-[#D4881E] shrink-0" />{v}</li>
+              ))}
+            </ul>
+          </RailSection>
+        </div>
+      </div>
     </div>
   )
 }

@@ -569,7 +569,11 @@ export function ScenariosExportStack() {
             </div>
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
               <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Análisis de sensibilidad (tornado) — Impacto en el VPN</p>
-              <p className="text-[10px] text-[#A8A49C] mb-3">Variación del VPN respecto al caso base por variable · ±20%</p>
+              <p className="text-[10px] text-[#A8A49C] mb-1">Variación del VPN respecto al caso base por variable · ±20%</p>
+              <p className="text-[9px] text-[#1A5FA8] mb-3">
+                Este tornado mide sensibilidad del <strong>VPN del proyecto</strong>.
+                Ver también: sensibilidad del <strong>ingreso por materiales</strong> en M10 · Trazabilidad de Mercado.
+              </p>
               <TornadoChart vpnBase={metrics?.vpn ?? 0} />
             </div>
           </div>

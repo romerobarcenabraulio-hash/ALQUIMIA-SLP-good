@@ -113,6 +113,42 @@ const DobleMaterialidadStack = dynamic(
   },
 )
 
+const OrganigramaStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/OrganigramaStack').then(m => ({ default: m.OrganigramaStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando organigrama del programa…</p>,
+  },
+)
+
+const CostoOmisionStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/CostoOmisionStack').then(m => ({ default: m.CostoOmisionStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando análisis contrafactual…</p>,
+  },
+)
+
+const ArbolFinanciamientoStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/ArbolFinanciamientoStack').then(m => ({ default: m.ArbolFinanciamientoStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando árbol de financiamiento…</p>,
+  },
+)
+
+const ExpedienteCabildoStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/ExpedienteCabildoStack').then(m => ({ default: m.ExpedienteCabildoStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando expediente de Cabildo…</p>,
+  },
+)
+
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
   const { module, audience, isOrganizationJourney, sociodemographicBlock, onNavigate } = ctx
 
@@ -185,6 +221,14 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <InspeccionStack />
     case 'scenarios_export':
       return <ScenariosExportStack />
+    case 'organigrama_programa':
+      return <OrganigramaStack />
+    case 'costo_omision':
+      return <CostoOmisionStack />
+    case 'arbol_financiamiento':
+      return <ArbolFinanciamientoStack />
+    case 'expediente_cabildo':
+      return <ExpedienteCabildoStack />
     case 'source_traceability':
       return (
         <div className="space-y-8">

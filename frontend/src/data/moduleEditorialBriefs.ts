@@ -602,6 +602,90 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         chart_briefs: [],
       }
 
+    case 'costo_omision':
+      return {
+        moduleId,
+        title: 'El costo acumulado de no hacer nada en los próximos 10 años',
+        pregunta_guia: '¿Cuánto le cuesta al municipio cada año que pasa sin un programa de RSU?',
+        subtitulo_catchy: 'La omisión tiene precio — y crece con la inflación sin fecha de fin',
+        situacion_actual: `Sin programa de separación, ${territorio} seguirá pagando la tarifa de disposición sobre el 100% del RSU generado, con inflación compuesta y sin recuperar valor de los materiales.`,
+        observacion_alquimia: `${scope} La pérdida acumulada incluye: disposición en relleno, daño a la salud pública, multas PROFEPA por incumplimiento de LGPGIR Art. 10, y pérdida de elegibilidad para financiamiento verde (BID, BANOBRAS).`,
+        criterio_decision: 'Reencuadrar la conversación presupuestal: el programa no es un gasto, es el mecanismo para evitar un costo mayor y creciente.',
+        que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, construido con las mismas fuentes del simulador.',
+        siguiente_accion: 'Presentar el análisis contrafactual como el primer argumento ante el Cabildo antes de mostrar el CAPEX del programa.',
+        fuente_o_evidencia: 'Tarifa media relleno sanitario nacional (SEMARNAT). Costo salud OPS/INSP México. INPC BANXICO. LGPGIR sanciones Art. 10.',
+        metodologia_editorial: {
+          como_se_calcula: 'Costo acumulado = Σ(RSU_año × costo_disposición × factor_INPC^año) + daño_salud. Daño salud = fracción_orgánica × costo_OPS_ton. Saturación relleno = capacidad_residual ÷ ritmo_disposición.',
+          origen_datos: 'RSU generado del M01. Tarifas de disposición: SEMARNAT DBGIR. Costo salud: OPS/INSP México 2021. Inflación: BANXICO proyección media 2024–2026.',
+          por_que_este_enfoque: 'La pérdida aversión es más persuasiva que la promesa de ganancia con los tomadores de decisión municipales. Mostrar lo que se pierde cada año sin actuar es la forma más efectiva de justificar el CAPEX.',
+          supuesto_critico: 'Tarifa de disposición local puede diferir de la media nacional. Solicitar al municipio la tarifa contractual con el operador del relleno para recalibrar.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'organigrama_programa':
+      return {
+        moduleId,
+        title: 'La estructura de quién es responsable de cada decisión en el programa',
+        pregunta_guia: '¿Quién opera cada centro, quién firma la bitácora y quién aprueba el gasto?',
+        subtitulo_catchy: 'Sin estructura orgánica aprobada, el programa no tiene responsable — y sin responsable, no hay programa',
+        situacion_actual: `${territorio} necesita definir la estructura de personal antes de aprobar el CAPEX. El cabildo siempre pregunta: "¿quién es el responsable?" antes de votar.`,
+        observacion_alquimia: `${scope} La plantilla está parametrizada por tipo de CA (P/M/G) con datos de referencia ANIPAC e IMSS. El RACI asigna un único Aprobador por actividad, eliminando ambigüedad de responsabilidades.`,
+        criterio_decision: 'Aprobar la estructura de personal y el presupuesto mensual de nómina antes de comprometer inversión en infraestructura.',
+        que_no_significa: 'No es el organigrama de la dirección municipal. Es el organigrama específico del Programa de CAs dentro de la estructura municipal existente.',
+        siguiente_accion: 'Validar el tabulador salarial del municipio contra el benchmark sectorial y ajustar el costo de nómina antes de la presentación a Cabildo.',
+        fuente_o_evidencia: 'Plantilla: ANIPAC, CEMPRE México. Salarios referencia: IMSS Ramo 37, 2025. Factor prestaciones: 1.35×.',
+        metodologia_editorial: {
+          como_se_calcula: 'Nómina total = Σ(cantidad_por_puesto × salario_bruto × 1.35). OPEX nómina = nómina / OPEX_total × 100 (varía por tipo: 42–52%).',
+          origen_datos: 'Estructura de personal basada en benchmarks de CAs operativos en México (ANIPAC 2023, CEMPRE México 2022). Salarios: IMSS Tabla de Riesgos Rama 37.',
+          por_que_este_enfoque: 'El RACI no es un ejercicio de administración — es el documento que define quién firma la bitácora PER (obligatorio para trazabilidad GRI 306-4) y quién responde ante la contraloría.',
+          supuesto_critico: 'Tabulador salarial municipal. Algunos municipios tienen categorías específicas que no coinciden con el benchmark sectorial.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'arbol_financiamiento':
+      return {
+        moduleId,
+        title: 'El camino viable para financiar el programa — siempre existe uno',
+        pregunta_guia: '¿Cómo financiamos el programa si el municipio no tiene presupuesto disponible?',
+        subtitulo_catchy: '"No tenemos presupuesto" no es el fin del análisis — es el inicio del árbol de decisión',
+        situacion_actual: `La restricción más frecuente en ${territorio} es la disponibilidad de CAPEX. Este módulo demuestra que existen 6 caminos de financiamiento estructurados, cada uno con requisitos y costos de capital distintos.`,
+        observacion_alquimia: `${scope} La elección del vehículo financiero determina el costo real del programa, la distribución de riesgos y la viabilidad política. Un préstamo BID al 6% vs. banca comercial al 18% puede representar más de $30M MXN en intereses a 10 años sobre el mismo proyecto.`,
+        criterio_decision: 'Elegir el vehículo financiero que maximiza la viabilidad del programa dado el perfil fiscal, la disposición política y la capacidad de reporte ESG del municipio.',
+        que_no_significa: 'No es una recomendación de estructuración legal. La elección definitiva requiere asesoría jurídica y financiera especializada.',
+        siguiente_accion: 'Responder las 3 preguntas del árbol (presupuesto, operador privado, capacidad ESG) para identificar el camino más viable y solicitar asistencia técnica correspondiente.',
+        fuente_o_evidencia: 'LAASSP, LFPPP, Ley de Disciplina Financiera, BANOBRAS Programa Economía Circular, BID Ciudades Sostenibles — criterios de elegibilidad publicados 2023.',
+        metodologia_editorial: {
+          como_se_calcula: 'Costo de capital: tasa de interés efectiva anual. Tiempo de cierre: promedio de cierre de operaciones equivalentes documentadas. Los rangos son referencias de mercado 2024–2025.',
+          origen_datos: 'Criterios de elegibilidad: publicaciones oficiales BID, CAF, BANOBRAS. Marcos legales: DOF versiones vigentes a 2025.',
+          por_que_este_enfoque: 'El municipio necesita ver que existe un camino viable antes de que la conversación de CAPEX bloquee la decisión de política pública. El árbol de decisión convierte una barrera percibida en una selección técnica.',
+          supuesto_critico: 'La disponibilidad real de cada vehículo depende del perfil crediticio municipal y del ciclo de aprobación presupuestal federal. Los tiempos son referenciales.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'expediente_cabildo':
+      return {
+        moduleId,
+        title: 'El paquete completo para la sesión de Cabildo que autoriza la inversión',
+        pregunta_guia: '¿El expediente tiene todo lo que el Cabildo necesita para votar con información?',
+        subtitulo_catchy: 'Del simulador al salón de sesiones — el expediente que convierte el análisis en decisión',
+        situacion_actual: `El análisis de ${territorio} está completo. Este módulo genera el paquete institucional que condensa los 19 módulos anteriores en un expediente presentable ante Cabildo, Contraloría y eventuales financiadores.`,
+        observacion_alquimia: `${scope} El expediente incluye: análisis financiero auditado, cotización recomendada, plan de gobernanza, checklist de arranque y los documentos exportables (PDF, Excel, URL). Cada documento tiene trazabilidad a su fuente en el simulador.`,
+        criterio_decision: 'Confirmar que el expediente responde las 6 preguntas que todo regidor hace: ¿cuánto cuesta?, ¿quién paga?, ¿quién opera?, ¿cuál es el riesgo?, ¿cuál es el beneficio?, ¿cuándo empezamos?',
+        que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
+        siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
+        fuente_o_evidencia: 'Todos los módulos del simulador M01–M18. Documentos generados por AGORA pipeline.',
+        metodologia_editorial: {
+          como_se_calcula: 'No aplica — este módulo consolida y exporta, no calcula.',
+          origen_datos: 'Store del simulador (Zustand) + pipeline AGORA para generación de documentos.',
+          por_que_este_enfoque: 'El último paso de cualquier proceso de consultoría es la entrega. Sin un expediente ordenado, el análisis más riguroso pierde frente a una presentación PowerPoint con números más simples.',
+          supuesto_critico: 'La completitud del expediente depende de que todos los módulos anteriores hayan sido configurados con datos del municipio específico.',
+        },
+        chart_briefs: [],
+      }
+
     default:
       return null
   }

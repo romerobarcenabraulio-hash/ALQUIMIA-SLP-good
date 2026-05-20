@@ -6,7 +6,7 @@ import { cn, fmt } from '@/lib/utils'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TABS = ['Doble Materialidad', 'GRI 306', 'KPIs vs. Real', 'Reporte Financiadores']
+const TABS = ['Doble Materialidad', 'GRI 306', 'Reporte Financiadores']
 
 const MATERIALIDAD_TOPICS = [
   { label: 'Emisiones CH₄ rellenos',        impacto: 4.5, financiero: 3.0 },
@@ -252,71 +252,8 @@ _Fuente: ALQUIMIA Platform — datos proyectados del simulador. No representan m
         </div>
       )}
 
-      {/* ── Tab 3: KPIs proyectado vs. real ────────────────────────────────── */}
+      {/* ── Tab 3: Reporte para Financiadores ──────────────────────────────── */}
       {tab === 3 && (
-        <div className="space-y-5">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">KPIs: Proyectado vs. Medido</p>
-              <p className="text-[10px] text-[#A8A49C] mt-0.5">{municipio} — Solo datos proyectados del simulador</p>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-[10px]">
-                <thead>
-                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                    {['Indicador', 'Proyectado', 'Medido', 'Brecha', 'Fuente'].map(h => (
-                      <th key={h} className="text-left px-4 py-2.5 font-bold text-[#1C1B18] text-[9px] uppercase tracking-[0.06em]">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    {
-                      ind: 'Toneladas separadas/año',
-                      proj: `${fmt.num(desviado4a + desviado4b)} t`,
-                      medido: 'Sin dato de campo',
-                    },
-                    {
-                      ind: 'Tasa de captura',
-                      proj: fmt.pct(pctCaptura),
-                      medido: 'Sin dato de campo',
-                    },
-                    {
-                      ind: 'Empleos directos creados',
-                      proj: fmt.num(empleos),
-                      medido: 'Sin dato',
-                    },
-                    {
-                      ind: 'CO₂e evitadas (t/año)',
-                      proj: `${fmt.num(co2Anual)} t`,
-                      medido: 'Sin dato',
-                    },
-                  ].map((r, i) => (
-                    <tr key={r.ind} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                      <td className="px-4 py-2.5 font-medium text-[#1C1B18]">{r.ind}</td>
-                      <td className="px-4 py-2.5 font-mono font-semibold text-[#3B6D11]">{r.proj}</td>
-                      <td className="px-4 py-2.5 text-[#A8A49C] italic">{r.medido}</td>
-                      <td className="px-4 py-2.5">
-                        <span className="px-1.5 py-0.5 rounded bg-[#FEF3C7] text-[#92400E] text-[9px] font-semibold">Sin datos</span>
-                      </td>
-                      <td className="px-4 py-2.5 text-[#6B6760]">Simulador ALQUIMIA</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div className="rounded-[10px] border border-[#C9DDB1] bg-[#EAF3DE] px-5 py-4">
-            <p className="text-[10px] text-[#3B5F23]">
-              Los datos medidos se registran en el módulo de Monitoreo Real (M14) cuando está disponible.
-              Actualmente solo hay datos proyectados del simulador.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* ── Tab 4: Reporte para Financiadores ──────────────────────────────── */}
-      {tab === 4 && (
         <div className="space-y-5">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
             <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
