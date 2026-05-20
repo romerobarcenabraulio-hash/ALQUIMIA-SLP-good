@@ -18,7 +18,6 @@ import {
   getInegiHousingDistribution,
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
-import { CityFirstSelector } from '@/components/simulator/CityFirstSelector'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -302,9 +301,6 @@ export function CityBaselineStack() {
 
   return (
     <div className="space-y-4 pb-6">
-
-      {/* ── City selector — Module 1 is the canonical place to choose city ── */}
-      <CityFirstSelector />
 
       {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">

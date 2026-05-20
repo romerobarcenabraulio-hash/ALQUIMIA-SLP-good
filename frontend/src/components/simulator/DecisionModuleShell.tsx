@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import {
   AlertTriangle,
   BookOpen,
@@ -14,6 +14,8 @@ import {
   Wind,
   Zap,
 } from 'lucide-react'
+import { getEstadosMx, getMunicipiosMx } from '@/lib/api'
+import type { EstadoMxOption, MunicipioMxApi } from '@/types'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_HORIZON_HINTS, TRAJECTORY_UI } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -226,6 +228,73 @@ function getLecturaEjecutiva(moduleId: string): LecturaEjecutiva | null {
   return null
 }
 
+// ─── Inline city selector bar (Module 1 only) ────────────────────────────────
+
+function CityInlineBar() {
+  const { applyMunicipioCatalog, seleccionMunicipioCatalog } = useSimulatorStore()
+  const [estados, setEstados] = useState<EstadoMxOption[]>([])
+  const [estadoId, setEstadoId] = useState('')
+  const [municipios, setMunicipios] = useState<MunicipioMxApi[]>([])
+  const [municipioPick, setMunicipioPick] = useState('')
+  const [loadingMunicipios, setLoadingMunicipios] = useState(false)
+
+  useEffect(() => {
+    getEstadosMx().then(setEstados).catch(() => { /* silently fail */ })
+  }, [])
+
+  useEffect(() => {
+    if (!estadoId) { setMunicipios([]); setMunicipioPick(''); return }
+    setLoadingMunicipios(true)
+    getMunicipiosMx(estadoId)
+      .then(rows => { setMunicipios(rows); setMunicipioPick('') })
+      .catch(() => { /* silently fail */ })
+      .finally(() => setLoadingMunicipios(false))
+  }, [estadoId])
+
+  function onPickMunicipio(cve: string) {
+    setMunicipioPick(cve)
+    const row = municipios.find(m => m.clave_inegi === cve)
+    if (row) applyMunicipioCatalog(row)
+  }
+
+  const selectClass = 'rounded-[6px] border border-[#E8E4DC] bg-white px-2 py-1 text-[11px] text-[#1C1B18] focus:border-[#3B6D11] focus:outline-none focus:ring-1 focus:ring-[#3B6D11]/30 transition-colors disabled:opacity-50'
+
+  return (
+    <div className="flex items-center gap-2 shrink-0">
+      {seleccionMunicipioCatalog && (
+        <span className="hidden sm:inline text-[10px] text-[#A8A49C] font-mono truncate max-w-[120px]" title={seleccionMunicipioCatalog.nombre}>
+          {seleccionMunicipioCatalog.nombre}
+        </span>
+      )}
+      <select
+        value={estadoId}
+        onChange={e => setEstadoId(e.target.value)}
+        className={selectClass}
+        aria-label="Estado"
+      >
+        <option value="">Estado</option>
+        {estados.map(e => (
+          <option key={e.estado_id} value={e.estado_id}>{e.nombre}</option>
+        ))}
+      </select>
+      <select
+        value={municipioPick}
+        disabled={!estadoId || loadingMunicipios}
+        onChange={e => onPickMunicipio(e.target.value)}
+        className={selectClass}
+        aria-label="Municipio"
+      >
+        <option value="">{loadingMunicipios ? 'Cargando…' : !estadoId ? 'Municipio' : 'Selecciona'}</option>
+        {municipios.map(m => (
+          <option key={m.clave_inegi} value={m.clave_inegi}>
+            {m.nombre}
+          </option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 // ─── Module subtitle (catchy) ─────────────────────────────────────────────────
 
 function ModuleContextHeader({
@@ -289,12 +358,15 @@ function ModuleContextHeader({
           )}
         </div>
       </div>
-      <h2
-        id="decision-shell-title"
-        className="mt-2 font-serif text-[clamp(1.35rem,2.5vw,1.85rem)] font-medium text-[#1C1B18] leading-tight tracking-tight"
-      >
-        {title}
-      </h2>
+      <div className="mt-2 flex items-start justify-between gap-4">
+        <h2
+          id="decision-shell-title"
+          className="font-serif text-[clamp(1.35rem,2.5vw,1.85rem)] font-medium text-[#1C1B18] leading-tight tracking-tight"
+        >
+          {title}
+        </h2>
+        {moduleId === 'city_baseline' && <CityInlineBar />}
+      </div>
 
       {/* city_baseline: compact inline chip — territory is contextual metadata, not hero text */}
       {moduleId === 'city_baseline' && territorio ? (
