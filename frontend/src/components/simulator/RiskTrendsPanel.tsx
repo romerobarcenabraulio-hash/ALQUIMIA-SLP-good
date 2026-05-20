@@ -53,17 +53,16 @@ const RISK_MATRIX_COLOR: Record<string, string> = {
   regulatorio: '#3B6D11',
 }
 
-// Referencia de aceptación por actor: benchmark de programas municipales México 2015-2023.
-// Fuente: SEMARNAT (2022) «Evaluación de Programas RSU», análisis de 24 municipios.
-// Estos valores son el benchmark de referencia del modelo, no datos per-municipio.
-const ACTORES_ACEPTACION = [
-  { actor: 'Municipio (DGA)',      aceptacion: 82, color: '#3B6D11' },
-  { actor: 'Ciudadanos',           aceptacion: 70, color: '#5A9438' },
-  { actor: 'Empresas formales',    aceptacion: 65, color: '#1A5FA8' },
-  { actor: 'Recicladores inform.', aceptacion: 45, color: '#D4881E' },
-  { actor: 'SEMARNAT',             aceptacion: 88, color: '#3B6D11' },
-  { actor: 'Cabildo',              aceptacion: 58, color: '#5A4A2A' },
-] as const
+// Benchmark de referencia de aceptación por actor: SEMARNAT (2022) — 24 municipios.
+// El actor "Ciudadanos" se reemplaza con dato real de encuesta de campo (IPC) cuando existe.
+const ACTORES_ACEPTACION_BASE = [
+  { actor: 'Municipio (DGA)',      aceptacion: 82, color: '#3B6D11', fuenteReal: false },
+  { actor: 'Ciudadanos',           aceptacion: 70, color: '#5A9438', fuenteReal: false },
+  { actor: 'Empresas formales',    aceptacion: 65, color: '#1A5FA8', fuenteReal: false },
+  { actor: 'Recicladores inform.', aceptacion: 45, color: '#D4881E', fuenteReal: false },
+  { actor: 'SEMARNAT',             aceptacion: 88, color: '#3B6D11', fuenteReal: false },
+  { actor: 'Cabildo',              aceptacion: 58, color: '#5A4A2A', fuenteReal: false },
+] satisfies { actor: string; aceptacion: number; color: string; fuenteReal: boolean }[]
 
 const MITIGACION_PLAN = [
   { dimension: 'Mercado',     riesgo: 'Caída de precio de materiales', accion: 'Contratos forward con recicladores; diversificar materiales.', residual: 'Medio' },
@@ -99,6 +98,18 @@ export function RiskTrendsPanel() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const state          = useSimulatorStore(s => s)
   const resultados     = useSimulatorStore(s => s.resultados)
+  const indicePreparacionCiudadana = useSimulatorStore(s => (s as typeof s & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana ?? null)
+  const encuestaResultados = useSimulatorStore(s => (s as typeof s & { encuestaResultados?: { n_total?: number } | null }).encuestaResultados ?? null)
+
+  // Construir ACTORES_ACEPTACION dinámico: "Ciudadanos" usa IPC real si existe
+  const ACTORES_ACEPTACION = useMemo(() => {
+    return ACTORES_ACEPTACION_BASE.map(a => {
+      if (a.actor === 'Ciudadanos' && indicePreparacionCiudadana !== null) {
+        return { ...a, aceptacion: Math.round(indicePreparacionCiudadana), fuenteReal: true }
+      }
+      return a
+    })
+  }, [indicePreparacionCiudadana])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [baseline, setBaseline] = useState<TrendscapeBaselineResponse | null>(null)
@@ -354,7 +365,18 @@ export function RiskTrendsPanel() {
 
           {/* Actor acceptance bar chart */}
           <div>
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Aceptación por actor</p>
+            <div className="flex items-center justify-between mb-1">
+              <p className="text-[11px] font-semibold text-[#1C1B18]">Aceptación por actor</p>
+              {indicePreparacionCiudadana !== null ? (
+                <span className="text-[9px] font-medium text-[#3B6D11] bg-[#F4FAEC] border border-[#D7E8C0] rounded-full px-2 py-0.5">
+                  Ciudadanos: dato real · {(encuestaResultados as { n_total?: number } | null)?.n_total ?? 0} enc.
+                </span>
+              ) : (
+                <span className="text-[9px] text-[#A8A49C] bg-[#F7F5F0] border border-[#E8E4DC] rounded-full px-2 py-0.5">
+                  Ciudadanos: benchmark SEMARNAT 2022
+                </span>
+              )}
+            </div>
             <p className="text-[9px] text-[#A8A49C] mb-3">% de aceptación estimada del programa de circularidad</p>
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={[...ACTORES_ACEPTACION]} layout="vertical" margin={{ top: 0, right: 40, left: 100, bottom: 0 }}>

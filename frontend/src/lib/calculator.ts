@@ -56,9 +56,17 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
   const condoDeptShare = condominioShare * clamp((state.viviendaCondominioDepartamentoPct ?? 70) / 100, 0, 1)
   const condoHouseShare = condominioShare - condoDeptShare
   const noCondominioShare = 1 - condominioShare
+
+  // Desglose Hemisferio 1 vs. Hemisferio 2
+  // casaViaPublicaPct: % del total de viviendas no-condominio que son VP (calle pública)
+  // Fuente: DONUE + INEGI Censo 2020 — fracción municipal. Default 70% como estimado nacional.
+  const casaVPFrac    = clamp(((state as typeof state & { casaViaPublicaPct?: number }).casaViaPublicaPct ?? 70) / 100, 0, 1)
+  const casaVPShare      = noCondominioShare * casaVPFrac          // Hemisferio 2
+  const casaPrivadaShare = noCondominioShare * (1 - casaVPFrac)    // Hemisferio 1 (casas en privada/coto)
+
   const viviendaWeights = {
     vertical: condoDeptShare * viviendaFactors.vertical,
-    casa: (noCondominioShare + condoHouseShare) * viviendaFactors.casa,
+    casa: (casaVPShare + casaPrivadaShare + condoHouseShare) * viviendaFactors.casa,
     residencial: 0 * viviendaFactors.residencial,
   }
   const activeTypes: TipoVivienda[] = state.tiposVivienda.length ? state.tiposVivienda : ['vertical', 'casa', 'residencial']
@@ -144,7 +152,21 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
 
     const opexCom = estado1Aprobado(state) ? state.costoComSocial : 0
 
-    const opexTotal = opexCAs + opexLogistica + opexCom
+    // OPEX educación ciudadana — proporcional a la brecha de adopción y al % de casas VP.
+    // Casas VP (Hemisferio 2) requieren brigadas puerta a puerta: 3x más costoso por hogar
+    // que condominio (donde se capacita al administrador). Se activa desde F1.
+    // Fórmula: costo_base × hogares_vp × (1 + 2 × casaVPFrac) × factor_brecha_ipc
+    // Donde factor_brecha_ipc ∈ [0.5, 1.5]: bajo IPC real → mayor esfuerzo requerido.
+    const ipcReal = (state as typeof state & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana
+    const ipcReferencia = ipcReal ?? 70   // 70 = benchmark SEMARNAT 2022 sin dato de campo
+    const factorBrechaIpc = clamp(1 + (70 - ipcReferencia) / 100, 0.5, 1.5)
+    const costoBaseHogarMxn = 80          // MXN/hogar/año — estimado BANOBRAS 2019
+    const hogaresVP = vivActivas * casaVPShare
+    const opexEducacion = año === 1
+      ? hogaresVP * costoBaseHogarMxn * (1 + 2 * casaVPFrac) * factorBrechaIpc
+      : hogaresVP * costoBaseHogarMxn * 0.4 * factorBrechaIpc  // mantenimiento años siguientes
+
+    const opexTotal = opexCAs + opexLogistica + opexCom + opexEducacion
 
     const capexAño = año === 1 ? capexCAsAño + capexBasureros + capexComSocial : capexCAsAño
     capexAcum += capexAño
@@ -344,6 +366,13 @@ export function calcular(state: SimulatorState): ResultadosCalculados {
     inversionPrivada: ingresosBrutos * MULTIPLICADORES.inversionPrivada,
     derremaTotal, scorePolitico,
     ratingESGDelta: ratingESGNorm,
+    // Costo de educación ciudadana año 1 (más intensivo) — expuesto para M04 y CapacitacionTab
+    // Fórmula: hogares_vp × $80/hogar × factor_VP × factor_brecha_IPC
+    costoEducacionAnual: (() => {
+      const ipcRef2 = ((state as typeof state & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana) ?? 70
+      const brecha2 = clamp(1 + (70 - ipcRef2) / 100, 0.5, 1.5)
+      return Math.round(vivActivas * casaVPShare * 80 * (1 + 2 * casaVPFrac) * brecha2)
+    })(),
   }
 }
 

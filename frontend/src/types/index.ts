@@ -568,6 +568,22 @@ export interface SimulatorState {
 
   /** Selección explícita vía catálogo Estado→Municipio (Q-009); null si solo se usó ZM o chips legacy. */
   seleccionMunicipioCatalog: SeleccionMunicipioCatalog | null
+
+  // ── Estudio social — campo y educación ciudadana ───────────────────────────
+  /** % del total de viviendas no-condominio que están en calle pública (vs. privada/coto).
+   *  Fuente: DONUE + INEGI Censo 2020 fracción municipal. Rango 0-100.
+   *  Diferencia el costo educativo: casas VP requieren 3-5x más esfuerzo que condominios. */
+  casaViaPublicaPct: number
+
+  /** IPC real (0-100) proveniente de la encuesta de campo.
+   *  null = sin datos de campo; se usa el benchmark SEMARNAT 2022 (70) como fallback. */
+  indicePreparacionCiudadana: number | null
+
+  /** IPC específico para el segmento de casas en vía pública (Hemisferio 2). */
+  indexAceptacionVP: number | null
+
+  /** Resultado completo de la última consulta al endpoint /survey/{municipio}/resultados. */
+  encuestaResultados: EncuestaResultados | null
 }
 
 export interface SeleccionMunicipioCatalog {
@@ -711,6 +727,24 @@ export interface ResultadosCalculados {
   // Riesgo y Monte Carlo (calculados bajo demanda; null si no disponibles)
   riskScores?:           RiskScores | null
   monteCarloPercentiles?: MonteCarloPercentiles | null
+
+  // Educación ciudadana — costos derivados del IPC y brecha de adopción
+  costoEducacionAnual?: number  // MXN/año — suma al OPEX; proporcional a brecha y % VP
+}
+
+// ─── Encuesta de aceptación ciudadana ─────────────────────────────────────────
+
+export interface EncuestaResultados {
+  municipio_id:       string
+  n_total:            number
+  n_condominio:       number
+  n_privada:          number
+  n_vp:               number
+  ipc_global:         number   // 0-100
+  ipc_hemisferio1:    number   // condominio + privada
+  ipc_hemisferio2_vp: number   // casas en vía pública
+  ipc_por_segmento:   Record<string, number>
+  ultima_respuesta:   string | null
 }
 
 export interface AñoResultados {

@@ -46,6 +46,7 @@
     "next": "^16.2.4",
     "numeral": "^2.0.6",
     "postcss": "8.5.10",
+    "qrcode.react": "^4.2.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-intersection-observer": "^9.13.0",

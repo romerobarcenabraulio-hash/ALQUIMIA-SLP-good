@@ -178,6 +178,7 @@ export function CityBaselineStack() {
     setViviendaCondominioDepartamentoPct,
     ocupantesPorViviendaEscenario,
     setOcupantesPorViviendaEscenario,
+    setCasaViaPublicaPct,
     mermaPctPorMaterial,
     setMermaMaterialPct,
     costoDisposicionActivo,
@@ -197,6 +198,7 @@ export function CityBaselineStack() {
   const ocupantesBase = distribution?.stateAvgOccupants2020 ?? 3.6
   const ocupantesEscenario = ocupantesPorViviendaEscenario ?? ocupantesBase
   const viviendaNoCondominioPct = 100 - viviendaCondominioPct
+  const casaViaPublicaPct = useSimulatorStore(s => (s as typeof s & { casaViaPublicaPct?: number }).casaViaPublicaPct ?? 70)
   const viviendaCondominioCasaPct = 100 - viviendaCondominioDepartamentoPct
   const viviendasActivas = r?.vivActivas ?? distribution?.stateOccupiedDwellings2020 ?? 0
   const capturaBasePct = pctCapturaPorAño[Math.max(0, Math.min(horizonte - 1, pctCapturaPorAño.length - 1))] ?? 70
@@ -370,6 +372,36 @@ export function CityBaselineStack() {
                 <span className="text-[11px] text-[#6B6760]">Casa independiente (derivado)</span>
                 <span className="font-mono text-[11px] font-semibold text-[#4A4642]">{viviendaNoCondominioPct.toFixed(0)}%</span>
               </div>
+
+              {/* VP vs. privada — desglose de Hemisferio 2 */}
+              <PercentSlider
+                id="casa-via-publica" label="% de casas en calle pública (vía pública)"
+                value={casaViaPublicaPct} min={20} max={95} step={5}
+                onChange={setCasaViaPublicaPct}
+                confidence="bibliography"
+                source="DONUE INEGI · Estimado nacional: 70% de viviendas no-condominio son casas VP"
+              />
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex items-center justify-between rounded-[7px] border border-[#FEF7E7] bg-[#FEF7E7]/60 px-2.5 py-1.5">
+                  <div>
+                    <span className="text-[10px] text-[#D4881E] font-medium">Hemisferio 2</span>
+                    <p className="text-[9px] text-[#A8A49C]">Calle pública (VP)</p>
+                  </div>
+                  <span className="font-mono text-[11px] font-bold text-[#D4881E]">
+                    {(viviendaNoCondominioPct * casaViaPublicaPct / 100).toFixed(0)}%
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-[7px] border border-[#D7E8C0] bg-[#F4FAEC] px-2.5 py-1.5">
+                  <div>
+                    <span className="text-[10px] text-[#3B6D11] font-medium">Hemisferio 1</span>
+                    <p className="text-[9px] text-[#A8A49C]">Privada / coto</p>
+                  </div>
+                  <span className="font-mono text-[11px] font-bold text-[#3B6D11]">
+                    {(viviendaNoCondominioPct * (100 - casaViaPublicaPct) / 100).toFixed(0)}%
+                  </span>
+                </div>
+              </div>
+
               <PercentSlider
                 id="vivienda-edificio-depto" label="Departamentos (dentro de condominio)"
                 value={viviendaCondominioDepartamentoPct}

@@ -182,6 +182,10 @@ interface SimulatorStore extends SimulatorState {
   cotizacionRecomendada: import('@/lib/recommendationEngine').CotizacionRecomendada | null
   generarCotizacion: () => void
   guardarCotizacionRemota: () => Promise<void>
+
+  // ── Estudio social — encuesta de campo ────────────────────────────────────
+  setCasaViaPublicaPct: (v: number) => void
+  fetchEncuestaResultados: (municipioId: string) => Promise<void>
 }
 
 const defaultState: SimulatorState = {
@@ -226,6 +230,10 @@ const defaultState: SimulatorState = {
     tipoCambio: 'fallback', temperatura: 'fallback', recicladoras: 'fallback',
   },
   seleccionMunicipioCatalog: null,
+  casaViaPublicaPct: 70,           // % de no-condominio en calle pública; estimado DONUE/INEGI como fallback
+  indicePreparacionCiudadana: null, // null = sin encuesta de campo; usa benchmark SEMARNAT 2022 (70)
+  indexAceptacionVP: null,
+  encuestaResultados: null,
 }
 
 /** Plantilla de estado inicial (tests Q-024 y fixtures). */
@@ -756,6 +764,28 @@ export const useSimulatorStore = create<SimulatorStore>()(
             })
           } catch {
             // Fallo silencioso — cotización generada localmente siempre disponible
+          }
+        },
+
+        setCasaViaPublicaPct: (v) => {
+          set({ casaViaPublicaPct: Math.max(0, Math.min(100, v)) })
+          get().recalcular()
+        },
+
+        fetchEncuestaResultados: async (municipioId) => {
+          try {
+            const apiUrl = getApiUrl()
+            const res = await apiFetch(`${apiUrl}/api/v1/survey/${encodeURIComponent(municipioId)}/resultados`)
+            if (!res.ok) return
+            const data = await res.json()
+            if (data.n_total === 0) return   // sin respuestas aún — mantener benchmark
+            set({
+              encuestaResultados: data,
+              indicePreparacionCiudadana: data.ipc_global ?? null,
+              indexAceptacionVP: data.ipc_hemisferio2_vp ?? null,
+            })
+          } catch {
+            // Fallo silencioso — se usa benchmark SEMARNAT 2022 (70) como fallback
           }
         },
 

@@ -13,6 +13,8 @@ Tablas:
   checkpoint_costos        — gate obligatorio antes de status "defendible"
   cotizaciones_municipales — cotización óptima recomendada por municipio
                              (generada por motor de recomendación ALQUIMIA)
+  encuesta_respuestas      — respuestas ciudadanas a encuesta de aceptación
+                             (campo: tipo_vivienda discrimina Hemisferio 1 vs 2)
 """
 from __future__ import annotations
 
@@ -418,4 +420,82 @@ class CotizacionMunicipal(Base):
             f"<CotizacionMunicipal {self.municipio_nombre} "
             f"Fase{self.fase_recomendada} v{self.version} "
             f"score={self.score_viabilidad}>"
+        )
+
+
+# ─── EncuestaRespuesta ────────────────────────────────────────────────────────
+
+class EncuestaRespuesta(Base):
+    """
+    Respuesta individual a la Encuesta de Aceptación Ciudadana.
+
+    Cada fila representa una encuesta completada por un ciudadano (o registrada
+    por un brigadista en campo vía tablet). El campo `tipo_vivienda` es clave:
+    permite calcular el Índice de Preparación Ciudadana (IPC) segmentado por
+    Hemisferio 1 (condominio / privada) vs. Hemisferio 2 (calle pública — VP).
+
+    Fórmula IPC individual:
+      ipc = (sec_a * 0.30 + sec_b * 0.40 + sec_c * 0.30) * 20   [escala 0-100]
+      Donde sec_a,b,c son promedios de respuestas Likert 1-5.
+
+    El endpoint GET /{municipio_id}/resultados agrega todos los registros y
+    calcula el IPC por segmento + índice de aceptación específico VP.
+    """
+    __tablename__ = "encuesta_respuestas"
+
+    id:            Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    municipio_id:  Mapped[str] = mapped_column(String(50), index=True)
+    municipio_nombre: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+
+    # ── Segmentación de vivienda ─────────────────────────────────────────────
+    tipo_vivienda: Mapped[str] = mapped_column(String(30))
+    # condominio | privada | vp (vía pública)
+    # Hemisferio 1: condominio + privada
+    # Hemisferio 2: vp
+
+    # ── Respuestas por sección (Likert 1-5, promedio de preguntas) ───────────
+    # Sección A: Priming de valores (¿quieres aire limpio, ciudad ordenada?)
+    sec_a_q1: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Importancia del aire limpio
+    sec_a_q2: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Impacto personal de RSU mal manejados
+    sec_a_q3: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Responsabilidad ciudadana
+
+    # Sección B: Comportamiento actual (sin hipocresía posible)
+    sec_b_q1: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # ¿Separa actualmente?
+    sec_b_q2: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Frecuencia de separación
+    sec_b_q3: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Conoce el reglamento municipal
+
+    # Sección C: Compromiso de participación
+    sec_c_q1: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Participaría en el programa
+    sec_c_q2: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Invitaría a sus vecinos
+    sec_c_q3: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # Aceptaría capacitación
+
+    # ── IPC calculado al momento del registro ─────────────────────────────────
+    # Guardado como snapshot para auditoría; el endpoint de resultados recalcula.
+    ipc_calculado: Mapped[Optional[float]] = mapped_column(Float, nullable=True)  # 0-100
+
+    # ── Metadatos de campo ───────────────────────────────────────────────────
+    canal: Mapped[str] = mapped_column(String(30), default="qr")
+    # qr | brigadista | digital_link
+    colonia: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    zona:    Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    @staticmethod
+    def calcular_ipc(
+        sec_a: list[Optional[int]],
+        sec_b: list[Optional[int]],
+        sec_c: list[Optional[int]],
+    ) -> float:
+        """Calcula el IPC individual en escala 0-100."""
+        def avg(vals: list[Optional[int]]) -> float:
+            nums = [v for v in vals if v is not None]
+            return sum(nums) / len(nums) if nums else 3.0  # fallback: neutral
+
+        score = avg(sec_a) * 0.30 + avg(sec_b) * 0.40 + avg(sec_c) * 0.30
+        return round(score * 20, 1)  # 1-5 → 20-100
+
+    def __repr__(self) -> str:
+        return (
+            f"<EncuestaRespuesta {self.municipio_id} "
+            f"tipo={self.tipo_vivienda} ipc={self.ipc_calculado}>"
         )
