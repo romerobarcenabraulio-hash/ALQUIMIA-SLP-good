@@ -6,49 +6,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
 import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { cn } from '@/lib/utils'
-
-interface ChapterDef {
-  num: 1 | 2 | 3 | 4
-  label: string
-  question: string
-  color: string
-  bgColor: string
-  borderColor: string
-  firstModuleId: string
-}
-
-const CHAPTERS: ChapterDef[] = [
-  {
-    num: 1, label: 'Diagnóstico', question: '¿Cuál es el punto de partida real?',
-    color: '#3B6D11', bgColor: '#EAF3DE', borderColor: '#C9DDB1',
-    firstModuleId: 'city_baseline',
-  },
-  {
-    num: 2, label: 'Planificación', question: '¿Qué necesitamos construir?',
-    color: '#1A5FA8', bgColor: '#E8F0FA', borderColor: '#BDD7F5',
-    firstModuleId: 'future_goals',
-  },
-  {
-    num: 3, label: 'Modelo', question: '¿Quién paga, quién opera y es viable?',
-    color: '#D4881E', bgColor: '#FEF7E7', borderColor: '#F5DCA0',
-    firstModuleId: 'esquema_concesion',
-  },
-  {
-    num: 4, label: 'Control', question: '¿Cómo arrancamos y cómo medimos?',
-    color: '#4A1C7A', bgColor: '#F5EFF9', borderColor: '#D8C4E8',
-    firstModuleId: 'inspeccion_predios',
-  },
-]
-
-// Map module_id to chapter number
-const MODULE_CHAPTER: Record<string, 1 | 2 | 3 | 4> = {
-  city_baseline: 1, social_study: 1, municipal_context: 1,
-  future_goals: 2, infrastructure_operations: 2, logistica_operativa: 2, costos_programa: 2, market_traceability: 2,
-  esquema_concesion: 3, scenarios_export: 3, risk_trends: 3,
-  inspeccion_predios: 4, monitoreo_real: 4, doble_materialidad: 4, source_traceability: 4,
-}
-
-export { MODULE_CHAPTER }
+import { CHAPTERS, MODULE_CHAPTER } from '@/lib/chapterConfig'
 
 interface ChapterSeparatorProps {
   fromModuleId: string

@@ -27,6 +27,7 @@ export type ChartBrief = {
 export type ModuleEditorialBrief = {
   moduleId: string
   title: string
+  pregunta_guia: string           // pregunta que el usuario responde al completar el módulo
   subtitulo_catchy: string        // 1 línea descriptiva, lenguaje accesible
   situacion_actual: string
   observacion_alquimia: string
@@ -77,6 +78,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Steps for Circularity — Guía de lectura',
+        pregunta_guia: '¿Entiendo cómo leer el simulador antes de tomar decisiones?',
         subtitulo_catchy: 'Un recorrido editorial que explica el simulador antes de interpretar los datos.',
         situacion_actual: `${territorio} genera residuos que podrían convertirse en valor económico, empleos y calidad de vida. Esta guía explica paso a paso cómo el simulador construye ese argumento — desde el diagnóstico territorial hasta el monitoreo de resultados.`,
         observacion_alquimia: 'ALQUIMIA sigue la filosofía Analizar → Diagnosticar → Planear → Ejecutar → Monitorear. Este módulo introductorio no contiene gráficas ni cálculos; es contexto narrativo para que cualquier lector entienda el propósito de cada sección antes de verla.',
@@ -96,6 +98,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'El problema en números: cuánto generamos y cuánto perdemos',
+        pregunta_guia: '¿Cuánto RSU genera el municipio y cuánto valor se pierde hoy?',
         subtitulo_catchy: '¿Cuántos kilos genera este municipio y cuánto dinero está dejando ir?',
         situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
         observacion_alquimia: `${scope} ALQUIMIA ordena vivienda, generación per cápita, composición, precios y costo por tonelada enterrada para que el problema se lea con supuestos explícitos.`,
@@ -169,6 +172,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'El reglamento que habilita o bloquea el programa',
+        pregunta_guia: '¿El reglamento actual permite operar el programa o necesita reforma?',
         subtitulo_catchy: 'El marco legal que lo frena o lo habilita todo — qué dice el reglamento hoy',
         situacion_actual: normativa ?? `${territorio} requiere lectura municipal del reglamento aplicable antes de convertir el programa en obligaciones locales.`,
         observacion_alquimia: `${scope} La brecha no suele estar en que falten principios federales, sino en traducirlos a reglas municipales operables: separación, contenedores, rutas, evidencia y responsabilidades.`,
@@ -210,6 +214,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'El calendario que convierte las metas en acciones concretas',
+        pregunta_guia: '¿Cuándo arranca cada fase y cuáles hitos son críticos para el programa?',
         subtitulo_catchy: 'Del diagnóstico al calendario: cuándo, quién y cuánto cuesta arrancar',
         situacion_actual: `Las metas de ${territorio} solo sirven si se vuelven calendario, dependencias y capacidad; una meta sin tiempo ni responsable se queda en aspiración.`,
         observacion_alquimia: `${scope} El Gantt/PERT traduce captura, centros de acopio, empleos y emisiones a meses, hitos y riesgo de atraso.`,
@@ -251,6 +256,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Infraestructura y operación: dónde, con qué y con quién',
+        pregunta_guia: '¿Cuántos centros de acopio se necesitan y dónde deben ubicarse?',
         subtitulo_catchy: 'Dónde van los centros, qué flota los mueve y quién responde por cada colonia',
         situacion_actual: operativa ?? `La operación en ${territorio} necesita convertir toneladas capturables en centros, rutas, responsables, frecuencia y bitácora.`,
         observacion_alquimia: `${scope} La infraestructura no se justifica por tamaño de ciudad, sino por brecha entre material capturable, capacidad real y logística verificable.`,
@@ -282,6 +288,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'El mercado secundario: compradores, precios y riesgo documentado',
+        pregunta_guia: '¿A quién se le vende el material recuperado y a qué precio documentado?',
         subtitulo_catchy: 'A quién le vendemos, a qué precio real y con qué riesgo de mercado',
         situacion_actual: `Los resultados numéricos de ${territorio} solo tienen valor operativo si entiendes qué variable los empuja y qué supuestos de mercado los sostienen.`,
         observacion_alquimia: `${scope} El grafo causal enlaza KPIs, fórmulas y fuentes: permite ver riesgo de interpretación antes de presentar el escenario como lectura única.`,
@@ -323,6 +330,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Los cuatro riesgos que determinan si el programa llega al Cabildo',
+        pregunta_guia: '¿Qué puede salir mal y cómo se mitiga cada riesgo crítico?',
         subtitulo_catchy: 'Los riesgos que pueden hundir el programa — y cómo medimos cada uno',
         situacion_actual: `${territorio} enfrenta cuatro dimensiones de riesgo que deben medirse antes de comprometer inversión o presentar el programa al Cabildo.`,
         observacion_alquimia: `${scope} El score de riesgo no es una opinión — es una fórmula documentada con cuatro dimensiones ponderadas por relevancia política en el contexto municipal mexicano.`,
@@ -354,6 +362,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Inspección y predios: evidencia ordenada antes de la acción',
+        pregunta_guia: '¿Qué predios cumplen condiciones para operar y cuáles necesitan intervención?',
         subtitulo_catchy: 'El predio que elegiste: ¿sirve o no? La evidencia ordenada antes de actuar',
         situacion_actual: `En ${territorio}, la inspección debe empezar como evidencia ordenada: predio, situación observada, actor, fecha, hallazgo y acción siguiente.`,
         observacion_alquimia: `${scope} La inspección útil no castiga por intuición: documenta hechos, distingue educación de visita técnica y deja trazabilidad para revisión municipal.`,
@@ -385,6 +394,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'El expediente de Cabildo: escenarios, derrama y sustento',
+        pregunta_guia: '¿Qué escenario financiero es viable para llevar a sesión de Cabildo?',
         subtitulo_catchy: 'El expediente listo para el Cabildo — números, supuestos y sensibilidad',
         situacion_actual: `El valor económico de ${territorio} debe separarse: venta base de materiales, pago evitable por entierro, efectos ambientales y sensibilidad financiera.`,
         observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario; las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
@@ -416,6 +426,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Estudio demográfico y contexto social',
+        pregunta_guia: '¿Quiénes son las personas que deben participar y qué barreras enfrentan?',
         subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
         situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
         observacion_alquimia: `${scope} Los indicadores de este módulo son referencias estadísticas trazables (INEGI Censo 2020, CONEVAL 2022, ENOE 2024), no diagnósticos municipales certificados. Cada cifra citada aquí debe declararse como "estimación con supuestos explícitos" en comunicación pública.`,
@@ -447,6 +458,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Logística operativa: del papel a la ruta real',
+        pregunta_guia: '¿Cuántas rutas, vehículos y turnos se necesitan para cubrir las colonias piloto?',
         subtitulo_catchy: '¿Cómo se organizan los camiones, rutas y colonias para que el material llegue al CA?',
         situacion_actual: `La implementación del programa en ${territorio} exige diseñar rutas de recolección diferenciada antes del primer arranque. Sin un piloto bien definido, el riesgo operativo del primer mes puede comprometer la credibilidad del programa.`,
         observacion_alquimia: `${scope} La logística no es el módulo técnico aburrido — es donde la mayoría de los programas municipales fracasan. Rutas mal diseñadas generan quejas ciudadanas, sobrecoste de combustible y colapso de operación en el primer mes de diciembre.`,
@@ -478,6 +490,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Quién opera y cuánto recibe el municipio: el núcleo del modelo de negocio',
+        pregunta_guia: '¿Quién debe operar el servicio: el municipio, un concesionario privado o una APP?',
         subtitulo_catchy: '¿Cuánto entra al municipio y quién carga con el riesgo operativo?',
         situacion_actual: `La pregunta que el cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, el simulador no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
         observacion_alquimia: `${scope} El Artículo 78 LOM-SLP (Art. 23 en NL, Art. 91 en QRO) permite al ayuntamiento concesionar servicios públicos por acuerdo de cabildo. El adendo que crea la obligación de separar en origen es el instrumento que hace viable la inversión privada en el CA. Sin adendo, no hay certeza jurídica → sin certeza, ningún privado invierte.`,
@@ -498,6 +511,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Doble materialidad: de programa municipal a activo ESG reportable',
+        pregunta_guia: '¿El programa es reportable bajo estándares ESG y cuáles brechas tiene?',
         subtitulo_catchy: '¿Cómo le digo a un banco verde o al BID cuánto vale el programa?',
         situacion_actual: `Los resultados del programa en ${territorio} — toneladas desviadas, CO₂e evitadas, empleos creados — son exactamente lo que los instrumentos de financiamiento verde exigen cuantificado y certificado. Sin este módulo, el municipio deja dinero sobre la mesa: BANOBRAS CCA, BID FOMIN, Fondo Verde del Clima y bonos municipales ESG requieren todos este formato.`,
         observacion_alquimia: `${scope} La "doble materialidad" es el estándar europeo CSRD/ESRS E5 y está siendo adoptado en México por BANOBRAS y la CNBV como requisito de reporte para deuda verde. Un municipio que reporta GRI 306 con datos reales tiene acceso a tasas preferenciales que pueden reducir el costo de deuda en 200-400 pb.`,
@@ -529,6 +543,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Costos del programa — CAPEX y OPEX',
+        pregunta_guia: '¿Cuánto cuesta arrancar (CAPEX) y cuánto sostener (OPEX) el programa mensualmente?',
         subtitulo_catchy: 'Cada peso de inversión tiene nombre, precio verificado y plazo de recuperación.',
         situacion_actual: `El programa para ${territorio} requiere una inversión inicial (CAPEX) en centros de acopio, equipos y capital de trabajo, más un costo operativo mensual (OPEX) que incluye nómina, energía, renta e insumos. Este módulo desglosa cada línea con trazabilidad de fuente.`,
         observacion_alquimia: 'Los precios de equipamiento fueron verificados contra mercado mexicano en mayo 2026 (grupozuma.com.mx, reciclamas.com.mx, losmontacargas.mx, rte.mx, cocoisa.mx). Los salarios siguen tabulador IMSS Rama 37 con factor de prestaciones de 1.35×. La contingencia del 10% sigue estándar AACE International Class 4.',
@@ -549,6 +564,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Monitoreo — proyectado vs. real',
+        pregunta_guia: '¿El programa está cumpliendo las metas proyectadas o requiere ajuste?',
         subtitulo_catchy: 'Lo que no se mide no se mejora. Lo que se mide mal, destruye programas.',
         situacion_actual: `Una vez en operación, ${territorio} necesita comparar las proyecciones del simulador con los datos reales de campo para detectar desviaciones y corregir el rumbo antes de que se conviertan en pérdidas.`,
         observacion_alquimia: 'Este módulo está diseñado para recibir datos de campo una vez que el programa esté operando. Hasta entonces, muestra las métricas proyectadas como línea base de referencia para el equipo de campo.',
@@ -569,6 +585,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Cadena de evidencia: de dónde viene cada número',
+        pregunta_guia: '¿Cada cifra del análisis tiene fuente, fórmula y nivel de certeza documentados?',
         subtitulo_catchy: 'De dónde vienen todos los números — la cadena completa de cada cifra',
         situacion_actual: `Toda cifra visible sobre ${territorio} necesita una cadena clara: afirmación, fórmula, fuente, estado de verificación y responsable.`,
         observacion_alquimia: `${scope} La matriz no decora el reporte; obliga a cerrar pendientes y evita que una cita general se use como prueba de una cifra específica.`,

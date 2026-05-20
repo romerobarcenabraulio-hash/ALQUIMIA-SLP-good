@@ -31,60 +31,11 @@ import {
 } from '@/lib/municipioMadurezContexto'
 import type { DecisionModule, PortalEntry } from '@/types'
 import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
-import { ChapterSeparator, MODULE_CHAPTER } from '@/components/simulator/ChapterSeparator'
-
-// ─── Module number mapping ────────────────────────────────────────────────────
-
-const MODULE_NUMBERS: Record<string, string> = {
-  // Pre-capítulo — Guía introductoria
-  guia_circularidad:        '00',
-  // Cap 1 — Diagnóstico Base
-  city_baseline:            '01',
-  social_study:             '02',
-  municipal_context:        '03',
-  citizen_inputs:           '02',
-  // Cap 2 — Planificación Estratégica
-  future_goals:             '04',
-  infrastructure_operations:'05',
-  logistica_operativa:      '06',
-  costos_programa:          '07',
-  market_traceability:      '08',
-  // Cap 3 — Diseño del Modelo
-  esquema_concesion:        '09',
-  scenarios_export:         '10',
-  risk_trends:              '11',
-  // Cap 4 — Ejecución y Control
-  inspeccion_predios:       '12',
-  monitoreo_real:           '13',
-  doble_materialidad:       '14',
-  source_traceability:      '15',
-  impact_finance:           '·',
-  // Empresario
-  organization_profile:     'E1',
-  containers_provider:      'E2',
-  organization_report:      'E3',
-}
-
-// Capítulo de cada módulo (1=Diagnóstico, 2=Planificación, 3=Modelo, 4=Control)
-const MODULE_ETAPA: Record<string, 1 | 2 | 3 | 4> = {
-  city_baseline: 1, social_study: 1, municipal_context: 1, citizen_inputs: 1,
-  future_goals: 2, infrastructure_operations: 2, logistica_operativa: 2,
-  costos_programa: 2, market_traceability: 2,
-  esquema_concesion: 3, scenarios_export: 3, risk_trends: 3,
-  inspeccion_predios: 4, monitoreo_real: 4,
-  doble_materialidad: 4, source_traceability: 4, impact_finance: 4,
-}
-
-const ETAPAS = [
-  { num: 1 as const, label: 'Diagnóstico',   modulos: ['city_baseline', 'social_study', 'municipal_context'] },
-  { num: 2 as const, label: 'Planificación', modulos: ['future_goals', 'infrastructure_operations', 'logistica_operativa', 'costos_programa', 'market_traceability'] },
-  { num: 3 as const, label: 'Modelo',        modulos: ['esquema_concesion', 'scenarios_export', 'risk_trends'] },
-  { num: 4 as const, label: 'Control',       modulos: ['inspeccion_predios', 'monitoreo_real', 'doble_materialidad', 'source_traceability'] },
-]
-
-function moduleNumber(id: string): string {
-  return MODULE_NUMBERS[id] ?? '·'
-}
+import { ChapterSeparator } from '@/components/simulator/ChapterSeparator'
+import {
+  CHAPTERS, MODULE_CHAPTER, MODULE_NUMBERS, moduleNumber,
+  getChapterForModule,
+} from '@/lib/chapterConfig'
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
@@ -104,6 +55,14 @@ export function ModuleNav({
   theme?: 'light' | 'dark'
 }) {
   const isDark = theme === 'dark'
+  const activeChapter = MODULE_CHAPTER[activeId] ?? null
+  const modulesById = useMemo(
+    () => Object.fromEntries(modules.map(m => [m.module_id, m])),
+    [modules],
+  )
+
+  const guiaModule = modulesById['guia_circularidad']
+
   return (
     <nav
       aria-label="Módulos de decisión"
@@ -114,72 +73,157 @@ export function ModuleNav({
           Módulos de decisión
         </p>
       </div>
+
       <div className="py-1.5">
-        {modules.map((m) => {
-          const active  = m.module_id === activeId
-          const blocked = m.status === 'blocked'
-          const num     = moduleNumber(m.module_id)
+        {/* M00 standalone */}
+        {guiaModule && (
+          <ModuleNavItem
+            m={guiaModule}
+            active={activeId === 'guia_circularidad'}
+            isDark={isDark}
+            onChange={onChange}
+          />
+        )}
+
+        {/* Chapter groups */}
+        {CHAPTERS.map(ch => {
+          const isActiveChapter = activeChapter === ch.num
+          const chModules = ch.modulos.map(id => modulesById[id]).filter(Boolean) as DecisionModule[]
+          if (chModules.length === 0) return null
+
           return (
-            <button
-              key={m.module_id}
-              type="button"
-              onClick={() => onChange(m.module_id)}
-              aria-current={active ? 'true' : undefined}
+            <details
+              key={ch.num}
+              open={isActiveChapter}
               className={cn(
-                'w-full flex items-start gap-2.5 px-3 py-2 text-left transition-colors group',
-                isDark
-                  ? active
-                    ? 'bg-[#2D4020] border-r-2 border-r-[#5A9438]'
-                    : 'hover:bg-[#243320]'
-                  : active
-                    ? 'bg-[#EAF3DE] border-r-2 border-r-[#3B6D11]'
-                    : 'hover:bg-[#ECEAE5]',
+                'group/chapter border-t',
+                isDark ? 'border-[#2D4020]' : 'border-[#E8E4DC]',
               )}
             >
-              {/* Number badge */}
-              <span
+              <summary
                 className={cn(
-                  'mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center font-mono text-[9px] font-semibold transition-colors',
-                  isDark
-                    ? active
-                      ? 'bg-[#5A9438] text-white'
-                      : blocked
-                        ? 'bg-amber-700/60 text-amber-200'
-                        : 'bg-[#2D4020] text-[#6A9A50] group-hover:bg-[#3A5028]'
-                    : active
-                      ? 'bg-[#3B6D11] text-white'
-                      : blocked
-                        ? 'bg-amber-200 text-amber-900'
-                        : 'bg-[#D8D4CC] text-[#6B6760] group-hover:bg-[#C8C4BC]',
+                  'flex items-center gap-2 px-3 py-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden',
+                  isDark ? 'hover:bg-[#243320]' : 'hover:bg-[#ECEAE5]',
                 )}
               >
-                {blocked ? <Lock size={8} /> : num}
-              </span>
-
-              <div className="min-w-0 flex-1">
-                <p
-                  className={cn(
-                    'text-[11px] font-medium leading-snug',
-                    isDark
-                      ? active ? 'text-white' : 'text-[#8AAD78] group-hover:text-white'
-                      : active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
-                  )}
+                <span
+                  className="w-5 h-5 shrink-0 rounded flex items-center justify-center text-[10px] font-bold"
+                  style={{
+                    background: isActiveChapter ? ch.color : isDark ? '#2D4020' : '#E8E4DC',
+                    color: isActiveChapter ? '#fff' : isDark ? '#6A9A50' : '#6B6760',
+                  }}
                 >
-                  {m.label}
-                </p>
-                <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
-                  {blocked ? 'Requiere acción' : m.audience_mode ?? 'Disponible'}
-                </p>
-              </div>
+                  {ch.num}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className={cn(
+                    'text-[11px] font-semibold leading-tight',
+                    isDark
+                      ? isActiveChapter ? 'text-white' : 'text-[#8AAD78]'
+                      : isActiveChapter ? 'text-[#1C1B18]' : 'text-[#4A4642]',
+                  )}>
+                    {ch.label}
+                  </p>
+                  <p className={cn('text-[9px] leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
+                    {ch.question}
+                  </p>
+                </div>
+                <ChevronRight
+                  size={12}
+                  className={cn(
+                    'shrink-0 transition-transform group-open/chapter:rotate-90',
+                    isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]',
+                  )}
+                />
+              </summary>
 
-              {active && !blocked && (
-                <ChevronRight size={12} className={cn('shrink-0 mt-1', isDark ? 'text-[#5A9438]' : 'text-[#3B6D11]')} />
-              )}
-            </button>
+              <div className={cn('pb-1', isDark ? 'bg-[#1A2A12]' : 'bg-[#ECEAE5]/50')}>
+                {chModules.map(m => (
+                  <ModuleNavItem
+                    key={m.module_id}
+                    m={m}
+                    active={m.module_id === activeId}
+                    isDark={isDark}
+                    onChange={onChange}
+                    indent
+                  />
+                ))}
+              </div>
+            </details>
           )
         })}
       </div>
     </nav>
+  )
+}
+
+function ModuleNavItem({
+  m, active, isDark, onChange, indent = false,
+}: {
+  m: DecisionModule
+  active: boolean
+  isDark: boolean
+  onChange: (id: string) => void
+  indent?: boolean
+}) {
+  const blocked = m.status === 'blocked'
+  const num = moduleNumber(m.module_id)
+  return (
+    <button
+      type="button"
+      onClick={() => onChange(m.module_id)}
+      aria-current={active ? 'true' : undefined}
+      className={cn(
+        'w-full flex items-start gap-2.5 py-2 text-left transition-colors group',
+        indent ? 'pl-7 pr-3' : 'px-3',
+        isDark
+          ? active
+            ? 'bg-[#2D4020] border-r-2 border-r-[#5A9438]'
+            : 'hover:bg-[#243320]'
+          : active
+            ? 'bg-[#EAF3DE] border-r-2 border-r-[#3B6D11]'
+            : 'hover:bg-[#ECEAE5]',
+      )}
+    >
+      <span
+        className={cn(
+          'mt-0.5 w-5 h-5 shrink-0 rounded-full flex items-center justify-center font-mono text-[9px] font-semibold transition-colors',
+          isDark
+            ? active
+              ? 'bg-[#5A9438] text-white'
+              : blocked
+                ? 'bg-amber-700/60 text-amber-200'
+                : 'bg-[#2D4020] text-[#6A9A50] group-hover:bg-[#3A5028]'
+            : active
+              ? 'bg-[#3B6D11] text-white'
+              : blocked
+                ? 'bg-amber-200 text-amber-900'
+                : 'bg-[#D8D4CC] text-[#6B6760] group-hover:bg-[#C8C4BC]',
+        )}
+      >
+        {blocked ? <Lock size={8} /> : num}
+      </span>
+
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            'text-[11px] font-medium leading-snug',
+            isDark
+              ? active ? 'text-white' : 'text-[#8AAD78] group-hover:text-white'
+              : active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
+          )}
+        >
+          {m.label}
+        </p>
+        <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
+          {blocked ? 'Requiere acción' : m.audience_mode ?? 'Disponible'}
+        </p>
+      </div>
+
+      {active && !blocked && (
+        <ChevronRight size={12} className={cn('shrink-0 mt-1', isDark ? 'text-[#5A9438]' : 'text-[#3B6D11]')} />
+      )}
+    </button>
   )
 }
 
@@ -194,6 +238,12 @@ function MobileModuleSelect({
   activeId: string
   onChange: (id: string) => void
 }) {
+  const modulesById = useMemo(
+    () => Object.fromEntries(modules.map(m => [m.module_id, m])),
+    [modules],
+  )
+  const guiaModule = modulesById['guia_circularidad']
+
   return (
     <div className="xl:hidden border-b border-[#E8E4DC] bg-white px-4 py-3">
       <label htmlFor="module-select" className="block text-[10px] uppercase tracking-[0.07em] text-[#A8A49C] mb-1.5">
@@ -205,11 +255,24 @@ function MobileModuleSelect({
         onChange={e => onChange(e.target.value)}
         className="w-full rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 text-[13px] text-[#1C1B18] focus:border-[#3B6D11] focus:outline-none"
       >
-        {modules.map(m => (
-          <option key={m.module_id} value={m.module_id}>
-            {moduleNumber(m.module_id)}. {m.label}
-            {m.status === 'blocked' ? ' — requiere acción' : ''}
+        {guiaModule && (
+          <option value="guia_circularidad">
+            00. {guiaModule.label}
           </option>
+        )}
+        {CHAPTERS.map(ch => (
+          <optgroup key={ch.num} label={`Cap. ${ch.num} — ${ch.label}`}>
+            {ch.modulos.map(id => {
+              const m = modulesById[id]
+              if (!m) return null
+              return (
+                <option key={id} value={id}>
+                  {moduleNumber(id)}. {m.label}
+                  {m.status === 'blocked' ? ' — requiere acción' : ''}
+                </option>
+              )
+            })}
+          </optgroup>
         ))}
       </select>
     </div>
@@ -349,7 +412,9 @@ function ModuleContextHeader({
     municipiosCount: municipiosActivos.length,
   })
   const num = moduleNumber(moduleId)
+  const chapter = getChapterForModule(moduleId)
   const title = brief?.title ?? module.label
+  const preguntaGuia = brief?.pregunta_guia ?? null
   const rsuEntry = buscarTermino('RSU')
   const conf = MODULE_CONFIDENCE[moduleId]
   const propuestaSlots = useSimulatorStore(s => s.propuestaSlots)
@@ -370,7 +435,13 @@ function ModuleContextHeader({
     >
       <div className="flex items-center justify-between gap-3">
         <p className="text-[10px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold">
-          Módulo {num} · {module.label}
+          {chapter ? (
+            <>
+              <span style={{ color: chapter.color }}>Cap. {chapter.num} {chapter.label}</span>
+              <span className="mx-1.5">›</span>
+            </>
+          ) : null}
+          M{num} · {module.label}
         </p>
         <div className="flex items-center gap-2 shrink-0">
           {activePropuesta && (
@@ -438,6 +509,13 @@ function ModuleContextHeader({
               </GlosarioTooltip>
             </span>
           )}
+        </p>
+      )}
+
+      {preguntaGuia && (
+        <p className="mt-3 text-[13px] italic text-[#6B6760] leading-relaxed">
+          <span className="not-italic font-semibold text-[#A8A49C] mr-1">Pregunta guía:</span>
+          {preguntaGuia}
         </p>
       )}
     </header>
@@ -948,45 +1026,9 @@ export function DecisionModuleShell({
   }
 
   // ── Main layout ─────────────────────────────────────────────────────────────
-  const activeEtapa = MODULE_ETAPA[activeModule.module_id] ?? null
-  const visitedIds = new Set(modules.map(m => m.module_id))
 
   return (
     <div className="flex flex-col" aria-labelledby="decision-shell-title">
-      {/* Etapas bar — narrativa en 4 pasos (solo para funcionario con módulos de etapas) */}
-      {activeEtapa && audienceSelected === 'functionary' && (
-        <nav
-          aria-label="Etapas del programa"
-          className="flex items-center gap-1 px-4 py-2.5 border-b border-[#E8E4DC] bg-[#FAFAF8] overflow-x-auto"
-        >
-          {ETAPAS.map((etapa, i) => {
-            const isActive = etapa.num === activeEtapa
-            const allVisited = etapa.modulos.every(id => visitedIds.has(id))
-            const firstModId = etapa.modulos.find(id => modules.some(m => m.module_id === id))
-            return (
-              <div key={etapa.num} className="flex items-center gap-1 shrink-0">
-                {i > 0 && <span className="text-[#C8C4BC] text-[10px] select-none">→</span>}
-                <button
-                  type="button"
-                  onClick={() => firstModId && onModuleChange(firstModId)}
-                  className={cn(
-                    'flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-[0.08em] font-medium transition-colors',
-                    isActive
-                      ? 'bg-[#EAF3DE] text-[#23470A] border border-[#C9DDB1]'
-                      : 'bg-[#F4F2ED] text-[#A8A49C] border border-transparent hover:text-[#6B6760]',
-                  )}
-                >
-                  {allVisited && !isActive && (
-                    <CheckCircle2 size={10} className="text-[#3B6D11]" />
-                  )}
-                  <span>E{etapa.num} {etapa.label}</span>
-                </button>
-              </div>
-            )
-          })}
-        </nav>
-      )}
-
       {/* Mobile module selector */}
       {activeModule && (
         <MobileModuleSelect
