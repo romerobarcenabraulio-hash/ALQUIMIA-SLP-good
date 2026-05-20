@@ -320,22 +320,32 @@ export function CityBaselineStack() {
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
             <BlockLabel n="1" title="Distribución de vivienda" source="INEGI Censo 2020" />
 
-            {distribution ? (
-              <div className="grid grid-cols-3 gap-1.5 mb-3">
-                {[
-                  { label: 'Población 2020',       value: fmt.num0(distribution.statePopulation2020) },
-                  { label: 'Viviendas habitadas',  value: fmt.num0(distribution.stateOccupiedDwellings2020) },
-                  { label: 'Ocup./viv. base',      value: distribution.stateAvgOccupants2020.toFixed(1) },
-                ].map(c => (
-                  <div key={c.label} className="rounded-[7px] border border-[#E8E4DC] bg-[#FDFCFA] px-2 py-1.5 text-center">
-                    <p className="text-[8px] uppercase tracking-[0.04em] text-[#A8A49C] leading-tight">{c.label}</p>
-                    <p className="mt-0.5 font-mono text-[11px] font-semibold text-[#1C1B18]">{c.value}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
+            {(distribution || seleccionMunicipioCatalog) ? (() => {
+              // Prefer the live API municipality figure; fall back to static ZM/state census
+              const poblacion = seleccionMunicipioCatalog?.poblacion ?? distribution?.statePopulation2020 ?? 0
+              const viviendas = seleccionMunicipioCatalog
+                ? Math.round(poblacion / Math.max(ocupantesBase, 1))
+                : (distribution?.stateOccupiedDwellings2020 ?? 0)
+              const ocup = distribution?.stateAvgOccupants2020 ?? ocupantesBase
+              const isApiData = !!seleccionMunicipioCatalog
+              return (
+                <div className="grid grid-cols-3 gap-1.5 mb-3">
+                  {[
+                    { label: 'Población',          value: fmt.num0(poblacion),       source: isApiData ? 'API' : 'INEGI ZM' },
+                    { label: 'Viviendas habitadas', value: fmt.num0(viviendas),       source: isApiData ? 'Estimado' : 'INEGI ZM' },
+                    { label: 'Ocup./viv. base',     value: ocup.toFixed(1),           source: 'INEGI Censo' },
+                  ].map(c => (
+                    <div key={c.label} className="rounded-[7px] border border-[#E8E4DC] bg-[#FDFCFA] px-2 py-1.5 text-center">
+                      <p className="text-[8px] uppercase tracking-[0.04em] text-[#A8A49C] leading-tight">{c.label}</p>
+                      <p className="mt-0.5 font-mono text-[11px] font-semibold text-[#1C1B18]">{c.value}</p>
+                      <p className="text-[7px] text-[#C8C4BC]">{c.source}</p>
+                    </div>
+                  ))}
+                </div>
+              )
+            })() : (
               <p className="mb-3 text-[11px] text-amber-800 rounded-[7px] border border-amber-200 bg-amber-50 px-2.5 py-1.5">
-                Sin tabulado INEGI para esta selección.
+                Selecciona un municipio para cargar los datos de vivienda.
               </p>
             )}
 
