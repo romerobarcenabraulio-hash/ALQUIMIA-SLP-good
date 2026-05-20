@@ -23,6 +23,8 @@ import {
   LOGISTICA_MODULE,
   ESQUEMA_CONCESION_MODULE,
   DOBLE_MATERIALIDAD_MODULE,
+  COSTOS_PROGRAMA_MODULE,
+  MONITOREO_REAL_MODULE,
 } from '@/lib/simulator/functionaryJourneyEnrichment'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
@@ -100,9 +102,9 @@ export default function SimulatorPage() {
       result = [GUIA_CIRCULARIDAD_MODULE, ...result]
     }
 
-    // social_study después de municipal_context
+    // social_study ANTES de municipal_context (M01 → M02 social → M03 legal)
     if (!result.some(m => m.module_id === 'social_study')) {
-      const idx = result.findIndex(m => m.module_id === 'municipal_context')
+      const idx = result.findIndex(m => m.module_id === 'city_baseline')
       result = idx >= 0
         ? [...result.slice(0, idx + 1), SOCIAL_STUDY_MODULE, ...result.slice(idx + 1)]
         : [SOCIAL_STUDY_MODULE, ...result]
@@ -114,6 +116,13 @@ export default function SimulatorPage() {
         ? [...result.slice(0, idx + 1), LOGISTICA_MODULE, ...result.slice(idx + 1)]
         : [...result, LOGISTICA_MODULE]
     }
+    // costos_programa después de logistica_operativa (M07 — NUEVO)
+    if (!result.some(m => m.module_id === 'costos_programa')) {
+      const idx = result.findIndex(m => m.module_id === 'logistica_operativa')
+      result = idx >= 0
+        ? [...result.slice(0, idx + 1), COSTOS_PROGRAMA_MODULE, ...result.slice(idx + 1)]
+        : [...result, COSTOS_PROGRAMA_MODULE]
+    }
     // esquema_concesion antes de scenarios_export
     if (!result.some(m => m.module_id === 'esquema_concesion')) {
       const idx = result.findIndex(m => m.module_id === 'scenarios_export')
@@ -121,9 +130,16 @@ export default function SimulatorPage() {
         ? [...result.slice(0, idx), ESQUEMA_CONCESION_MODULE, ...result.slice(idx)]
         : [...result, ESQUEMA_CONCESION_MODULE]
     }
-    // doble_materialidad después de scenarios_export
+    // monitoreo_real después de inspeccion_predios (RESCATADO — M13)
+    if (!result.some(m => m.module_id === 'monitoreo_real')) {
+      const idx = result.findIndex(m => m.module_id === 'inspeccion_predios')
+      result = idx >= 0
+        ? [...result.slice(0, idx + 1), MONITOREO_REAL_MODULE, ...result.slice(idx + 1)]
+        : [...result, MONITOREO_REAL_MODULE]
+    }
+    // doble_materialidad después de monitoreo_real
     if (!result.some(m => m.module_id === 'doble_materialidad')) {
-      const idx = result.findIndex(m => m.module_id === 'scenarios_export')
+      const idx = result.findIndex(m => m.module_id === 'monitoreo_real')
       result = idx >= 0
         ? [...result.slice(0, idx + 1), DOBLE_MATERIALIDAD_MODULE, ...result.slice(idx + 1)]
         : [...result, DOBLE_MATERIALIDAD_MODULE]

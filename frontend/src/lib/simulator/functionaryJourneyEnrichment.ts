@@ -44,6 +44,28 @@ export const DOBLE_MATERIALIDAD_MODULE: DecisionModule = {
   next_action: 'Generar informe GRI 306 y compartir con BANOBRAS / financiadores internacionales.',
 }
 
+/** Módulo de Costos del Programa — tabla maestra CAPEX/OPEX, cliente-side, M07. */
+export const COSTOS_PROGRAMA_MODULE: DecisionModule = {
+  module_id: 'costos_programa',
+  label: 'Costos del programa — CAPEX y OPEX',
+  audience_mode: 'city_team',
+  decision: 'Cuantificar la inversión total (CAPEX) y el costo operativo anual (OPEX) del programa, desglosados por equipo, personal y operación.',
+  evidence: 'Tabla maestra de inversión por categoría, estructura de personal con prestaciones, catálogo de equipos con precios de mercado verificables, comparativa P/M/G.',
+  status: 'ready',
+  next_action: 'Validar precios de equipamiento con cotizaciones locales antes de presentar presupuesto al tesorero municipal.',
+}
+
+/** Módulo de Monitoreo Real — proyectado vs. medido, cliente-side, M13. */
+export const MONITOREO_REAL_MODULE: DecisionModule = {
+  module_id: 'monitoreo_real',
+  label: 'Monitoreo — proyectado vs. real',
+  audience_mode: 'city_team',
+  decision: 'Comparar las proyecciones del simulador con los datos reales de operación para detectar desviaciones y corregir el rumbo.',
+  evidence: 'Dashboard de semáforo con métricas clave (tonelaje, empleos, ingresos, CO₂e), datos de campo capturados, historial de desviaciones.',
+  status: 'ready',
+  next_action: 'Capturar los datos del primer mes de operación del piloto para calibrar las proyecciones.',
+}
+
 /** Módulo solo de cliente: no viene en el JSON de `/city/journey/steps`. */
 export const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
   module_id: 'source_traceability',
@@ -154,6 +176,18 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
     decision: 'Convertir los resultados del programa en lenguaje de financiadores (GRI 306, ESRS E5) para acceder a crédito verde.',
     evidence: 'Matriz doble materialidad CSRD, disclosures GRI 306 derivados del simulador, KPIs proyectado vs. real, template BID/GCF.',
     next_action: 'Enviar informe GRI 306 a BANOBRAS o financiador seleccionado como paso previo a solicitud de crédito.',
+  },
+  costos_programa: {
+    label: 'Costos del programa — CAPEX y OPEX',
+    decision: 'Cuantificar la inversión total y el costo operativo anual del programa.',
+    evidence: 'Tabla maestra CAPEX, estructura de personal, catálogo de equipos, comparativa P/M/G.',
+    next_action: 'Validar precios con cotizaciones locales.',
+  },
+  monitoreo_real: {
+    label: 'Monitoreo — proyectado vs. real',
+    decision: 'Comparar proyecciones con datos reales de operación.',
+    evidence: 'Dashboard semáforo, datos de campo, historial de desviaciones.',
+    next_action: 'Capturar datos del primer mes de operación.',
   },
 }
 

@@ -525,6 +525,46 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'costos_programa':
+      return {
+        moduleId,
+        title: 'Costos del programa — CAPEX y OPEX',
+        subtitulo_catchy: 'Cada peso de inversión tiene nombre, precio verificado y plazo de recuperación.',
+        situacion_actual: `El programa para ${territorio} requiere una inversión inicial (CAPEX) en centros de acopio, equipos y capital de trabajo, más un costo operativo mensual (OPEX) que incluye nómina, energía, renta e insumos. Este módulo desglosa cada línea con trazabilidad de fuente.`,
+        observacion_alquimia: 'Los precios de equipamiento fueron verificados contra mercado mexicano en mayo 2026 (grupozuma.com.mx, reciclamas.com.mx, losmontacargas.mx, rte.mx, cocoisa.mx). Los salarios siguen tabulador IMSS Rama 37 con factor de prestaciones de 1.35×. La contingencia del 10% sigue estándar AACE International Class 4.',
+        criterio_decision: 'El tesorero municipal necesita saber exactamente cuánto cuesta el programa por fase, qué equipos se compran, cuántas personas se contratan y en cuánto tiempo se recupera la inversión antes de llevar el presupuesto a cabildo.',
+        que_no_significa: 'No es una cotización formal. Es un modelo parametrizado que debe validarse con proveedores locales antes de comprometer presupuesto público.',
+        siguiente_accion: 'Solicitar cotizaciones formales a proveedores locales para los 3–5 equipos de mayor impacto en el CAPEX.',
+        fuente_o_evidencia: 'Centros_Acopio_v2.xlsx (modelo CFO ALQUIMIA). Precios de mercado verificados mayo 2026. Salarios: INEGI ENOE T1 2025, Computrabajo 2025. Factor prestaciones: IMSS Rama 37.',
+        metodologia_editorial: {
+          como_se_calcula: 'CAPEX = equipamiento + adecuación de nave + gastos preoperativos + contingencia 10% + capital de trabajo (3 meses OPEX). OPEX = nómina con prestaciones + renta + energía + combustible + mantenimiento + insumos + seguros.',
+          origen_datos: 'Precios de equipos verificados en marketplaces mexicanos (mayo 2026). Salarios base tabulador IMSS Rama 37. Renta zona industrial SLP $65/m².',
+          por_que_este_enfoque: 'Un modelo CAPEX/OPEX transparente es requisito para que el municipio apruebe presupuesto en sesión de cabildo y para que BID/BANOBRAS evalúen solicitudes de crédito.',
+          supuesto_critico: 'Los precios de mercado son referencia (mayo 2026). Inflación, tipo de cambio y disponibilidad local pueden variar. El factor de contingencia del 10% absorbe variaciones moderadas.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'monitoreo_real':
+      return {
+        moduleId,
+        title: 'Monitoreo — proyectado vs. real',
+        subtitulo_catchy: 'Lo que no se mide no se mejora. Lo que se mide mal, destruye programas.',
+        situacion_actual: `Una vez en operación, ${territorio} necesita comparar las proyecciones del simulador con los datos reales de campo para detectar desviaciones y corregir el rumbo antes de que se conviertan en pérdidas.`,
+        observacion_alquimia: 'Este módulo está diseñado para recibir datos de campo una vez que el programa esté operando. Hasta entonces, muestra las métricas proyectadas como línea base de referencia para el equipo de campo.',
+        criterio_decision: 'El director de servicios públicos necesita un semáforo claro: verde si la operación está dentro de las proyecciones, amarillo si hay desviaciones moderadas, rojo si se requiere intervención directiva.',
+        que_no_significa: 'No sustituye un sistema de monitoreo en tiempo real. Es una herramienta de comparación periódica (mensual/trimestral) entre lo proyectado y lo medido.',
+        siguiente_accion: 'Definir el protocolo de captura de datos de campo (frecuencia, responsable, formato) antes del arranque del piloto.',
+        fuente_o_evidencia: 'Proyecciones: motor del simulador ALQUIMIA (módulos M01–M11). Datos reales: captura manual o integración con sistema de pesaje en CAs.',
+        metodologia_editorial: {
+          como_se_calcula: 'Desviación = (valor_real − valor_proyectado) / valor_proyectado × 100. Semáforo: verde ≤10%, amarillo 10–25%, rojo >25%.',
+          origen_datos: 'Proyecciones: motor del simulador. Datos reales: captura de campo (pendiente de implementación en campo).',
+          por_que_este_enfoque: 'La Teoría de Cambio (Theory of Change) requiere verificación empírica. Sin monitoreo, el programa pierde credibilidad ante financiadores y cabildo en la evaluación de medio término.',
+          supuesto_critico: 'Los datos de campo deben capturarse con la misma metodología y frecuencia que las proyecciones para que la comparación sea válida y auditable.',
+        },
+        chart_briefs: [],
+      }
+
     case 'source_traceability':
       return {
         moduleId,

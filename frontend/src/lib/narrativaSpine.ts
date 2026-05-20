@@ -6,17 +6,20 @@
 import type { ResultadosCalculados } from '@/types'
 
 export type ModuloId =
+  | 'guia_circularidad'
   | 'city_baseline'
-  | 'municipal_context'
   | 'social_study'
+  | 'municipal_context'
   | 'future_goals'
   | 'infrastructure_operations'
   | 'logistica_operativa'
+  | 'costos_programa'
   | 'market_traceability'
-  | 'risk_trends'
   | 'esquema_concesion'
   | 'scenarios_export'
+  | 'risk_trends'
   | 'inspeccion_predios'
+  | 'monitoreo_real'
   | 'doble_materialidad'
   | 'source_traceability'
 
@@ -60,37 +63,41 @@ export function generarTransicion(
 ): TransicionNarrativa | null {
   switch (origen) {
 
-    case 'city_baseline': {
-      const rsu     = resultados?.rsuTotalTonDia ?? null
-      const captura = resultados?.serieAnual?.[0]
-        ? null  // not directly available as pctCapturaActual — use generic fallback
-        : null
-      const rsuStr  = rsu !== null ? `${tons(rsu)}/día de RSU` : 'una cantidad significativa de RSU diaria'
-      const pctStr  = captura !== null ? pct(captura) : 'un porcentaje limitado'
-      void pctStr  // kept for future enrichment
+    case 'guia_circularidad':
       return {
-        kicker:      'El diagnóstico apunta al reglamento',
-        title:       'Marco legal y contexto normativo',
-        summary:     `El municipio de ${municipioLabel} genera ${rsuStr}. Con la captura actual todavía por debajo de su potencial, el volumen restante termina en el relleno sanitario. Antes de definir metas operativas, el reglamento de limpia vigente determina qué puede ejecutarse hoy sin reforma.`,
+        kicker:      'La guía orienta el primer análisis',
+        title:       'Línea base territorial y RSU',
+        summary:     `Ahora que entiendes la estructura de ALQUIMIA, el primer paso técnico es cuantificar el problema: cuántas toneladas genera ${municipioLabel}, de qué tipo, y cuánto se recupera hoy.`,
+        nextModuloId: 'city_baseline',
+      }
+
+    case 'city_baseline': {
+      const rsu    = resultados?.rsuTotalTonDia ?? null
+      const rsuStr = rsu !== null ? `${tons(rsu)}/día de RSU` : 'una cantidad significativa de RSU diaria'
+      return {
+        kicker:      'El diagnóstico revela la estructura social',
+        title:       'Diagnóstico social y aceptación ciudadana',
+        summary:     `${municipioLabel} genera ${rsuStr}. Antes de diseñar el programa, es clave entender quién vive en el municipio, cuánto rezago social existe y cuánta disposición hay a separar — datos que determinan el ritmo de adopción real.`,
+        nextModuloId: 'social_study',
+      }
+    }
+
+    case 'social_study': {
+      return {
+        kicker:      'La sociedad informa el reglamento',
+        title:       'Marco legal y brechas normativas',
+        summary:     `Con el diagnóstico social completo, el siguiente paso es verificar qué puede ejecutarse hoy con el reglamento vigente y qué requiere reforma. El contexto legal municipal es el tablero de reglas del juego.`,
         nextModuloId: 'municipal_context',
       }
     }
 
-    case 'municipal_context':
-      return {
-        kicker:      'El reglamento necesita ciudadanos listos',
-        title:       'Estudio social y aceptación ciudadana',
-        summary:     `El marco jurídico define las obligaciones — la aceptación ciudadana determina si se cumplen. El IPC inicial del municipio orienta cuánto esfuerzo educativo previo se necesita antes del primer arranque operativo.`,
-        nextModuloId: 'social_study',
-      }
-
-    case 'social_study': {
+    case 'municipal_context': {
       const horizonte = resultados?.serieAnual?.length ?? null
       const horizStr  = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
       return {
-        kicker:      'La sociedad informa las metas',
-        title:       'Metas y trayectorias',
-        summary:     `Con el diagnóstico territorial y social completo, es posible fijar metas de captura que sean técnicamente viables y socialmente alcanzables. El horizonte de ${horizStr} define la velocidad de escala del programa.`,
+        kicker:      'El reglamento habilita las metas',
+        title:       'Metas y trayectorias de captura',
+        summary:     `Con el diagnóstico territorial, social y legal completo, es posible fijar metas de captura técnicamente viables y jurídicamente respaldadas. El horizonte de ${horizStr} define la velocidad de escala del programa.`,
         nextModuloId: 'future_goals',
       }
     }
@@ -98,17 +105,15 @@ export function generarTransicion(
     case 'future_goals': {
       const h = resultados?.serieAnual?.length ?? null
       const horizStr = h !== null ? String(h) : '—'
-      // Estimate CAs from occupancy proxy — use generic if not available
       const nCAsProxy = resultados?.ocupacionCAs
         ? Math.ceil(resultados.ocupacionCAs / 100)
         : null
       const nCAsStr = nCAsProxy !== null ? `${nCAsProxy} centro(s)` : 'los centros necesarios'
-      // pctCaptura: take last year of serieAnual if present
       const lastAño = resultados?.serieAnual?.[resultados.serieAnual.length - 1]
       const pctCap  = lastAño ? pct(lastAño.pctCaptura) : 'la meta definida'
       return {
         kicker:      'Las metas requieren infraestructura',
-        title:       'Infraestructura de centros de acopio',
+        title:       'Infraestructura y centros de acopio',
         summary:     `Una tasa de captura objetivo de ${pctCap} al año ${horizStr} requiere al menos ${nCAsStr} de acopio con capacidad suficiente. La selección del mix (P/M/G) afecta directamente el CAPEX inicial y la TIR del programa.`,
         nextModuloId: 'infrastructure_operations',
       }
@@ -121,7 +126,6 @@ export function generarTransicion(
         ? Math.ceil(resultados.ocupacionCAs / 100)
         : null
       const nCAsStr = nCAsProxy !== null ? String(nCAsProxy) : 'los'
-      // hogaresRecomendados: rough pilot estimate from vivActivas
       const hog = resultados?.vivActivas
         ? Math.round(resultados.vivActivas * 0.05)
         : null
@@ -136,61 +140,75 @@ export function generarTransicion(
 
     case 'logistica_operativa':
       return {
-        kicker:      'Las rutas llegan a un mercado',
+        kicker:      'Las rutas tienen un costo',
+        title:       'Costos del programa — CAPEX y OPEX',
+        summary:     `Con el diseño logístico definido, el siguiente paso es cuantificar exactamente cuánto cuesta construir y operar el sistema: equipos, personal, renta, energía y contingencia. Sin este número, no hay presupuesto que aprobar.`,
+        nextModuloId: 'costos_programa',
+      }
+
+    case 'costos_programa':
+      return {
+        kicker:      'Los costos necesitan compradores',
         title:       'Mercado y trazabilidad de materiales',
-        summary:     `El material separado en origen solo genera valor si existe un comprador. La trazabilidad de cada fracción — desde la ruta hasta la recicladora o compostera — es el eslabón que convierte el OPEX en ingreso.`,
+        summary:     `Con la inversión cuantificada, el siguiente paso es verificar que existe demanda real para cada fracción de material. Sin mercado, el OPEX no se convierte en ingreso — y el programa no es sostenible.`,
         nextModuloId: 'market_traceability',
       }
 
     case 'market_traceability':
       return {
-        kicker:      'El mercado tiene riesgos',
-        title:       'Análisis de riesgos y tendencias',
-        summary:     `Los precios de materiales son volátiles y los actores políticos tienen intereses divergentes. El análisis de riesgos cuantifica cuánto puede deteriorarse el escenario base antes de que el programa deje de ser viable.`,
-        nextModuloId: 'risk_trends',
-      }
-
-    case 'risk_trends': {
-      const ingTotal = resultados?.ingresosMunicipioTotal ?? null
-      const ingStr   = ingTotal !== null ? `${money(ingTotal)} MXN anuales` : 'ingresos significativos'
-      return {
-        kicker:      'Los riesgos informan quién debe operar',
-        title:       'Esquema de concesión y modelo de negocio',
-        summary:     `La distribución de riesgos operativos entre municipio y privado no es solo una decisión técnica — es la pregunta central de la sesión de cabildo. ${municipioLabel} tiene acceso a ${ingStr} bajo el esquema recomendado.`,
+        kicker:      'El mercado informa el modelo de negocio',
+        title:       'Esquema de concesión y árbol de decisión',
+        summary:     `Con compradores identificados y precios verificados, el modelo de negocio puede estructurarse: quién opera, quién cobra y cómo se distribuyen los riesgos. Esa decisión es la pregunta real de la sesión de cabildo.`,
         nextModuloId: 'esquema_concesion',
       }
-    }
 
     case 'esquema_concesion': {
-      const tirVal  = resultados?.tir   ?? null
-      const vpnVal  = resultados?.vpn   ?? null
-      const h       = resultados?.serieAnual?.length ?? null
-      const tirStr  = tirVal  !== null ? pct(tirVal)    : '—'
-      const vpnStr  = vpnVal  !== null ? money(vpnVal)  : '—'
+      const tirVal   = resultados?.tir   ?? null
+      const vpnVal   = resultados?.vpn   ?? null
+      const h        = resultados?.serieAnual?.length ?? null
+      const tirStr   = tirVal  !== null ? pct(tirVal)   : '—'
+      const vpnStr   = vpnVal  !== null ? money(vpnVal) : '—'
       const horizStr = h !== null ? `${h} años` : 'el horizonte definido'
       return {
         kicker:      'El esquema define el retorno',
         title:       'Escenarios financieros y exportación',
-        summary:     `Con el esquema de concesión seleccionado, el simulador proyecta una TIR de ${tirStr} y un VPN de ${vpnStr} MXN en el horizonte de ${horizStr}. El análisis de sensibilidad muestra el rango de resultados bajo distintos supuestos.`,
+        summary:     `Con el esquema de concesión seleccionado, el simulador proyecta una TIR de ${tirStr} y un VPN de ${vpnStr} en el horizonte de ${horizStr}. El análisis de sensibilidad muestra el rango de resultados bajo distintos supuestos.`,
         nextModuloId: 'scenarios_export',
       }
     }
 
     case 'scenarios_export':
       return {
-        kicker:      'El programa requiere cumplimiento',
-        title:       'Inspección de predios y estrategia operativa',
-        summary:     `La viabilidad financiera del programa depende de que los generadores obligados separen efectivamente. La estrategia de inspección y seguimiento define el mecanismo de cumplimiento que hace sostenible el programa en el tiempo.`,
-        nextModuloId: 'inspeccion_predios',
+        kicker:      'El modelo tiene riesgos a gestionar',
+        title:       'Análisis de riesgos del modelo completo',
+        summary:     `Los escenarios financieros suponen condiciones de mercado y operación. El análisis de riesgos cuantifica cuánto puede deteriorarse el escenario base — por volatilidad de precios, rotación política o bajo cumplimiento ciudadano — antes de que el programa deje de ser viable.`,
+        nextModuloId: 'risk_trends',
       }
 
-    case 'inspeccion_predios': {
-      const co2 = resultados?.co2eEvitadasAnualTon ?? null
+    case 'risk_trends': {
+      return {
+        kicker:      'Los riesgos requieren cumplimiento',
+        title:       'Inspección de predios y estrategia operativa',
+        summary:     `El factor de riesgo más controlable es el cumplimiento ciudadano. La estrategia de inspección y seguimiento define el mecanismo que hace sostenible el programa en el tiempo y reduce la exposición operativa.`,
+        nextModuloId: 'inspeccion_predios',
+      }
+    }
+
+    case 'inspeccion_predios':
+      return {
+        kicker:      'Lo ejecutado se mide',
+        title:       'Monitoreo — proyectado vs. real',
+        summary:     `Con el programa en operación, el siguiente paso es comparar lo que el simulador proyectó con lo que el campo mide. Las desviaciones tempranas son oportunidades de corrección — no evidencia de fracaso.`,
+        nextModuloId: 'monitoreo_real',
+      }
+
+    case 'monitoreo_real': {
+      const co2    = resultados?.co2eEvitadasAnualTon ?? null
       const co2Str = co2 !== null ? `${tons(co2)} CO₂e/año` : 'toneladas significativas de CO₂e/año'
       return {
-        kicker:      'La operación genera reportabilidad',
+        kicker:      'Lo medido se reporta',
         title:       'Doble materialidad y reporte ESG',
-        summary:     `El programa evita ${co2Str} — una cifra que BID, BANOBRAS y fondos climáticos requieren en formato GRI 306 y ESRS E5 para evaluar solicitudes de crédito verde.`,
+        summary:     `El programa evita ${co2Str}. El monitoreo genera los datos que BID, BANOBRAS y fondos climáticos requieren en formato GRI 306 y ESRS E5 para evaluar solicitudes de crédito verde.`,
         nextModuloId: 'doble_materialidad',
       }
     }

@@ -77,6 +77,24 @@ const LogisticaOperativaStack = dynamic(
   },
 )
 
+const CostosProgramaStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/CostosProgramaStack').then(m => ({ default: m.CostosProgramaStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#5F6B5F]">Preparando costos del programa…</p>,
+  },
+)
+
+const MonitoreoRealStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/MonitoreoRealStack').then(m => ({ default: m.MonitoreoRealStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#5F6B5F]">Preparando monitoreo…</p>,
+  },
+)
+
 const EsquemaConcesionPanel = dynamic(
   () =>
     import('@/components/simulator/stacks/EsquemaConcesionStack').then(m => ({ default: m.EsquemaConcesionStack })),
@@ -155,6 +173,10 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <RiskTrendsPanel />
     case 'logistica_operativa':
       return <LogisticaOperativaStack />
+    case 'costos_programa':
+      return <CostosProgramaStack />
+    case 'monitoreo_real':
+      return <MonitoreoRealStack />
     case 'esquema_concesion':
       return <EsquemaConcesionPanel />
     case 'doble_materialidad':

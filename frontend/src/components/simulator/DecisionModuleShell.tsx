@@ -1,6 +1,6 @@
 'use client'
 
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertTriangle,
   BookOpen,
@@ -30,51 +30,55 @@ import {
   getMunicipioMadurezVista,
 } from '@/lib/municipioMadurezContexto'
 import type { DecisionModule, PortalEntry } from '@/types'
+import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
 
 // ─── Module number mapping ────────────────────────────────────────────────────
 
 const MODULE_NUMBERS: Record<string, string> = {
-  // Guía introductoria (antes de Etapa 1)
+  // Pre-capítulo — Guía introductoria
   guia_circularidad:        '00',
-  // Etapa 1 — Diagnóstico
+  // Cap 1 — Diagnóstico Base
   city_baseline:            '01',
-  municipal_context:        '02',
-  social_study:             '03',
+  social_study:             '02',
+  municipal_context:        '03',
   citizen_inputs:           '02',
-  // Etapa 2 — Planeación
+  // Cap 2 — Planificación Estratégica
   future_goals:             '04',
   infrastructure_operations:'05',
   logistica_operativa:      '06',
-  market_traceability:      '07',
-  risk_trends:              '08',
-  // Etapa 3 — Ejecución
+  costos_programa:          '07',
+  market_traceability:      '08',
+  // Cap 3 — Diseño del Modelo
   esquema_concesion:        '09',
   scenarios_export:         '10',
-  inspeccion_predios:       '11',
-  // Etapa 4 — Monitoreo
-  doble_materialidad:       '12',
-  source_traceability:      '13',
-  impact_finance:           '03',
+  risk_trends:              '11',
+  // Cap 4 — Ejecución y Control
+  inspeccion_predios:       '12',
+  monitoreo_real:           '13',
+  doble_materialidad:       '14',
+  source_traceability:      '15',
+  impact_finance:           '·',
   // Empresario
-  organization_profile:     '01',
-  containers_provider:      '02',
-  organization_report:      '03',
+  organization_profile:     'E1',
+  containers_provider:      'E2',
+  organization_report:      'E3',
 }
 
-// Etapa de cada módulo (1=Diagnóstico, 2=Planeación, 3=Ejecución, 4=Monitoreo)
+// Capítulo de cada módulo (1=Diagnóstico, 2=Planificación, 3=Modelo, 4=Control)
 const MODULE_ETAPA: Record<string, 1 | 2 | 3 | 4> = {
-  city_baseline: 1, municipal_context: 1, social_study: 1, citizen_inputs: 1,
+  city_baseline: 1, social_study: 1, municipal_context: 1, citizen_inputs: 1,
   future_goals: 2, infrastructure_operations: 2, logistica_operativa: 2,
-  market_traceability: 2, risk_trends: 2,
-  esquema_concesion: 3, scenarios_export: 3, inspeccion_predios: 3,
+  costos_programa: 2, market_traceability: 2,
+  esquema_concesion: 3, scenarios_export: 3, risk_trends: 3,
+  inspeccion_predios: 4, monitoreo_real: 4,
   doble_materialidad: 4, source_traceability: 4, impact_finance: 4,
 }
 
 const ETAPAS = [
-  { num: 1 as const, label: 'Diagnóstico',  modulos: ['city_baseline', 'municipal_context', 'social_study'] },
-  { num: 2 as const, label: 'Planeación',   modulos: ['future_goals', 'infrastructure_operations', 'logistica_operativa', 'market_traceability', 'risk_trends'] },
-  { num: 3 as const, label: 'Ejecución',    modulos: ['esquema_concesion', 'scenarios_export', 'inspeccion_predios'] },
-  { num: 4 as const, label: 'Monitoreo',    modulos: ['doble_materialidad', 'source_traceability'] },
+  { num: 1 as const, label: 'Diagnóstico',   modulos: ['city_baseline', 'social_study', 'municipal_context'] },
+  { num: 2 as const, label: 'Planificación', modulos: ['future_goals', 'infrastructure_operations', 'logistica_operativa', 'costos_programa', 'market_traceability'] },
+  { num: 3 as const, label: 'Modelo',        modulos: ['esquema_concesion', 'scenarios_export', 'risk_trends'] },
+  { num: 4 as const, label: 'Control',       modulos: ['inspeccion_predios', 'monitoreo_real', 'doble_materialidad', 'source_traceability'] },
 ]
 
 function moduleNumber(id: string): string {
@@ -805,6 +809,16 @@ function BottomBar({
   const prev = modules[idx - 1] ?? null
   const next = modules[idx + 1] ?? null
 
+  const resultados        = useSimulatorStore(s => s.resultados)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const zmActiva          = useSimulatorStore(s => s.zmActiva)
+  const municipioLabel    = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+
+  const transicion = useMemo(
+    () => generarTransicion(activeId as ModuloId, resultados, municipioLabel),
+    [activeId, resultados, municipioLabel],
+  )
+
   return (
     <div className="border-t border-[#E8E4DC] bg-white px-6 py-3 flex items-center justify-between gap-4 flex-wrap">
       <div className="flex items-center gap-2">
@@ -819,22 +833,29 @@ function BottomBar({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[12px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
-        >
-          <Download size={13} />
-          Exportar borrador PDF
-        </button>
-        {next && (
+      <div className="flex flex-col items-end gap-1">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => onChange(next.module_id)}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[12px] font-medium hover:bg-[#2D5409] transition-colors"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[12px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
           >
-            {next.label} →
+            <Download size={13} />
+            Exportar borrador PDF
           </button>
+          {next && (
+            <button
+              type="button"
+              onClick={() => onChange(next.module_id)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[12px] font-medium hover:bg-[#2D5409] transition-colors"
+            >
+              {next.label} →
+            </button>
+          )}
+        </div>
+        {next && transicion && (
+          <p className="text-[10px] text-[#8A9286] max-w-xs text-right leading-snug">
+            {transicion.kicker}
+          </p>
         )}
       </div>
     </div>
