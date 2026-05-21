@@ -203,8 +203,9 @@ function FinancialAssumptions() {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export function ScenariosExportStack() {
-  const [page, setPage]     = useState<1|2|3>(1)
+export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
+  const [pageInternal, setPageInternal] = useState<1 | 2>(pageOnly ?? 1)
+  const page = pageOnly ?? pageInternal
   const [scenarioId, setScenarioId] = useState<ScenarioId>('base')
   const { resultados, horizonte } = useSimulatorStore()
   const r = resultados
@@ -246,17 +247,18 @@ export function ScenariosExportStack() {
     ]
   }, [metrics])
 
-  const PAGE_LABELS = ['Retorno y derrama financiera', 'Sensibilidad y riesgo', 'Salida y exportación']
+  const PAGE_LABELS = ['Retorno y derrama financiera', 'Sensibilidad y riesgo'] as const
 
   return (
     <section className="pb-6" data-testid="scenarios-export-stack">
 
       {/* ── Page navigation tabs ─────────────────────────────────────────── */}
+      {!pageOnly && (
       <div className="flex flex-wrap gap-1.5 mb-5">
         {PAGE_LABELS.map((label, i) => {
-          const p = (i + 1) as 1|2|3
+          const p = (i + 1) as 1 | 2
           return (
-            <button key={p} type="button" onClick={() => setPage(p)}
+            <button key={p} type="button" onClick={() => setPageInternal(p)}
               className={cn(
                 'flex items-center gap-2 px-4 py-2 rounded-[8px] text-[11px] font-semibold border transition-colors',
                 page === p ? 'bg-[#1C2B15] text-white border-[#1C2B15]' : 'bg-white text-[#6B6760] border-[#E8E4DC] hover:bg-[#F4F2ED]',
@@ -268,6 +270,11 @@ export function ScenariosExportStack() {
             </button>
           )
         })}
+      </div>
+      )}
+
+      <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-5 text-[11px] text-[#6B6760]">
+        Export y expediente Cabildo: módulo <strong className="text-[#1C1B18]">M15 Expediente Cabildo</strong>.
       </div>
 
       {/* ── Scenario selector (pages 1 and 2) ───────────────────────────── */}
@@ -568,69 +575,26 @@ export function ScenariosExportStack() {
         </div>
       )}
 
-      {/* ════════════════════════════════════════════════════════════════════
-          PAGE 3 — Salida y exportación
-      ═════════════════════════════════════════════════════════════════════ */}
-      {page === 3 && (
-        <div className="space-y-5">
-          <CotizacionRecomendada />
+      {/* PAGE 3 → expediente_cabildo (M15) */}
 
-          {/* Export CTA */}
-          <div className="rounded-[12px] border border-[#D7E8C0] bg-gradient-to-br from-[#F4FAEC] to-[#EBF3FB] p-5">
-            <div className="flex items-start gap-4">
-              <div className="shrink-0 w-10 h-10 rounded-[10px] bg-[#3B6D11] flex items-center justify-center">
-                <Zap className="w-5 h-5 text-white" strokeWidth={2} />
-              </div>
-              <div className="flex-1">
-                <p className="text-[14px] font-semibold text-[#1A4200] mb-1">Generar plan de circularidad completo</p>
-                <p className="text-[12px] text-[#5A6347] mb-3">
-                  Exporta el modelo financiero completo en el escenario <strong>Base</strong>, incluyendo fichas de proyecto, supuestos, rutas de implementación y paquete para Cabildo.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {[
-                    { label: 'PDF ejecutivo',         icon: FileText, color: '#C0392B', bg: 'bg-[#FDE8E8]' },
-                    { label: 'Excel con supuestos',   icon: Download,  color: '#1A5FA8', bg: 'bg-[#EBF3FB]' },
-                    { label: 'Resumen para Cabildo',  icon: FileText, color: '#3B6D11', bg: 'bg-[#EAF3DE]' },
-                    { label: 'URL compartida',        icon: Share2,   color: '#5A4A2A', bg: 'bg-[#F4F2ED]' },
-                  ].map(({ label, icon: Icon, color, bg }) => (
-                    <button key={label} type="button" className={cn('flex items-center gap-1.5 rounded-[8px] border border-[#E8E4DC] px-3 py-1.5 text-[11px] font-medium hover:shadow-sm transition-shadow', bg)}>
-                      <Icon className="w-3.5 h-3.5" style={{ color }} strokeWidth={2} />
-                      <span style={{ color }}>{label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <ExportarSection />
-          <ExportadorReporte />
-          <GovernancePanel />
-          <LaunchChecklist />
-        </div>
-      )}
-
-      {/* ── Footer navigation ────────────────────────────────────────────── */}
+      {!pageOnly && (
       <div className="mt-8 pt-5 border-t border-[#E8E4DC] flex items-center justify-between gap-2 flex-wrap">
         <div className="flex gap-2">
           {page > 1 && (
-            <button type="button" onClick={() => setPage((page - 1) as 1|2|3)}
+            <button type="button" onClick={() => setPageInternal((page - 1) as 1 | 2)}
               className="px-4 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] font-medium text-[#6B6760] hover:bg-[#F4F2ED]">
               ← {PAGE_LABELS[page - 2]}
             </button>
           )}
-          {page < 3 && (
-            <button type="button" onClick={() => setPage((page + 1) as 1|2|3)}
+          {page < 2 && (
+            <button type="button" onClick={() => setPageInternal((page + 1) as 1 | 2)}
               className="px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D]">
-              {PAGE_LABELS[page]} →
+              {PAGE_LABELS[0]} →
             </button>
           )}
         </div>
-        <div className="flex gap-2">
-          <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED]">Exportar PDF</button>
-          <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED]">Guardar vista</button>
-        </div>
       </div>
+      )}
     </section>
   )
 }

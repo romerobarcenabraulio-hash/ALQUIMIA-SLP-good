@@ -16,6 +16,15 @@ import { MarketTraceabilityStack } from '@/components/simulator/stacks/MarketTra
 import { InspeccionStack } from '@/components/simulator/stacks/InspeccionStack'
 import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
+import { moduleNumber, resolveModuleId } from '@/lib/chapterConfig'
+import { useSimulatorStore } from '@/store/simulatorStore'
+import { ImpactoAmbientalStack } from '@/components/simulator/stacks/ImpactoAmbientalStack'
+import { CapacidadInstitucionalStack } from '@/components/simulator/stacks/CapacidadInstitucionalStack'
+import { EvaluacionSocioeconomicaStack } from '@/components/simulator/stacks/EvaluacionSocioeconomicaStack'
+import { TeoriaCambioStack } from '@/components/simulator/stacks/TeoriaCambioStack'
+import { PlanEducativoStack } from '@/components/simulator/stacks/PlanEducativoStack'
+import { OrganigramaDiagnosticoStack } from '@/components/simulator/stacks/OrganigramaDiagnosticoStack'
+import ProyectoVivoPortal from '@/components/simulator/ProyectoVivoPortal'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -31,23 +40,6 @@ const FutureGoalsModule = dynamic(
         },
       })),
   { ssr: false, loading: () => <p className="text-[12px] text-[#6B6760]">Preparando Metas futuras…</p> },
-)
-
-const ReasoningGraphPanel = dynamic(
-  () => import('@/components/simulator/ReasoningGraphPanel'),
-  {
-    ssr: false,
-    loading: () => <p className="text-[12px] text-[#6B6760]">Cargando panel de causalidad…</p>,
-  },
-)
-
-const RiskTrendsPanel = dynamic(
-  () =>
-    import('@/components/simulator/RiskTrendsPanel').then(m => ({ default: m.RiskTrendsPanel })),
-  {
-    ssr: false,
-    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando riesgos y tendencias…</p>,
-  },
 )
 
 const GuiaCircularidadStack = dynamic(
@@ -140,6 +132,15 @@ const ExpedienteCabildoStack = dynamic(
   },
 )
 
+const DictamenTecnicoStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/DictamenTecnicoStack').then(m => ({ default: m.DictamenTecnicoStack })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando dictamen técnico y social…</p>,
+  },
+)
+
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
   const { module, audience, isOrganizationJourney, sociodemographicBlock, onNavigate } = ctx
 
@@ -170,8 +171,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     switch (module.module_id) {
       case 'city_baseline':
         return <CityBaselineStack />
-      case 'municipal_context':
-        return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} />
+      case 'marco_legal':
+        return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
       case 'citizen_inputs':
         return <EducacionCiudadana />
       case 'impact_finance':
@@ -181,46 +182,72 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     }
   }
 
-  switch (module.module_id) {
+  const moduleId = resolveModuleId(module.module_id)
+
+  switch (moduleId) {
     case 'guia_circularidad':
       return <GuiaCircularidadStack onNavigate={onNavigate} />
     case 'city_baseline':
       return <CityBaselineStack />
-    case 'municipal_context':
-      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} />
-    case 'social_study':
-      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} />
-    case 'future_goals':
-      return <FutureGoalsModule notice={<M03Notice />} />
-    case 'infrastructure_operations':
-      return <InfrastructureOperationsStack />
-    case 'market_traceability':
-      return <MarketTraceabilityStack />
-    case 'risk_trends':
-      return <RiskTrendsPanel />
-    case 'logistica_operativa':
-      return <LogisticaOperativaStack />
-    case 'costos_programa':
-      return <CostosProgramaStack />
-    case 'monitoreo_real':
-      return <MonitoreoRealStack />
-    case 'esquema_concesion':
-      return <EsquemaConcesionPanel />
-    case 'doble_materialidad':
-      return <DobleMaterialidadStack />
-    case 'inspeccion_predios':
-      return <InspeccionStack />
-    case 'scenarios_export':
-      return <ScenariosExportStack />
-    case 'organigrama_programa':
-      return <OrganigramaStack />
+    case 'impacto_ambiental':
+      return <ImpactoAmbientalStack />
+    case 'social_diagnostico':
+      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
+    case 'social_encuesta':
+      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} view="encuesta" />
+    case 'mapeo_actores':
+      return <MapeoActoresBridge />
+    case 'organigrama_diagnostico':
+      return <OrganigramaDiagnosticoStack />
+    case 'capacidad_institucional':
+      return <CapacidadInstitucionalStack />
+    case 'marco_legal':
+      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
+    case 'cobertura_territorial':
+      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="cobertura" />
+    case 'dictamen_tecnico':
+      return <DictamenTecnicoStack />
     case 'costo_omision':
       return <CostoOmisionStack />
+    case 'evaluacion_socioeconomica':
+      return <EvaluacionSocioeconomicaStack />
+    case 'teoria_cambio':
+      return <TeoriaCambioStack />
+    case 'plan_maestro':
+      return <FutureGoalsModule notice={<M03Notice />} pageOnly={1} />
+    case 'ruta_critica':
+      return <FutureGoalsModule notice={<M03Notice />} pageOnly={2} />
+    case 'oleadas_territoriales':
+      return <FutureGoalsModule notice={<M03Notice />} pageOnly={3} />
+    case 'infraestructura':
+      return <InfrastructureOperationsStack />
+    case 'organigrama':
+      return <OrganigramaStack />
+    case 'logistica':
+      return <LogisticaOperativaStack />
+    case 'plan_educativo':
+      return <PlanEducativoStack />
+    case 'costos_programa':
+      return <CostosProgramaStack />
+    case 'mercado_materiales':
+      return <MarketTraceabilityStack pageOnly={2} />
+    case 'esquema_concesion':
+      return <EsquemaConcesionPanel />
     case 'arbol_financiamiento':
       return <ArbolFinanciamientoStack />
+    case 'escenarios_financieros':
+      return <ScenariosExportStack />
+    case 'riesgos_modelo':
+      return <MarketTraceabilityStack pageOnly={1} />
     case 'expediente_cabildo':
       return <ExpedienteCabildoStack />
-    case 'source_traceability':
+    case 'inspeccion':
+      return <InspeccionStack />
+    case 'monitoreo_operativo':
+      return <MonitoreoRealStack />
+    case 'doble_materialidad':
+      return <DobleMaterialidadStack />
+    case 'trazabilidad':
       return (
         <div className="space-y-8">
           <ReferenciasCalculos />
@@ -230,6 +257,12 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     default:
       return <ModuleEmpty module={module} />
   }
+}
+
+function MapeoActoresBridge() {
+  const { municipiosActivos, zmActiva } = useSimulatorStore()
+  const munId = municipiosActivos[0] ?? zmActiva?.toLowerCase() ?? 'slp'
+  return <ProyectoVivoPortal proyectoId={`sim-${munId}`} municipioId={munId} />
 }
 
 function M03Notice() {
@@ -252,9 +285,13 @@ function M03Notice() {
 
 function ModuleEmpty({ module }: { module: DecisionModule }) {
   return (
-    <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-white px-4 py-4">
-      <p className="text-[12px] font-semibold text-[#1C1B18]">Sin herramienta conectada para este paso del recorrido.</p>
-      <p className="mt-1 text-[12px] text-[#6B6760]">{module.next_action}</p>
+    <div className="rounded-[10px] border border-dashed border-[#E8E4DC] bg-[#FAFAF8] px-5 py-5">
+      <p className="text-[13px] font-semibold text-[#1C1B18]">Módulo pendiente de conexión</p>
+      <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+        Este paso del recorrido (<span className="font-mono text-[11px]">{module.module_id}</span>) aún no tiene
+        herramienta activa en el simulador. Puede deberse a una audiencia distinta o a un módulo en despliegue.
+      </p>
+      <p className="mt-3 text-[11px] text-[#A8A49C]">Siguiente acción sugerida: {module.next_action}</p>
     </div>
   )
 }
@@ -270,7 +307,7 @@ function CierreSimulador({ onNavigate }: { onNavigate?: (id: string) => void }) 
       </div>
       <div className="relative z-10">
         <span className="inline-block px-3 py-1 rounded-full bg-white/15 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#A8D78A] mb-4">
-          Análisis completo · M15 de 15
+          Análisis completo · M{moduleNumber('trazabilidad')} de {moduleNumber('trazabilidad')}
         </span>
         <h2 className="font-serif text-[24px] font-bold mb-3">
           Has recorrido el argumento completo
@@ -284,7 +321,7 @@ function CierreSimulador({ onNavigate }: { onNavigate?: (id: string) => void }) 
           {onNavigate && (
             <button
               type="button"
-              onClick={() => onNavigate('scenarios_export')}
+              onClick={() => onNavigate('expediente_cabildo')}
               className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-white text-[#1C2B15] text-[13px] font-semibold hover:bg-[#F1F8EC] transition-colors"
             >
               Exportar escenarios financieros →

@@ -5,9 +5,12 @@ import {
   AlertTriangle,
   BookOpen,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Download,
   Lock,
+  PanelRightClose,
+  PanelRightOpen,
   Share2,
   TrendingUp,
   Users,
@@ -138,16 +141,45 @@ export function ModuleNav({
               </summary>
 
               <div className={cn('pb-1', isDark ? 'bg-[#1A2A12]' : 'bg-[#ECEAE5]/50')}>
-                {chModules.map(m => (
-                  <ModuleNavItem
-                    key={m.module_id}
-                    m={m}
-                    active={m.module_id === activeId}
-                    isDark={isDark}
-                    onChange={onChange}
-                    indent
-                  />
-                ))}
+                {ch.rubros.map(rubro => {
+                  const rubroModules = rubro.modulos
+                    .map(id => modulesById[id])
+                    .filter(Boolean) as DecisionModule[]
+                  if (rubroModules.length === 0) return null
+                  const isActiveRubro = rubro.modulos.includes(activeId)
+                  return (
+                    <details
+                      key={rubro.id}
+                      open={isActiveRubro || isActiveChapter}
+                      className="group/rubro border-t border-[#E8E4DC]/60 first:border-t-0"
+                    >
+                      <summary
+                        className={cn(
+                          'flex items-center gap-2 px-4 py-1.5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden text-[9px] font-semibold uppercase tracking-[0.06em]',
+                          isDark ? 'text-[#6A9A50] hover:bg-[#243320]' : 'text-[#8A8680] hover:bg-[#E4E2DD]',
+                        )}
+                      >
+                        <ChevronRight
+                          size={10}
+                          className="shrink-0 transition-transform group-open/rubro:rotate-90"
+                        />
+                        {rubro.label}
+                      </summary>
+                      <div className="pb-0.5">
+                        {rubroModules.map(m => (
+                          <ModuleNavItem
+                            key={m.module_id}
+                            m={m}
+                            active={m.module_id === activeId}
+                            isDark={isDark}
+                            onChange={onChange}
+                            indent
+                          />
+                        ))}
+                      </div>
+                    </details>
+                  )
+                })}
               </div>
             </details>
           )
@@ -260,20 +292,22 @@ function MobileModuleSelect({
             00. {guiaModule.label}
           </option>
         )}
-        {CHAPTERS.map(ch => (
-          <optgroup key={ch.num} label={`Cap. ${ch.num} — ${ch.label}`}>
-            {ch.modulos.map(id => {
-              const m = modulesById[id]
-              if (!m) return null
-              return (
-                <option key={id} value={id}>
-                  {moduleNumber(id)}. {m.label}
-                  {m.status === 'blocked' ? ' — requiere acción' : ''}
-                </option>
-              )
-            })}
-          </optgroup>
-        ))}
+        {CHAPTERS.map(ch =>
+          ch.rubros.map(rubro => (
+            <optgroup key={`${ch.num}-${rubro.id}`} label={`Cap ${ch.num} · ${rubro.label}`}>
+              {rubro.modulos.map(id => {
+                const m = modulesById[id]
+                if (!m) return null
+                return (
+                  <option key={id} value={id}>
+                    {moduleNumber(id)}. {m.label}
+                    {m.status === 'blocked' ? ' — requiere acción' : ''}
+                  </option>
+                )
+              })}
+            </optgroup>
+          )),
+        )}
       </select>
     </div>
   )
@@ -653,6 +687,7 @@ function ModuleMetodologiaMobile({
 const MODULE_CONFIDENCE: Record<string, { label: string; pct: number; color: string; bg: string }> = {
   city_baseline:            { label: 'Medio',       pct: 55, color: '#D4881E', bg: '#FEF7E7' },
   municipal_context:        { label: 'Medio-alto',  pct: 65, color: '#D4881E', bg: '#FEF7E7' },
+  dictamen_tecnico:         { label: 'Medio-alto',  pct: 70, color: '#D4881E', bg: '#FEF7E7' },
   future_goals:             { label: 'Medio',       pct: 50, color: '#D4881E', bg: '#FEF7E7' },
   infrastructure_operations:{ label: 'Medio',       pct: 55, color: '#D4881E', bg: '#FEF7E7' },
   market_traceability:      { label: 'Condicionado',pct: 40, color: '#A8A49C', bg: '#F4F2ED' },
@@ -681,10 +716,14 @@ function GuidancePanel({
   module,
   moduleId,
   activeChartId,
+  collapsed,
+  onToggle,
 }: {
   module: DecisionModule
   moduleId: string
   activeChartId: string | null
+  collapsed: boolean
+  onToggle: () => void
 }) {
   const lectura = getLecturaEjecutiva(moduleId)
 
@@ -707,6 +746,23 @@ function GuidancePanel({
 
   const activePropuesta = propuestaActivaIdx !== null ? propuestaSlots[propuestaActivaIdx] : null
 
+  if (collapsed) {
+    return (
+      <aside className="hidden xl:flex w-[40px] shrink-0 border-l border-[#E8E4DC] bg-white flex-col items-center py-3">
+        <button
+          type="button"
+          onClick={onToggle}
+          title="Mostrar consideraciones (⌘.)"
+          aria-label="Mostrar panel de consideraciones"
+          className="p-2 rounded-[8px] text-[#3B6D11] hover:bg-[#F4FAEC] transition-colors"
+        >
+          <PanelRightOpen size={16} />
+        </button>
+        <BookOpen size={14} className="text-[#A8A49C] mt-3" />
+      </aside>
+    )
+  }
+
   return (
     <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-white overflow-y-auto">
       {/* ── Header — always visible ───────────────────────────────────────── */}
@@ -716,14 +772,25 @@ function GuidancePanel({
             <BookOpen size={11} />
             Consideraciones
           </p>
-          {conf && (
-            <span
-              className="text-[8px] font-medium px-1.5 py-0.5 rounded-full"
-              style={{ color: conf.color, background: conf.bg }}
+          <div className="flex items-center gap-1.5">
+            {conf && (
+              <span
+                className="text-[8px] font-medium px-1.5 py-0.5 rounded-full"
+                style={{ color: conf.color, background: conf.bg }}
+              >
+                {conf.pct}% confianza
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={onToggle}
+              title="Ocultar consideraciones (⌘.)"
+              aria-label="Ocultar panel de consideraciones"
+              className="p-1 rounded-[6px] text-[#A8A49C] hover:bg-[#F4F2ED] hover:text-[#1C1B18] transition-colors"
             >
-              {conf.pct}% confianza
-            </span>
-          )}
+              <PanelRightClose size={14} />
+            </button>
+          </div>
         </div>
 
         {/* Module summary — the only always-visible content */}
@@ -990,6 +1057,40 @@ export function DecisionModuleShell({
 
   // Chapter separator state — shows interstitial screen on chapter transitions
   const [chapterSep, setChapterSep] = useState<{ fromId: string; toId: string } | null>(null)
+  const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
+
+  useEffect(() => {
+    try {
+      if (localStorage.getItem('alquimia-guidance-collapsed') === '1') {
+        setGuidanceCollapsed(true)
+      }
+    } catch {
+      /* ignore */
+    }
+  }, [])
+
+  const toggleGuidance = useCallback(() => {
+    setGuidanceCollapsed(prev => {
+      const next = !prev
+      try {
+        localStorage.setItem('alquimia-guidance-collapsed', next ? '1' : '0')
+      } catch {
+        /* ignore */
+      }
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === '.') {
+        e.preventDefault()
+        toggleGuidance()
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [toggleGuidance])
 
   /** Intercepts navigation: shows ChapterSeparator when crossing chapter boundaries */
   const handleModuleChange = useCallback((toId: string) => {
@@ -1117,6 +1218,8 @@ export function DecisionModuleShell({
             module={activeModule}
             moduleId={activeModule.module_id}
             activeChartId={activeChartId}
+            collapsed={guidanceCollapsed}
+            onToggle={toggleGuidance}
           />
         </div>
       )}

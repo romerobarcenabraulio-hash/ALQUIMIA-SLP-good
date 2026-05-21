@@ -1,6 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Legend,
@@ -13,6 +14,14 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI, CA_CONFIG, FASES_CA } from '@/lib/constants'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+
+const CentrosAcopioMap = dynamic(
+  () => import('@/components/simulator/CentrosAcopioMap').then(m => ({ default: m.CentrosAcopioMap })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760] py-8 text-center">Cargando mapa de centros de acopio…</p>,
+  },
+)
 
 // ── Center table generation ───────────────────────────────────────────────────
 
@@ -272,6 +281,15 @@ export function InfrastructureOperationsStack() {
               )
             })}
           </div>
+
+          {/* Map — centros de acopio verificados y propuestos */}
+          <ExpandableChart
+            chartId="mapa-centros-acopio"
+            title="Mapa de centros de acopio"
+            subtitle="Centros verificados y propuestos · filtro por material"
+          >
+            <CentrosAcopioMap />
+          </ExpandableChart>
 
           {/* Phase deployment chart */}
           <ExpandableChart chartId="m06-phase-deploy" title="Despliegue de infraestructura por fase" subtitle="Centros activos · capacidad instalada · cobertura acumulada">

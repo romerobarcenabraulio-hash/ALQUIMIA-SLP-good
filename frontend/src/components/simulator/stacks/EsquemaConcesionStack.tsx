@@ -8,6 +8,7 @@ import {
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { MARCO_LEGAL_CONCESION, ZMS } from '@/lib/constants'
 import { fmt, cn } from '@/lib/utils'
+import { getClausulasPorEsquema } from '@/lib/concesionClausulas'
 import type { EsquemaConcesion } from '@/types'
 
 // ── Color palette ─────────────────────────────────────────────────────────────
@@ -457,6 +458,37 @@ export function EsquemaConcesionStack() {
             </div>
           </div>
         )}
+      </div>
+
+      {/* ── Cláusulas propuestas para el contrato ─────────────────────────── */}
+      <div
+        className="rounded-[12px] border p-5"
+        style={{ borderColor: C.borderLight, background: C.bone }}
+      >
+        <span className="text-[10px] uppercase tracking-[0.06em]" style={{ color: C.textLight }}>
+          Paso 2B
+        </span>
+        <h3 className="font-serif text-[18px] mt-0.5 mb-1" style={{ color: C.textDark }}>
+          Cláusulas propuestas para el contrato
+        </h3>
+        <p className="text-[11px] mb-4" style={{ color: C.textMid }}>
+          Esquema {esquemaConcesion} — texto orientativo para negociación con operador / Cabildo
+        </p>
+        <div className="space-y-2.5">
+          {getClausulasPorEsquema(esquemaConcesion, {
+            pctCuota: pctCuotaConcesion,
+            pctSocio: pctSocioPublico,
+          }).map(cl => (
+            <div
+              key={cl.id}
+              className="rounded-[10px] border px-4 py-3"
+              style={{ borderColor: C.borderLight, background: C.sand }}
+            >
+              <p className="text-[11px] font-semibold mb-1" style={{ color: C.green }}>{cl.titulo}</p>
+              <p className="text-[11px] leading-relaxed" style={{ color: C.textMid }}>{cl.texto}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* ── Section 3: Distribución de Ingresos ──────────────────────────── */}

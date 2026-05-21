@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
+import dynamic from 'next/dynamic'
 import {
   AreaChart, Area, XAxis, YAxis, Tooltip,
   ResponsiveContainer, CartesianGrid, Legend,
@@ -11,9 +12,18 @@ import {
   ChevronRight, ArrowRight, Zap, Users, FileText, Target,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { getHitosForZm } from '@/data/hitosTimeline'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI } from '@/lib/constants'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+
+const CircularidadRoadmapMap = dynamic(
+  () => import('@/components/simulator/CircularidadRoadmapMap').then(m => ({ default: m.CircularidadRoadmapMap })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760] py-8 text-center">Cargando mapa de avance territorial…</p>,
+  },
+)
 
 // ── Legal summary per ZM ──────────────────────────────────────────────────────
 
@@ -1230,50 +1240,7 @@ function Page3({
       {/* Map + Waves */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ExpandableChart chartId="m03-map" title="Mapa territorial de despliegue" subtitle="Estado del programa por zona — fases de cobertura">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <p className="text-[12px] font-semibold text-[#1C1B18]">Mapa territorial de despliegue</p>
-              <p className="text-[10px] text-[#A8A49C]">Estado del programa por zona · fases de cobertura</p>
-            </div>
-            <div className="p-5">
-              <div className="h-52 rounded-[10px] bg-gradient-to-br from-[#EAF3DE] to-[#D7E8C0] border border-[#D7E8C0] flex items-center justify-center relative overflow-hidden">
-                {/* Zone markers */}
-                {[
-                  { label: 'Poniente', x: '20%', y: '40%', fase: 'En curso', color: '#3B6D11' },
-                  { label: 'Centro',   x: '50%', y: '50%', fase: 'Siguiente', color: '#1A5FA8' },
-                  { label: 'Norte',    x: '55%', y: '25%', fase: 'Planeada',  color: '#D4881E' },
-                  { label: 'Sur',      x: '45%', y: '70%', fase: 'Planeada',  color: '#A8A49C' },
-                ].map(z => (
-                  <div key={z.label} className="absolute flex flex-col items-center"
-                    style={{ left: z.x, top: z.y, transform: 'translate(-50%,-50%)' }}>
-                    <div className="w-8 h-8 rounded-full border-2 border-white flex items-center justify-center text-white text-[9px] font-bold shadow-md"
-                      style={{ background: z.color }}>
-                      <MapPin className="w-3.5 h-3.5" />
-                    </div>
-                    <div className="mt-1 bg-white rounded-[5px] border border-[#E8E4DC] px-1.5 py-0.5 shadow-sm">
-                      <p className="text-[8px] font-semibold text-[#1C1B18]">{z.label}</p>
-                      <p className="text-[7px]" style={{ color: z.color }}>{z.fase}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex flex-wrap gap-2 mt-3">
-                {[
-                  ['#F4F2ED','#A8A49C','Sin iniciar'],
-                  ['#EBF3FB','#1A5FA8','Diagnóstico'],
-                  ['#FEF3C7','#D4881E','Permisos'],
-                  ['#D1FAE5','#3B6D11','Instalación'],
-                  ['#FDE8E8','#C0392B','Piloto'],
-                  ['#2D5A0D','#fff','Escala plena'],
-                ].map(([bg, color, label]) => (
-                  <div key={label} className="flex items-center gap-1 text-[9px]">
-                    <div className="w-3 h-3 rounded-sm border" style={{ background: bg, borderColor: color }} />
-                    <span className="text-[#6B6760]">{label}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <CircularidadRoadmapMap />
         </ExpandableChart>
 
         {/* Waves */}
@@ -1571,19 +1538,32 @@ function PageNavFooter({ page, setPage }: { page: number; setPage: (p: number) =
 
 // ── Main export ───────────────────────────────────────────────────────────────
 
-export function FutureGoalsModule({ notice }: { notice?: React.ReactNode }) {
+export function FutureGoalsModule({
+  notice,
+  pageOnly,
+}: {
+  notice?: React.ReactNode
+  pageOnly?: 1 | 2 | 3
+}) {
   const {
     zmActiva, horizonte, presetTrayectoria, pctCapturaPorAño,
     resultados, genPercapita, mixCAs, seleccionMunicipioCatalog,
   } = useSimulatorStore()
 
-  const [page, setPage] = useState(1)
+  const [pageInternal, setPageInternal] = useState(1)
+  const page = pageOnly ?? pageInternal
 
   const trayectoria = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
   const capturaFinal = Math.round(pctCapturaPorAño[Math.min(horizonte - 1, pctCapturaPorAño.length - 1)] ?? pctCapturaPorAño.at(-1) ?? 65)
   const rsuDia = resultados?.rsuTotalTonDia ?? 0
   const capexTotal = resultados?.capexTotal ?? 0
-  const totalSemanas = Math.min(horizonte * 52, 260)
+
+  const durationMult = presetTrayectoria === 'Conservador' ? 1.4 : presetTrayectoria === 'Ambicioso' ? 0.7 : 1
+  const { hitos } = getHitosForZm(zmActiva)
+  const pertMaxDays = hitos.length
+    ? Math.max(...hitos.map(h => h.pert.pessimistic_dias))
+    : horizonte * 365 * 0.6
+  const totalSemanas = Math.min(Math.max(Math.round((pertMaxDays * durationMult) / 7), 52), 260)
   const municipio = seleccionMunicipioCatalog?.nombre ?? zmActiva
   const legal = legalFor(zmActiva)
   const empleosMeta = resultados?.empleosTotalesDirectos ?? 0
@@ -1601,10 +1581,11 @@ export function FutureGoalsModule({ notice }: { notice?: React.ReactNode }) {
 
   return (
     <div className="pb-4">
-      {/* Page tab navigation */}
+      {/* Page tab navigation — oculto con pageOnly */}
+      {!pageOnly && (
       <div className="flex items-center gap-2 mb-6 flex-wrap">
         {[1, 2, 3].map(p => (
-          <button key={p} type="button" onClick={() => setPage(p)}
+          <button key={p} type="button" onClick={() => setPageInternal(p as 1 | 2 | 3)}
             className={cn(
               'flex items-center gap-2 px-4 py-2 rounded-[8px] text-[11px] font-semibold transition-colors border',
               page === p
@@ -1619,6 +1600,7 @@ export function FutureGoalsModule({ notice }: { notice?: React.ReactNode }) {
         ))}
         <span className="ml-1 text-[10px] text-[#A8A49C] hidden md:block">— {PAGE_LABELS[page - 1]}</span>
       </div>
+      )}
 
       {/* 2-col layout */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
@@ -1638,7 +1620,7 @@ export function FutureGoalsModule({ notice }: { notice?: React.ReactNode }) {
               mixCentros={mixCentros}
             />
           )}
-          <PageNavFooter page={page} setPage={setPage} />
+          {!pageOnly && <PageNavFooter page={page} setPage={p => setPageInternal(p)} />}
         </div>
         <RightRail page={page} vacios={legal.vacios} />
       </div>

@@ -18,6 +18,7 @@ import {
   getInegiHousingDistribution,
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
+import { ResearchCompletenessBar } from '@/components/simulator/ResearchCompletenessBar'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -311,6 +312,8 @@ export function CityBaselineStack() {
         <KpiStrip icon={Leaf}      label="CO₂e evitado"  value={r ? `${(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K t` : '—'}    sub="por año"                accent="#1A5FA8" />
         <KpiStrip icon={Heart}     label="Ahorro salud"  value={r ? fmt.mxnM(r.ahorroSalud) : '—'}                               sub="anual est."             accent="#C0392B" />
       </div>
+
+      <ResearchCompletenessBar />
 
       {/* ── 2-column layout: inputs (left) + results (right) ──────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_3fr] gap-5 items-start">

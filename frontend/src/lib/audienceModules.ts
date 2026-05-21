@@ -1,55 +1,22 @@
 /**
- * Fase 22.2 — Mapa de módulos visibles por audiencia.
- *
- * Cada audiencia ve un subconjunto fijo de `module_id` definidos por el
- * backend en city_plan/organization. La poda se aplica en frontend para
- * conseguir ≥60% de UI oculta por audiencia (sin tocar contratos backend).
- *
- * Si en una fase futura se introduce backend audience-aware (ver 22.6),
- * el server filtrará primero y este mapa actuará como red de seguridad.
+ * Mapa de módulos visibles por audiencia.
+ * Funcionario: 30 módulos en 4 capítulos × rubros (ver chapterConfig.ts).
  */
 
 import type { Audience } from '@/types'
+import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
 
 export const AUDIENCE_MODULES: Record<Audience, ReadonlyArray<string>> = {
-  // Ciudadano — educación y contexto. Sin operaciones ni finanzas duras.
   citizen: [
     'city_baseline',
-    'municipal_context',
+    'marco_legal',
     'citizen_inputs',
-    'impact_finance', // se simplifica a Ambiental + Multiplicadores en page.tsx
+    'impact_finance',
   ],
-  // Funcionario — journey narrativo en 4 capítulos con guía introductoria obligatoria.
-  // M00 Guía → Cap 1 Diagnóstico: M01-M04 | Cap 2 Planificación: M05-M10
-  // Cap 3 Modelo: M11-M15 | Cap 4 Control: M16-M19
   functionary: [
-    // Guía de lectura — Steps for Circularity (obligatorio, pre-capítulo)
     'guia_circularidad',
-    // Cap 1 — Diagnóstico: ¿Cuál es el punto de partida real?
-    'city_baseline',        // M01 Línea base territorial y RSU
-    'social_study',         // M02 Diagnóstico social y aceptación ciudadana
-    'municipal_context',    // M03 Marco legal y brechas normativas
-    'costo_omision',        // M04 Costo de la omisión — contrafactual 10 años
-    // Cap 2 — Planificación: ¿Qué necesitamos construir?
-    'future_goals',              // M05 Metas y trayectorias de captura
-    'infrastructure_operations', // M06 Infraestructura — dimensionamiento CAs
-    'organigrama_programa',      // M07 Organigrama y estructura operativa
-    'logistica_operativa',       // M08 Logística, rutas y PER
-    'costos_programa',           // M09 Tabla maestra CAPEX/OPEX
-    'market_traceability',       // M10 Mercado de materiales y compradores
-    // Cap 3 — Modelo: ¿Quién paga, quién opera y es viable?
-    'esquema_concesion',     // M11 Esquema de concesión y modelo de negocio
-    'scenarios_export',      // M12 Escenarios financieros — TIR/VPN/Monte Carlo
-    'arbol_financiamiento',  // M13 Árbol de financiamiento — 6 caminos
-    'risk_trends',           // M14 Riesgos del modelo completo
-    'expediente_cabildo',    // M15 Expediente completo para Cabildo
-    // Cap 4 — Control: ¿Cómo arrancamos y cómo medimos?
-    'inspeccion_predios',  // M16 Inspección y cumplimiento
-    'monitoreo_real',      // M17 Monitoreo proyectado vs. real
-    'doble_materialidad',  // M18 Doble materialidad y reporte ESG
-    'source_traceability', // M19 Trazabilidad de fuentes y fórmulas
+    ...FUNCTIONARY_MODULE_ORDER,
   ],
-  // Empresario — perfil organización + trazabilidad + reporte.
   entrepreneur: [
     'organization_profile',
     'containers_provider',

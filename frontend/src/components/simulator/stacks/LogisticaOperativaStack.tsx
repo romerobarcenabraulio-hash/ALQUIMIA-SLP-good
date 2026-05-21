@@ -11,18 +11,10 @@ import {
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { ESTACIONALIDAD } from '@/lib/constants'
+import { computeTrucksByMaterial, computeLogisticsKpis } from '@/lib/logisticsCalc'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-
-const TRUCKS_BY_MATERIAL = [
-  { material: 'Materia orgánica', volDia: 188.7, camiones: 9, frecuencia: 'Diaria', riesgo: 'Alto', obs: 'Perecible — no retrasar recolección' },
-  { material: 'Papel / cartón', volDia: 60.5, camiones: 3, frecuencia: '3×/sem', riesgo: 'Medio', obs: 'Compactar para reducir viajes' },
-  { material: 'Plásticos', volDia: 67.9, camiones: 3, frecuencia: '3×/sem', riesgo: 'Alto', obs: 'Alta densidad variable; revisar carga' },
-  { material: 'Vidrio', volDia: 19.8, camiones: 1, frecuencia: '2×/sem', riesgo: 'Bajo', obs: 'Pesado — camión de bajo perfil' },
-  { material: 'Metales', volDia: 6.7, camiones: 1, frecuencia: '1×/sem', riesgo: 'Bajo', obs: 'Alto valor por peso; prioritario' },
-  { material: 'Otros', volDia: 36.1, camiones: 1, frecuencia: '2×/sem', riesgo: 'Bajo', obs: 'Consolidar con ruta de residuos mixtos' },
-]
 
 const BOTTLENECKS_LOG = [
   { zona: 'Zona sur con saturación', gravedad: 'Alto', causa: 'Carga superior a capacidad instalada', impacto: 'Retrasos y desbordamiento', accion: 'Desviar rutas al CA mediano de zona norte temporalmente' },
@@ -67,6 +59,9 @@ export function LogisticaOperativaStack() {
   const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
   const capInstalada = rsuDia * 0.61
 
+  const trucksByMaterial = useMemo(() => computeTrucksByMaterial(rsuDia), [rsuDia])
+  const logisticsKpis = useMemo(() => computeLogisticsKpis(trucksByMaterial), [trucksByMaterial])
+
   const perRoutes = useMemo(() => generatePERRoutes(zmActiva.slice(0, 3).toUpperCase()), [zmActiva])
 
   const seasonData = MESES.map((m, i) => {
@@ -83,10 +78,10 @@ export function LogisticaOperativaStack() {
           {/* Logistics KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              { label: 'Camiones requeridos', value: '18', sub: 'para el horizonte', icon: Truck, color: '#1A5FA8' },
-              { label: 'Visitas mensuales', value: '13.0', sub: 'por ruta piloto', icon: Clock, color: '#3B6D11' },
-              { label: 'Merma logística', value: '18%', sub: 'del vol. movilizado', icon: AlertTriangle, color: '#C0392B' },
-              { label: 'Presión operativa', value: 'Media-alta', sub: 'en cond. actuales', icon: TrendingUp, color: '#D4881E' },
+              { label: 'Camiones requeridos', value: String(logisticsKpis.totalCamiones), sub: 'calculado del RSU', icon: Truck, color: '#1A5FA8' },
+              { label: 'Visitas mensuales', value: String(logisticsKpis.visitasMes), sub: 'est. operación', icon: Clock, color: '#3B6D11' },
+              { label: 'Merma logística', value: `${logisticsKpis.mermaPct}%`, sub: 'del vol. movilizado', icon: AlertTriangle, color: '#C0392B' },
+              { label: 'Presión operativa', value: logisticsKpis.presion, sub: 'según flota', icon: TrendingUp, color: '#D4881E' },
             ].map(c => (
               <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
                 <div className="flex items-center gap-1.5 mb-1"><c.icon className="w-3.5 h-3.5 shrink-0" style={{ color: c.color }} /><p className="text-[9px] uppercase text-[#A8A49C]">{c.label}</p></div>
@@ -147,7 +142,7 @@ export function LogisticaOperativaStack() {
                     </tr>
                   </thead>
                   <tbody>
-                    {TRUCKS_BY_MATERIAL.map((t, i) => {
+                    {trucksByMaterial.map((t, i) => {
                       const rColor = t.riesgo === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : t.riesgo === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]'
                       return (
                         <tr key={t.material} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>

@@ -10,10 +10,10 @@ import {
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import CoberturaNacional from '@/components/simulator/CoberturaNacional'
-import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import type { SociodemographicDisplayBlock } from '@/types/socialDemographicContext'
 import { cn } from '@/lib/utils'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -369,11 +369,24 @@ type TabId = 'diagnostico' | 'cobertura'
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function MunicipalContextStack({ block, moduleAnchor }: { block?: SociodemographicDisplayBlock; moduleAnchor?: string }) {
+export function MunicipalContextStack({
+  block,
+  moduleAnchor,
+  view,
+}: {
+  block?: SociodemographicDisplayBlock
+  moduleAnchor?: string
+  view?: TabId
+}) {
   const { zmActiva, municipiosActivos } = useSimulatorStore()
-  const [tab, setTab] = useState<TabId>('diagnostico')
+  const { openReglamento } = useReglamentoFuente()
+  const [tabInternal, setTabInternal] = useState<TabId>('diagnostico')
+  const tab = view ?? tabInternal
   const [adendaExpandida, setAdendaExpandida] = useState(false)
+  const legalIsFallback = !LEGAL_BY_ZM[zmActiva]
   const legal = getLegalData(zmActiva)
+  const zmKey = zmActiva?.toLowerCase() ?? ''
+  const munId = municipiosActivos[0] ?? (zmKey || 'mty')
 
   const altasPriority = legal.adendas.filter(a => a.prioridad === 'alta')
   const otrasAdendas = legal.adendas.filter(a => a.prioridad !== 'alta')
@@ -381,6 +394,19 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
 
   return (
     <div className="space-y-4 pb-6">
+
+      {legalIsFallback && (
+        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+          <div>
+            <p className="text-[11px] font-semibold text-amber-900">Datos de referencia (Monterrey)</p>
+            <p className="text-[10px] text-amber-800 mt-0.5 leading-relaxed">
+              No hay diagnóstico legal específico para esta zona metropolitana. Se muestra el marco de referencia MTY
+              hasta cargar el reglamento local. Seleccione su municipio para datos específicos.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
@@ -402,7 +428,8 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
         ))}
       </div>
 
-      {/* ── Tab navigation ─────────────────────────────────────────────────── */}
+      {/* ── Tab navigation — oculto con view fijo ───────────────────────────── */}
+      {!view && (
       <nav className="flex gap-1.5 rounded-[10px] border border-[#E8E4DC] bg-[#F4F2ED] p-1.5">
         {([
           { id: 'diagnostico' as TabId, label: 'Diagnóstico y reforma' },
@@ -411,7 +438,7 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
           <button
             key={t.id}
             type="button"
-            onClick={() => setTab(t.id)}
+            onClick={() => setTabInternal(t.id)}
             className={cn(
               'flex-1 px-4 py-2 rounded-[7px] text-[12px] font-medium transition-colors',
               tab === t.id
@@ -423,6 +450,7 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
           </button>
         ))}
       </nav>
+      )}
 
       {/* ══ TAB 1: Diagnóstico y reforma ═══════════════════════════════════════ */}
       {tab === 'diagnostico' && (
@@ -516,14 +544,11 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  const el = document.getElementById('m02-adendas-section')
-                  el?.scrollIntoView({ behavior: 'smooth' })
-                }}
+                onClick={() => openReglamento(munId)}
                 className="shrink-0 flex items-center gap-2 px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[12px] font-semibold hover:bg-[#2D5A0D] transition-colors"
               >
                 <FileText className="w-3.5 h-3.5" />
-                Ver adendos jurídicos
+                Abrir comparativa legal
               </button>
             </div>
           </div>
@@ -540,6 +565,14 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
               <span className="shrink-0 text-[9px] font-semibold bg-[#FDE8E8] text-[#7A1212] border border-[#F5C4C4] rounded px-2 py-0.5">
                 {altasPriority.length} de alta prioridad
               </span>
+              <button
+                type="button"
+                onClick={() => openReglamento(munId)}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1 rounded-[7px] border border-[#3B6D11]/30 bg-[#F4FAEC] text-[10px] font-semibold text-[#3B6D11] hover:bg-[#EAF3DE] transition-colors"
+              >
+                <FileText className="w-3 h-3" />
+                Reglamento y adendos
+              </button>
             </div>
 
             <div className="overflow-x-auto">
@@ -580,7 +613,16 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
                                                   'bg-[#F0EDE5] text-[#6B6760]',
                         )}>{a.impacto}</span>
                       </td>
-                      <td className="px-2 py-2.5 text-center text-[#A8A49C]">···</td>
+                      <td className="px-2 py-2.5 text-center">
+                        <button
+                          type="button"
+                          onClick={() => openReglamento(munId)}
+                          title="Abrir comparativa vigente vs. propuesto"
+                          className="text-[10px] font-medium text-[#3B6D11] hover:text-[#2D5A0D] px-2 py-0.5 rounded hover:bg-[#EAF3DE] transition-colors"
+                        >
+                          Ver
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -814,14 +856,15 @@ export function MunicipalContextStack({ block, moduleAnchor }: { block?: Sociode
             </div>
           </div>
 
-          {block && (
-            <SocialDemographicContextPanel block={block} moduleAnchor={moduleAnchor ?? 'municipal_context'} />
-          )}
+          <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 text-[12px] text-[#6B6760]">
+            <p className="font-medium text-[#1C1B18] mb-1">Contexto social</p>
+            <p>El diagnóstico demográfico y la encuesta ciudadana viven en los módulos M02, M02B y M02C del rubro Social — no se duplican aquí.</p>
+          </div>
         </div>
       )}
 
       {/* ── Bottom action bar ─────────────────────────────────────────────────── */}
-      <ModuleBottomBar onProfundizar={() => setTab('cobertura')} />
+      {!view && <ModuleBottomBar onProfundizar={() => setTabInternal('cobertura')} />}
 
     </div>
   )

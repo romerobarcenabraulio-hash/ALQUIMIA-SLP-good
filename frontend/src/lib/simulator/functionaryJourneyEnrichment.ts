@@ -82,6 +82,17 @@ export const SOURCE_TRACEABILITY_MODULE: DecisionModule = {
  * después de `municipal_context` para el recorrido de funcionario.
  * Integra los 16 componentes Social* del sistema ALQUIMIA.
  */
+/** Módulo de Dictamen Técnico y Social — cliente-side, M03B. */
+export const DICTAMEN_TECNICO_MODULE: DecisionModule = {
+  module_id: 'dictamen_tecnico',
+  label: 'Dictamen técnico y social de la reforma',
+  audience_mode: 'city_team',
+  decision: 'Fundamentar técnicamente y socialmente cada adendo propuesto antes de llevarlo a Cabildo.',
+  evidence: 'Evidencia de 5 fracciones vs. 3, multas progresivas, condominios primero, registro obligatorio, técnica normativa y benchmarks internacionales.',
+  status: 'ready',
+  next_action: 'Anexar este dictamen al punto de acuerdo de Cabildo junto con los adendos del M03.',
+}
+
 /** Módulo de Costo de la Omisión — contrafactual 10 años, cliente-side, M04. */
 export const COSTO_OMISION_MODULE: DecisionModule = {
   module_id: 'costo_omision',
@@ -160,6 +171,12 @@ export const FUNCTIONARY_MODULE_LABELS: Record<
       'Panel de contexto social, indicadores versionados, diagnóstico legal por municipio y fuentes localizadas.',
     next_action:
       'Revisar alcance geográfico y advertencias antes de citar cifras; validar fuente municipal competente antes de sanciones o documentos oficiales.',
+  },
+  dictamen_tecnico: {
+    label: 'Dictamen técnico y social de la reforma',
+    decision: 'Responder por qué 5 fracciones, por qué multas progresivas, por qué condominios primero — con evidencia citada.',
+    evidence: 'Benchmarks internacionales, economía del material, ciencia del comportamiento, técnica normativa y mapa adendo→justificación.',
+    next_action: 'Anexar al expediente de Cabildo antes de la votación del reglamento reformado.',
   },
   future_goals: {
     label: 'Metas futuras / Gantt-PERT',

@@ -7,7 +7,9 @@ import {
 } from 'recharts'
 import { AlertTriangle, TrendingDown, ChevronDown, DollarSign, Leaf } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { cn } from '@/lib/utils'
+import { MODELO_PARAMS } from '@/lib/constants'
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { cn, fmt } from '@/lib/utils'
 
 // ── Calculation helpers ───────────────────────────────────────────────────────
 // All values derived from simulator inputs — nothing hardcoded.
@@ -21,11 +23,16 @@ const MULTA_PROFEPA_MAX = 15_000_000 // MXN — maximum cumulative
 // Health damage cost per ton of organic waste in open/informal disposal
 // Based on WHO methodology + INSP (Instituto Nacional de Salud Pública) Mexico urban
 const COSTO_SALUD_POR_TON_ORGANICO = 185 // MXN/ton (IRA, vectores, contaminación acuífera)
+// INECC / SEMARNAT — emisiones evitables por tonelada dispuesta sin captura (tCO2e/ton)
+const FACTOR_EMISION_RELLENO = 0.9
+// Precio social del carbono — tier SCE medio (USD/tCO2e) × tipo de cambio
+const PRECIO_SOCIAL_CARBONO_MXN = MODELO_PARAMS.precioCarbonoSCE[1] * MODELO_PARAMS.tipoCambio
 
 function buildContrafactualData(
   rsuDia: number,
   años: number,
-  ingresos_programa: number, // annual revenue the program would generate
+  ingresos_programa: number,
+  co2eEvitadasAnualTon: number,
 ) {
   const results = []
   let costoAcum = 0
@@ -35,21 +42,24 @@ function buildContrafactualData(
   for (let y = 1; y <= años; y++) {
     const inflFactor = Math.pow(1 + INPC_ANNUAL, y - 1)
     const costoDisposicion = tonAnual * COSTO_DISPOSICION_TM * inflFactor
-    const costoSalud = tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO * inflFactor // 52% organic fraction
-    const costoAnual = costoDisposicion + costoSalud
+    const costoSalud = tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO * inflFactor
+    const costoCarbono = tonAnual * FACTOR_EMISION_RELLENO * PRECIO_SOCIAL_CARBONO_MXN * inflFactor
+    const costoAnual = costoDisposicion + costoSalud + costoCarbono
     costoAcum += costoAnual
 
-    // With program: disposición cost drops as capture rate increases
-    const captureRate = Math.min(0.85, 0.15 + y * 0.12) // ramp from 15% to 85%
+    const captureRate = Math.min(0.85, 0.15 + y * 0.12)
+    const tonEvitada = co2eEvitadasAnualTon * captureRate
+    const beneficioCarbono = tonEvitada * PRECIO_SOCIAL_CARBONO_MXN * inflFactor
     const costoConPrograma = tonAnual * (1 - captureRate) * COSTO_DISPOSICION_TM * inflFactor
-    costoPrograma += costoConPrograma + (ingresos_programa * (1 - Math.pow(0.95, y - 1)))
+    costoPrograma += costoConPrograma + (ingresos_programa * (1 - Math.pow(0.95, y - 1))) - beneficioCarbono
 
     results.push({
       año: `A${y}`,
       sinPrograma: Math.round(costoAcum / 1_000_000),
-      conPrograma: Math.round(costoPrograma / 1_000_000),
-      diferencia: Math.round((costoAcum - costoPrograma) / 1_000_000),
+      conPrograma: Math.round(Math.max(0, costoPrograma) / 1_000_000),
+      diferencia: Math.round((costoAcum - Math.max(0, costoPrograma)) / 1_000_000),
       captureRate: Math.round(captureRate * 100),
+      costoCarbonoAnual: Math.round(costoCarbono / 1_000_000),
     })
   }
   return results
@@ -73,10 +83,14 @@ export function CostoOmisionStack() {
   const { resultados, horizonte } = useSimulatorStore()
 
   const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
-  const ingresoAnual = ((resultados?.ingresosBrutos ?? 0) / Math.max(1, 10)) * 0.8 // annual avg, conservative
+  const ingresoAnual = ((resultados?.ingresosBrutos ?? 0) / Math.max(1, 10)) * 0.8
+  const co2eAnual = resultados?.co2eEvitadasAnualTon ?? rsuDia * 365 * 0.35
 
   const años = Math.max(horizonte, 10)
-  const data = useMemo(() => buildContrafactualData(rsuDia, años, ingresoAnual), [rsuDia, años, ingresoAnual])
+  const data = useMemo(
+    () => buildContrafactualData(rsuDia, años, ingresoAnual, co2eAnual),
+    [rsuDia, años, ingresoAnual, co2eAnual],
+  )
 
   const ultimo = data[data.length - 1]!
   const tonAnual = rsuDia * 365
@@ -92,6 +106,7 @@ export function CostoOmisionStack() {
 
   const costoTotal10 = ultimo.sinPrograma
   const costoSalud10 = Math.round((tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO * años) / 1_000_000)
+  const costoCarbono10 = Math.round((tonAnual * FACTOR_EMISION_RELLENO * PRECIO_SOCIAL_CARBONO_MXN * años) / 1_000_000)
   const pxnM = (n: number) => `$${n}M MXN`
 
   return (
@@ -113,18 +128,18 @@ export function CostoOmisionStack() {
               </div>
             </div>
             <p className="text-[13px] text-[#5A3B3B] leading-relaxed">
-              Esta cifra incluye el costo acumulado de disposición en relleno sanitario y el daño a la salud pública.
-              No incluye multas PROFEPA ni pérdida de elegibilidad para fondos. La brecha crece cada año por inflación y por la saturación progresiva del relleno.
+              Esta cifra incluye disposición en relleno, daño a la salud pública y costo social del carbono
+              ({fmt.mxn(PRECIO_SOCIAL_CARBONO_MXN)}/tCO₂e, tier SCE). No incluye multas PROFEPA ni pérdida de elegibilidad para fondos.
             </p>
           </div>
 
           {/* KPI cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              { label: `Costo acumulado ${años} años`, value: pxnM(costoTotal10), sub: 'Disposición + daño salud', color: '#C0392B', icon: TrendingDown },
+              { label: `Costo acumulado ${años} años`, value: pxnM(costoTotal10), sub: 'Disposición + salud + carbono', color: '#C0392B', icon: TrendingDown },
+              { label: 'Costo social carbono', value: pxnM(costoCarbono10), sub: `${FACTOR_EMISION_RELLENO} tCO₂e/ton × SCE`, color: '#4A1C7A', icon: Leaf },
               { label: 'Daño a la salud', value: pxnM(costoSalud10), sub: 'IRA, vectores, agua (OPS)', color: '#D4881E', icon: AlertTriangle },
-              { label: 'Saturación del relleno', value: rellenoFechaStr, sub: `En ${rellenoAños} años al ritmo actual`, color: '#8B6B4A', icon: DollarSign },
-              { label: 'Brecha vs. con programa', value: pxnM(ultimo.diferencia), sub: `Diferencia acumulada año ${años}`, color: '#3B6D11', icon: Leaf },
+              { label: 'Brecha vs. con programa', value: pxnM(ultimo.diferencia), sub: `Diferencia acumulada año ${años}`, color: '#3B6D11', icon: DollarSign },
             ].map(c => (
               <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
                 <div className="flex items-center gap-1.5 mb-1.5">
@@ -175,6 +190,28 @@ export function CostoOmisionStack() {
                 <Area type="monotone" dataKey="conPrograma" name="Con programa" stroke="#3B6D11" strokeWidth={2.5} fill="url(#gradCon)" />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+
+          {/* Benefits waterfall */}
+          <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] px-6 py-5">
+            <p className="text-[12px] font-semibold text-[#1A4200] mb-3">Externalidades positivas con programa (waterfall)</p>
+            <div className="space-y-2">
+              {[
+                { label: 'Ingresos por valorización', value: fmt.mxn(ingresoAnual), color: '#3B6D11' },
+                { label: 'CO₂e evitado (valor SCE)', value: fmt.mxn(co2eAnual * PRECIO_SOCIAL_CARBONO_MXN), color: '#4A1C7A' },
+                { label: 'Empleos directos', value: resultados?.empleosTotalesDirectos ? `${resultados.empleosTotalesDirectos} plazas` : '—', color: '#1A5FA8' },
+                { label: 'Vida útil relleno extendida', value: `+${Math.round(rellenoAños * 0.25)} años est.`, color: '#8B6B4A' },
+              ].map(b => (
+                <div key={b.label} className="flex items-center justify-between rounded-[8px] bg-white/70 border border-[#C9DDB1] px-3 py-2">
+                  <span className="text-[11px] text-[#4A4740]">{b.label}</span>
+                  <span className="text-[11px] font-bold font-mono" style={{ color: b.color }}>{b.value}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-[9px] text-[#6B6760] mt-3 flex items-center gap-1">
+              <ProvenanceBadge tipo="estimado" confianza={0.65} fuente="INECC + MODELO_PARAMS.precioCarbonoSCE" />
+              <span>Saturación relleno estimada: {rellenoFechaStr}</span>
+            </p>
           </div>
 
           {/* Risk items */}

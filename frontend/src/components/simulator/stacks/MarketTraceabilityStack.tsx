@@ -1151,9 +1151,11 @@ function Page3() {
 
 // ── Root component ────────────────────────────────────────────────────────────
 
-export function MarketTraceabilityStack() {
+export function MarketTraceabilityStack({ pageOnly }: { pageOnly?: 1 | 2 | 3 } = {}) {
   const { resultados, horizonte, presetTrayectoria, seleccionMunicipioCatalog } = useSimulatorStore()
-  const [page, setPage] = useState(1)
+  const [pageInternal, setPageInternal] = useState<1 | 2 | 3>(pageOnly ?? 2)
+  const page = pageOnly ?? pageInternal
+  const setPage = (p: number) => setPageInternal(p as 1 | 2 | 3)
 
   const trayectoria = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria ?? 'Moderado'
   const municipio   = seleccionMunicipioCatalog?.nombre ?? 'San Luis Potosí'
@@ -1184,7 +1186,7 @@ export function MarketTraceabilityStack() {
 
   return (
     <div className="pb-4">
-      {/* Tabs */}
+      {!pageOnly && (
       <div className="flex flex-wrap gap-1.5 mb-6">
         {PAGE_TABS.map((label, i) => {
           const p = i + 1
@@ -1201,6 +1203,7 @@ export function MarketTraceabilityStack() {
           )
         })}
       </div>
+      )}
 
       {/* 2-col layout */}
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
@@ -1216,7 +1219,7 @@ export function MarketTraceabilityStack() {
           {page === 1 && <Page1 prob={prob} />}
           {page === 2 && <Page2 ingresoAnual={ingresoAnual} />}
           {page === 3 && <Page3 />}
-          <PageNavFooter page={page} setPage={setPage} />
+          {!pageOnly && <PageNavFooter page={page} setPage={setPage} />}
         </div>
         <RightRail page={page} />
       </div>

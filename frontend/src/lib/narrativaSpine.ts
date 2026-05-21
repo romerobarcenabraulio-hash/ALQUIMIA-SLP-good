@@ -4,264 +4,299 @@
  * Generates transition narratives between simulator modules.
  */
 import type { ResultadosCalculados } from '@/types'
+import { FUNCTIONARY_MODULE_ORDER, resolveModuleId } from '@/lib/chapterConfig'
+import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 
-export type ModuloId =
-  | 'guia_circularidad'
-  | 'city_baseline'
-  | 'social_study'
-  | 'municipal_context'
-  | 'costo_omision'
-  | 'future_goals'
-  | 'infrastructure_operations'
-  | 'organigrama_programa'
-  | 'logistica_operativa'
-  | 'costos_programa'
-  | 'market_traceability'
-  | 'esquema_concesion'
-  | 'scenarios_export'
-  | 'arbol_financiamiento'
-  | 'risk_trends'
-  | 'expediente_cabildo'
-  | 'inspeccion_predios'
-  | 'monitoreo_real'
-  | 'doble_materialidad'
-  | 'source_traceability'
+export type ModuloId = string
 
 export interface TransicionNarrativa {
-  /** Short context label, e.g. "Siguiente análisis" */
   kicker: string
-  /** Title of the next module */
   title: string
-  /** 2-3 sentence narrative bridge with interpolated data */
   summary: string
   nextModuloId: ModuloId
 }
 
-// ── Formatting helpers (no React dependency) ──────────────────────────────────
+const JOURNEY_ORDER: string[] = ['guia_circularidad', ...FUNCTIONARY_MODULE_ORDER]
 
 const mxn = new Intl.NumberFormat('es-MX', {
   style: 'currency',
   currency: 'MXN',
   maximumFractionDigits: 0,
 })
-
 const num = new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 })
 const pct = (v: number) => `${num.format(v)}%`
 const money = (v: number) => mxn.format(v)
 const tons = (v: number) => `${num.format(v)} t`
 
-// ── Transition map ────────────────────────────────────────────────────────────
+type TransitionDraft = Omit<TransicionNarrativa, 'nextModuloId'>
 
-/**
- * Generates a transition narrative from one module to the next.
- *
- * @param origen         - The ID of the current (source) module
- * @param resultados     - Calculated simulator results, or null if unavailable
- * @param municipioLabel - Display name for the municipality
- * @returns A `TransicionNarrativa` object, or `null` if no transition is defined for this origin
- */
+function nextInJourney(canonical: string): string | null {
+  const idx = JOURNEY_ORDER.indexOf(canonical)
+  if (idx < 0 || idx >= JOURNEY_ORDER.length - 1) return null
+  return JOURNEY_ORDER[idx + 1] ?? null
+}
+
+function labelFor(id: string): string {
+  return CLIENT_FUNCTIONARY_MODULES[id]?.label ?? id
+}
+
+function fallbackTransition(origen: string, destino: string, municipioLabel: string): TransitionDraft {
+  const dest = CLIENT_FUNCTIONARY_MODULES[destino]
+  return {
+    kicker: 'Siguiente análisis',
+    title: dest?.label ?? labelFor(destino),
+    summary: dest?.decision
+      ? `${labelFor(origen)} cierra un bloque del diagnóstico. ${dest.decision} — el paso que sigue en ${municipioLabel}.`
+      : `Continúa el recorrido consultivo hacia ${labelFor(destino)}.`,
+  }
+}
+
+function buildRichTransition(
+  origen: string,
+  resultados: ResultadosCalculados | null,
+  municipioLabel: string,
+): TransitionDraft | null {
+  const nextId = nextInJourney(origen)
+  if (!nextId) return null
+
+  switch (origen) {
+    case 'guia_circularidad':
+      return {
+        kicker: 'La guía orienta el primer análisis',
+        title: labelFor(nextId),
+        summary: `Ahora que entiendes la estructura de ALQUIMIA, el primer paso técnico es cuantificar el problema: cuántas toneladas genera ${municipioLabel}, de qué tipo, y cuánto se recupera hoy.`,
+      }
+    case 'city_baseline': {
+      const rsu = resultados?.rsuTotalTonDia ?? null
+      const rsuStr = rsu !== null ? `${tons(rsu)}/día de RSU` : 'una cantidad significativa de RSU diaria'
+      return {
+        kicker: 'La línea base cuantifica el daño ambiental',
+        title: labelFor(nextId),
+        summary: `${municipioLabel} genera ${rsuStr}. El siguiente paso traduce esa carga en PM2.5, biogás, relleno y daño sanitario evitable.`,
+      }
+    }
+    case 'impacto_ambiental':
+      return {
+        kicker: 'El impacto ambiental exige lectura social',
+        title: labelFor(nextId),
+        summary: `Con el daño ambiental cuantificado, el programa debe entender quién vive en ${municipioLabel}, cuánto rezago social existe y qué tan preparada está la ciudad para separar.`,
+      }
+    case 'social_diagnostico':
+      return {
+        kicker: 'El diagnóstico social pide validación de campo',
+        title: labelFor(nextId),
+        summary: 'La brecha demográfica se cierra con datos reales de disposición ciudadana: IPC por tipo de vivienda y preparación para separar.',
+      }
+    case 'social_encuesta':
+      return {
+        kicker: 'La ciudadanía define la política',
+        title: labelFor(nextId),
+        summary: 'Con la encuesta interpretada, el siguiente paso es mapear aliados, bloqueadores y ventanas políticas que habilitan o frenan la reforma.',
+      }
+    case 'mapeo_actores':
+      return {
+        kicker: 'Los actores exigen mapeo organizacional',
+        title: labelFor(nextId),
+        summary: 'Con el mapa político claro, hay que documentar humildemente cómo opera hoy el gobierno y el concesionario — sin asumir que ya lo conocemos.',
+      }
+    case 'organigrama_diagnostico':
+      return {
+        kicker: 'La organización actual informa la capacidad institucional',
+        title: labelFor(nextId),
+        summary: 'Con la cadena de contacto y organigrama as-is levantados, el siguiente paso es medir capacidad real: presupuesto, plantilla y bloqueos jurídicos.',
+      }
+    case 'capacidad_institucional':
+      return {
+        kicker: 'La capacidad institucional define el marco legal',
+        title: labelFor(nextId),
+        summary: 'Antes de comprometer esquemas de concesión, conviene verificar qué puede ejecutarse con el reglamento vigente y qué requiere reforma.',
+      }
+    case 'marco_legal':
+      return {
+        kicker: 'El marco legal exige cobertura territorial',
+        title: labelFor(nextId),
+        summary: `Los adendos propuestos deben leerse junto con la cobertura normativa de ${municipioLabel} frente a municipios vecinos de la ZM.`,
+      }
+    case 'cobertura_territorial':
+      return {
+        kicker: 'La cobertura territorial exige dictamen',
+        title: labelFor(nextId),
+        summary: 'Los vacíos metropolitanos deben sustentarse con evidencia técnica y social antes de Cabildo: fracciones, multas graduadas y secuencia de despliegue.',
+      }
+    case 'dictamen_tecnico': {
+      const horizonte = resultados?.serieAnual?.length ?? null
+      const horizStr = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
+      return {
+        kicker: 'La evidencia cuantifica la omisión',
+        title: labelFor(nextId),
+        summary: `Con la reforma fundamentada, el siguiente paso es cuantificar el pasivo de no implementar en ${horizStr}: disposición, daño sanitario y elegibilidad verde.`,
+      }
+    }
+    case 'costo_omision':
+      return {
+        kicker: 'El costo de la omisión habilita la evaluación fiscal-social',
+        title: labelFor(nextId),
+        summary: 'El contrafactual abre la conversación de presupuesto; ahora hay que traducir empleos, pobreza y deuda estatal en beneficios fiscales trazables.',
+      }
+    case 'evaluacion_socioeconomica': {
+      const horizonte = resultados?.serieAnual?.length ?? null
+      const horizStr = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
+      return {
+        kicker: 'La evaluación socioeconómica cierra el diagnóstico',
+        title: labelFor(nextId),
+        summary: `Con el argumento fiscal-social armado, la teoría de cambio muestra cómo inputs, actividades y outcomes convergen en ${horizStr}.`,
+      }
+    }
+    case 'teoria_cambio': {
+      const h = resultados?.serieAnual?.length ?? null
+      const horizStr = h !== null ? String(h) : '—'
+      const lastAño = resultados?.serieAnual?.[resultados.serieAnual.length - 1]
+      const pctCap = lastAño ? pct(lastAño.pctCaptura) : 'la meta definida'
+      return {
+        kicker: 'La teoría de cambio abre la planificación',
+        title: labelFor(nextId),
+        summary: `Una tasa de captura objetivo de ${pctCap} al año ${horizStr} requiere metas, Gantt y responsables explícitos antes de dimensionar infraestructura.`,
+      }
+    }
+    case 'plan_maestro':
+      return {
+        kicker: 'Las metas requieren ruta crítica',
+        title: labelFor(nextId),
+        summary: 'El calendario maestro debe traducirse en dependencias PERT-RACI y semanas críticas antes de secuenciar oleadas territoriales.',
+      }
+    case 'ruta_critica':
+      return {
+        kicker: 'La ruta crítica habilita oleadas',
+        title: labelFor(nextId),
+        summary: 'Con hitos y responsables definidos, el despliegue territorial puede secuenciarse por colonias y fases sin sobrecargar logística.',
+      }
+    case 'oleadas_territoriales': {
+      const nCAsProxy = resultados?.ocupacionCAs ? Math.ceil(resultados.ocupacionCAs / 100) : null
+      const nCAsStr = nCAsProxy !== null ? `${nCAsProxy} centro(s)` : 'los centros necesarios'
+      return {
+        kicker: 'Las oleadas requieren infraestructura',
+        title: labelFor(nextId),
+        summary: `El mapa de avance exige al menos ${nCAsStr} de acopio con capacidad suficiente. El mix P/M/G define CAPEX y TIR.`,
+      }
+    }
+    case 'infraestructura':
+      return {
+        kicker: 'La infraestructura requiere gobierno operativo',
+        title: labelFor(nextId),
+        summary: 'Con los centros dimensionados, el siguiente paso es definir quién opera, quién responde y cuánto cuesta el personal.',
+      }
+    case 'organigrama': {
+      const hog = resultados?.vivActivas ? Math.round(resultados.vivActivas * 0.05) : null
+      const hogStr = hog !== null ? `${num.format(hog)} hogares` : 'un grupo piloto de hogares'
+      return {
+        kicker: 'El organigrama habilita la logística',
+        title: labelFor(nextId),
+        summary: `Con roles y plantilla definidos, el diseño de rutas y el piloto en ${hogStr} validan la operación antes de escalar.`,
+      }
+    }
+    case 'logistica':
+      return {
+        kicker: 'La logística exige educación previa',
+        title: labelFor(nextId),
+        summary: 'Las rutas y el piloto solo funcionan si la ciudadanía recibe capacitación y comunicación antes del arranque.',
+      }
+    case 'plan_educativo':
+      return {
+        kicker: 'La educación tiene costo explícito',
+        title: labelFor(nextId),
+        summary: 'Con la ventana educativa alineada a la oleada 1, el siguiente paso es cuantificar CAPEX y OPEX del programa completo.',
+      }
+    case 'costos_programa':
+      return {
+        kicker: 'Los costos necesitan compradores',
+        title: labelFor(nextId),
+        summary: 'Con la inversión cuantificada, hay que verificar demanda real para cada fracción de material antes del esquema de concesión.',
+      }
+    case 'mercado_materiales':
+      return {
+        kicker: 'El mercado informa el modelo de negocio',
+        title: labelFor(nextId),
+        summary: 'Con compradores y precios verificados, el modelo puede estructurarse: quién opera, quién cobra y cómo se distribuyen los riesgos.',
+      }
+    case 'esquema_concesion': {
+      const tirVal = resultados?.tir ?? null
+      const vpnVal = resultados?.vpn ?? null
+      const h = resultados?.serieAnual?.length ?? null
+      const tirStr = tirVal !== null ? pct(tirVal) : '—'
+      const vpnStr = vpnVal !== null ? money(vpnVal) : '—'
+      const horizStr = h !== null ? `${h} años` : 'el horizonte definido'
+      return {
+        kicker: 'El esquema define el camino de capital',
+        title: labelFor(nextId),
+        summary: `Con el operador definido, conviene mapear los seis caminos de financiamiento antes de cerrar TIR ${tirStr} y VPN ${vpnStr} en ${horizStr}.`,
+      }
+    }
+    case 'arbol_financiamiento':
+      return {
+        kicker: 'El financiamiento exige escenarios',
+        title: labelFor(nextId),
+        summary: 'Con el vehículo de capital preseleccionado, TIR, VPN, Monte Carlo y tornado muestran el rango de resultados bajo distintos supuestos.',
+      }
+    case 'escenarios_financieros':
+      return {
+        kicker: 'Los escenarios tienen riesgos',
+        title: labelFor(nextId),
+        summary: 'El retorno nominal no basta: hay que cuantificar cuánto puede deteriorarse el escenario base por mercado, política u operación.',
+      }
+    case 'riesgos_modelo':
+      return {
+        kicker: 'Los riesgos requieren expediente de cabildo',
+        title: labelFor(nextId),
+        summary: 'Con el modelo validado y los riesgos identificados, el expediente consolida gobernanza, checklist y documentos exportables.',
+      }
+    case 'expediente_cabildo':
+      return {
+        kicker: 'Lo aprobado requiere cumplimiento',
+        title: labelFor(nextId),
+        summary: 'El factor de riesgo más controlable es el cumplimiento ciudadano. La estrategia de inspección define el mecanismo sostenible.',
+      }
+    case 'inspeccion':
+      return {
+        kicker: 'Lo ejecutado se mide',
+        title: labelFor(nextId),
+        summary: 'Con el programa en operación, hay que comparar lo proyectado con lo que el campo mide para corregir desviaciones tempranas.',
+      }
+    case 'monitoreo_operativo': {
+      const co2 = resultados?.co2eEvitadasAnualTon ?? null
+      const co2Str = co2 !== null ? `${tons(co2)} CO₂e/año` : 'toneladas significativas de CO₂e/año'
+      return {
+        kicker: 'Lo medido se reporta',
+        title: labelFor(nextId),
+        summary: `El programa evita ${co2Str}. El monitoreo genera los datos que financiadores verdes requieren en formato GRI 306 y ESRS E5.`,
+      }
+    }
+    case 'doble_materialidad':
+      return {
+        kicker: 'El reporte descansa en fuentes',
+        title: labelFor(nextId),
+        summary: 'Cada número del análisis — desde RSU hasta TIR — tiene fuente verificable en la matriz de trazabilidad.',
+      }
+    case 'trazabilidad':
+      return null
+    default:
+      return null
+  }
+}
+
 export function generarTransicion(
   origen: ModuloId,
   resultados: ResultadosCalculados | null,
   municipioLabel: string,
 ): TransicionNarrativa | null {
-  switch (origen) {
+  const canonical = resolveModuleId(origen)
+  const nextId = nextInJourney(canonical)
+  if (!nextId) return null
 
-    case 'guia_circularidad':
-      return {
-        kicker:      'La guía orienta el primer análisis',
-        title:       'Línea base territorial y RSU',
-        summary:     `Ahora que entiendes la estructura de ALQUIMIA, el primer paso técnico es cuantificar el problema: cuántas toneladas genera ${municipioLabel}, de qué tipo, y cuánto se recupera hoy.`,
-        nextModuloId: 'city_baseline',
-      }
+  const rich = buildRichTransition(canonical, resultados, municipioLabel)
+  const draft = rich ?? fallbackTransition(canonical, nextId, municipioLabel)
 
-    case 'city_baseline': {
-      const rsu    = resultados?.rsuTotalTonDia ?? null
-      const rsuStr = rsu !== null ? `${tons(rsu)}/día de RSU` : 'una cantidad significativa de RSU diaria'
-      return {
-        kicker:      'El diagnóstico revela la estructura social',
-        title:       'Diagnóstico social y aceptación ciudadana',
-        summary:     `${municipioLabel} genera ${rsuStr}. Antes de diseñar el programa, es clave entender quién vive en el municipio, cuánto rezago social existe y cuánta disposición hay a separar — datos que determinan el ritmo de adopción real.`,
-        nextModuloId: 'social_study',
-      }
-    }
-
-    case 'social_study': {
-      return {
-        kicker:      'La sociedad informa el reglamento',
-        title:       'Marco legal y brechas normativas',
-        summary:     `Con el diagnóstico social completo, el siguiente paso es verificar qué puede ejecutarse hoy con el reglamento vigente y qué requiere reforma. El contexto legal municipal es el tablero de reglas del juego.`,
-        nextModuloId: 'municipal_context',
-      }
-    }
-
-    case 'municipal_context': {
-      const horizonte = resultados?.serieAnual?.length ?? null
-      const horizStr  = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
-      return {
-        kicker:      'El marco legal cuantifica la omisión',
-        title:       'Costo de no actuar — contrafactual 10 años',
-        summary:     `Antes de fijar metas, conviene cuantificar el pasivo de no implementar: costo acumulado de disposición, daño sanitario y pérdida de elegibilidad para financiamiento verde en ${horizStr}.`,
-        nextModuloId: 'costo_omision',
-      }
-    }
-
-    case 'costo_omision': {
-      const horizonte = resultados?.serieAnual?.length ?? null
-      const horizStr  = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
-      return {
-        kicker:      'El costo de la omisión habilita las metas',
-        title:       'Metas y trayectorias de captura',
-        summary:     `Con el diagnóstico completo — incluido el costo de no decidir — es posible fijar metas de captura viables. El horizonte de ${horizStr} define la velocidad de escala del programa.`,
-        nextModuloId: 'future_goals',
-      }
-    }
-
-    case 'future_goals': {
-      const h = resultados?.serieAnual?.length ?? null
-      const horizStr = h !== null ? String(h) : '—'
-      const nCAsProxy = resultados?.ocupacionCAs
-        ? Math.ceil(resultados.ocupacionCAs / 100)
-        : null
-      const nCAsStr = nCAsProxy !== null ? `${nCAsProxy} centro(s)` : 'los centros necesarios'
-      const lastAño = resultados?.serieAnual?.[resultados.serieAnual.length - 1]
-      const pctCap  = lastAño ? pct(lastAño.pctCaptura) : 'la meta definida'
-      return {
-        kicker:      'Las metas requieren infraestructura',
-        title:       'Infraestructura y centros de acopio',
-        summary:     `Una tasa de captura objetivo de ${pctCap} al año ${horizStr} requiere al menos ${nCAsStr} de acopio con capacidad suficiente. La selección del mix (P/M/G) afecta directamente el CAPEX inicial y la TIR del programa.`,
-        nextModuloId: 'infrastructure_operations',
-      }
-    }
-
-    case 'infrastructure_operations': {
-      return {
-        kicker:      'La infraestructura requiere gobierno operativo',
-        title:       'Organigrama y estructura del programa',
-        summary:     `Con los centros de acopio dimensionados, el siguiente paso es definir quién opera, quién responde y cuánto cuesta el personal. Sin organigrama claro, el cabildo no puede aprobar nómina ni responsables.`,
-        nextModuloId: 'organigrama_programa',
-      }
-    }
-
-    case 'organigrama_programa': {
-      const h = resultados?.serieAnual?.length ?? null
-      const horizStr = h !== null ? String(h) : '—'
-      const hog = resultados?.vivActivas
-        ? Math.round(resultados.vivActivas * 0.05)
-        : null
-      const hogStr = hog !== null ? `${num.format(hog)} hogares` : 'un grupo piloto de hogares'
-      return {
-        kicker:      'El organigrama habilita la logística',
-        title:       'Logística operativa y diseño de piloto',
-        summary:     `Con roles y plantilla definidos, el diseño de rutas y el piloto en ${hogStr} validan la operación antes de escalar al año ${horizStr}.`,
-        nextModuloId: 'logistica_operativa',
-      }
-    }
-
-    case 'logistica_operativa':
-      return {
-        kicker:      'Las rutas tienen un costo',
-        title:       'Costos del programa — CAPEX y OPEX',
-        summary:     `Con el diseño logístico definido, el siguiente paso es cuantificar exactamente cuánto cuesta construir y operar el sistema: equipos, personal, renta, energía y contingencia. Sin este número, no hay presupuesto que aprobar.`,
-        nextModuloId: 'costos_programa',
-      }
-
-    case 'costos_programa':
-      return {
-        kicker:      'Los costos necesitan compradores',
-        title:       'Mercado y trazabilidad de materiales',
-        summary:     `Con la inversión cuantificada, el siguiente paso es verificar que existe demanda real para cada fracción de material. Sin mercado, el OPEX no se convierte en ingreso — y el programa no es sostenible.`,
-        nextModuloId: 'market_traceability',
-      }
-
-    case 'market_traceability':
-      return {
-        kicker:      'El mercado informa el modelo de negocio',
-        title:       'Esquema de concesión y árbol de decisión',
-        summary:     `Con compradores identificados y precios verificados, el modelo de negocio puede estructurarse: quién opera, quién cobra y cómo se distribuyen los riesgos. Esa decisión es la pregunta real de la sesión de cabildo.`,
-        nextModuloId: 'esquema_concesion',
-      }
-
-    case 'esquema_concesion': {
-      const tirVal   = resultados?.tir   ?? null
-      const vpnVal   = resultados?.vpn   ?? null
-      const h        = resultados?.serieAnual?.length ?? null
-      const tirStr   = tirVal  !== null ? pct(tirVal)   : '—'
-      const vpnStr   = vpnVal  !== null ? money(vpnVal) : '—'
-      const horizStr = h !== null ? `${h} años` : 'el horizonte definido'
-      return {
-        kicker:      'El esquema define el retorno',
-        title:       'Escenarios financieros y exportación',
-        summary:     `Con el esquema de concesión seleccionado, el simulador proyecta una TIR de ${tirStr} y un VPN de ${vpnStr} en el horizonte de ${horizStr}. El análisis de sensibilidad muestra el rango de resultados bajo distintos supuestos.`,
-        nextModuloId: 'scenarios_export',
-      }
-    }
-
-    case 'scenarios_export':
-      return {
-        kicker:      'El retorno define el camino de capital',
-        title:       'Árbol de financiamiento — 6 caminos',
-        summary:     `Con TIR y VPN calculados, el siguiente paso es identificar cómo se financia el CAPEX: municipal directo, concesión, APP, fideicomiso o crédito verde. La estructura de capital determina quién asume el riesgo.`,
-        nextModuloId: 'arbol_financiamiento',
-      }
-
-    case 'arbol_financiamiento':
-      return {
-        kicker:      'El financiamiento tiene riesgos',
-        title:       'Análisis de riesgos del modelo completo',
-        summary:     `Con el camino de capital seleccionado, el análisis de riesgos cuantifica cuánto puede deteriorarse el escenario base — por volatilidad de precios, rotación política o bajo cumplimiento ciudadano.`,
-        nextModuloId: 'risk_trends',
-      }
-
-    case 'risk_trends': {
-      return {
-        kicker:      'Los riesgos requieren expediente de cabildo',
-        title:       'Expediente completo para Cabildo',
-        summary:     `Con el modelo validado y los riesgos identificados, el expediente consolida gobernanza, checklist y documentos exportables para la sesión de cabildo.`,
-        nextModuloId: 'expediente_cabildo',
-      }
-    }
-
-    case 'expediente_cabildo': {
-      return {
-        kicker:      'Lo aprobado requiere cumplimiento',
-        title:       'Inspección de predios y estrategia operativa',
-        summary:     `El factor de riesgo más controlable es el cumplimiento ciudadano. La estrategia de inspección define el mecanismo que hace sostenible el programa en el tiempo.`,
-        nextModuloId: 'inspeccion_predios',
-      }
-    }
-
-    case 'inspeccion_predios':
-      return {
-        kicker:      'Lo ejecutado se mide',
-        title:       'Monitoreo — proyectado vs. real',
-        summary:     `Con el programa en operación, el siguiente paso es comparar lo que el simulador proyectó con lo que el campo mide. Las desviaciones tempranas son oportunidades de corrección — no evidencia de fracaso.`,
-        nextModuloId: 'monitoreo_real',
-      }
-
-    case 'monitoreo_real': {
-      const co2    = resultados?.co2eEvitadasAnualTon ?? null
-      const co2Str = co2 !== null ? `${tons(co2)} CO₂e/año` : 'toneladas significativas de CO₂e/año'
-      return {
-        kicker:      'Lo medido se reporta',
-        title:       'Doble materialidad y reporte ESG',
-        summary:     `El programa evita ${co2Str}. El monitoreo genera los datos que BID, BANOBRAS y fondos climáticos requieren en formato GRI 306 y ESRS E5 para evaluar solicitudes de crédito verde.`,
-        nextModuloId: 'doble_materialidad',
-      }
-    }
-
-    case 'doble_materialidad':
-      return {
-        kicker:      'El reporte descansa en fuentes',
-        title:       'Bibliografía y trazabilidad de cálculos',
-        summary:     `Cada número del análisis — desde la generación RSU hasta la TIR — tiene una fuente verificable. La matriz de trazabilidad permite que el equipo jurídico y técnico del municipio defienda cualquier cifra ante cabildo o auditoría.`,
-        nextModuloId: 'source_traceability',
-      }
-
-    case 'source_traceability':
-      return null
-
-    default:
-      return null
+  return {
+    ...draft,
+    nextModuloId: nextId,
   }
 }

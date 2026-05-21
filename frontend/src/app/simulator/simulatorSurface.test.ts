@@ -2,46 +2,46 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
+import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
 
 const readFrontend = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('simulator functionary surface', () => {
-  it('mantiene el orden funcionario con mercado/causalidad, bibliografia y calculos al cierre', () => {
+  it('expone 32 módulos funcionario (guía + 31 capítulos) con trazabilidad al cierre', () => {
     expect(AUDIENCE_MODULES.functionary).toEqual([
-      'city_baseline',
-      'municipal_context',
-      'social_study',
-      'future_goals',
-      'infrastructure_operations',
-      'market_traceability',
-      'inspeccion_predios',
-      'scenarios_export',
-      'source_traceability',
+      'guia_circularidad',
+      ...FUNCTIONARY_MODULE_ORDER,
     ])
+    expect(AUDIENCE_MODULES.functionary).toContain('organigrama_diagnostico')
+    expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('trazabilidad')
   })
 
-  it('muestra Gantt-PERT real en metas futuras y finanzas avanzadas en escenarios', () => {
+  it('renderiza stacks dedicados para planificación, fiscal-social y escenarios', () => {
     const registrySource = readFrontend('src/app/simulator/renderDecisionModule.tsx')
 
-    expect(registrySource).toContain("case 'future_goals':")
-    expect(registrySource).toMatch(/case 'future_goals':[\s\S]*<FutureGoalsModule/)
+    expect(registrySource).toContain("case 'plan_maestro':")
+    expect(registrySource).toMatch(/case 'plan_maestro':[\s\S]*<FutureGoalsModule/)
     expect(registrySource).toContain('const FutureGoalsModule = dynamic(')
+    expect(registrySource).toContain("case 'organigrama_diagnostico':")
+    expect(registrySource).toContain('<OrganigramaDiagnosticoStack />')
+    expect(registrySource).toContain("case 'evaluacion_socioeconomica':")
+    expect(registrySource).toContain('<EvaluacionSocioeconomicaStack />')
+    expect(registrySource).toMatch(/case 'escenarios_financieros':[\s\S]*<ScenariosExportStack/)
+    expect(registrySource).toContain("case 'mercado_materiales':")
+    expect(registrySource).toMatch(/case 'mercado_materiales':[\s\S]*pageOnly=\{2\}/)
+    expect(registrySource).toContain("case 'riesgos_modelo':")
+    expect(registrySource).toMatch(/case 'riesgos_modelo':[\s\S]*pageOnly=\{1\}/)
+    expect(registrySource).toContain("resolveModuleId")
+
     const futureGoals = readFrontend('src/components/simulator/FutureGoalsModule.tsx')
-    expect(futureGoals).toContain('future-goals-arm')
-    expect(futureGoals).toContain('PERT y oleadas')
+    expect(futureGoals).toContain('PERT_NODES')
+    expect(futureGoals).toContain('pageOnly')
     expect(readFrontend('src/components/simulator/ProgresionPlanMunicipalTiempo.tsx')).not.toContain('ResponsiveContainer')
-    expect(registrySource).toMatch(/case 'scenarios_export':[\s\S]*<ScenariosExportStack \/>/)
     expect(readFrontend('src/components/simulator/stacks/ScenariosExportStack.tsx')).toContain(
       '<ImpactoFinanciero />',
     )
-    expect(registrySource).toContain("case 'market_traceability':")
-    // risk_trends está absorbido como tab en MarketTraceabilityStack
-    expect(readFrontend('src/components/simulator/stacks/MarketTraceabilityStack.tsx')).toContain(
-      "import { RiskTrendsPanel }",
-    )
-    expect(readFrontend('src/lib/simulator/functionaryJourneyEnrichment.ts')).toContain(
-      "label: 'Bibliografía y cálculos'",
-    )
+    expect(readFrontend('src/lib/simulator/clientModuleRegistry.ts')).toContain('buildFunctionaryJourney')
+    expect(readFrontend('src/app/simulator/page.tsx')).toContain('buildFunctionaryJourney')
     expect(readFrontend('src/app/simulator/page.tsx')).not.toContain('Trazabilidad de datos')
   })
 

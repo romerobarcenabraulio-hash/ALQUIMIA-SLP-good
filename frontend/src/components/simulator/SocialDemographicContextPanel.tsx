@@ -20,16 +20,18 @@ import { CapacitacionTab } from '@/components/simulator/CapacitacionTab'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 
+export type SocialView = 'diagnostico' | 'encuesta' | 'educacion' | 'impacto'
+
 export type SocialDemographicContextPanelProps = {
   block: SociodemographicDisplayBlock
   moduleAnchor: string
   className?: string
   assumptionsPersistence?: 'local' | 'session'
+  /** Si se define, muestra una sola sección sin tabs (módulo sidebar dedicado). */
+  view?: SocialView
 }
 
-type Tab = 'diagnostico' | 'encuesta' | 'educacion' | 'impacto'
-
-const TABS: { id: Tab; label: string }[] = [
+const TABS: { id: SocialView; label: string }[] = [
   { id: 'diagnostico', label: 'Diagnóstico' },
   { id: 'encuesta',    label: 'Encuesta ciudadana' },
   { id: 'educacion',   label: 'Plan educativo' },
@@ -53,8 +55,10 @@ export function SocialDemographicContextPanel({
   moduleAnchor,
   className,
   assumptionsPersistence = 'local',
+  view,
 }: SocialDemographicContextPanelProps) {
-  const [tabActivo, setTabActivo] = useState<Tab>('diagnostico')
+  const [tabActivoInternal, setTabActivo] = useState<SocialView>('diagnostico')
+  const tabActivo = view ?? tabActivoInternal
   const indicePreparacionCiudadana = useSimulatorStore(s =>
     (s as typeof s & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana ?? null
   )
@@ -108,7 +112,8 @@ export function SocialDemographicContextPanel({
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — ocultos cuando el módulo tiene view fijo */}
+      {!view && (
       <div className="flex gap-1 rounded-[10px] bg-[#F0EDE5] p-1">
         {TABS.map(tab => (
           <button
@@ -126,6 +131,7 @@ export function SocialDemographicContextPanel({
           </button>
         ))}
       </div>
+      )}
 
       {/* Tab: Diagnóstico */}
       {tabActivo === 'diagnostico' && (
@@ -168,7 +174,7 @@ export function SocialDemographicContextPanel({
           >
             <p className="font-medium text-[#1C1B18]">Antes de KPIs o inferencias sociales (Auditoría ALQUIMIA)</p>
             <p className="mt-1" data-testid="social-context-disclaimer-body">{SOCIAL_DEMOGRAPHIC_UI_DISCLAIMER}</p>
-            <details className="mt-3 rounded-[6px] border border-[#E8E4DC] bg-white/90 px-2 py-2 text-[#6B6760]">
+            <details className="mt-3 rounded-[6px] border border-[#E8E4DC] bg-white/90 px-2 py-2 text-[#6B6760]" open>
               <summary className="cursor-pointer select-none text-[11px] font-medium text-[#1C1B18]">
                 Guía de redacción pública y revisión Legal
               </summary>

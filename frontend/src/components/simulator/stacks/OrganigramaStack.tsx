@@ -122,7 +122,7 @@ function raciColor(val: string) {
 }
 
 export function OrganigramaStack() {
-  const { mixCAs, resultados } = useSimulatorStore()
+  const { mixCAs, resultados, zmActiva, municipiosActivos } = useSimulatorStore()
   const [caTipo, setCaTipo] = useState<'P' | 'M' | 'G'>('M')
 
   const ca = CA_CONFIG[caTipo]
@@ -204,6 +204,30 @@ export function OrganigramaStack() {
               </div>
             </div>
           </div>
+
+          {/* Gobernanza metropolitana */}
+          {municipiosActivos.length > 1 && (
+            <div className="rounded-[12px] border border-[#BDD7F5] bg-[#EBF3FB] px-6 py-5">
+              <p className="text-[12px] font-semibold text-[#1A5FA8] mb-1">Gobernanza metropolitana</p>
+              <p className="text-[11px] text-[#4A4740] mb-4 leading-relaxed">
+                ZM {zmActiva}: {municipiosActivos.length} municipios comparten infraestructura. El reparto de costos
+                sigue generación de RSU proporcional; la gobernanza opera vía consejo metropolitano + comité técnico.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                {[
+                  { label: 'Municipios activos', value: String(municipiosActivos.length), sub: 'en el escenario' },
+                  { label: 'CAs compartidos', value: String((mixCAs.P + mixCAs.M + mixCAs.G) > 2 ? 1 : 0), sub: 'infraestructura ZM' },
+                  { label: 'Fórmula reparto', value: 'Por RSU', sub: 'ton/día por municipio' },
+                ].map(c => (
+                  <div key={c.label} className="rounded-[8px] border border-[#BDD7F5] bg-white px-3 py-2.5">
+                    <p className="text-[9px] uppercase text-[#A8A49C]">{c.label}</p>
+                    <p className="text-[16px] font-bold text-[#1A5FA8]">{c.value}</p>
+                    <p className="text-[9px] text-[#6B6760]">{c.sub}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* CA type selector + staff table */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
@@ -391,7 +415,7 @@ export function OrganigramaStack() {
             <p>Aprobar la estructura de personal y el presupuesto de nómina antes de la autorización de inversión en infraestructura. El cabildo requiere saber quién es responsable.</p>
           </RailSection>
           <RailSection title="Módulos relacionados">
-            <p>M06: Cuántos centros se operarán (input para dimensionar plantilla). M09: CAPEX total del programa. M08: Logística que el personal opera.</p>
+            <p>M02D: Organigrama as-is (gobierno y concesionario hoy). M03: Capacidad institucional. M06: Cuántos centros se operarán. M09: CAPEX total del programa.</p>
           </RailSection>
           <RailSection title="Qué verificar aún">
             <ul className="space-y-1">

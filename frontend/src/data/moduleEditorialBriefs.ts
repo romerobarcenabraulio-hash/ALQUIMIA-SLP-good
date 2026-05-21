@@ -210,6 +210,51 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'dictamen_tecnico':
+      return {
+        moduleId,
+        title: 'Por qué esta reforma y no otra',
+        pregunta_guia: '¿Por qué 5 fracciones, multas graduadas y condominios primero — y no alternativas más simples?',
+        subtitulo_catchy: 'El dictamen que convierte propuesta en evidencia — lo que el regidor preguntará en Cabildo',
+        situacion_actual: `${territorio} propone adendos concretos al reglamento; sin dictamen técnico la reforma carece de sustento formal ante Cabildo.`,
+        observacion_alquimia: `${scope} Cada adendo tiene un "por qué" documentado: contaminación del stream, economía del material, proporcionalidad constitucional y precedentes internacionales.`,
+        criterio_decision: 'El síndico y la Dirección de Ecología deben poder defender cada artículo propuesto con al menos una fuente verificable y una objeción anticipada respondida.',
+        que_no_significa: 'No es resolución administrativa, dictamen jurídico vinculante ni pronunciamiento de autoridad competente.',
+        siguiente_accion: 'Anexar al punto de acuerdo de Cabildo junto con los textos de adendo del M03.',
+        fuente_o_evidencia: 'NOM-161, WRAP/ISWA, Kahneman, Lally et al., benchmarks Ljubljana/SF/Bogotá/CDMX, materialPriceResearch.ts.',
+        metodologia_editorial: {
+          como_se_calcula: 'Cada sección vincula un adendo (1–6) con evidencia técnica o social. El delta económico 5 vs. 3 fracciones = volumen capturable × precio por material × (1 − tasa de contaminación) × 365 días.',
+          origen_datos: 'Precios de materialPriceResearch.ts; volúmenes del escenario activo (resultados.volCapturablePorMat); benchmarks de dictamenTecnicoEvidence.ts.',
+          por_que_este_enfoque: 'Un regidor no vota texto legal sin saber por qué 5 fracciones y no 3. El dictamen anticipa objeciones y las responde con fuente — esto es lo que separa consultoría creíble de opinión.',
+          supuesto_critico: 'La calidad del escenario activo. Sin cálculo en M01, el argumento económico queda genérico; con escenario, se personaliza por composición RSU del municipio.',
+        },
+        chart_briefs: [
+          {
+            chart_id: 'dictamen-captura-5v3',
+            chart_label: 'Valor de captura: 5 vs. 3 fracciones',
+            metodologia: {
+              como_se_calcula: 'Compara ingreso anual por material valorizable aplicando tasa de contaminación del 12% (5 fracciones) vs. 25% (3 fracciones) sobre volCapturablePorMat × precio/kg × 365.',
+              origen_datos: 'materialPriceResearch.ts + resultados del simulador activo.',
+              por_que_este_enfoque: 'Traduce la decisión normativa en pesos — el lenguaje que entiende el tesorero y el regidor de hacienda.',
+              supuesto_critico: 'Precios de mercado documentales, no cotizaciones en vivo. Requieren validación local antes de presupuesto.',
+            },
+            referencias: [
+              { clave: '[WRAP 2019]', texto: 'WRAP. Contamination in Recyclables Collections.', tipo: 'academico' },
+            ],
+          },
+          {
+            chart_id: 'dictamen-benchmarks',
+            chart_label: 'Benchmarks internacionales',
+            metodologia: {
+              como_se_calcula: 'Tabla comparativa de ciudades con esquema de separación, tasa de desvío documentada y nota de cumplimiento.',
+              origen_datos: 'SNAGA, SF Environment, UAESP Bogotá, SEDEMA CDMX, gobiernos locales.',
+              por_que_este_enfoque: 'Demuestra que la propuesta no se inventó en vacío — adapta lecciones de ciudades comparables.',
+              supuesto_critico: 'Las tasas de desvío incluyen definiciones distintas de "recuperación". No son comparables 1:1 sin ajuste metodológico.',
+            },
+          },
+        ],
+      }
+
     case 'future_goals':
       return {
         moduleId,

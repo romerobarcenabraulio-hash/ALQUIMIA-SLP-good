@@ -7,6 +7,7 @@ import { fmt } from '@/lib/utils'
 import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
 import { fetchAgoraPlanZip, triggerBrowserDownload } from '@/lib/api'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { ExportStatusPanel } from '@/components/simulator/ExportStatusPanel'
 
 export function ExportarSection() {
   const resultados = useSimulatorStore(s => s.resultados)
@@ -62,6 +63,8 @@ export function ExportarSection() {
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S20 — Exportar</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Paquete de exportación para revisión</h2>
       <ScopeAnclaKicker className="mb-4" />
+
+      <ExportStatusPanel />
 
       <div className="mb-4 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-4 py-3 text-[11px] leading-relaxed text-[#6B6760]">
         {EXPORT_SIMULATION_FOOTER_LINE}

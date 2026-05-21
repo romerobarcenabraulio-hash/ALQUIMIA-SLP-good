@@ -278,6 +278,7 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
   }, [añoSlider, pctCapturaPorAño, mapReady, heatmap])
 
   const capturaAñoActual = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
+  const token = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '').trim()
 
   if (loadingMap) {
     return (
@@ -297,6 +298,21 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
         <div>
           <p className="text-[12px] font-semibold text-amber-900">No se pudo cargar el mapa</p>
           <p className="text-[11px] text-amber-700 mt-1">{errorMap}</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!token) {
+    return (
+      <div className={cn('rounded-[12px] border border-amber-200 bg-amber-50 p-5 flex items-start gap-3', className)}>
+        <AlertTriangle size={16} className="text-amber-600 mt-0.5 shrink-0" />
+        <div>
+          <p className="text-[12px] font-semibold text-amber-900">Mapa no disponible</p>
+          <p className="text-[11px] text-amber-700 mt-1">
+            Para ver el mapa interactivo define{' '}
+            <code className="font-mono text-[11px]">NEXT_PUBLIC_MAPBOX_TOKEN</code> en el entorno y reinicia el servidor.
+          </p>
         </div>
       </div>
     )
