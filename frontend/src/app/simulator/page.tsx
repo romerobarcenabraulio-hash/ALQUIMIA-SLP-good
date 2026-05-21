@@ -10,7 +10,6 @@ import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
 import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
-import { PropuestasSimulatorBar } from '@/components/simulator/PropuestasSimulatorBar'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
@@ -250,7 +249,6 @@ export default function SimulatorPage() {
             {audience === 'citizen' && <PlanGlobalControlsBar />}
 
             <div className="mt-3 space-y-3">
-              {audience === 'functionary' && <PropuestasSimulatorBar />}
               <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
                 <DecisionModuleShell
                   modules={filteredModules}

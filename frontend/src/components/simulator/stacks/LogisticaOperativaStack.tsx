@@ -114,7 +114,7 @@ export function LogisticaOperativaStack() {
                     <div className="bg-white/90 backdrop-blur rounded-[8px] border border-[#BDD7F5] p-3 text-center shadow">
                       <MapPin className="w-5 h-5 text-[#1A5FA8] mx-auto mb-1" />
                       <p className="text-[11px] font-semibold text-[#1A5FA8]">Municipio</p>
-                      <p className="text-[9px] text-[#6B6760]">Integrar con M06 CAs para ver rutas reales</p>
+                      <p className="text-[11px] text-[#6B6760]">Rutas disponibles tras configurar centros de acopio en M06.</p>
                     </div>
                   </div>
                 </div>
@@ -122,7 +122,7 @@ export function LogisticaOperativaStack() {
                   {[['12', 'Rutas activas'], ['3× sem', 'Frecuencia semanal'], ['80 rec.', 'Colonias cubiertas'], ['4', 'Brechas críticas']].map(([v, l]) => (
                     <div key={l} className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5">
                       <p className="font-bold text-[#1C1B18]">{v}</p>
-                      <p className="text-[8px] text-[#A8A49C]">{l}</p>
+                      <p className="text-[10px] text-[#A8A49C]">{l}</p>
                     </div>
                   ))}
                 </div>
@@ -204,7 +204,7 @@ export function LogisticaOperativaStack() {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
                   {[['Presión', r.presion, '#C0392B'], ['Estado', r.estado, '#1A5FA8'], ['Respuesta', r.respuesta, '#3B6D11']].map(([k, v, c]) => (
                     <div key={k as string}>
-                      <p className="font-bold uppercase tracking-wide text-[8px] mb-0.5" style={{ color: c as string }}>{k as string}</p>
+                      <p className="font-bold uppercase tracking-wide text-[10px] mb-0.5" style={{ color: c as string }}>{k as string}</p>
                       <p className="text-[#4A4740] leading-snug">{v as string}</p>
                     </div>
                   ))}

@@ -10,14 +10,18 @@ export type ModuloId =
   | 'city_baseline'
   | 'social_study'
   | 'municipal_context'
+  | 'costo_omision'
   | 'future_goals'
   | 'infrastructure_operations'
+  | 'organigrama_programa'
   | 'logistica_operativa'
   | 'costos_programa'
   | 'market_traceability'
   | 'esquema_concesion'
   | 'scenarios_export'
+  | 'arbol_financiamiento'
   | 'risk_trends'
+  | 'expediente_cabildo'
   | 'inspeccion_predios'
   | 'monitoreo_real'
   | 'doble_materialidad'
@@ -95,9 +99,20 @@ export function generarTransicion(
       const horizonte = resultados?.serieAnual?.length ?? null
       const horizStr  = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
       return {
-        kicker:      'El reglamento habilita las metas',
+        kicker:      'El marco legal cuantifica la omisión',
+        title:       'Costo de no actuar — contrafactual 10 años',
+        summary:     `Antes de fijar metas, conviene cuantificar el pasivo de no implementar: costo acumulado de disposición, daño sanitario y pérdida de elegibilidad para financiamiento verde en ${horizStr}.`,
+        nextModuloId: 'costo_omision',
+      }
+    }
+
+    case 'costo_omision': {
+      const horizonte = resultados?.serieAnual?.length ?? null
+      const horizStr  = horizonte !== null ? `${horizonte} años` : 'el horizonte definido'
+      return {
+        kicker:      'El costo de la omisión habilita las metas',
         title:       'Metas y trayectorias de captura',
-        summary:     `Con el diagnóstico territorial, social y legal completo, es posible fijar metas de captura técnicamente viables y jurídicamente respaldadas. El horizonte de ${horizStr} define la velocidad de escala del programa.`,
+        summary:     `Con el diagnóstico completo — incluido el costo de no decidir — es posible fijar metas de captura viables. El horizonte de ${horizStr} define la velocidad de escala del programa.`,
         nextModuloId: 'future_goals',
       }
     }
@@ -120,20 +135,25 @@ export function generarTransicion(
     }
 
     case 'infrastructure_operations': {
+      return {
+        kicker:      'La infraestructura requiere gobierno operativo',
+        title:       'Organigrama y estructura del programa',
+        summary:     `Con los centros de acopio dimensionados, el siguiente paso es definir quién opera, quién responde y cuánto cuesta el personal. Sin organigrama claro, el cabildo no puede aprobar nómina ni responsables.`,
+        nextModuloId: 'organigrama_programa',
+      }
+    }
+
+    case 'organigrama_programa': {
       const h = resultados?.serieAnual?.length ?? null
       const horizStr = h !== null ? String(h) : '—'
-      const nCAsProxy = resultados?.ocupacionCAs
-        ? Math.ceil(resultados.ocupacionCAs / 100)
-        : null
-      const nCAsStr = nCAsProxy !== null ? String(nCAsProxy) : 'los'
       const hog = resultados?.vivActivas
         ? Math.round(resultados.vivActivas * 0.05)
         : null
       const hogStr = hog !== null ? `${num.format(hog)} hogares` : 'un grupo piloto de hogares'
       return {
-        kicker:      'La infraestructura necesita rutas',
+        kicker:      'El organigrama habilita la logística',
         title:       'Logística operativa y diseño de piloto',
-        summary:     `Con ${nCAsStr} centros de acopio definidos, el diseño de las rutas de recolección diferenciada determina si la infraestructura opera a capacidad óptima. Un piloto bien diseñado en ${hogStr} permite validar el modelo antes de escalar al año ${horizStr}.`,
+        summary:     `Con roles y plantilla definidos, el diseño de rutas y el piloto en ${hogStr} validan la operación antes de escalar al año ${horizStr}.`,
         nextModuloId: 'logistica_operativa',
       }
     }
@@ -179,17 +199,34 @@ export function generarTransicion(
 
     case 'scenarios_export':
       return {
-        kicker:      'El modelo tiene riesgos a gestionar',
+        kicker:      'El retorno define el camino de capital',
+        title:       'Árbol de financiamiento — 6 caminos',
+        summary:     `Con TIR y VPN calculados, el siguiente paso es identificar cómo se financia el CAPEX: municipal directo, concesión, APP, fideicomiso o crédito verde. La estructura de capital determina quién asume el riesgo.`,
+        nextModuloId: 'arbol_financiamiento',
+      }
+
+    case 'arbol_financiamiento':
+      return {
+        kicker:      'El financiamiento tiene riesgos',
         title:       'Análisis de riesgos del modelo completo',
-        summary:     `Los escenarios financieros suponen condiciones de mercado y operación. El análisis de riesgos cuantifica cuánto puede deteriorarse el escenario base — por volatilidad de precios, rotación política o bajo cumplimiento ciudadano — antes de que el programa deje de ser viable.`,
+        summary:     `Con el camino de capital seleccionado, el análisis de riesgos cuantifica cuánto puede deteriorarse el escenario base — por volatilidad de precios, rotación política o bajo cumplimiento ciudadano.`,
         nextModuloId: 'risk_trends',
       }
 
     case 'risk_trends': {
       return {
-        kicker:      'Los riesgos requieren cumplimiento',
+        kicker:      'Los riesgos requieren expediente de cabildo',
+        title:       'Expediente completo para Cabildo',
+        summary:     `Con el modelo validado y los riesgos identificados, el expediente consolida gobernanza, checklist y documentos exportables para la sesión de cabildo.`,
+        nextModuloId: 'expediente_cabildo',
+      }
+    }
+
+    case 'expediente_cabildo': {
+      return {
+        kicker:      'Lo aprobado requiere cumplimiento',
         title:       'Inspección de predios y estrategia operativa',
-        summary:     `El factor de riesgo más controlable es el cumplimiento ciudadano. La estrategia de inspección y seguimiento define el mecanismo que hace sostenible el programa en el tiempo y reduce la exposición operativa.`,
+        summary:     `El factor de riesgo más controlable es el cumplimiento ciudadano. La estrategia de inspección define el mecanismo que hace sostenible el programa en el tiempo.`,
         nextModuloId: 'inspeccion_predios',
       }
     }

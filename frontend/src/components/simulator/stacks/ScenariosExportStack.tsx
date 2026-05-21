@@ -201,59 +201,6 @@ function FinancialAssumptions() {
   )
 }
 
-// ─── Bottom considerations row ────────────────────────────────────────────────
-
-function ConsideracionesRow() {
-  return (
-    <div className="mt-8 pt-5 border-t border-[#E8E4DC] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-      {[
-        {
-          icon: TrendingUp, color: '#3B6D11', title: 'Supuestos financieros',
-          items: ['Proyecciones en precios de hoy (MXN).',
-                  'El WACC y los precios de PET/Aluminio pueden variar.',
-                  'Las tasas y períodos usados corresponden al escenario seleccionado.',
-                  'El valor terminal se calcula al final del horizonte de análisis.'],
-        },
-        {
-          icon: Shield, color: '#1A5FA8', title: 'Condiciones para viabilidad',
-          items: ['Desempeño mínimo de captura y participación ciudadana.',
-                  'Disponibilidad de mercado para materiales y subproductos.',
-                  'Cumplimiento normativo en tiempos y forma.',
-                  'Asegurar financiamiento y fuentes de capital viables.'],
-        },
-        {
-          icon: AlertTriangle, color: '#D4881E', title: 'Limitaciones',
-          items: ['No se incluyen externalidades no modeladas.',
-                  'No considera cambios regulatorios futuros.',
-                  'Dependencia del desempeño operativo y del terreno.',
-                  'Sensibilidad alta a mercado, precios y tipo de cambio.'],
-        },
-        {
-          icon: FileText, color: '#C0392B', title: 'Validación requerida',
-          items: ['Los resultados requieren revisión técnico-financiera.',
-                  'Validación legal, técnica y ambiental.',
-                  'Aprobación presupuestal y disponibilidad de recursos.',
-                  'Este módulo apoya pero no sustituye el proceso de aprobación.'],
-        },
-      ].map(({ icon: Icon, color, title, items }) => (
-        <div key={title}>
-          <div className="flex items-center gap-1.5 mb-2">
-            <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} strokeWidth={2} />
-            <p className="text-[10px] font-semibold text-[#1C1B18]">{title}</p>
-          </div>
-          <ul className="space-y-1">
-            {items.map(item => (
-              <li key={item} className="flex items-start gap-1.5 text-[10px] text-[#6B6760]">
-                <span className="mt-1.5 w-1 h-1 rounded-full bg-[#A8A49C] shrink-0" />{item}
-              </li>
-            ))}
-          </ul>
-        </div>
-      ))}
-    </div>
-  )
-}
-
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export function ScenariosExportStack() {
@@ -528,7 +475,6 @@ export function ScenariosExportStack() {
           </div>
 
           <ImpactoFinanciero />
-          <ConsideracionesRow />
         </div>
       )}
 
@@ -619,7 +565,6 @@ export function ScenariosExportStack() {
             )}
           </div>
 
-          <ConsideracionesRow />
         </div>
       )}
 

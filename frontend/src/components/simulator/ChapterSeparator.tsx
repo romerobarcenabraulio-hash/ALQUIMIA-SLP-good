@@ -6,7 +6,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
 import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { cn } from '@/lib/utils'
-import { CHAPTERS, MODULE_CHAPTER } from '@/lib/chapterConfig'
+import { CHAPTERS, MODULE_CHAPTER, moduleNumber } from '@/lib/chapterConfig'
+import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 
 interface ChapterSeparatorProps {
   fromModuleId: string
@@ -20,6 +21,11 @@ export function ChapterSeparator({ fromModuleId, toModuleId, onContinue, onBack 
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const zmActiva          = useSimulatorStore(s => s.zmActiva)
   const municipioLabel    = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+  const briefCtx = useMemo((): import('@/data/moduleEditorialBriefs').ModuleEditorialContext => ({
+    territorio: municipioLabel,
+    scope: municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm',
+    municipiosCount: municipiosActivos.length,
+  }), [municipioLabel, municipiosActivos.length])
 
   const transicion = useMemo(
     () => generarTransicion(fromModuleId as ModuloId, resultados, municipioLabel),
@@ -95,12 +101,41 @@ export function ChapterSeparator({ fromModuleId, toModuleId, onContinue, onBack 
               Próximo · Capítulo {toChapter.num}: {toChapter.label}
             </p>
           </div>
-          <p className="text-[15px] font-semibold text-[#1C1B18] mb-1">{toChapter.question}</p>
-          <p className="text-[12px] text-[#6B6760]">
-            {toChapterNum === 2 && 'Aquí cuantificamos cuánta infraestructura, logística, personal y dinero se necesita.'}
-            {toChapterNum === 3 && 'Aquí diseñamos el modelo de negocio que se lleva al voto del cabildo.'}
-            {toChapterNum === 4 && 'Aquí definimos cómo arrancar la operación y demostrar que el programa funciona.'}
-          </p>
+          <p className="text-[15px] font-semibold text-[#1C1B18] mb-3">{toChapter.question}</p>
+
+          {/* Vista previa de módulos del capítulo */}
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-[0.08em] font-semibold text-[#A8A49C]">
+              Qué verás en este capítulo
+            </p>
+            <ul className="space-y-1.5">
+              {toChapter.modulos.map(modId => {
+                const brief = getModuleEditorialBrief(modId, briefCtx)
+                const label = brief?.title ?? modId
+                return (
+                  <li
+                    key={modId}
+                    className="flex items-start gap-2 rounded-[8px] border border-[#E8E4DC]/80 bg-white/70 px-3 py-2"
+                  >
+                    <span
+                      className="text-[10px] font-bold font-mono shrink-0 mt-0.5 px-1.5 py-0.5 rounded"
+                      style={{ color: toChapter.color, backgroundColor: `${toChapter.bgColor}` }}
+                    >
+                      M{moduleNumber(modId)}
+                    </span>
+                    <div className="min-w-0">
+                      <p className="text-[12px] font-medium text-[#1C1B18] leading-snug">{label}</p>
+                      {brief?.pregunta_guia && (
+                        <p className="text-[11px] text-[#6B6760] leading-snug mt-0.5 line-clamp-2">
+                          {brief.pregunta_guia}
+                        </p>
+                      )}
+                    </div>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
         </div>
 
         {/* Action buttons */}

@@ -237,16 +237,9 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           <p>
             Pero el problema no es técnico. Las tecnologías de separación, compostaje y
             valorización existen hace décadas. El problema es <strong>institucional</strong>: los
-            municipios — que por mandato constitucional (Art. 115) son responsables del manejo de
-            RSU — carecen de las herramientas de diagnóstico, planeación financiera y seguimiento
-            operativo para diseñar programas que sobrevivan al cambio de administración.
-          </p>
-          <p>
-            ALQUIMIA existe para resolver exactamente eso. No es una app de reciclaje para
-            ciudadanos. Es el instrumento que un director de servicios públicos, un síndico
-            municipal o un consultor privado necesitan para responder: <em>¿cuánto cuesta?,
-            ¿cuánto genera?, ¿quién opera?, ¿cuántos empleos? y ¿cómo le demostramos al cabildo
-            que es viable?</em>
+            municipios — responsables del manejo de RSU (Art. 115) — carecen de herramientas de
+            diagnóstico, planeación financiera y seguimiento operativo para diseñar programas
+            sostenibles.
           </p>
         </div>
       </section>
@@ -505,7 +498,6 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </h2>
         <p className="text-[13px] text-[#3B6D11] mb-4 max-w-lg mx-auto">
           Navega al siguiente módulo para explorar la línea base de {municipio}.
-          El sistema ya tiene los datos cargados — solo necesitas leerlos e interpretarlos.
         </p>
         {onNavigate ? (
           <button

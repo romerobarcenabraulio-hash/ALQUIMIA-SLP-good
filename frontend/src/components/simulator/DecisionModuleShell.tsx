@@ -444,15 +444,9 @@ function ModuleContextHeader({
           M{num} · {module.label}
         </p>
         <div className="flex items-center gap-2 shrink-0">
-          {activePropuesta && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full border border-[#D7E8C0] bg-[#F4FAEC] text-[9px] font-medium text-[#3B6D11]">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
-              {activePropuesta.nombre}
-            </span>
-          )}
           {conf && (
             <span
-              className="text-[9px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
               style={{ color: conf.color, background: conf.bg }}
               title={`Nivel de confianza del modelo: ${conf.label} (${conf.pct}% de inputs con fuente documentada)`}
             >
@@ -495,6 +489,33 @@ function ModuleContextHeader({
             {brief.subtitulo_catchy}
           </p>
         )
+      )}
+
+      {/* Escenario activo — una línea bajo el subtítulo */}
+      {moduleId !== 'city_baseline' && (
+        <p className="mt-2 text-[12px] text-[#6B6760] leading-snug">
+          <span className="inline-flex items-center gap-1.5">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
+            {activePropuesta ? (
+              <>
+                Escenario activo:{' '}
+                <strong className="text-[#1C1B18] font-medium">{activePropuesta.nombre}</strong>
+                {typeof activePropuesta.inputs.horizonte === 'number' && (
+                  <> · {activePropuesta.inputs.horizonte} años</>
+                )}
+                {typeof activePropuesta.costoModeloPromedioAnualMxn === 'number' && (
+                  <> · {fmt.mxnM(activePropuesta.costoModeloPromedioAnualMxn)}/año</>
+                )}
+              </>
+            ) : (
+              <>
+                Escenario de trabajo:{' '}
+                <strong className="text-[#1C1B18] font-medium">{activeTrajectoryLabel}</strong>
+                {' · '}{horizonte} años
+              </>
+            )}
+          </span>
+        </p>
       )}
 
       {territorio && moduleId !== 'city_baseline' && (
@@ -1056,7 +1077,7 @@ export function DecisionModuleShell({
           {/* Center content */}
           <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
             {/* Content area — flows naturally, page scrolls */}
-            <div ref={contentRef} className="px-6 py-6">
+            <div ref={contentRef} className="px-6 py-6 transition-opacity duration-200" key={activeModule.module_id}>
               <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />
               {activeModule.status === 'blocked' ? (
                 <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">

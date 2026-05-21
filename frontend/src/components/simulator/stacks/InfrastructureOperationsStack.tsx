@@ -54,7 +54,7 @@ function DecisionCommitBar({
 }: { municipio: string; horizonte: number; trayectoria: string; rsuDia: number }) {
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-semibold">Decisiones comprometidas — no editables en este módulo</p>
+      <p className="text-[11px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-semibold">Contexto del escenario</p>
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         <div className="flex-1 min-w-[160px] rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
           <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">M01 · Escenario base</p>
@@ -196,6 +196,7 @@ export function InfrastructureOperationsStack() {
   [mixCAs])
 
   const brecha   = Math.max(0, rsuDia - capInstalada)
+  const hasBrecha = brecha > 0
   const empleos  = resultados?.empleosTotalesDirectos ?? (
     (mixCAs.P ?? 0) * CA_CONFIG.P.empleos +
     (mixCAs.M ?? 0) * CA_CONFIG.M.empleos +
@@ -223,34 +224,18 @@ export function InfrastructureOperationsStack() {
             empleos={empleos} centrosObj={targetCA} cobertura={cobertura}
           />
 
-          {/* Capacity decision chain */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 mb-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-4">Cadena de decisión de capacidad</p>
-            <div className="flex flex-wrap lg:flex-nowrap items-center gap-2">
-              {[
-                { label: 'RSU capturable', value: fmt.kgd(rsuDia), sub: 'Potencial total del municipio', color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5' },
-                null,
-                { label: 'Capacidad instalada', value: fmt.kgd(capInstalada), sub: 'Capacidad operativa actual', color: '#3B6D11', bg: '#EAF3DE', border: '#D7E8C0' },
-                null,
-                { label: 'Brecha operativa', value: fmt.kgd(brecha), sub: 'Capacidad por instalar', color: '#C0392B', bg: '#FFF5F5', border: '#FCA5A5' },
-                null,
-                { label: 'Acción requerida', value: `Instalar ${targetCA} centros`, sub: 'Priorizar zonas F3–F5', color: '#D4881E', bg: '#FEF7E7', border: '#FDE68A' },
-              ].map((b, i) => b === null
-                ? <ArrowRight key={i} className="w-4 h-4 text-[#A8A49C] shrink-0 hidden lg:block" />
-                : (
-                  <div key={b.label} className="flex-1 min-w-[130px] rounded-[10px] border px-3 py-2.5" style={{ borderColor: b.border, background: b.bg }}>
-                    <p className="text-[8px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
-                    <p className="text-[20px] font-bold leading-none mb-0.5" style={{ color: b.color }}>{b.value}</p>
-                    <p className="text-[9px] text-[#6B6760]">{b.sub}</p>
-                  </div>
-                )
-              )}
+          {hasBrecha && (
+            <div className="rounded-[10px] border border-[#FDE68A] bg-[#FEF7E7] px-4 py-3 mb-5 flex items-center gap-3">
+              <AlertTriangle className="w-4 h-4 text-[#D4881E] shrink-0" />
+              <p className="text-[12px] text-[#6B4800]">
+                Acción requerida: instalar <strong>{targetCA} centros</strong> para cerrar la brecha de {fmt.kgd(brecha)}/día.
+              </p>
             </div>
-          </div>
+          )}
 
           {/* Portfolio */}
           <div className="space-y-2.5 mb-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18]">Portafolio recomendado de infraestructura</p>
+            <p className="text-[12px] font-semibold text-[#1C1B18]">Portafolio de infraestructura</p>
             {(['P', 'M', 'G'] as const).map(tipo => {
               const c = CA_CONFIG[tipo]
               const meta = {

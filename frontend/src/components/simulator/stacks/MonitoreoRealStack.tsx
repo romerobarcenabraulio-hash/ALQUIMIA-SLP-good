@@ -188,7 +188,7 @@ function TabCaptura({ records, onSave }: Tab1Props) {
 
       {/* Session note */}
       <p className="text-[11px] text-[#A8A49C] border border-[#E8E4DC] rounded-[8px] px-3 py-2 bg-[#F4F2ED]">
-        Estos datos se almacenan solo en esta sesión. En la versión completa, se sincronizan con la base de datos ALQUIMIA.
+        Datos de sesión — no persistentes entre recargas.
       </p>
 
       {/* Saved records summary */}

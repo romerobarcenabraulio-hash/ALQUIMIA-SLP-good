@@ -273,7 +273,7 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
             <p className="text-[9px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
             <p className="text-[13px] font-semibold text-[#1C1B18]">{b.body}</p>
             <p className="text-[11px] text-[#5A5750]">{b.sub}</p>
-            <p className="text-[8px] text-[#A8A49C] mt-1">{b.note}</p>
+            <p className="text-[10px] text-[#A8A49C] mt-1">{b.note}</p>
           </div>
         ))}
       </div>
@@ -357,10 +357,10 @@ function RiskAccordionList({ filterCat }: { filterCat?: string }) {
               </div>
               {/* Prob/impact chips */}
               <div className="flex gap-1 shrink-0">
-                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: PROB_LEVEL_COLOR[r.probLvl] + '22', color: PROB_LEVEL_COLOR[r.probLvl] }}>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: PROB_LEVEL_COLOR[r.probLvl] + '22', color: PROB_LEVEL_COLOR[r.probLvl] }}>
                   P {r.prob}%
                 </span>
-                <span className="text-[8px] font-bold px-1.5 py-0.5 rounded" style={{ background: IMP_LEVEL_COLOR[r.impLvl] + '22', color: IMP_LEVEL_COLOR[r.impLvl] }}>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded" style={{ background: IMP_LEVEL_COLOR[r.impLvl] + '22', color: IMP_LEVEL_COLOR[r.impLvl] }}>
                   {r.impacto}
                 </span>
               </div>
@@ -532,16 +532,16 @@ function RiskMatrix() {
         <table className="border-collapse" style={{ minWidth: 360 }}>
           <thead>
             <tr>
-              <th className="text-[8px] text-[#A8A49C] p-1 text-right w-20">↑ Impacto</th>
+              <th className="text-[10px] text-[#A8A49C] p-1 text-right w-20">↑ Impacto</th>
               {LEVELS.map(l => (
-                <th key={l} className="text-[8px] text-[#A8A49C] p-1 text-center w-16">{LEVEL_LABELS[l]}</th>
+                <th key={l} className="text-[10px] text-[#A8A49C] p-1 text-center w-16">{LEVEL_LABELS[l]}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {[...LEVELS].reverse().map(impLvl => (
               <tr key={impLvl}>
-                <td className="text-[8px] text-[#A8A49C] p-1 text-right font-medium">{LEVEL_LABELS[impLvl]}</td>
+                <td className="text-[10px] text-[#A8A49C] p-1 text-right font-medium">{LEVEL_LABELS[impLvl]}</td>
                 {LEVELS.map(probLvl => {
                   const key = `${probLvl}__${impLvl}`
                   const risks = cellRisks[key] ?? []
@@ -553,7 +553,7 @@ function RiskMatrix() {
                         style={{ background: bg }}
                         onClick={() => risks.length > 0 && setSelected(risks[0])}>
                         {risks.map(r => (
-                          <span key={r.id} className="text-[8px] font-bold px-1 py-0.5 rounded leading-none" style={{ color: tc }}>{r.id}</span>
+                          <span key={r.id} className="text-[10px] font-bold px-1 py-0.5 rounded leading-none" style={{ color: tc }}>{r.id}</span>
                         ))}
                       </div>
                     </td>
@@ -563,7 +563,7 @@ function RiskMatrix() {
             ))}
             <tr>
               <td />
-              <td colSpan={5} className="text-[8px] text-[#A8A49C] p-1 text-center">→ Probabilidad</td>
+              <td colSpan={5} className="text-[10px] text-[#A8A49C] p-1 text-center">→ Probabilidad</td>
             </tr>
           </tbody>
         </table>
@@ -579,7 +579,7 @@ function RiskMatrix() {
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-2">
             {[['Probabilidad', `${selected.prob}%`], ['Impacto', selected.impacto], ['Dueño', selected.dueno]].map(([k, v]) => (
-              <div key={k as string}><p className="text-[8px] text-[#A8A49C] uppercase">{k as string}</p><p className="font-semibold">{v as string}</p></div>
+              <div key={k as string}><p className="text-[10px] text-[#A8A49C] uppercase">{k as string}</p><p className="font-semibold">{v as string}</p></div>
             ))}
           </div>
           <p><span className="font-semibold text-[#A8A49C]">Causa:</span> {selected.causa}</p>
@@ -630,7 +630,7 @@ function Page1({ prob }: { prob: number }) {
                     <div className="flex items-center justify-between mb-0.5">
                       <span className="text-[10px] font-semibold text-[#1C1B18] w-32 shrink-0">{a.nombre}</span>
                       <span className="text-[10px] font-mono font-bold" style={{ color: a.color }}>{a.base}%</span>
-                      {alert && <span className="text-[8px] text-[#C0392B] font-bold ml-1">⚠</span>}
+                      {alert && <span className="text-[10px] text-[#C0392B] font-bold ml-1">⚠</span>}
                     </div>
                     <div className="relative h-4 bg-[#F4F2ED] rounded-full overflow-hidden">
                       {/* IC range */}
@@ -638,7 +638,7 @@ function Page1({ prob }: { prob: number }) {
                       {/* base bar */}
                       <div className="absolute h-full rounded-full" style={{ width: `${barW}%`, background: a.color }} />
                     </div>
-                    <p className="text-[8px] text-[#A8A49C] mt-0.5">IC {loW}%–{hiW}% · {a.fuente}</p>
+                    <p className="text-[10px] text-[#A8A49C] mt-0.5">IC {loW}%–{hiW}% · {a.fuente}</p>
                   </div>
                 )
               })}
@@ -785,7 +785,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
               <thead>
                 <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
                   {['Material','Comprador / Consorcio','Tipo','km','Cap. (t/a)','P50 (MXN/t)','P10','P90','Rechazo','Estatus contractual'].map(h => (
-                    <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[8px]">{h}</th>
+                    <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[10px]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -807,7 +807,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
                       <td className="px-3 py-2 font-mono text-[#6B6760]">{r.p10.toLocaleString()}</td>
                       <td className="px-3 py-2 font-mono text-[#6B6760]">{r.p90.toLocaleString()}</td>
                       <td className={cn('px-3 py-2 font-semibold', rechColor)}>{r.rechazo}</td>
-                      <td className="px-3 py-2"><span className={cn('px-1.5 py-0.5 rounded text-[8px] font-semibold', estColor)}>{r.estatus}</span></td>
+                      <td className="px-3 py-2"><span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold', estColor)}>{r.estatus}</span></td>
                     </tr>
                   )
                 })}
@@ -838,7 +838,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
                       <div className="absolute h-full rounded-full" style={{ left: '0%', width: `${p50Pct}%`, background: '#1A5FA8' }} />
                       <div className="absolute top-0 h-full w-0.5 bg-[#C0392B]" style={{ left: `${p50Pct}%` }} />
                     </div>
-                    <div className="flex justify-between text-[8px] text-[#A8A49C] mt-0.5">
+                    <div className="flex justify-between text-[10px] text-[#A8A49C] mt-0.5">
                       <span>${r.p10.toLocaleString()} P10</span>
                       <span>${r.p90.toLocaleString()} P90</span>
                     </div>
@@ -986,7 +986,7 @@ function Page3() {
               <thead>
                 <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
                   {['Dimensión','Riesgo identificado','ID','Acción de mitigación','Dueño','Plazo','Impacto esperado','Riesgo residual','Estado'].map(h => (
-                    <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[8px]">{h}</th>
+                    <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[10px]">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -998,13 +998,13 @@ function Page3() {
                     <tr key={m.id + m.accion} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
                       <td className="px-3 py-2 font-semibold" style={{ color: CAT_COLORS[m.dim] ?? '#A8A49C' }}>{m.dim}</td>
                       <td className="px-3 py-2 text-[#4A4740] max-w-[120px] text-[9px]">{m.riesgo}</td>
-                      <td className="px-3 py-2"><span className="font-mono font-bold bg-[#1C2B15] text-white px-1.5 py-0.5 rounded text-[8px]">{m.id}</span></td>
+                      <td className="px-3 py-2"><span className="font-mono font-bold bg-[#1C2B15] text-white px-1.5 py-0.5 rounded text-[10px]">{m.id}</span></td>
                       <td className="px-3 py-2 text-[#4A4740] max-w-[160px] text-[9px]">{m.accion}</td>
                       <td className="px-3 py-2 text-[#6B6760] text-[9px]">{m.dueno}</td>
                       <td className="px-3 py-2 text-[#6B6760]">{m.plazo}</td>
                       <td className="px-3 py-2 text-[#3B6D11] font-semibold">{m.impacto}</td>
                       <td className={cn('px-3 py-2 font-semibold', resColor)}>{m.residual}</td>
-                      <td className="px-3 py-2"><span className={cn('px-1.5 py-0.5 rounded text-[8px] font-semibold', estColor)}>{m.estado}</span></td>
+                      <td className="px-3 py-2"><span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold', estColor)}>{m.estado}</span></td>
                     </tr>
                   )
                 })}
@@ -1063,8 +1063,8 @@ function Page3() {
               ))}
             </div>
             <div className="border-t pt-2" style={{ borderColor: p.border }}>
-              <p className="text-[8px] font-bold uppercase" style={{ color: p.text }}>{p.hito}</p>
-              <p className="text-[8px] text-[#A8A49C]">Riesgos: {p.riesgo}</p>
+              <p className="text-[10px] font-bold uppercase" style={{ color: p.text }}>{p.hito}</p>
+              <p className="text-[10px] text-[#A8A49C]">Riesgos: {p.riesgo}</p>
             </div>
           </div>
         ))}
@@ -1080,17 +1080,17 @@ function Page3() {
               <div key={t.id} className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] p-3.5">
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <span className="text-[8px] font-bold text-[#A8A49C] mr-1.5">{t.id}</span>
+                    <span className="text-[10px] font-bold text-[#A8A49C] mr-1.5">{t.id}</span>
                     <span className="text-[11px] font-semibold text-[#1C1B18]">{t.nombre}</span>
                   </div>
                   <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className={cn('text-[8px] font-bold px-1.5 py-0.5 rounded', t.intensidad === 'Alta' ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-[#FEF3C7] text-[#92400E]')}>Presión {t.rsu}</span>
-                    <span className="text-[8px] text-[#A8A49C]">{t.cat}</span>
+                    <span className={cn('text-[10px] font-bold px-1.5 py-0.5 rounded', t.intensidad === 'Alta' ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-[#FEF3C7] text-[#92400E]')}>Presión {t.rsu}</span>
+                    <span className="text-[10px] text-[#A8A49C]">{t.cat}</span>
                   </div>
                 </div>
                 <p className="text-[10px] text-[#6B6760] mb-1.5">{t.implicacion}</p>
                 <div className="flex flex-wrap gap-1 mb-1.5">
-                  {t.riesgos.map(r => <span key={r} className="text-[8px] font-mono font-bold bg-[#FDE8E8] text-[#B91C1C] px-1 py-0.5 rounded">{r}</span>)}
+                  {t.riesgos.map(r => <span key={r} className="text-[10px] font-mono font-bold bg-[#FDE8E8] text-[#B91C1C] px-1 py-0.5 rounded">{r}</span>)}
                 </div>
                 <p className="text-[9px] text-[#3B6D11] font-medium">→ {t.accion}</p>
               </div>
@@ -1119,7 +1119,7 @@ function Page3() {
                 <div key={c.cond} className="flex items-center gap-2 text-[10px]">
                   {icon}
                   <span className="flex-1 text-[#4A4740]">{c.cond}</span>
-                  <span className={cn('px-1.5 py-0.5 rounded text-[8px] font-semibold shrink-0', badgeColor)}>{c.estado}</span>
+                  <span className={cn('px-1.5 py-0.5 rounded text-[10px] font-semibold shrink-0', badgeColor)}>{c.estado}</span>
                 </div>
               )
             })}
