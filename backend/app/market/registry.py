@@ -33,7 +33,165 @@ from app.market.schemas import BuyerStatus, FuenteTipoMarket, MaterialBuyer
 
 _CATALOG: List[MaterialBuyer] = [
 
-    # ── PET ───────────────────────────────────────────────────────────────────
+    # ── SLP piloto (zm_simulator_id) ──────────────────────────────────────────
+    MaterialBuyer(
+        buyer_id="slp-pet-ecooro",
+        nombre="Eco-Oro Reciclaje (PET)",
+        material="pet",
+        estado="San Luis Potosí",
+        municipio="San Luis Potosí",
+        tipo_comprador="reciclador",
+        capacidad_ton_anio=6600.0,
+        capacidad_disponible_ton_anio=4400.0,
+        precio_min_mxn_kg=5.00,
+        precio_max_mxn_kg=6.00,
+        calidad_requerida="estandar",
+        distancia_km=12.0,
+        lat=22.1248,
+        lon=-100.9472,
+        zm_simulator_id="SLP",
+        fuente="Recicladoras_por_Giro.xlsx · PET · mayo 2026",
+        fuente_tipo=FuenteTipoMarket.directorio_empresarial,
+        confianza=0.75,
+        status=BuyerStatus.pendiente_verificacion,
+        last_verified_at=None,
+    ),
+    MaterialBuyer(
+        buyer_id="slp-papel-mrs",
+        nombre="MRS Logística / Papelera regional",
+        material="papel",
+        estado="San Luis Potosí",
+        municipio="San Luis Potosí",
+        tipo_comprador="reciclador",
+        capacidad_ton_anio=5400.0,
+        capacidad_disponible_ton_anio=3600.0,
+        precio_min_mxn_kg=2.20,
+        precio_max_mxn_kg=2.80,
+        calidad_requerida="estandar",
+        distancia_km=15.0,
+        lat=22.1489,
+        lon=-100.9782,
+        zm_simulator_id="SLP",
+        fuente="Recicladoras_por_Giro.xlsx · Papel/cartón",
+        fuente_tipo=FuenteTipoMarket.directorio_empresarial,
+        confianza=0.75,
+        status=BuyerStatus.pendiente_verificacion,
+        last_verified_at=None,
+    ),
+    MaterialBuyer(
+        buyer_id="slp-vidrio-envases",
+        nombre="Envases del Potosí / Vanalux",
+        material="vidrio",
+        estado="San Luis Potosí",
+        municipio="San Luis Potosí",
+        tipo_comprador="industria",
+        capacidad_ton_anio=2400.0,
+        capacidad_disponible_ton_anio=1680.0,
+        precio_min_mxn_kg=1.00,
+        precio_max_mxn_kg=1.60,
+        calidad_requerida="estandar",
+        distancia_km=18.0,
+        lat=22.1312,
+        lon=-101.0156,
+        zm_simulator_id="SLP",
+        fuente="Recicladoras_por_Giro.xlsx · Vidrio",
+        fuente_tipo=FuenteTipoMarket.directorio_empresarial,
+        confianza=0.72,
+        status=BuyerStatus.pendiente_verificacion,
+        last_verified_at=None,
+    ),
+    MaterialBuyer(
+        buyer_id="slp-alu-reciclimetal",
+        nombre="Reciclimetal SLP",
+        material="aluminio",
+        estado="San Luis Potosí",
+        municipio="San Luis Potosí",
+        tipo_comprador="reciclador",
+        capacidad_ton_anio=1500.0,
+        capacidad_disponible_ton_anio=900.0,
+        precio_min_mxn_kg=14.00,
+        precio_max_mxn_kg=16.50,
+        calidad_requerida="estandar",
+        distancia_km=10.0,
+        lat=22.1621,
+        lon=-100.9184,
+        zm_simulator_id="SLP",
+        fuente="Recicladoras_por_Giro.xlsx · Aluminio",
+        fuente_tipo=FuenteTipoMarket.directorio_empresarial,
+        confianza=0.75,
+        status=BuyerStatus.pendiente_verificacion,
+        last_verified_at=None,
+    ),
+    MaterialBuyer(
+        buyer_id="slp-org-composta",
+        nombre="Composta agrícola El Refugio",
+        material="organico",
+        estado="San Luis Potosí",
+        municipio="Soledad de Graciano Sánchez",
+        tipo_comprador="compostador",
+        capacidad_ton_anio=3600.0,
+        capacidad_disponible_ton_anio=2400.0,
+        precio_min_mxn_kg=0.20,
+        precio_max_mxn_kg=0.40,
+        calidad_requerida="basica",
+        distancia_km=14.0,
+        lat=22.1823,
+        lon=-100.8642,
+        zm_simulator_id="SLP",
+        fuente="Recicladoras_por_Giro.xlsx · Orgánicos",
+        fuente_tipo=FuenteTipoMarket.directorio_empresarial,
+        confianza=0.70,
+        status=BuyerStatus.pendiente_verificacion,
+        last_verified_at=None,
+    ),
+
+    # ── MTY (zm_simulator_id) ─────────────────────────────────────────────────
+    MaterialBuyer(
+        buyer_id="mty-pet-alpek",
+        nombre="Alpek Polyester (referencia MTY)",
+        material="pet",
+        estado="Nuevo León",
+        municipio="Monterrey",
+        tipo_comprador="industria",
+        capacidad_ton_anio=13500.0,
+        capacidad_disponible_ton_anio=6000.0,
+        precio_min_mxn_kg=4.80,
+        precio_max_mxn_kg=5.80,
+        calidad_requerida="estandar",
+        distancia_km=22.0,
+        lat=25.6866,
+        lon=-100.3161,
+        zm_simulator_id="MTY",
+        fuente="ANIPAC directorio 2023 · estimado_denue",
+        fuente_tipo=FuenteTipoMarket.benchmark,
+        confianza=0.55,
+        status=BuyerStatus.estimado,
+        last_verified_at=None,
+    ),
+    MaterialBuyer(
+        buyer_id="mty-papel-smurfit",
+        nombre="Smurfit Kappa Monterrey",
+        material="papel",
+        estado="Nuevo León",
+        municipio="Monterrey",
+        tipo_comprador="industria",
+        capacidad_ton_anio=10500.0,
+        capacidad_disponible_ton_anio=4000.0,
+        precio_min_mxn_kg=2.00,
+        precio_max_mxn_kg=2.80,
+        calidad_requerida="estandar",
+        distancia_km=18.0,
+        lat=25.6721,
+        lon=-100.2894,
+        zm_simulator_id="MTY",
+        fuente="CANACINTRA NL · estimado_denue",
+        fuente_tipo=FuenteTipoMarket.benchmark,
+        confianza=0.55,
+        status=BuyerStatus.estimado,
+        last_verified_at=None,
+    ),
+
+    # ── PET (nacional / legacy) ───────────────────────────────────────────────
     MaterialBuyer(
         buyer_id="pet-001",
         nombre="Alpek Polyester (referencia sectorial)",
@@ -333,11 +491,12 @@ def get_buyers(material: str, zm: Optional[str] = None) -> List[MaterialBuyer]: 
     """
     Retorna compradores activos para un material (y opcionalmente filtrados por ZM).
 
-    El filtro por ZM no es por nombre de la ZM sino por estado geográfico del comprador.
-    Si zm es None, devuelve todos (nacionales + regionales).
+    Si zm está definido, prioriza compradores con zm_simulator_id coincidente;
+    si no hay ninguno para esa ZM, incluye benchmarks nacionales (zm_simulator_id None).
     Los compradores con status=inactivo se excluyen siempre.
     """
     materiales_aceptados = _MATERIAL_ALIASES.get(material.lower(), [material.lower()])
+    zm_key = zm.upper() if zm else None
 
     compradores = [
         b for b in _CATALOG
@@ -345,8 +504,43 @@ def get_buyers(material: str, zm: Optional[str] = None) -> List[MaterialBuyer]: 
         and b.status != BuyerStatus.inactivo
     ]
 
+    if zm_key:
+        zm_specific = [b for b in compradores if b.zm_simulator_id and b.zm_simulator_id.upper() == zm_key]
+        if zm_specific:
+            return zm_specific
+        # Fallback: compradores del estado geográfico de la ZM
+        _zm_estado: Dict[str, str] = {
+            "SLP": "San Luis Potosí",
+            "MTY": "Nuevo León",
+            "QRO": "Querétaro",
+            "GDL": "Jalisco",
+        }
+        estado = _zm_estado.get(zm_key)
+        if estado:
+            regional = [b for b in compradores if b.estado == estado]
+            if regional:
+                return regional
+
     return compradores
 
 
-def get_all_buyers() -> List[MaterialBuyer]:
-    return [b for b in _CATALOG if b.status != BuyerStatus.inactivo]
+def get_all_buyers(zm: Optional[str] = None) -> List[MaterialBuyer]:
+    active = [b for b in _CATALOG if b.status != BuyerStatus.inactivo]
+    if not zm:
+        return active
+    zm_key = zm.upper()
+    zm_specific = [b for b in active if b.zm_simulator_id and b.zm_simulator_id.upper() == zm_key]
+    if zm_specific:
+        return zm_specific
+    _zm_estado: Dict[str, str] = {
+        "SLP": "San Luis Potosí",
+        "MTY": "Nuevo León",
+        "QRO": "Querétaro",
+        "GDL": "Jalisco",
+    }
+    estado = _zm_estado.get(zm_key)
+    if estado:
+        regional = [b for b in active if b.estado == estado]
+        if regional:
+            return regional
+    return active

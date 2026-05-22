@@ -540,7 +540,9 @@ export function InspeccionForm() {
           {loading ? 'Generando expediente…' : 'Generar expediente técnico'}
         </button>
         {expediente && predio && inspeccion ? (
-          <ExpedientePDF predio={predio} inspeccion={inspeccion} expediente={expediente} />
+          <div id="inspeccion-expediente-pdf">
+            <ExpedientePDF predio={predio} inspeccion={inspeccion} expediente={expediente} />
+          </div>
         ) : null}
       </div>
     </div>

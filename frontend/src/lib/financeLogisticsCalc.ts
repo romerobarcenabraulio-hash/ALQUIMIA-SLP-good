@@ -105,6 +105,33 @@ export function deriveCostoDisposicionPorTon(poblacion: number): number {
   return 420
 }
 
+/** Distancia promedio CA → relleno sanitario (km) según escala urbana. */
+export function deriveDistanciaRelleno(poblacion: number): number {
+  const pobMiles = poblacion / 1000
+  if (pobMiles < 50) return 35
+  if (pobMiles < 150) return 28
+  if (pobMiles < 500) return 22
+  return 18
+}
+
+/** Capacidad relleno (t/día) según generación RSU municipal estimada. */
+export function deriveCapacidadRelleno(poblacion: number, generacionRsuDia?: number): number {
+  const gen = generacionRsuDia ?? (poblacion * 0.688) / 1000
+  if (gen < 200) return 8
+  if (gen < 600) return 12
+  if (gen < 1500) return 18
+  return 25
+}
+
+/** Merma logística base (%) — infraestructura mejor en ciudades grandes. */
+export function deriveMermaLogPct(poblacion: number): number {
+  const pobMiles = poblacion / 1000
+  if (pobMiles < 100) return 14
+  if (pobMiles < 300) return 12
+  if (pobMiles < 800) return 10
+  return 8
+}
+
 export function buildFinanceKpiContract(input: {
   municipioId: string | null
   capexTotal: number

@@ -49,7 +49,7 @@ function LoginCard() {
   return (
     <div className="bg-white rounded-[16px] border border-[#E8E4DC] shadow-[0_4px_24px_rgba(28,27,24,0.09)] overflow-hidden">
       <div className="px-6 pt-5 pb-4 border-b border-[#F0EDE5]">
-        <p className="text-[11px] uppercase tracking-[0.12em] text-[#A8A49C] mb-0.5">Acceso institucional</p>
+        <p className="text-[11px] uppercase tracking-[0.12em] text-[#A8A49C] mb-0.5">Inicio de sesión institucional</p>
         <p className="text-[14px] font-semibold text-[#1C1B18]">Ya tengo cuenta</p>
       </div>
 

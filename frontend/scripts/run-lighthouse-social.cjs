@@ -45,7 +45,7 @@ if (!chromePath && process.platform === 'darwin') {
 
 const CITY_ID = 'SLP'
 
-/** Cookie que exige `middleware.ts` para `/simulator` (misma que entrega `/api/acceso` al validar ACCESS_CODE). */
+/** Cookie legacy de middleware (ACCESS_CODE vía POST /api/acceso). Login canónico: /api/auth/login. */
 const ACCESS_COOKIE = { name: 'alquimia_access', value: 'granted' }
 
 /** Respuesta mínima compatible con fetch paralelo portal + baseline gate UI */

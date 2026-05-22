@@ -1,11 +1,11 @@
 """
 Fase 4 — pdf_renderer.py
 
-Renderiza PDF ejecutivo de lectura rápida desde manifest y KPIs.
+Renderiza PDF ejecutivo de consultoría desde manifest y KPIs.
+Tipografía: Times-Roman (equivalente PDF de Times New Roman).
 
 Política de bloqueo:
-  Si reportlab falla o no está disponible → retorna (None, razón_explícita).
-  El package_renderer registra el bloqueo en RenderReport y continúa con DOCX/XLSX.
+  Si reportlab falla → retorna (None, razón_explícita).
   NUNCA tira todo el pipeline por el PDF.
 """
 from __future__ import annotations
@@ -15,9 +15,25 @@ import logging
 from datetime import date
 from typing import Optional
 
+from app.export.consulting_pdf_theme import (
+    consulting_styles,
+    margins,
+    palette,
+    table_style_consulting,
+)
 from app.legal.agora_export_disclaimers import AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER
 
 logger = logging.getLogger(__name__)
+
+_MONTHS_ES = (
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre",
+)
+
+
+def _fecha_larga_es() -> str:
+    d = date.today()
+    return f"{d.day} de {_MONTHS_ES[d.month - 1]} de {d.year}"
 
 
 def render_executive_pdf(
@@ -26,210 +42,195 @@ def render_executive_pdf(
     theme_zm: str = "",
     theme_municipio: str = "",
     package_id: str = "",
+    module_label: str = "",
 ) -> tuple[Optional[bytes], Optional[str]]:
     """
-    Genera PDF ejecutivo de lectura rápida.
+    Genera PDF ejecutivo de consultoría (Times New Roman).
 
     Retorna:
       (bytes, None)      → OK
-      (None, "razón")    → Bloqueado — razón explícita para RenderReport
+      (None, "razón")    → Bloqueado
     """
     try:
         from reportlab.lib.pagesizes import A4
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import cm
-        from reportlab.lib import colors
         from reportlab.platypus import (
-            SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+            HRFlowable,
+            PageBreak,
+            Paragraph,
+            SimpleDocTemplate,
+            Spacer,
+            Table,
         )
-        from reportlab.lib.enums import TA_CENTER
     except ImportError as e:
         reason = f"reportlab no disponible: {e}. Instalar con pip install reportlab>=4.1.0"
-        logger.warning(f"PDF bloqueado: {reason}")
+        logger.warning("PDF bloqueado: %s", reason)
         return None, reason
 
     res = resultados or {}
-    zm  = manifest.get("zm") or theme_zm or "ZM"
+    zm = manifest.get("zm") or theme_zm or "ZM"
+    municipio = theme_municipio or manifest.get("municipio") or zm
+    styles = consulting_styles()
+    c = palette()
+    GREEN = c["GREEN"]
+    ORANGE = c["ORANGE"]
+    BORDER = c["BORDER"]
+    MARGINS = margins()
 
-    buf  = io.BytesIO()
-    doc  = SimpleDocTemplate(
+    buf = io.BytesIO()
+    doc = SimpleDocTemplate(
         buf,
         pagesize=A4,
-        leftMargin=2.5 * cm, rightMargin=2.5 * cm,
-        topMargin=2.5 * cm,  bottomMargin=2.5 * cm,
+        leftMargin=MARGINS["left"],
+        rightMargin=MARGINS["right"],
+        topMargin=MARGINS["top"],
+        bottomMargin=MARGINS["bottom"],
+        title=f"ALQUIMIA — Reporte Ejecutivo {zm}",
+        author="ALQUIMIA · Plataforma de consultoría integral",
     )
 
-    styles = getSampleStyleSheet()
-    GREEN  = colors.HexColor("#3B6D11")
-    BLUE   = colors.HexColor("#1A5FA8")
-    ORANGE = colors.HexColor("#D4881E")
-    DARK   = colors.HexColor("#1C1B18")
-    GREY   = colors.HexColor("#6B6760")
+    story: list = []
 
-    title_style = ParagraphStyle("Title4",
-        fontName="Helvetica-Bold", fontSize=22, textColor=GREEN,
-        spaceAfter=6, alignment=TA_CENTER)
-    sub_style = ParagraphStyle("Sub4",
-        fontName="Helvetica", fontSize=11, textColor=GREY,
-        spaceAfter=4, alignment=TA_CENTER)
-    h2_style = ParagraphStyle("H2_4",
-        fontName="Helvetica-Bold", fontSize=13, textColor=BLUE,
-        spaceBefore=14, spaceAfter=6)
-    body_style = ParagraphStyle("Body4",
-        fontName="Helvetica", fontSize=10, textColor=DARK,
-        spaceAfter=4, leading=14)
-    warn_style = ParagraphStyle("Warn4",
-        fontName="Helvetica", fontSize=9, textColor=ORANGE,
-        spaceAfter=4, leading=12)
-    footer_style = ParagraphStyle("Footer4",
-        fontName="Helvetica", fontSize=8, textColor=GREY,
-        alignment=TA_CENTER)
-
-    story = []
-
-    # ── Q-010: portada legal (antes del título institucional) ─────────────────
+    # ── Portada consultoría ───────────────────────────────────────────────────
+    story.append(Spacer(1, 1.2 * MARGINS["top"]))
+    story.append(Paragraph("ALQUIMIA", styles["cover_kicker"]))
     story.append(Paragraph(
-        "Aviso legal — lectura obligatoria",
-        ParagraphStyle(
-            "LegalCoverLabel",
-            fontName="Helvetica-Bold",
-            fontSize=11,
-            textColor=ORANGE,
-            spaceAfter=6,
-            alignment=TA_CENTER,
-        ),
+        "Plataforma de consultoría integral<br/>de gestión pública municipal",
+        styles["cover_subtitle"],
     ))
-    for block in AGORA_EXPORT_COVER_DISCLAIMER.replace("\r\n", "\n").split("\n\n"):
-        b = block.strip()
-        if b:
-            story.append(Paragraph(b.replace("\n", "<br/>"), warn_style))
-    story.append(Spacer(1, 0.6 * cm))
-    story.append(HRFlowable(width="100%", thickness=0.75, color=ORANGE, spaceAfter=12))
-
-    # ── Portada ───────────────────────────────────────────────────────────────
-    story.append(Spacer(1, 1.5 * cm))
-    story.append(Paragraph("ÁGORA GOV — ALQUIMIA", sub_style))
+    story.append(Spacer(1, 0.4 * MARGINS["top"]))
+    story.append(HRFlowable(width="28%", thickness=2, color=GREEN, spaceAfter=14, hAlign="CENTER"))
     story.append(Paragraph(
-        f"Reporte Ejecutivo — ZM {zm}",
-        title_style
+        module_label or "Reporte ejecutivo de viabilidad",
+        styles["cover_title"],
     ))
     story.append(Paragraph(
-        f"{theme_municipio or zm}  ·  {date.today().strftime('%d de %B de %Y')}  ·  v{manifest.get('version','0.1')}",
-        sub_style
+        f"Zona metropolitana {zm} · {municipio}",
+        styles["cover_subtitle"],
     ))
-    story.append(HRFlowable(width="100%", thickness=1, color=GREEN, spaceAfter=16))
+    story.append(Spacer(1, 0.25 * MARGINS["top"]))
+    story.append(Paragraph(_fecha_larga_es(), styles["cover_meta"]))
+    story.append(Paragraph(
+        f"Versión documental {manifest.get('version', '0.1-borrador')} · Confidencial",
+        styles["cover_meta"],
+    ))
+    story.append(Spacer(1, 0.6 * MARGINS["top"]))
 
-    # ── Score y estado ────────────────────────────────────────────────────────
+    # Aviso legal compacto en portada
+    story.append(Paragraph("Aviso legal", styles["section_h2"]))
+    cover_legal = AGORA_EXPORT_COVER_DISCLAIMER.replace("\r\n", "\n").split("\n\n")[0]
+    story.append(Paragraph(cover_legal.replace("\n", "<br/>"), styles["legal"]))
+    story.append(PageBreak())
+
+    # ── Resumen ejecutivo ───────────────────────────────────────────────────────
+    story.append(Paragraph("1. Resumen ejecutivo", styles["section_h1"]))
+    story.append(Paragraph(
+        "Este documento sintetiza la viabilidad técnica, financiera y operativa del programa "
+        "de gestión integral de residuos modelado en ALQUIMIA. Está redactado para lectura "
+        "en sesión de cabildo o comité de inversiones (≤5 minutos).",
+        styles["body"],
+    ))
+
     score = manifest.get("score_datos")
     score_text = f"{score:.1f}%" if score is not None else "N/D"
-    score_color = GREEN if (score or 0) >= 70 else ORANGE
-
+    score_hex = GREEN.hexval() if (score or 0) >= 70 else ORANGE.hexval()  # type: ignore[attr-defined]
     story.append(Paragraph(
-        f'Score de datos del paquete: <font color="{score_color.hexval()}">'  # type: ignore[attr-defined]
-        f'<b>{score_text}</b></font>',
-        body_style
+        f"<b>Calidad de datos del escenario:</b> "
+        f'<font color="{score_hex}">{score_text}</font>',
+        styles["body"],
     ))
 
     n_warnings = len(manifest.get("warnings_activos") or [])
     if n_warnings:
         story.append(Paragraph(
-            f"⚠ {n_warnings} advertencia(s) activa(s) — ver Advertencias.", warn_style))
+            f"{n_warnings} advertencia(s) activa(s) — consulte la sección 4 antes de decidir.",
+            styles["legal"],
+        ))
 
-    story.append(Spacer(1, 0.5 * cm))
+    story.append(Spacer(1, 0.3 * MARGINS["top"]))
+    story.append(Paragraph("2. Indicadores clave de desempeño", styles["section_h1"]))
 
-    # ── Mensajes clave ────────────────────────────────────────────────────────
-    story.append(Paragraph("Mensajes clave del paquete", h2_style))
-
-    kpi_rows = []
-    if res.get("tir"):
-        kpi_rows.append(("TIR del proyecto", f"{res['tir']:.1f}%", "Retorno interno"))
-    if res.get("vpn"):
-        kpi_rows.append(("VPN", f"${res['vpn']:,.0f} MXN", "Valor presente neto"))
-    if res.get("capex_total"):
-        kpi_rows.append(("CAPEX total", f"${res['capex_total']:,.0f} MXN", "Inversión total"))
-    if res.get("payback_meses"):
-        kpi_rows.append(("Payback", f"{res['payback_meses']:.0f} meses", "Período de recuperación"))
-    if res.get("empleos_directos"):
-        kpi_rows.append(("Empleos directos", f"{res['empleos_directos']:.0f}", "Creación de empleo"))
-    if res.get("co2e_evitadas_anual"):
-        kpi_rows.append(("CO2e evitadas/año", f"{res['co2e_evitadas_anual']:,.0f} t", "Impacto ambiental"))
+    kpi_rows: list[tuple[str, str, str]] = []
+    if res.get("tir") is not None:
+        kpi_rows.append(("TIR del proyecto", f"{float(res['tir']):.1f}%", "Retorno interno"))
+    if res.get("vpn") is not None:
+        kpi_rows.append(("VPN", f"${float(res['vpn']):,.0f} MXN", "Valor presente neto"))
+    if res.get("capex_total") is not None:
+        kpi_rows.append(("CAPEX total", f"${float(res['capex_total']):,.0f} MXN", "Inversión total"))
+    if res.get("payback_meses") is not None:
+        kpi_rows.append(("Payback", f"{float(res['payback_meses']):.0f} meses", "Recuperación"))
+    if res.get("empleos_directos") is not None:
+        kpi_rows.append(("Empleos directos", f"{float(res['empleos_directos']):,.0f}", "Impacto social"))
+    if res.get("co2e_evitadas_anual") is not None:
+        kpi_rows.append(("CO₂e evitadas/año", f"{float(res['co2e_evitadas_anual']):,.0f} t", "Impacto ambiental"))
+    if res.get("ingresos_brutos") is not None:
+        kpi_rows.append(("Ingresos brutos", f"${float(res['ingresos_brutos']):,.0f} MXN", "Modelo de ingresos"))
 
     if kpi_rows:
         tbl = Table(
-            [["KPI", "Valor", "Descripción"]] + kpi_rows,
-            colWidths=[5 * cm, 4 * cm, 7 * cm]
+            [["Indicador", "Valor", "Interpretación"]] + kpi_rows,
+            colWidths=[5.2 * MARGINS["left"], 4.2 * MARGINS["left"], 6.8 * MARGINS["left"]],
         )
-        tbl.setStyle(TableStyle([
-            ("BACKGROUND",  (0, 0), (-1, 0), GREEN),
-            ("TEXTCOLOR",   (0, 0), (-1, 0), colors.white),
-            ("FONTNAME",    (0, 0), (-1, 0), "Helvetica-Bold"),
-            ("FONTSIZE",    (0, 0), (-1, 0), 9),
-            ("ROWBACKGROUNDS", (0, 1), (-1, -1), [colors.HexColor("#F8F6F1"), colors.white]),
-            ("FONTSIZE",    (0, 1), (-1, -1), 9),
-            ("GRID",        (0, 0), (-1, -1), 0.5, colors.HexColor("#E8E4DC")),
-            ("TOPPADDING",  (0, 0), (-1, -1), 5),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
-        ]))
+        tbl.setStyle(table_style_consulting())
         story.append(tbl)
-        story.append(Spacer(1, 0.4 * cm))
     else:
         story.append(Paragraph(
-            "Los KPIs financieros no están disponibles en este paquete. "
-            "Ver hoja 'Resultados' en 05_Modelo_Financiero_CFO.xlsx.",
-            body_style
+            "Los KPIs financieros no están disponibles en este borrador. "
+            "Complete la línea base (M01) y el modelo financiero (M09) en el simulador, "
+            "o consulte el paquete XLSX profesional.",
+            styles["body"],
         ))
 
-    # ── Fuentes ───────────────────────────────────────────────────────────────
+    # ── Fuentes y trazabilidad ────────────────────────────────────────────────
+    story.append(Paragraph("3. Fuentes y trazabilidad", styles["section_h1"]))
     fuentes = manifest.get("fuentes_usadas") or []
-    story.append(Paragraph("Fuentes declaradas", h2_style))
     if fuentes:
         for f in fuentes:
-            story.append(Paragraph(f"• {f}", body_style))
+            story.append(Paragraph(f"• {f}", styles["body_bullet"]))
     else:
-        story.append(Paragraph("Ver manifest.json del paquete para detalle de fuentes.", body_style))
+        story.append(Paragraph(
+            "Sin fuentes declaradas en el escenario. Ver matriz de trazabilidad del paquete ÁGORA.",
+            styles["body"],
+        ))
 
     # ── Advertencias ──────────────────────────────────────────────────────────
     warnings = manifest.get("warnings_activos") or []
+    story.append(Paragraph("4. Advertencias y limitaciones", styles["section_h1"]))
     if warnings:
-        story.append(Paragraph("Advertencias activas", h2_style))
         for w in warnings:
-            story.append(Paragraph(f"⚠ {w}", warn_style))
+            story.append(Paragraph(f"• {w}", styles["legal"]))
+    else:
+        story.append(Paragraph("No hay advertencias activas en el escenario modelado.", styles["body"]))
 
-    # ── Riesgos principales ───────────────────────────────────────────────────
-    story.append(Paragraph("Riesgos principales a considerar", h2_style))
-    riesgos = [
+    story.append(Paragraph("Riesgos estructurales a considerar", styles["section_h2"]))
+    for r in (
         "Cambio de administración municipal sin compromisos formalizados.",
         "Score de datos bajo — validar fuentes antes de presentar a financiadores.",
         "Reglamentos sin homologar entre municipios de la ZM.",
-    ]
-    for r in riesgos:
-        story.append(Paragraph(f"• {r}", body_style))
+    ):
+        story.append(Paragraph(f"• {r}", styles["body_bullet"]))
 
     # ── Recomendación ─────────────────────────────────────────────────────────
-    story.append(Paragraph("Recomendación", h2_style))
+    story.append(Paragraph("5. Recomendación de consultoría", styles["section_h1"]))
     story.append(Paragraph(
-        "Este paquete documental es un punto de partida institucional. "
-        "Antes de presentar ante cabildo o financiadores, verificar: "
-        "(1) fuentes legales municipales con jurista, "
-        "(2) cifras financieras con contador, "
-        "(3) advertencias activas del paquete.",
-        body_style
+        "Este borrador es insumo para deliberación institucional. Antes de cabildo o cierre "
+        "financiero, verificar: (1) marco legal con jurista municipal, "
+        "(2) cifras con tesorería/contador, (3) advertencias activas del paquete.",
+        styles["body"],
     ))
 
-    # ── Nota de trazabilidad + limitación de responsabilidad (Q-010) ─────────
-    story.append(HRFlowable(width="100%", thickness=0.5, color=GREY, spaceBefore=14))
-    story.append(Paragraph(EXPORT_LIABILITY_WAIVER.replace("\n", "<br/>"), footer_style))
-    story.append(Spacer(1, 0.25 * cm))
-    pkg_short = package_id[:16] + "…" if len(package_id) > 16 else package_id
+    # ── Pie legal ─────────────────────────────────────────────────────────────
+    story.append(Spacer(1, 0.4 * MARGINS["top"]))
+    story.append(HRFlowable(width="100%", thickness=0.5, color=BORDER, spaceBefore=8))
+    story.append(Paragraph(EXPORT_LIABILITY_WAIVER.replace("\n", "<br/>"), styles["legal"]))
+    pkg_short = package_id[:16] + "…" if len(package_id) > 16 else (package_id or "simulador")
     story.append(Paragraph(
-        f"Generado por ÁGORA GOV — ALQUIMIA  ·  Package ID: {pkg_short}  ·  "
-        f"Versión: {manifest.get('version','0.1-borrador')}  ·  "
-        f"Fecha: {date.today().isoformat()}",
-        footer_style
+        f"ALQUIMIA · Tipografía Times New Roman · Package: {pkg_short} · "
+        f"Generado {date.today().isoformat()}",
+        styles["footer"],
     ))
     story.append(Paragraph(
         "Documento generado algorítmicamente. No constituye asesoría legal, financiera ni técnica certificada.",
-        footer_style
+        styles["footer"],
     ))
 
     try:
@@ -237,5 +238,5 @@ def render_executive_pdf(
         return buf.getvalue(), None
     except Exception as e:
         reason = f"Error al construir PDF: {e}"
-        logger.error(f"PDF render falló: {reason}")
+        logger.error("PDF render falló: %s", reason)
         return None, reason

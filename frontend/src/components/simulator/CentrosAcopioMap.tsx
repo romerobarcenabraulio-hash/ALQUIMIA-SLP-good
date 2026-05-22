@@ -6,6 +6,10 @@ import { getCentrosAcopio, type CentroAcopio } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
 import { useMapCenter } from '@/hooks/useMapCenter'
+import {
+  buildRecyclersKpiContract,
+  getRecicladorasForZm,
+} from '@/lib/recicladorasCatalog'
 import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter } from 'lucide-react'
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -38,10 +42,35 @@ function escHtml(s: string) {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-export function CentrosAcopioMap() {
+export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras?: boolean } = {}) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const cityContext = useSimulatorStore(s => s.cityContext)
   const { center: mapCenter, loading: mapCenterLoading } = useMapCenter(zmActiva, cityContext?.nombre)
+
+  const municipioId = municipiosActivos[0] ?? null
+  const recicladoras = useMemo(
+    () => (showRecicladoras ? getRecicladorasForZm(zmActiva ?? 'SLP', municipioId) : []),
+    [showRecicladoras, zmActiva, municipioId],
+  )
+
+  const recyclersKpi = useMemo(
+    () =>
+      showRecicladoras
+        ? buildRecyclersKpiContract({
+            zmId: zmActiva ?? 'SLP',
+            municipioId,
+            caAnchor: mapCenter ?? undefined,
+          })
+        : null,
+    [showRecicladoras, zmActiva, municipioId, mapCenter],
+  )
+
+  useEffect(() => {
+    if (!showRecicladoras || !recyclersKpi || typeof window === 'undefined') return
+    ;(window as unknown as { __ALQUIMIA_RECYCLERS_KPI__?: typeof recyclersKpi }).__ALQUIMIA_RECYCLERS_KPI__ =
+      recyclersKpi
+  }, [showRecicladoras, recyclersKpi])
 
   const [centros, setCentros]         = useState<CentroAcopio[]>([])
   const [loading, setLoading]         = useState(true)
@@ -70,17 +99,27 @@ export function CentrosAcopioMap() {
   const allMaterials = Array.from(new Set(centros.flatMap(c => c.materiales))).sort()
 
   const mapMarkers = useMemo(
-    () => filtered
-      .filter(c => c.lat != null && c.lon != null)
-      .map(c => ({
-        id: c.centro_id,
-        lat: c.lat!,
-        lon: c.lon!,
-        title: c.nombre,
-        color: TIPO_COLORS[c.tipo] ?? '#8A857C',
-        onClick: () => setSelected(c),
+    () => [
+      ...filtered
+        .filter(c => c.lat != null && c.lon != null)
+        .map(c => ({
+          id: c.centro_id,
+          lat: c.lat!,
+          lon: c.lon!,
+          title: c.nombre,
+          color: TIPO_COLORS[c.tipo] ?? '#8A857C',
+          onClick: () => setSelected(c),
+        })),
+      ...recicladoras.map(r => ({
+        id: r.id,
+        lat: r.lat,
+        lon: r.lon,
+        title: `${r.nombre} (${r.giro})`,
+        color: '#1A5FA8',
+        onClick: undefined,
       })),
-    [filtered],
+    ],
+    [filtered, recicladoras],
   )
 
   if (loading) {
@@ -117,7 +156,39 @@ export function CentrosAcopioMap() {
           <span className="font-bold text-[#23470A]">{centros.filter(c => c.acepta_empresa).length}</span>
           <span className="ml-1 text-[#6B6760]">aceptan empresa</span>
         </div>
+        {showRecicladoras && recyclersKpi && (
+          <>
+            <div className="rounded-[8px] border border-[#BDD7F5] bg-[#EBF3FB] px-3 py-1.5">
+              <span className="font-bold text-[#1A5FA8]">{recyclersKpi.recicladoras_activas}</span>
+              <span className="ml-1 text-[#6B6760]">recicladoras ZM</span>
+            </div>
+            <div className="rounded-[8px] border border-[#BDD7F5] bg-[#EBF3FB] px-3 py-1.5">
+              <span className="font-bold text-[#1A5FA8]">{recyclersKpi.cobertura_giros_pct}%</span>
+              <span className="ml-1 text-[#6B6760]">cobertura giros</span>
+            </div>
+            <div className="rounded-[8px] border border-[#BDD7F5] bg-[#EBF3FB] px-3 py-1.5">
+              <span className="font-bold text-[#1A5FA8]">{recyclersKpi.distancia_promedio_km_ca_recicladora} km</span>
+              <span className="ml-1 text-[#6B6760]">dist. prom. CA→recicladora</span>
+            </div>
+          </>
+        )}
       </div>
+
+      {showRecicladoras && recicladoras.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2 text-[10px] text-[#6B6760]">
+          <Recycle className="h-3 w-3 text-[#1A5FA8]" />
+          <span>Recicladoras locales ({zmActiva}) — marcadores azules en mapa</span>
+          {recicladoras.map(r => (
+            <span
+              key={r.id}
+              className="rounded-full border border-[#BDD7F5] bg-white px-2 py-0.5"
+              title={r.fuente}
+            >
+              {r.giro}: {r.nombre}
+            </span>
+          ))}
+        </div>
+      )}
 
       {/* Material filter */}
       <div className="flex flex-wrap items-center gap-1.5">

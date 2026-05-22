@@ -134,6 +134,8 @@ Solo después de esta declaración procedes con la tarea.
 
 ## CONTEXTO DEL SISTEMA ALQUIMIA
 
+> **Nota v2.0:** Las cifras de esta sección describen el **caso de referencia SLP (Año 3 objetivo)**. En Fase 0-1 el simulador dimensiona desde `simulatorStore` para cualquier municipio. Ver `cursor-rules/SLP_BASELINE_REFERENCIA.md`.
+
 ### Red Física que Operas
 
 | Instalación | Cantidad | Rol |

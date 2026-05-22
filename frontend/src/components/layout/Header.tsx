@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import type { Audience } from '@/types'
@@ -158,13 +159,15 @@ export function Header() {
               </button>
             ) : null}
             <span title={exportTitle} className="inline-flex">
-              <button
-                type="button"
-                disabled
-                className="btn-primary text-[12px] px-4 py-1.5 opacity-70 cursor-not-allowed"
-              >
-                Exportar borrador PDF
-              </button>
+              <ConsultingExportButton
+                variant="header"
+                disabled={
+                  pathname !== '/simulator' ||
+                  audience === 'citizen' ||
+                  !baselineReady
+                }
+                moduleLabel="Barra superior simulador"
+              />
             </span>
           </div>
           {pathname === '/simulator' && audience && (

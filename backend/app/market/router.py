@@ -38,7 +38,7 @@ MATERIALES_MVP = ["organico", "papel", "plastico", "vidrio", "metales", "pet", "
 @router.get("/buyers", response_model=List[MaterialBuyer])
 def list_buyers(
     material: Optional[str] = Query(None, description="Filtrar por material: pet, papel, aluminio..."),
-    zm: Optional[str] = Query(None, description="Filtrar por ZM (no implementado aún — retorna nacionales)"),
+    zm: Optional[str] = Query(None, description="Filtrar por ZM: SLP, MTY, QRO, GDL"),
 ):
     """
     Lista compradores del catálogo activo.
@@ -49,7 +49,7 @@ def list_buyers(
     if material:
         buyers = get_buyers(material=material.lower(), zm=zm)
     else:
-        buyers = get_all_buyers()
+        buyers = get_all_buyers(zm=zm)
 
     return buyers
 

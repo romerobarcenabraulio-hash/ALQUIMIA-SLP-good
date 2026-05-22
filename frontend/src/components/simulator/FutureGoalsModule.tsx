@@ -16,6 +16,7 @@ import { getHitosForZm } from '@/data/hitosTimeline'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI } from '@/lib/constants'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 
 const CircularidadRoadmapMap = dynamic(
   () => import('@/components/simulator/CircularidadRoadmapMap').then(m => ({ default: m.CircularidadRoadmapMap })),
@@ -1525,9 +1526,7 @@ function PageNavFooter({ page, setPage }: { page: number; setPage: (p: number) =
         )}
       </div>
       <div className="flex gap-2">
-        <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors">
-          Exportar borrador PDF
-        </button>
+        <ConsultingExportButton moduleLabel="M03 — Metas y trayectoria" />
         <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors">
           Guardar vista
         </button>

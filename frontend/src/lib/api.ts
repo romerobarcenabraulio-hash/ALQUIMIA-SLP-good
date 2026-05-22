@@ -365,6 +365,44 @@ export async function exportReport(payload: object): Promise<ExportResponse> {
   return res.json()
 }
 
+export interface ExecutivePdfPayload {
+  zm: string
+  municipio_id: string
+  municipio_nombre: string
+  resultados?: Record<string, number>
+  snapshot_datos?: {
+    score_datos?: number
+    advertencias?: string[]
+    fuentes_usadas?: string[]
+  } | null
+  module_label?: string
+}
+
+/** PDF ejecutivo Times New Roman — consultoría ALQUIMIA desde simulador. */
+export async function downloadExecutivePdf(payload: ExecutivePdfPayload): Promise<void> {
+  const res = await fetchWithRetry(`${getApiUrl()}/export/executive-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    let msg = `Error ${res.status}`
+    try {
+      const t = await res.text()
+      const j = JSON.parse(t) as { detail?: unknown }
+      if (typeof j.detail === 'string') msg = j.detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg)
+  }
+  const blob = await res.blob()
+  const cd = res.headers.get('Content-Disposition')
+  const m = cd?.match(/filename="([^"]+)"/i)
+  const filename = m?.[1] ?? `ALQUIMIA_ejecutivo_${payload.municipio_id}.pdf`
+  triggerBrowserDownload(blob, filename)
+}
+
 export async function getDashboardSummary(payload: object): Promise<DashboardResponse> {
   const API_BASE = getApiUrl()
   const res = await backendFetch(`${API_BASE}/dashboard/summary`, {

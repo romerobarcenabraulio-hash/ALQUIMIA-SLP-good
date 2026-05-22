@@ -14,7 +14,13 @@ import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { TRAJECTORY_UI, PRECIOS_DEFAULTS, PRECIOS_RANGO, COMPOSICION_RSU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 import { getMarketBuyers } from '@/lib/api'
+import {
+  buildRecyclersKpiContract,
+  getRecicladorasForZm,
+  recicladoraToCompradorRow,
+} from '@/lib/recicladorasCatalog'
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import type { MaterialBuyer } from '@/types'
@@ -569,7 +575,7 @@ function PageNavFooter({ page, setPage }: { page: number; setPage: (p: number) =
         {page === 3 && <button type="button" className="px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D] transition-colors">Módulo 6 →</button>}
       </div>
       <div className="flex gap-2">
-        <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED]">Exportar borrador PDF</button>
+        <ConsultingExportButton moduleLabel="M05 — Mercado y trazabilidad" />
         <button type="button" className="px-3 py-2 rounded-[8px] border border-[#E8E4DC] text-[11px] text-[#6B6760] hover:bg-[#F4F2ED]">Guardar vista</button>
       </div>
     </div>
@@ -833,11 +839,27 @@ function Page1({ prob }: { prob: number }) {
 
 function Page2({ ingresoAnual }: { ingresoAnual: number }) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const municipioId = municipiosActivos[0] ?? null
   const [buyers, setBuyers] = useState<CompradorRow[]>(COMPRADORES_FALLBACK)
-  const [buyersSource, setBuyersSource] = useState<'api' | 'fallback'>('fallback')
+  const [buyersSource, setBuyersSource] = useState<'catalog_zm' | 'api' | 'fallback'>('fallback')
+
+  const localRecicladoras = useMemo(
+    () => getRecicladorasForZm(zmActiva, municipioId),
+    [zmActiva, municipioId],
+  )
 
   useEffect(() => {
     let cancelled = false
+    if (localRecicladoras.length > 0) {
+      const kpi = buildRecyclersKpiContract({ zmId: zmActiva, municipioId })
+      const rows = localRecicladoras.map(r =>
+        recicladoraToCompradorRow(r, kpi.distancia_promedio_km_ca_recicladora),
+      )
+      setBuyers(rows)
+      setBuyersSource('catalog_zm')
+      return () => { cancelled = true }
+    }
     getMarketBuyers(undefined, zmActiva)
       .then(list => {
         if (cancelled || !list?.length) return
@@ -853,7 +875,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
         if (!cancelled) setBuyersSource('fallback')
       })
     return () => { cancelled = true }
-  }, [zmActiva])
+  }, [zmActiva, municipioId, localRecicladoras])
 
   const compradoresTable = buyers
 
@@ -871,15 +893,23 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
               <div>
                 <p className="text-[12px] font-semibold text-[#1C1B18]">Compradores y colocación esperada por material</p>
                 <p className="text-[13px] text-[#6B6760] mt-0.5">
-                  {buyersSource === 'api'
+                  {buyersSource === 'catalog_zm'
+                    ? `Compradores locales ${zmActiva} — catálogo recicladoras_by_zm. No equivale a LOI firmada.`
+                    : buyersSource === 'api'
                     ? 'Fuente: catálogo /market/buyers (ZM activa). No equivale a LOI firmada.'
                     : 'Benchmark editorial — conecte backend para catálogo vivo.'}
                 </p>
               </div>
               <ProvenanceBadge
-                tipo={buyersSource === 'api' ? 'estimado' : 'manual'}
-                confianza={buyersSource === 'api' ? 0.72 : 0.45}
-                fuente={buyersSource === 'api' ? 'GET /market/buyers' : 'COMPRADORES_FALLBACK'}
+                tipo={buyersSource === 'catalog_zm' ? 'certificado' : buyersSource === 'api' ? 'estimado' : 'manual'}
+                confianza={buyersSource === 'catalog_zm' ? 0.78 : buyersSource === 'api' ? 0.72 : 0.45}
+                fuente={
+                  buyersSource === 'catalog_zm'
+                    ? 'recicladorasByZm.ts'
+                    : buyersSource === 'api'
+                      ? 'GET /market/buyers'
+                      : 'COMPRADORES_FALLBACK'
+                }
                 advertencia="Precios son referencia de mercado secundario, no cotización contractual."
               />
             </div>

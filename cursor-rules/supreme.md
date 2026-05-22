@@ -21,6 +21,7 @@
 | Módulos RSU (conteo y IDs) | `frontend/src/lib/chapterConfig.ts` |
 | Integración agentes E1 ↔ PIS | `cursor-rules/PROTOCOLO_ECOSISTEMAS_AGENTES.md` |
 | Gates y riesgos | `backend/data/state/gate_status.json`, `backend/data/risk/risk_register.json` |
+| Fuente territorio SLP (solo referencia) | `cursor-rules/SLP_BASELINE_REFERENCIA.md` |
 | Contrato logístico → financiero | `cursor-rules/HANDOFF_HERMES_KRONOS_MAY2026.txt` |
 
 **Terminología canónica (EIDOS):**

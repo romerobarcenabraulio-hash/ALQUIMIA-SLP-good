@@ -79,6 +79,9 @@ class MaterialBuyer(BaseModel):
     precio_max_mxn_kg:              float          # precio máximo MXN/kg
     calidad_requerida:              str            # "basica" | "estandar" | "alta"
     distancia_km:                   Optional[float] = None
+    lat:                            Optional[float] = None   # EPSG:4326
+    lon:                            Optional[float] = None   # EPSG:4326
+    zm_simulator_id:                Optional[str] = None     # SLP | MTY | QRO | GDL
     fuente:                         str            # descripción textual de la fuente
     fuente_tipo:                    FuenteTipoMarket
     confianza:                      float = Field(ge=0.0, le=1.0)

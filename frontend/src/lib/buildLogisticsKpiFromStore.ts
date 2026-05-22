@@ -3,6 +3,7 @@
  * Usado por M09 (CostosPrograma) y M13 (Escenarios) sin depender de window.
  */
 import { ESTACIONALIDAD } from '@/lib/constants'
+import { computeOpexLogisticaAnual, OPEX_LOGISTICA_DEFAULTS } from '@/lib/financeLogisticsCalc'
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import {
   buildLogisticsKpiContract,
@@ -19,9 +20,16 @@ export function buildLogisticsKpiFromStore(input: {
   zmActiva: string
   municipioLabel: string
   municipioId: string | null
+  claveInegi?: string | null
   capCamionTon: number
   mixCAs: { P: number; M: number; G: number }
   resultados: ResultadosCalculados | null
+  rechazoPorMat?: Record<string, number>
+  opexParams?: {
+    costoCamionMesMxn: number
+    costoVisitaMxn: number
+    costoContingenciaTonMxn: number
+  }
 }): LogisticsKpiContract | null {
   const rsuDia = input.resultados?.rsuTotalTonDia ?? 0
   const hasResultados = rsuDia > 0 && !!input.resultados?.camionesRequeridos
@@ -32,11 +40,13 @@ export function buildLogisticsKpiFromStore(input: {
   const kpis = computeLogisticsKpis(trucks)
   const seasonData = computeSeasonData(rsuDia, infra.capInstaladaTonDia, MESES, ESTACIONALIDAD)
   const totalCAs = input.mixCAs.P + input.mixCAs.M + input.mixCAs.G
+  const opexParams = input.opexParams ?? OPEX_LOGISTICA_DEFAULTS
 
-  return buildLogisticsKpiContract({
+  const draftContract = buildLogisticsKpiContract({
     zm: input.zmActiva,
     municipio: input.municipioLabel,
     municipio_id: input.municipioId,
+    clave_inegi: input.claveInegi ?? null,
     capCamionTon: input.capCamionTon,
     infra,
     trucks,
@@ -44,5 +54,24 @@ export function buildLogisticsKpiFromStore(input: {
     seasonData,
     hasResultados,
     hasM06: totalCAs > 0,
+    rechazoPorMat: input.rechazoPorMat,
+  })
+
+  const opexLog = computeOpexLogisticaAnual(draftContract, opexParams)
+
+  return buildLogisticsKpiContract({
+    zm: input.zmActiva,
+    municipio: input.municipioLabel,
+    municipio_id: input.municipioId,
+    clave_inegi: input.claveInegi ?? null,
+    capCamionTon: input.capCamionTon,
+    infra,
+    trucks,
+    kpis,
+    seasonData,
+    hasResultados,
+    hasM06: totalCAs > 0,
+    rechazoPorMat: input.rechazoPorMat,
+    opexLogisticaAnualMxn: opexLog?.opexLogisticaAnualMxn,
   })
 }

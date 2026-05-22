@@ -7,7 +7,6 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
-  Download,
   Lock,
   PanelRightClose,
   PanelRightOpen,
@@ -23,6 +22,7 @@ import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_HORIZON_HINTS, TRAJECTORY_UI } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
+import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import { GlosarioTooltip } from '@/components/ui/GlosarioTooltip'
 import { buscarTermino } from '@/data/glosario'
@@ -975,6 +975,7 @@ function BottomBar({
   const idx  = modules.findIndex(m => m.module_id === activeId)
   const prev = modules[idx - 1] ?? null
   const next = modules[idx + 1] ?? null
+  const active = modules[idx] ?? null
 
   const resultados        = useSimulatorStore(s => s.resultados)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -1002,13 +1003,10 @@ function BottomBar({
 
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[12px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
-          >
-            <Download size={13} />
-            Exportar borrador PDF
-          </button>
+          <ConsultingExportButton
+            moduleLabel={active?.label ?? 'Módulo simulador'}
+            disabled={!resultados}
+          />
           {next && (
             <button
               type="button"

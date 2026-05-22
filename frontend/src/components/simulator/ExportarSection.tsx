@@ -8,6 +8,7 @@ import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
 import { fetchAgoraPlanZip, triggerBrowserDownload } from '@/lib/api'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ExportStatusPanel } from '@/components/simulator/ExportStatusPanel'
+import { useConsultingExport } from '@/hooks/useConsultingExport'
 
 export function ExportarSection() {
   const resultados = useSimulatorStore(s => s.resultados)
@@ -17,6 +18,7 @@ export function ExportarSection() {
 
   const [agoraZipLoading, setAgoraZipLoading] = useState(false)
   const [agoraZipError, setAgoraZipError] = useState<string | null>(null)
+  const { loading: exportLoading, error: exportError, runExport } = useConsultingExport()
 
   const handleGenerar = () => {
     openAgoraPlanConfirm(() => {
@@ -121,21 +123,30 @@ export function ExportarSection() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {[
-          { label: 'PDF Ejecutivo', icon: '📄', desc: 'Reporte 1 página para alcalde y cabildo', action: 'pdf' },
-          { label: 'Excel CFO',     icon: '📊', desc: 'Modelo financiero completo con 3 escenarios', action: 'excel' },
-          { label: 'Compartir URL', icon: '🔗', desc: 'Enlace permanente a este escenario', action: 'share' },
-        ].map(item => (
+        {([
+          { label: 'PDF Ejecutivo', icon: '📄', desc: 'Reporte consultoría Times New Roman para cabildo', action: 'executive_pdf' as const },
+          { label: 'Excel CFO', icon: '📊', desc: 'Modelo financiero XLSX vía Hub profesional', action: 'hub_professional' as const },
+          { label: 'Compartir URL', icon: '🔗', desc: 'Enlace permanente a este escenario', action: 'share_url' as const },
+        ]).map(item => (
           <button
             key={item.action}
-            className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 text-left hover:border-[#3B6D11]/30 hover:bg-[#EAF3DE] transition-all group"
+            type="button"
+            disabled={!resultados && item.action !== 'share_url'}
+            onClick={() => void runExport(item.action, { moduleLabel: 'Paquete de exportación S20' })}
+            className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 text-left hover:border-[#3B6D11]/30 hover:bg-[#EAF3DE] transition-all group disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <span className="text-[24px] mb-2 block">{item.icon}</span>
             <p className="text-[13px] font-medium text-[#1C1B18]">{item.label}</p>
             <p className="text-[11px] text-[#6B6760] mt-1">{item.desc}</p>
+            {exportLoading && item.action === 'executive_pdf' && (
+              <p className="text-[10px] text-[#3B6D11] mt-2">Generando PDF…</p>
+            )}
           </button>
         ))}
       </div>
+      {exportError && (
+        <p className="text-[11px] text-red-700 mb-4">{exportError}</p>
+      )}
 
       {/* CTA principal */}
       <div className="bg-gradient-to-br from-[#1F3B06] to-[#2D5409] rounded-[20px] p-8 text-center text-white">

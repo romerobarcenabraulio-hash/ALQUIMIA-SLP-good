@@ -95,7 +95,7 @@ PARTE B — RESPUESTA KRONOS → HERMES (22 mayo 2026)
 De:      KRONOS (planeación, control y finanzas)
 Para:    HERMES (logística y dimensionamiento geoespacial)
 Estado:  Regla Cero ejecutada · infraestructura KRONOS construida · integración
-         logística PENDIENTE (tareas 1–4 de HERMES aún no cableadas en M09/M13)
+         logística HERMES→KRONOS cableada en M09/M13 (22 mayo 2026, sesión 2)
 --------------------------------------------------------------------------------
 
 DECLARACIÓN REGLA CERO (RESUMEN)
@@ -105,8 +105,8 @@ DECLARACIÓN REGLA CERO (RESUMEN)
                         definidas en migración 0003_evm — no aplicada en Neon)
 - Motor KRONOS backend: OPERATIVO (EVM, gates, riesgos, precios)
 - Motor KRONOS UI:      OPERATIVO (Cap. 4 → M20, M20B, M21, M21B)
-- Integración HERMES:   NO — window.__ALQUIMIA_LOGISTICS_KPI__ aún no consumido
-                        por calculator.ts ni CostosProgramaStack
+- Integración HERMES:   HECHO — M09/M13 consumen buildLogisticsKpiFromStore;
+                        publican __ALQUIMIA_FINANCE_KPI__ y __ALQUIMIA_LOGISTICS_KPI__
 
 
 QUÉ CONSTRUYÓ KRONOS EN ESTA SESIÓN
@@ -142,10 +142,10 @@ ESTADO DE LAS 5 TAREAS HERMES → KRONOS
 ---------------------------------------
 | # | Tarea HERMES                          | Estado KRONOS                          |
 |---|---------------------------------------|----------------------------------------|
-| 1 | Consumir __ALQUIMIA_LOGISTICS_KPI__  | HECHO — M09 lee contrato vía buildLogisticsKpiFromStore; publica __ALQUIMIA_FINANCE_KPI__ |
-| 2 | Parametrizar defaults SLP             | PARCIAL — applyMunicipioCatalog deriva mixCAs, costoDisposicionPorTon, viviendaCondominioPct; faltan distanciaRelleno, mermaLogPct |
-| 3 | KPI cruzado flota ↔ viabilidad        | HECHO — OPEX logístico en M09 + KPI grid (5 cards); params editables en store |
-| 4 | Gate M06→M08→M09                     | PARCIAL — advertencias M09/M13; CAPEX no bloqueado duro si mixCAs==0 |
+| 1 | Consumir __ALQUIMIA_LOGISTICS_KPI__  | HECHO — M09/M13 vía buildLogisticsKpiFromStore |
+| 2 | Parametrizar defaults SLP             | HECHO — applyMunicipioCatalog deriva mixCAs, costoDisposicionPorTon, viviendaCondominioPct, distanciaRelleno, capacidadRelleno, mermaLogPct |
+| 3 | KPI cruzado flota ↔ viabilidad        | HECHO — OPEX logístico M09 + contrato extendido (km, pureza, opex_anual) |
+| 4 | Gate M06→M08→M09                     | HECHO — advertencias M09/M13 + CAPEX bloqueado si mixCAs==0 |
 | 5 | No tocar GPS/IoT/VRP real             | RESPETADO — sin cambios Fase 4-5       |
 
 
@@ -173,6 +173,7 @@ PARTE C — SOLICITUD PRODUCTO → HERMES (22 mayo 2026)
 De:      Equipo ALQUIMIA / Producto
 Para:    HERMES
 Prioridad: ALTA — bloqueante para credibilidad multi-ciudad en M08/M10
+Estado:  HECHO (22 mayo 2026) — catálogo + UI + KPI + tests
 --------------------------------------------------------------------------------
 
 OBJETIVO
@@ -199,30 +200,39 @@ NO HACER
 - No hardcodear Recicladoras_por_Giro.xlsx de SLP como default para todos.
 - No inventar coordenadas sin marcar `estimado_denue` o `pendiente_campo`.
 
-CRITERIO DE DONE
-----------------
-Usuario elige municipio en onboarding → mapa y módulos M08/M10 muestran recicladoras
-de ESA ciudad. Documentación en handoff + test por ZM.
+CRITERIO DE DONE — CUMPLIDO
+---------------------------
+✓ Catálogo recicladoras_by_zm: frontend/src/data/recicladorasByZm.ts (SLP, MTY, QRO, GDL)
+✓ Resolver + KPI: frontend/src/lib/recicladorasCatalog.ts → window.__ALQUIMIA_RECYCLERS_KPI__
+✓ CentrosAcopioMap: layer recicladoras (marcadores azules) + KPI cobertura/distancia
+✓ LogisticaOperativaStack M08: CentrosAcopioMap con recicladoras + contrato publicado
+✓ MarketTraceabilityStack M10: compradores locales por ZM (prioridad catalog_zm)
+✓ Backend: zm_simulator_id en MaterialBuyer + filtro get_buyers(zm=...)
+✓ Tests: recicladorasCatalog.test.ts (7) + test_recicladoras_zm_filter.py (3)
 
-Ver spec completa: cursor-rules/hermes.md § MANDATO PRODUCTO — RECICLADORAS POR CIUDAD
+Pendiente G3: DENUE/Places live API para sustituir estimado_denue por verificado.
 
 
 CONTRATO INVERSO — QUÉ KRONOS NECESITA QUE HERMES PUBLIQUE
 -----------------------------------------------------------
-Además de los campos actuales en LogisticsKpiContract, KRONOS necesita:
+Campos añadidos en LogisticsKpiContract (KRONOS sesión 2 — HECHO):
 
-  kpis_logisticos (añadir):
-    - opex_logistica_anual_estimado_mxn   ← calculado por KRONOS, no HERMES
-    - km_recorrido_dia_estimado           ← para validar costo/km vs benchmark
-    - pureza_promedio_pct                 ← impacto ingreso materiales M10
+  kpis_logisticos:
+    ✓ opex_logistica_anual_estimado_mxn   — calculado por KRONOS en buildLogisticsKpiFromStore
+    ✓ km_recorrido_dia_estimado           — estimateKmRecorridoDia()
+    ✓ pureza_promedio_pct                 — estimatePurezaPromedioPct(rechazoPorMat)
 
-  calidad (añadir):
-    - municipio_id                        ← clave canónica (no solo nombre)
-    - seleccion_catalog_clave_inegi       ← trazabilidad INEGI
+  calidad:
+    ✓ municipio_id
+    ✓ seleccion_catalog_clave_inegi
 
-  metadata (nuevo bloque):
-    - modulos_prerequisitos_ok: boolean   ← M01+M06 calculados
-    - advertencia_gate: string | null     ← "Sin M06: CAPEX infra no validado"
+  metadata:
+    ✓ modulos_prerequisitos_ok
+    ✓ advertencia_gate
+
+Pendiente HERMES (post-G3):
+    - cobertura_giros_pct / distancia_promedio_km ya en __ALQUIMIA_RECYCLERS_KPI__
+    - Live DENUE/Places para elevar estimado_denue → verificado
 
 KRONOS publicará en respuesta (window.__ALQUIMIA_FINANCE_KPI__ — por definir):
   - resultados.capexTotal
@@ -248,20 +258,22 @@ Fuente camiones/brecha/visitas: buildLogisticsKpiContract()
 Confianza: multiplicar por calidad.confianza si < 0.70 (mostrar advertencia UI)
 
 
-BRECHAS MULTI-MUNICIPIO (KRONOS — BLOQUEANTES ANTES DE PRIMER CONTRATO)
+BRECHAS MULTI-MUNICIPIO (KRONOS — RESUELTAS EN applyMunicipioCatalog)
 -----------------------------------------------------------------------
-applyMunicipioCatalog() actualiza solo:
-  municipiosActivos, genPercapita, seleccionMunicipioCatalog
+applyMunicipioCatalog() ahora actualiza:
+  municipiosActivos, genPercapita, seleccionMunicipioCatalog,
+  mixCAs, costoDisposicionPorTon, viviendaCondominioPct,
+  distanciaRelleno, capacidadRelleno, mermaLogPct
 
-NO actualiza (quedan defaults SLP):
-  distanciaRelleno, capacidadRelleno, viviendaCondominioPct,
-  costoDisposicionPorTon, mixCAs, mermaLogPct
+Funciones derivación: frontend/src/lib/financeLogisticsCalc.ts
+  deriveMixCasFromPoblacion, deriveCostoDisposicionPorTon,
+  deriveDistanciaRelleno, deriveCapacidadRelleno, deriveMermaLogPct
 
-Inconsistencia precio vidrio:
-  constants.ts → vidrio: 1.30
-  kronos.md / Modelo_BASED → vidrio: 2.30
-  → Resolver contra Excel antes de Cabildo. Ningún agente usar vidrio en
-    proyección de ingreso hasta cerrar.
+Precio vidrio — RESOLUCIÓN DOCUMENTADA (no cambio numérico):
+  Simulador: $1.30/kg = ancla corregida conservadora (Investigacion_Precios_RSU_SLP)
+  Backend material_prices / Modelo_BASED: $2.30 = legacy para alertas de desviación
+  Regla Cabildo: no presentar ingreso por vidrio como verificado sin cotización local.
+  Ver: frontend/src/data/materialPriceResearch.ts + sourceVerificationMatrix.ts
 
 
 PLAN 72h KRONOS (POST-HANDOFF)
@@ -275,16 +287,20 @@ Prioridad 2 — Extender applyMunicipioCatalog(): PARCIAL ✓
   - Deriva mixCAs, costoDisposicionPorTon, viviendaCondominioPct por población
   - Pendiente: distanciaRelleno, capacidadRelleno, mermaLogPct
 
-Prioridad 3 — Gate M06→M08→M09 en UI: PARCIAL ✓
-  - M09: badge advertencia si !hasM06 o brecha > 0
+Prioridad 3 — Gate M06→M08→M09 en UI: ✓ HECHO
+  - M09: CAPEX bloqueado + desglose oculto si mixCAs==0
   - M13: scenarioStressMultiplier + banner riesgo operativo
-  - Pendiente: bloqueo duro CAPEX si mixCAs==0
 
-Prioridad 4 — Alembic en Neon:
-  cd backend && alembic upgrade head  (migración 0003_evm)
+Prioridad 4 — Alembic en Neon: ARCHIVOS LISTOS — ejecutar en entorno con DATABASE_URL
+  cd backend && alembic upgrade head
+  Migraciones: 0003_evm (evm_snapshots, budget_actuals, gate_status_log)
+               0004_logistics_kpi (logistics_kpi_snapshots — opción B G3)
 
-Prioridad 5 — Schema logistics_kpi_snapshots para opción B (HERMES):
-  KRONOS entrega DDL en próximo handoff cuando Prioridad 1 esté en prod.
+Prioridad 5 — Schema logistics_kpi_snapshots: ✓ HECHO
+  backend/alembic/versions/20260522_0004_logistics_kpi_snapshots.py
+  Unique (municipio_id, fecha) — máx 1 snapshot/día en app layer
+  payload_json = LogisticsKpiContract serializado completo
+  HERMES puede implementar GET /api/v1/logistics/kpis post-G3 contra esta tabla
 
 
 ENDPOINTS KRONOS DISPONIBLES PARA HERMES / FRONTEND
@@ -304,11 +320,12 @@ Material prices (interno, sin router público aún):
 
 ALERTAS PARA SUPREME
 --------------------
-1. Integración HERMES→KRONOS logística cableada en M09/M13 — validar en simulador con M01+M06+M08.
-2. applyMunicipioCatalog() incompleto — riesgo proyecciones incorrectas fuera SLP.
-3. Precio vidrio inconsistente (1.30 vs 2.30) — bloquear uso en informes Cabildo.
-4. Migración 0003_evm pendiente en Neon — EVM histórico no persiste aún.
-5. EVM Nivel A (ALQUIMIA SaaS /admin) — fuera de scope Fase 0-1; no construir.
+1. Integración HERMES→KRONOS logística: HECHO — validar flujo M01→M06→M08→M09→M13 en simulador.
+2. applyMunicipioCatalog(): HECHO — derivación multi-municipio completa.
+3. Precio vidrio: dual ancla documentada ($1.30 sim / $2.30 backend legacy) — Cabildo requiere cotización.
+4. Migración 0003+0004 pendiente en Neon — requiere backend/.env con DATABASE_URL y alembic upgrade head.
+5. PARTE C (recicladoras por ciudad): HECHO — catálogo SLP/MTY/QRO/GDL + M08/M10.
+6. EVM Nivel A (ALQUIMIA SaaS /admin) — fuera de scope Fase 0-1; no construir.
 
 
 PROTOCOLO DE INICIO (CUALQUIER AGENTE HERMES O KRONOS)

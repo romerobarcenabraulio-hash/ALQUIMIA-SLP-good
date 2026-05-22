@@ -25,10 +25,15 @@ import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { useMapCenter } from '@/hooks/useMapCenter'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { buildRecyclersKpiContract } from '@/lib/recicladorasCatalog'
 
-const GoogleMapCanvas = dynamic(
-  () => import('@/components/maps/GoogleMapCanvas').then(m => m.GoogleMapCanvas),
-  { ssr: false },
+const CentrosAcopioMap = dynamic(
+  () => import('@/components/simulator/CentrosAcopioMap').then(m => m.CentrosAcopioMap),
+  { ssr: false, loading: () => (
+    <div className="h-48 rounded-[10px] bg-[#EBF3FB] border border-[#BDD7F5] flex items-center justify-center">
+      <p className="text-[11px] text-[#1A5FA8]">Cargando mapa…</p>
+    </div>
+  ) },
 )
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
@@ -48,10 +53,11 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 }
 
 export function LogisticaOperativaStack() {
-  const { zmActiva, resultados, mixCAs, cityContext, capCamionTon, municipiosActivos } = useSimulatorStore()
+  const { zmActiva, resultados, mixCAs, cityContext, capCamionTon, municipiosActivos, rechazoPorMat, seleccionMunicipioCatalog } = useSimulatorStore()
   const municipioLabel = cityContext?.nombre ?? zmActiva
   const municipioId = municipiosActivos[0] ?? null
-  const { center: mapCenter, loading: mapLoading, source: mapSource } = useMapCenter(zmActiva, cityContext?.nombre)
+  const claveInegi = seleccionMunicipioCatalog?.claveInegi ?? null
+  const { center: mapCenter, source: mapSource } = useMapCenter(zmActiva, cityContext?.nombre)
 
   const rsuDia = resultados?.rsuTotalTonDia ?? 0
   const hasResultados = rsuDia > 0 && !!resultados?.camionesRequeridos
@@ -92,6 +98,7 @@ export function LogisticaOperativaStack() {
       zm: zmActiva,
       municipio: municipioLabel,
       municipio_id: municipioId,
+      clave_inegi: claveInegi,
       capCamionTon,
       infra,
       trucks: trucksByMaterial,
@@ -99,9 +106,16 @@ export function LogisticaOperativaStack() {
       seasonData,
       hasResultados,
       hasM06: mixCAs.P + mixCAs.M + mixCAs.G > 0,
+      rechazoPorMat,
     })
     ;(window as unknown as { __ALQUIMIA_LOGISTICS_KPI__?: typeof contract }).__ALQUIMIA_LOGISTICS_KPI__ = contract
-  }, [zmActiva, municipioLabel, municipioId, capCamionTon, infra, trucksByMaterial, logisticsKpis, seasonData, hasResultados, mixCAs])
+    const recyclers = buildRecyclersKpiContract({
+      zmId: zmActiva,
+      municipioId,
+      caAnchor: mapCenter ?? undefined,
+    })
+    ;(window as unknown as { __ALQUIMIA_RECYCLERS_KPI__?: typeof recyclers }).__ALQUIMIA_RECYCLERS_KPI__ = recyclers
+  }, [zmActiva, municipioLabel, municipioId, claveInegi, capCamionTon, infra, trucksByMaterial, logisticsKpis, seasonData, hasResultados, mixCAs, rechazoPorMat, mapCenter])
 
   const mesesSaturacion = seasonData.filter(d => d.rsu > d.cap && d.cap > 0).map(d => d.mes)
 
@@ -134,13 +148,7 @@ export function LogisticaOperativaStack() {
                 <p className="text-[10px] text-[#A8A49C]">{municipioLabel} · rutas dimensionadas · brechas críticas</p>
               </div>
               <div className="p-4">
-                {mapCenter && !mapLoading ? (
-                  <GoogleMapCanvas center={mapCenter} zoom={11} height={192} className="rounded-[10px]" />
-                ) : (
-                  <div className="h-48 rounded-[10px] bg-[#EBF3FB] border border-[#BDD7F5] flex items-center justify-center">
-                    <p className="text-[11px] text-[#1A5FA8]">Cargando mapa de {municipioLabel}…</p>
-                  </div>
-                )}
+                <CentrosAcopioMap showRecicladoras />
                 <div className="flex flex-wrap gap-3 mt-3 items-center">
                   <div className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5 text-[12px]">
                     <p className="font-bold text-[#1C1B18]">{logisticsKpis.totalCamiones}</p>

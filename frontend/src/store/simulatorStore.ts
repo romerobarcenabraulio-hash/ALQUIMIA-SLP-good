@@ -22,7 +22,7 @@ import type {
 } from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } from '@/lib/constants'
-import { OPEX_LOGISTICA_DEFAULTS, deriveCostoDisposicionPorTon, deriveMixCasFromPoblacion } from '@/lib/financeLogisticsCalc'
+import { OPEX_LOGISTICA_DEFAULTS, deriveCostoDisposicionPorTon, deriveDistanciaRelleno, deriveCapacidadRelleno, deriveMermaLogPct, deriveMixCasFromPoblacion } from '@/lib/financeLogisticsCalc'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
@@ -463,6 +463,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const sel = catalogRowToSeleccion(row)
           const mixSugerido = deriveMixCasFromPoblacion(row.poblacion)
           const costoDisp = deriveCostoDisposicionPorTon(row.poblacion)
+          const distRelleno = deriveDistanciaRelleno(row.poblacion)
+          const capRelleno = deriveCapacidadRelleno(row.poblacion, row.generacion_rsu_dia)
+          const mermaLog = deriveMermaLogPct(row.poblacion)
           if (get().zmActiva.toUpperCase() !== zmId.toUpperCase()) {
             get().setZM(zmId)
           }
@@ -473,6 +476,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
             mixCAs: mixSugerido,
             costoDisposicionPorTon: costoDisp,
             viviendaCondominioPct: row.poblacion > 500_000 ? 55 : row.poblacion > 150_000 ? 45 : 30,
+            distanciaRelleno: distRelleno,
+            capacidadRelleno: capRelleno,
+            mermaLogPct: mermaLog,
           })
           get().recalcular()
         },

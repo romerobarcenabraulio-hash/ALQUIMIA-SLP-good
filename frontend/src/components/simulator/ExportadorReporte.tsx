@@ -1,13 +1,14 @@
 'use client'
 
 import { Fragment, useMemo, useState } from 'react'
-import { getApiUrl } from '@/lib/api'
+import { getApiUrl, downloadExecutivePdf } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { AvisoMunicipioAncla } from '@/components/simulator/AvisoMunicipioAncla'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import type { ExportResponse } from '@/types'
+import { snapshotFuentesUsadas } from '@/lib/snapshotFuentes'
 
 type ExportSection =
   | 'infraestructura'
@@ -32,6 +33,10 @@ const CAUSAL = [
 ]
 
 export function ExportadorReporte() {
+  const resultados = useSimulatorStore(s => s.resultados)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const snapshotDatos = useSimulatorStore(s => s.snapshotDatos)
+  const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const municipioId = municipiosActivos[0] ?? ''
   const [municipioNombre, setMunicipioNombre] = useState('San Luis Potosí')
@@ -40,6 +45,7 @@ export function ExportadorReporte() {
   const [incluirTrazabilidad, setIncluirTrazabilidad] = useState(true)
   const [incluirAdvertencias, setIncluirAdvertencias] = useState(true)
   const [loading, setLoading] = useState(false)
+  const [pdfLoading, setPdfLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<ExportResponse | null>(null)
   const [lastPayload, setLastPayload] = useState<object | null>(null)
@@ -73,6 +79,47 @@ export function ExportadorReporte() {
       setError(e instanceof Error ? e.message : 'Incidencia operativa al generar previsualización de exportación')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handleDownloadPdf() {
+    if (!resultados) {
+      setError('Complete la línea base y el modelo financiero antes de exportar PDF.')
+      return
+    }
+    setPdfLoading(true)
+    setError(null)
+    try {
+      const seccionTxt =
+        sortedSections.length > 0
+          ? sortedSections.map(s => SECTION_LABELS[s]).join(' · ')
+          : 'Reporte ejecutivo integrado'
+      await downloadExecutivePdf({
+        zm: zmActiva,
+        municipio_id: municipioId || zmActiva,
+        municipio_nombre: municipioNombre || seleccion?.nombre || zmActiva,
+        module_label: `Expediente cabildo — ${seccionTxt}`,
+        resultados: {
+          tir: resultados.tir,
+          vpn: resultados.vpn,
+          capex_total: resultados.capexTotal,
+          payback_meses: resultados.paybackMeses,
+          empleos_directos: resultados.empleosTotalesDirectos,
+          co2e_evitadas_anual: resultados.co2eEvitadasAnualTon,
+          ingresos_brutos: resultados.ingresosBrutos,
+        },
+        snapshot_datos: snapshotDatos
+          ? {
+              score_datos: snapshotDatos.score_datos,
+              advertencias: snapshotDatos.advertencias?.map(a => a.advertencia) ?? [],
+              fuentes_usadas: snapshotFuentesUsadas(snapshotDatos),
+            }
+          : null,
+      })
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo generar el PDF')
+    } finally {
+      setPdfLoading(false)
     }
   }
 
@@ -165,16 +212,35 @@ export function ExportadorReporte() {
           </label>
         </div>
 
-        <button
-          type="button"
-          onClick={handleExport}
-          disabled={loading}
-          className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
-        >
-          {loading ? 'Previsualizando exportación...' : 'Exportar'}
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={handleExport}
+            disabled={loading || secciones.length === 0}
+            className="rounded-lg border border-[#E8E4DC] bg-white px-4 py-2 text-[12px] font-medium text-[#6B6760] disabled:opacity-50"
+          >
+            {loading ? 'Previsualizando…' : 'Previsualizar secciones'}
+          </button>
+          {formato === 'pdf' ? (
+            <button
+              type="button"
+              onClick={() => void handleDownloadPdf()}
+              disabled={pdfLoading || !resultados}
+              className="rounded-lg bg-[#2D7A0A] px-4 py-2 text-[12px] font-medium text-white disabled:opacity-50"
+            >
+              {pdfLoading ? 'Generando PDF…' : 'Descargar PDF ejecutivo'}
+            </button>
+          ) : (
+            <a
+              href="/hub"
+              className="rounded-lg bg-[#1A5FA8] px-4 py-2 text-[12px] font-medium text-white inline-flex items-center"
+            >
+              Abrir Hub — Excel CFO
+            </a>
+          )}
+        </div>
         <p className="text-[11px] text-[#6B6860]">
-          {EXPORT_SIMULATION_FOOTER_LINE} Previsualización técnica (no PDF/Excel productivo en esta versión).
+          {EXPORT_SIMULATION_FOOTER_LINE} PDF en Times New Roman vía pipeline de consultoría ALQUIMIA.
         </p>
       </div>
 

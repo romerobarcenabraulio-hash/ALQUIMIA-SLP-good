@@ -74,12 +74,17 @@ export interface LogisticsKpiContract {
     centros_activos: number
     trucks_por_material: Record<string, { camiones: number; vol_dia_ton: number; riesgo: string }>
     estacionalidad_meses_saturacion: string[]
+    km_recorrido_dia_estimado?: number
+    pureza_promedio_pct?: number
+    opex_logistica_anual_estimado_mxn?: number
   }
   calidad: {
     confianza: number
     cap_camion_ton: number
     fuente_camiones: string
     advertencia: string
+    municipio_id?: string | null
+    seleccion_catalog_clave_inegi?: string | null
   }
   metadata?: {
     modulos_prerequisitos_ok: boolean
@@ -207,11 +212,27 @@ export function computePerRoutes(trucks: TruckRow[], zmActiva: string): PerRoute
     }))
 }
 
+/** Estima km/día de flota — 55 km/camión/día base, ajuste por densidad urbana. */
+export function estimateKmRecorridoDia(totalCamiones: number, brechaTonDia: number): number {
+  if (totalCamiones <= 0) return 0
+  const kmPorCamion = brechaTonDia > 5 ? 68 : brechaTonDia > 0 ? 62 : 55
+  return Math.round(totalCamiones * kmPorCamion * 10) / 10
+}
+
+/** Pureza promedio ponderada — 100 menos rechazo promedio de materiales valorizables. */
+export function estimatePurezaPromedioPct(rechazoPorMat?: Record<string, number>): number {
+  if (!rechazoPorMat) return 85
+  const keys = ['organico', 'papel', 'plastico', 'vidrio', 'aluminio'] as const
+  const avgRechazo = keys.reduce((s, k) => s + (rechazoPorMat[k] ?? 8), 0) / keys.length
+  return Math.round((100 - avgRechazo) * 10) / 10
+}
+
 /** Contrato de datos hacia KRONOS — dimensionamiento conceptual Fase 0-1. */
 export function buildLogisticsKpiContract(params: {
   zm: string
   municipio: string
   municipio_id?: string | null
+  clave_inegi?: string | null
   capCamionTon: number
   infra: InfraOperativaSummary
   trucks: TruckRow[]
@@ -219,6 +240,8 @@ export function buildLogisticsKpiContract(params: {
   seasonData: SeasonMonthRow[]
   hasResultados: boolean
   hasM06?: boolean
+  opexLogisticaAnualMxn?: number
+  rechazoPorMat?: Record<string, number>
 }): LogisticsKpiContract {
   const trucksPorMaterial: LogisticsKpiContract['kpis_logisticos']['trucks_por_material'] = {}
   for (const t of params.trucks) {
@@ -245,6 +268,12 @@ export function buildLogisticsKpiContract(params: {
       estacionalidad_meses_saturacion: params.seasonData
         .filter(d => d.rsu > d.cap && d.cap > 0)
         .map(d => d.mes),
+      km_recorrido_dia_estimado: estimateKmRecorridoDia(
+        params.kpis.totalCamiones,
+        params.infra.brechaTonDia,
+      ),
+      pureza_promedio_pct: estimatePurezaPromedioPct(params.rechazoPorMat),
+      opex_logistica_anual_estimado_mxn: params.opexLogisticaAnualMxn ?? undefined,
     },
     calidad: {
       confianza: params.hasResultados ? 0.62 : 0.25,
@@ -253,6 +282,8 @@ export function buildLogisticsKpiContract(params: {
         ? 'resultados.camionesRequeridos'
         : 'pendiente — complete M01',
       advertencia: 'Dimensionamiento conceptual — sin validación de campo',
+      municipio_id: params.municipio_id ?? null,
+      seleccion_catalog_clave_inegi: params.clave_inegi ?? null,
     },
     metadata: {
       modulos_prerequisitos_ok: params.hasResultados && (params.hasM06 ?? params.infra.centrosActivos > 0),

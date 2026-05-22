@@ -162,6 +162,8 @@ Solo después de esta declaración calculas, reportas o modificas cualquier cosa
 
 ### Proyecciones Financieras Base del Modelo
 
+> **Nota v2.0:** Cifras del piloto SLP. Para municipios genéricos usar motor parametrizado (`simulatorStore`, `financeLogisticsCalc.ts`). Referencia: `cursor-rules/SLP_BASELINE_REFERENCIA.md`.
+
 ```
 VPN objetivo: $756M MXN
 CAPEX recicladoras: $16.2M MXN (5 unidades)

@@ -14,7 +14,7 @@
 | **S1** | **APROBADO.** Nombre propio: **ALQUIMIA**. Descriptor: *plataforma de consultoría integral de gestión pública municipal*. Badge corto: *Plataforma de consultoría integral*. | EIDOS propaga en copy restante |
 | **S2** | **APROBADO.** [supreme.md](supreme.md) actualizado v2.0 multi-ciudad. SLP = caso de referencia, no constante. | EIDOS autorizado para hermes.md y kronos.md |
 | **S3** | **AUTORIZADO** propagar terminología multi-sector en hermes.md y kronos.md, referenciando supreme.md v2.0. | EIDOS ejecuta |
-| **S4** | **RESUELTO.** Fuente: [chapterConfig.ts](../frontend/src/lib/chapterConfig.ts). **35 módulos de decisión** (M01–M21B) + **M00 guía** = **36 ítems journey**. Cap.1=13, Cap.2=9, Cap.3=5, Cap.4=8. | Briefing y CONSTITUCION corregidos |
+| **S4** | **RESUELTO.** 35 módulos + M00 = 36 ítems. Briefing y CONSTITUCION corregidos. | Hecho |
 | **S5** | **APROBADO.** [PROTOCOLO_ECOSISTEMAS_AGENTES.md](PROTOCOLO_ECOSISTEMAS_AGENTES.md) creado. | Referencia permanente |
 | **S6** | **APROBADO.** Catálogo `/gobierno`: **servicio sectorial**. Simulador: **módulo** (M00–M21B). | EIDOS propaga en gobierno/page.tsx |
 | **S7** | **NO son sinónimos.** **Cadena de custodia** = legal/normativo (reglamento, folio, sanción). **Trazabilidad** = técnica (evidencia digital, fuentes de cálculo M19). | Glosario eidos.md actualizado |
@@ -39,6 +39,14 @@
 2. Copy residual "simulador RSU" en cursor rules → descriptor canónico
 3. Verificar footers y stacks con grep post-propagación
 
+## Entregables Wave 2
+
+| Documento | Enlace | Estado |
+|-----------|--------|--------|
+| Changelog Wave 2 | [CHANGELOG_WAVE2_2026-05-22.md](CHANGELOG_WAVE2_2026-05-22.md) | Hecho |
+| Referencia SLP | [SLP_BASELINE_REFERENCIA.md](SLP_BASELINE_REFERENCIA.md) | Hecho |
+| Respuesta EIDOS | [RESPUESTA_EIDOS_A_SUPREME_2026-05-22.md](RESPUESTA_EIDOS_A_SUPREME_2026-05-22.md) | Hecho |
+
 ---
 
-*SUPREME · Wave 2 cerrado · 22 mayo 2026*
+*Ver changelog completo en CHANGELOG_WAVE2_2026-05-22.md*

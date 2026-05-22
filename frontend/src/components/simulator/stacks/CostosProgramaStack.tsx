@@ -44,15 +44,19 @@ export function CostosProgramaStack() {
   const costoCamionMesMxn = useSimulatorStore(s => s.costoCamionMesMxn)
   const costoVisitaMxn = useSimulatorStore(s => s.costoVisitaMxn)
   const costoContingenciaTonMxn = useSimulatorStore(s => s.costoContingenciaTonMxn)
+  const rechazoPorMat = useSimulatorStore(s => s.rechazoPorMat)
+  const seleccionMunicipioCatalog = useSimulatorStore(s => s.seleccionMunicipioCatalog)
   const setCostoCamionMesMxn = useSimulatorStore(s => s.setCostoCamionMesMxn)
   const setCostoVisitaMxn = useSimulatorStore(s => s.setCostoVisitaMxn)
   const setCostoContingenciaTonMxn = useSimulatorStore(s => s.setCostoContingenciaTonMxn)
 
   const municipioLabel = cityContext?.nombre ?? zmActiva
   const municipioId = municipiosActivos[0] ?? null
+  const claveInegi = seleccionMunicipioCatalog?.claveInegi ?? null
   const totalCAs = mixCAs.P + mixCAs.M + mixCAs.G
   const hasM01 = (resultados?.rsuTotalTonDia ?? 0) > 0
   const hasM06 = totalCAs > 0
+  const capexBloqueado = !hasM06
 
   const logisticsContract = useMemo(
     () =>
@@ -60,11 +64,14 @@ export function CostosProgramaStack() {
         zmActiva,
         municipioLabel,
         municipioId,
+        claveInegi,
         capCamionTon,
         mixCAs,
         resultados,
+        rechazoPorMat,
+        opexParams: { costoCamionMesMxn, costoVisitaMxn, costoContingenciaTonMxn },
       }),
-    [zmActiva, municipioLabel, municipioId, capCamionTon, mixCAs, resultados],
+    [zmActiva, municipioLabel, municipioId, claveInegi, capCamionTon, mixCAs, resultados, rechazoPorMat, costoCamionMesMxn, costoVisitaMxn, costoContingenciaTonMxn],
   )
 
   const opexLogistica = useMemo(
@@ -136,16 +143,17 @@ export function CostosProgramaStack() {
   ])
 
   const gateAdvertencia =
-    logisticsContract?.metadata?.advertencia_gate ??
-    (!hasM06 ? 'Configure al menos un centro de acopio en M06 antes de usar CAPEX en Cabildo.' : null)
+    capexBloqueado
+      ? 'CAPEX bloqueado — configure al menos un centro de acopio en M06 (Infraestructura) antes de usar costos en Cabildo.'
+      : logisticsContract?.metadata?.advertencia_gate ?? null
 
   const kpis = [
     {
       icon: DollarSign,
       label: 'CAPEX TOTAL',
-      value: fmtMXN(capexTotal),
-      sub: `${mixCAs.P}P + ${mixCAs.M}M + ${mixCAs.G}G centros`,
-      color: '#2F6B1F',
+      value: capexBloqueado ? 'Bloqueado' : fmtMXN(capexTotal),
+      sub: capexBloqueado ? 'Requiere M06' : `${mixCAs.P}P + ${mixCAs.M}M + ${mixCAs.G}G centros`,
+      color: capexBloqueado ? '#C0392B' : '#2F6B1F',
     },
     {
       icon: Clock,
@@ -223,24 +231,33 @@ export function CostosProgramaStack() {
           LECTURA EJECUTIVA
         </p>
         <p className="text-[14px] leading-relaxed text-[#1F2933]">
-          El programa requiere una inversión inicial de <strong>{fmtMXN(capexTotal)}</strong> y
-          un costo operativo de <strong>{fmtMXN(opexMesTotalConLogistica)}/mes</strong>
-          {opexLogistica ? (
-            <> (centros + logística estimada desde M08)</>
+          {capexBloqueado ? (
+            <>
+              <strong>CAPEX no disponible</strong> — el mix de centros de acopio está en cero.
+              Complete M06 (Infraestructura) para dimensionar inversión inicial antes de Cabildo.
+            </>
           ) : (
-            <> para operar centros de acopio</>
-          )}{' '}
-          — {totalCAs} centro{totalCAs !== 1 ? 's' : ''} de acopio,{' '}
-          <strong>{empleosTotal} empleos directos</strong>.
-          {opexAnualTotal > 0 && (
-            <> OPEX anual total estimado: <strong>{fmtMXN(opexAnualTotal)}</strong>.</>
+            <>
+              El programa requiere una inversión inicial de <strong>{fmtMXN(capexTotal)}</strong> y
+              un costo operativo de <strong>{fmtMXN(opexMesTotalConLogistica)}/mes</strong>
+              {opexLogistica ? (
+                <> (centros + logística estimada desde M08)</>
+              ) : (
+                <> para operar centros de acopio</>
+              )}{' '}
+              — {totalCAs} centro{totalCAs !== 1 ? 's' : ''} de acopio,{' '}
+              <strong>{empleosTotal} empleos directos</strong>.
+              {opexAnualTotal > 0 && (
+                <> OPEX anual total estimado: <strong>{fmtMXN(opexAnualTotal)}</strong>.</>
+              )}
+              {tir !== null && tir > 0
+                ? ` La TIR proyectada de ${fmtN(tir)}% indica que el programa se recupera solo.`
+                : ''}
+              {' '}Los precios de equipamiento están verificados contra mercado mexicano (mayo 2026).
+              Esta información permite al tesorero municipal evaluar la viabilidad presupuestal antes
+              de sesión de cabildo.
+            </>
           )}
-          {tir !== null && tir > 0
-            ? ` La TIR proyectada de ${fmtN(tir)}% indica que el programa se recupera solo.`
-            : ''}
-          {' '}Los precios de equipamiento están verificados contra mercado mexicano (mayo 2026).
-          Esta información permite al tesorero municipal evaluar la viabilidad presupuestal antes
-          de sesión de cabildo.
         </p>
       </div>
 
@@ -404,7 +421,13 @@ export function CostosProgramaStack() {
       </div>
 
       {/* S4: Desglose detallado — CapexOpexBreakdown (componente existente con tabs P/M/G) */}
-      <CapexOpexBreakdown />
+      {capexBloqueado ? (
+        <div className="rounded-[14px] border border-red-200 bg-red-50 px-5 py-4 text-[13px] text-red-900">
+          Desglose CAPEX/OPEX bloqueado hasta configurar centros de acopio en M06.
+        </div>
+      ) : (
+        <CapexOpexBreakdown />
+      )}
 
     </div>
   )

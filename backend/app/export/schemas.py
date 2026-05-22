@@ -22,7 +22,7 @@ class DocumentTheme(BaseModel):
     version:         str = "0.1-borrador"
     color_primary:   str = "#3B6D11"     # Verde ALQUIMIA
     color_secondary: str = "#1A5FA8"     # Azul institucional
-    typography:      str = "Calibri"
+    typography:      str = "Times New Roman"
     footer_text:     str = "Generado por ÁGORA GOV — ALQUIMIA · Confidencial"
     logo_path:       Optional[str] = None
 
@@ -133,3 +133,13 @@ class ExportResponse(BaseModel):
     formato: ExportFormat
     secciones_exportadas: List[SeccionExportada]
     metadata: Dict[str, str]
+
+
+class ExecutivePdfRequest(BaseModel):
+    """Payload para PDF ejecutivo desde simulador (sin paquete ÁGORA previo)."""
+    zm: str = "ZM"
+    municipio_id: str
+    municipio_nombre: str = ""
+    resultados: Optional[Dict[str, float]] = None
+    snapshot_datos: Optional[Dict[str, object]] = None
+    module_label: Optional[str] = None

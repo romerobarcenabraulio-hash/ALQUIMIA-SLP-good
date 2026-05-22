@@ -521,6 +521,11 @@ export function InspeccionStack() {
               key={btn.label}
               type="button"
               disabled={btn.disabled}
+              onClick={
+                btn.label === 'Generar PDF'
+                  ? () => document.getElementById('inspeccion-expediente-pdf')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  : undefined
+              }
               className={cn(
                 'flex flex-col items-center gap-1 rounded-[10px] border px-3 py-3 text-center transition-shadow hover:shadow-sm',
                 btn.bg,
