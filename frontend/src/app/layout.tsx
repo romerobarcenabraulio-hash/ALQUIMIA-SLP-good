@@ -3,8 +3,9 @@ import { ReglamentoFuenteProvider } from '@/components/reglamento/ReglamentoModa
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'ALQUIMIA — Plataforma de Circularidad Municipal',
-  description: 'Simulador de valorización de RSU para municipios mexicanos. Transforma residuos en recursos.',
+  title: 'ALQUIMIA — Consultoría integral de gestión pública municipal',
+  description:
+    'Plataforma de consultoría integral para gobiernos municipales: RSU, diagnóstico jurídico y entregables de consultoría.',
   keywords: 'RSU, reciclaje, municipios, circularidad, residuos sólidos, México',
 }
 
