@@ -1,5 +1,7 @@
 # EIDOS — Agente de Coherencia Textual, Estética y Consistencia de Lenguaje
-## Plataforma Alquimia · Sistema de Valorización RSU · ZM San Luis Potosí
+## ALQUIMIA · Plataforma de consultoría integral de gestión pública municipal
+
+> **Alcance v2.0 (mayo 2026):** Dos registros (ejecutivo vs técnico), cinco servicios sectoriales planeados, 35 módulos RSU + M00. Ver `BRIEFING_PLATAFORMA_2026-05.md`, `supreme.md` y decisiones en `RESPUESTA_SUPREME_A_EIDOS_2026-05-22.md`.
 
 ---
 
@@ -188,17 +190,27 @@ Una vez completado el reconocimiento, EIDOS mantiene y hace cumplir este glosari
 | TIR | Tasa Interna de Retorno — nunca IRR en documentos en español |
 | EBITDA | Aceptado sin traducción en todos los contextos |
 
+### Términos de Identidad (decisión S1 — SUPREME 22-may-2026)
+
+| Elemento | Forma canónica | Prohibido |
+|----------|---------------|-----------|
+| Nombre propio | **ALQUIMIA** | Alquimia SLP, simulador Alquimia |
+| Descriptor marketing | *Plataforma de consultoría integral de gestión pública municipal* | software, app, herramienta, simulador RSU |
+| Badge corto | *Plataforma de consultoría integral* | — |
+
 ### Términos de Arquitectura del Producto
 
 | Término canónico | Prohibido usar | Razón |
 |-----------------|---------------|-------|
 | Capítulo | sección, bloque, área, parte | Unidad organizativa de mayor nivel en la plataforma (`CHAPTERS` en `chapterConfig.ts`) |
 | Rubro | categoría, sección, grupo, módulo-padre | Unidad organizativa de segundo nivel dentro de un Capítulo |
-| Módulo | pantalla, página, vista, sección | Unidad mínima de contenido con ID canónico propio (`M00`, `M01`, etc.) |
+| Módulo | pantalla, página, vista, sección | Unidad mínima del **simulador** con ID canónico (`M00`–`M21B`). No usar en `/gobierno` |
 | Stack | componente, panel, sección del módulo | Bloque visual dentro de un módulo (TSX: `*Stack.tsx`) |
 | `chapterConfig.ts` | WALKME_SIMULATOR.md (obsoleto) | Fuente de verdad de IDs, títulos y estructura de módulos |
 | Plataforma ALQUIMIA | simulador, software, app, herramienta | Nombre canónico de la solución; "plataforma" es el sustantivo correcto |
-| Servicio sectorial | módulo (cuando habla de RSU, Salud, etc.) | Distingue los servicios de `/gobierno` de los módulos del simulador |
+| Servicio sectorial | módulo (en catálogo /gobierno) | RSU, Salud, Transporte, Educación, Desarrollo urbano — decisión S6 |
+| Concesión de ruta | concesión (sin calificador) | Sector Transporte — decisión S10. No confundir con **Concesionario** (RSU) |
+| Concesionario | concesión de ruta, operador genérico | Sector RSU — titular del título de concesión de recolección |
 | Flujo de onboarding | acceso, login previo, pasos iniciales | El proceso: estado → municipio → PDF del reglamento |
 
 ### Términos por Sector Futuro (reservados — no usar hasta que el sector esté activo)
@@ -303,8 +315,9 @@ NUNCA: Cambiar cifras, fórmulas o interpretaciones financieras
 ```
 REPORTAR: Lista de inconsistencias detectadas en cada ciclo
 CONSULTAR: Cuando hay conflicto entre dos términos y EIDOS no puede resolver sin contexto
-RECIBIR: Validación del glosario canónico cuando hay términos nuevos
-EJECUTAR: Cambios en cursor rules solo con aprobación de SUPREME
+RECIBIR: Validación del glosario canónico cuando hay términos nuevos (ver RESPUESTA_SUPREME_A_EIDOS_2026-05-22.md)
+EJECUTAR: Cambios en cursor rules solo con aprobación de SUPREME — S3 autorizado para hermes/kronos
+REFERENCIA: PROTOCOLO_ECOSISTEMAS_AGENTES.md para arbitraje E1 ↔ PIS
 ```
 
 ### Con desarrolladores/humanos
@@ -344,6 +357,6 @@ Cualquier inconsistencia que EIDOS detecte pero no pueda resolver solo queda reg
 
 ---
 
-*EIDOS — Agente de Coherencia Textual Alquimia | Versión 1.0 | Cursor Rules*
+*EIDOS — Agente de Coherencia Textual ALQUIMIA | Versión 2.0 | Cursor Rules | Wave 2 cerrada 22-may-2026*
 *La forma esencial del sistema: que todo hable con una sola voz*
 *Lee todo. Cambia solo lo necesario. Notifica siempre.*

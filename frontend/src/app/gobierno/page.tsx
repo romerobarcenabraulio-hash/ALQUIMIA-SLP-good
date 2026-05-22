@@ -200,7 +200,7 @@ function ServiceCard({ s, onNotify }: { s: ServiceDef; onNotify: (id: string) =>
           className="inline-flex items-center justify-center gap-2 rounded-[10px] px-4 py-2.5 text-[13px] font-medium text-white transition-all hover:opacity-90"
           style={{ background: s.color }}
         >
-          Entrar al módulo
+          Entrar al servicio
           <ArrowRight className="w-3.5 h-3.5" />
         </Link>
       ) : (
@@ -310,7 +310,7 @@ export default function GobiernoPage() {
           <p className="text-[11px] uppercase tracking-[0.12em] text-[#5A8A3A] mb-3">¿Aún no tienes acceso?</p>
           <h2 className="font-serif text-[28px] text-white mb-4">Agenda una demo con tu municipio</h2>
           <p className="text-[14px] text-[#7AAB60] leading-[1.7] mb-8">
-            Te mostramos el módulo RSU en 45 minutos con datos de tu municipio. Si queda claro el valor,
+            Te mostramos el servicio sectorial RSU en 45 minutos con datos de tu municipio. Si queda claro el valor,
             coordinamos el contrato de acceso institucional.
           </p>
           <a

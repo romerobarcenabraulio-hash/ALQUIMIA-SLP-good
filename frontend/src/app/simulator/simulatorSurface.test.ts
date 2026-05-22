@@ -7,13 +7,15 @@ import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
 const readFrontend = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('simulator functionary surface', () => {
-  it('expone 32 módulos funcionario (guía + 31 capítulos) con trazabilidad al cierre', () => {
+  it('expone 36 ítems funcionario (guía + 35 módulos) con gate_status al cierre', () => {
     expect(AUDIENCE_MODULES.functionary).toEqual([
       'guia_circularidad',
       ...FUNCTIONARY_MODULE_ORDER,
     ])
+    expect(AUDIENCE_MODULES.functionary).toHaveLength(36)
     expect(AUDIENCE_MODULES.functionary).toContain('organigrama_diagnostico')
-    expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('trazabilidad')
+    expect(AUDIENCE_MODULES.functionary).toContain('evm_dashboard')
+    expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('gate_status')
   })
 
   it('renderiza stacks dedicados para planificación, fiscal-social y escenarios', () => {
