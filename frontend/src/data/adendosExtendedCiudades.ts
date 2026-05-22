@@ -30,6 +30,8 @@ type PerfilNlReg = {
   verif: string
   uma: string
   bando: string
+  /** Nombre de archivo bajo `public/reglamentos/` cuando hay PDF en línea. */
+  pdfEnLinea?: string
 }
 
 function packSinRsu(p: PerfilSinRsu): AdendoCiudadData[] {
@@ -110,12 +112,15 @@ ${p.poa}` + NOTA,
 }
 
 function packNlReg(p: PerfilNlReg): AdendoCiudadData[] {
+  const pdfNota = p.pdfEnLinea
+    ? `PDF en línea: \`/reglamentos/${p.pdfEnLinea}\` — en_revision. `
+    : ''
   const ad1: AdendoCiudadData = {
     nombreReglamento: p.reg,
     anio: p.anio,
     numeroArticulo: 'Art. [●] definiciones [VERIFICAR no. tras PDF]',
-    textoVigente: `Instrumento declarado en seed ALQUIMIA; ${p.verif}`,
-    pdfCargado: false,
+    textoVigente: `${pdfNota}Instrumento declarado en seed ALQUIMIA; ${p.verif}`,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}ADICIÓN al artículo de definiciones del ${p.reg} (${p.anio}) — ${p.nombre}.
 Fracciones: condominio; administración; centro de acopio; programa cinco fracciones conforme a lineamientos SEMARNAT aplicables; fracciones específicas.
 
@@ -126,7 +131,7 @@ Autoridad: ${p.secretaria}. ${p.verif}` + NOTA,
     anio: p.anio,
     numeroArticulo: 'Art. [●] Bis Modelos A/B [VERIFICAR]',
     textoVigente: p.verif,
-    pdfCargado: false,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}Art. [●] Bis. Modelos de recolección en condominios (A municipal / B con transportista autorizado). ${p.secretaria} asigna esquema conforme a densidad e infraestructura.
 
 ${p.verif}` + NOTA,
@@ -136,7 +141,7 @@ ${p.verif}` + NOTA,
     anio: p.anio,
     numeroArticulo: 'Art. [●] obligaciones habitantes [VERIFICAR]',
     textoVigente: p.verif,
-    pdfCargado: false,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}Adición de obligaciones a habitantes de condominios sujetos a cinco fracciones: separar; no mezclar; cumplir horarios; contenedor correcto.
 
 ${p.secretaria}. ${p.verif}` + NOTA,
@@ -146,7 +151,7 @@ ${p.secretaria}. ${p.verif}` + NOTA,
     anio: p.anio,
     numeroArticulo: 'Art. [●] Bis administraciones [VERIFICAR]',
     textoVigente: p.verif,
-    pdfCargado: false,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}Art. [●] Bis. Cinco obligaciones operativas de administraciones (infraestructura, contenedores, información, inspección, comunicación a ${p.secretaria}).
 
 ${p.verif}` + NOTA,
@@ -156,7 +161,7 @@ ${p.verif}` + NOTA,
     anio: p.anio,
     numeroArticulo: 'Sanciones — reforma tabulador / arts. [VERIFICAR]',
     textoVigente: `Requiere cotejar supuestos de multas con ${p.bando} y reglamento. ${p.verif}`,
-    pdfCargado: false,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}Integrar escalera 4→8→12 cuotas ${p.uma} en tres niveles para condominios en cinco fracciones, armonizada con tabulador municipal y ${p.bando}.
 
 [REDACCIÓN PENDIENTE — ${p.bando}]
@@ -168,7 +173,7 @@ ${p.verif}` + NOTA,
     anio: p.anio,
     numeroArticulo: 'Transitorios 1–6',
     textoVigente: 'Transitorios del decreto; verificar Gaceta/POE NL.',
-    pdfCargado: false,
+    pdfCargado: Boolean(p.pdfEnLinea),
       adendoPropuesto: `${B}TRANSITORIOS para reforma al ${p.reg}: vigencia; gradualidad; 180 días educativos; programa implementación; derogatorias; difusión.
 
 Armonizar con orden de publicación NL y ${p.secretaria}. ${p.verif}` + NOTA,
@@ -176,15 +181,16 @@ Armonizar con orden de publicación NL y ${p.secretaria}. ${p.verif}` + NOTA,
   return [ad1, ad2, ad3, ad4, ad5, ad6]
 }
 
-const SOL_P: PerfilSinRsu = {
+const SOL = packNlReg({
   nombre: 'Soledad de Graciano Sánchez',
-  estado: 'SLP',
+  reg: 'Reglamento de Aseo Público de Soledad de Graciano Sánchez',
+  anio: 2013,
   secretaria: 'Secretaría de Servicios Públicos Municipales de Soledad [VERIFICAR]',
-  leySupletoria: 'Ley Estatal en materia de residuos sólidos de San Luis Potosí [VERIFICAR título y artículos en fuente oficial]',
-  poa: '[VERIFICAR EN FUENTE OFICIAL: POE_SLP_Soledad_reglamento_limpia_o_rsu.pdf]',
+  verif: 'Publicado 18-JUN-2013 según carátula; extracción de artículos pendiente agentes ALQUIMIA.',
+  pdfEnLinea: 'SLP_sol_reglamento_aseo_publico_2013.pdf',
   uma: 'UMA INEGI (federal); armonizar con Bando de Soledad',
   bando: 'Bando de Policía y Buen Gobierno de Soledad de Graciano Sánchez',
-}
+})
 const CSP_P: PerfilSinRsu = {
   nombre: 'Cerro de San Pedro',
   estado: 'SLP',
@@ -222,24 +228,26 @@ const JUA_P: PerfilSinRsu = {
   uma: 'UMA INEGI; Bando Juárez NL',
   bando: 'Bando de Policía y Buen Gobierno de Juárez, Nuevo León',
 }
-const GDL_P: PerfilSinRsu = {
+const GDL = packNlReg({
   nombre: 'Guadalajara',
-  estado: 'Jal.',
+  reg: 'Reglamento de Aseo Público y Gestión Integral del Municipio de Guadalajara',
+  anio: 2016,
   secretaria: 'Secretaría de Servicios Públicos de Guadalajara [VERIFICAR competencia RSU]',
-  leySupletoria: 'Ley Estatal de Gestión Integral de Residuos de Jalisco [VERIFICAR]',
-  poa: '[VERIFICAR EN FUENTE OFICIAL: descarga manual POE_JAL_Guadalajara_reglamento_limpia_rsu.pdf — ALQUIMIA no tiene PDF verificado en repo]',
+  verif: 'PDFs en línea (gestión integral + aseo público); extracción de artículos pendiente agentes ALQUIMIA.',
+  pdfEnLinea: 'GDL_gdl_guadalajara_reglamento_aseo_publico.pdf',
   uma: 'UMA INEGI; Bando Guadalajara',
   bando: 'Bando de Policía y Buen Gobierno de Guadalajara',
-}
-const ZAP_P: PerfilSinRsu = {
+})
+const ZAP = packNlReg({
   nombre: 'Zapopan',
-  estado: 'Jal.',
+  reg: 'Reglamento de Prevención y Gestión Integral de Residuos del Municipio de Zapopan',
+  anio: 2024,
   secretaria: 'Secretaría de Servicios Públicos de Zapopan [VERIFICAR]',
-  leySupletoria: 'Ley Estatal de Gestión Integral de Residuos de Jalisco [VERIFICAR]',
-  poa: '[VERIFICAR EN FUENTE OFICIAL: POE_JAL_Zapopan_reglamento_limpia_rsu.pdf — ALQUIMIA no tiene PDF verificado en repo]',
+  verif: 'PDF Oct 2024 en línea; extracción de artículos pendiente agentes ALQUIMIA.',
+  pdfEnLinea: 'GDL_zap_zapopan_reglamento_gestion_integral_residuos.pdf',
   uma: 'UMA INEGI; Bando Zapopan',
   bando: 'Bando de Policía y Buen Gobierno de Zapopan',
-}
+})
 const TLA_P: PerfilSinRsu = {
   nombre: 'San Pedro Tlaquepaque',
   estado: 'Jal.',
@@ -264,7 +272,8 @@ const GUA = packNlReg({
   reg: 'Reglamento de Limpia Municipal de Guadalupe, NL',
   anio: 2018,
   secretaria: 'Secretaría de Servicios Públicos de Guadalupe',
-  verif: '[VERIFICAR EN FUENTE OFICIAL: POE_NL_Guadalupe_reglamento_limpia_2018.pdf]',
+  verif: 'PDF en línea; extracción de artículos pendiente agentes ALQUIMIA.',
+  pdfEnLinea: 'MTY_gua_guadalupe_reglamento_limpia.pdf',
   uma: 'UMA INEGI (NL)',
   bando: 'Bando municipal de Policía y Buen Gobierno de Guadalupe',
 })
@@ -273,7 +282,8 @@ const APO = packNlReg({
   reg: 'Reglamento de Servicios de Limpia de Apodaca, NL',
   anio: 2017,
   secretaria: 'Secretaría de Servicios Públicos de Apodaca',
-  verif: '[VERIFICAR EN FUENTE OFICIAL: POE_NL_Apodaca_reglamento_limpia_2017.pdf]',
+  verif: 'PDF SISTEC en línea; verificar ámbito municipal exacto; extracción pendiente agentes.',
+  pdfEnLinea: 'MTY_apo_apodaca_reglamento_proteccion_ambiente_sistec.pdf',
   uma: 'UMA INEGI (NL)',
   bando: 'Bando municipal de Policía y Buen Gobierno de Apodaca',
 })
@@ -291,7 +301,8 @@ const GAR = packNlReg({
   reg: 'Reglamento de Limpia de García, NL',
   anio: 2021,
   secretaria: 'Secretaría de Servicios Públicos de García',
-  verif: '[VERIFICAR EN FUENTE OFICIAL: POE_NL_Garcia_reglamento_limpia_2021.pdf]',
+  verif: 'PDF interno parcial en línea; localizar reglamento maestro de limpia antes de trabajo notarial.',
+  pdfEnLinea: 'MTY_gar_garcia_R-IRMG-3-40_instruccion_interna.pdf',
   uma: 'UMA INEGI (NL)',
   bando: 'Bando municipal de Policía y Buen Gobierno de García',
 })
@@ -319,13 +330,13 @@ function byAdendo(
 }
 
 const _packs: Record<string, AdendoCiudadData[]> = {
-  sol: packSinRsu(SOL_P),
+  sol: SOL,
   csp: packSinRsu(CSP_P),
   vip: packSinRsu(VIP_P),
   hui: packSinRsu(HUI_P),
   jua: packSinRsu(JUA_P),
-  gdl: packSinRsu(GDL_P),
-  zap: packSinRsu(ZAP_P),
+  gdl: GDL,
+  zap: ZAP,
   tla: packSinRsu(TLA_P),
   snl: SNL,
   gua: GUA,

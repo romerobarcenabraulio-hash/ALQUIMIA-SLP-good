@@ -4,8 +4,10 @@ import { ChevronDown, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { cn } from '@/lib/utils'
+import { isPlatformDeveloper } from '@/lib/authSession'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
+import { ClientOnboardingGate } from '@/components/onboarding/ClientOnboardingGate'
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
@@ -64,6 +66,12 @@ export default function SimulatorPage() {
   const recalcular = useSimulatorStore(s => s.recalcular)
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const audience = useSimulatorStore(s => s.audience)
+  const clientSetupComplete = useSimulatorStore(s => s.clientSetupComplete)
+  const [sessionReady, setSessionReady] = useState(false)
+
+  useEffect(() => {
+    setSessionReady(true)
+  }, [])
   const portalEntry = useSimulatorStore(s => s.portalEntry)
   const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
   const portalJourney = useSimulatorStore(s => s.portalJourney)
@@ -111,6 +119,20 @@ export default function SimulatorPage() {
     () => buildSociodemographicScaffoldBlock(municipiosActivos),
     [municipiosActivos],
   )
+
+  const needsClientOnboarding =
+    sessionReady && !isPlatformDeveloper() && !clientSetupComplete
+
+  if (needsClientOnboarding) {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#F4F2ED' }}>
+        <Header />
+        <div className="flex-1 overflow-y-auto">
+          <ClientOnboardingGate />
+        </div>
+      </div>
+    )
+  }
 
   if (!audience) {
     return (

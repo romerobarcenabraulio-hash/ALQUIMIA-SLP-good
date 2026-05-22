@@ -135,20 +135,18 @@ async def delete_centro(centro_id: str) -> dict:
 async def sync_places(req: PlacesSyncRequest) -> dict:
     """Sincroniza centros de acopio desde Google Places para la ZM dada."""
     try:
+        from app.google.config import resolve_google_places_api_key
         from app.config import settings
-        api_key = settings.GOOGLE_PLACES_API_KEY
-        enabled = settings.PLACES_SYNC_ENABLED
+        api_key = resolve_google_places_api_key()
+        enabled = settings.PLACES_SYNC_ENABLED or bool(api_key)
     except Exception:
         api_key  = ""
         enabled  = False
 
-    if not enabled or not api_key:
+    if not api_key:
         return {
             "synced": 0,
-            "message": (
-                "Google Places sync deshabilitado. "
-                "Configura PLACES_SYNC_ENABLED=true y GOOGLE_PLACES_API_KEY."
-            ),
+            "message": "Configura GOOGLE_PLACES_API_KEY o MAPS_PLATFORM_API en Render.",
         }
 
     synced = await repo.sync_from_places(zm=req.zm, api_key=api_key)

@@ -12,7 +12,9 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { ESTACIONALIDAD } from '@/lib/constants'
 import { computeTrucksByMaterial, computeLogisticsKpis } from '@/lib/logisticsCalc'
+import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
 
@@ -54,12 +56,16 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 }
 
 export function LogisticaOperativaStack() {
-  const { zmActiva, resultados } = useSimulatorStore()
+  const { zmActiva, resultados, mixCAs } = useSimulatorStore()
 
-  const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
-  const capInstalada = rsuDia * 0.61
+  const rsuDia = resultados?.rsuTotalTonDia ?? 0
+  const infra = useMemo(() => infraOperativaFromStore(mixCAs, resultados), [mixCAs, resultados])
+  const capInstalada = infra.capInstaladaTonDia
 
-  const trucksByMaterial = useMemo(() => computeTrucksByMaterial(rsuDia), [rsuDia])
+  const trucksByMaterial = useMemo(
+    () => (rsuDia > 0 ? computeTrucksByMaterial(rsuDia) : []),
+    [rsuDia],
+  )
   const logisticsKpis = useMemo(() => computeLogisticsKpis(trucksByMaterial), [trucksByMaterial])
 
   const perRoutes = useMemo(() => generatePERRoutes(zmActiva.slice(0, 3).toUpperCase()), [zmActiva])
@@ -113,13 +119,25 @@ export function LogisticaOperativaStack() {
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-wrap gap-3 mt-3 text-[10px]">
-                  {[['12', 'Rutas activas'], ['3× sem', 'Frecuencia semanal'], ['80 rec.', 'Colonias cubiertas'], ['4', 'Brechas críticas']].map(([v, l]) => (
-                    <div key={l} className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5">
-                      <p className="font-bold text-[#1C1B18]">{v}</p>
-                      <p className="text-[10px] text-[#A8A49C]">{l}</p>
-                    </div>
-                  ))}
+                <div className="flex flex-wrap gap-3 mt-3 items-center">
+                  <div className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5 text-[12px]">
+                    <p className="font-bold text-[#1C1B18]">{logisticsKpis.totalCamiones}</p>
+                    <p className="text-[11px] text-[#A8A49C]">Camiones est. (M01+M06)</p>
+                  </div>
+                  <div className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5 text-[12px]">
+                    <p className="font-bold text-[#1C1B18]">{infra.centrosActivos}</p>
+                    <p className="text-[11px] text-[#A8A49C]">Centros activos</p>
+                  </div>
+                  <div className="rounded-[6px] border border-[#FDE8E8] bg-[#FEF7F7] px-2 py-1.5 text-[12px]">
+                    <p className="font-bold text-[#C0392B]">{infra.brechaTonDia.toFixed(1)} t/d</p>
+                    <p className="text-[11px] text-[#A8A49C]">Brecha vs capacidad</p>
+                  </div>
+                  <ProvenanceBadge
+                    tipo="manual"
+                    confianza={rsuDia > 0 ? 0.55 : 0.15}
+                    fuente="logisticsCalc + mixCAs"
+                    advertencia="Mapa ilustrativo — rutas vía Google Routes API (Render OPTIMIZATION_ROUTE_API)."
+                  />
                 </div>
               </div>
             </div>

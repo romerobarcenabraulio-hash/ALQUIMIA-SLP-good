@@ -44,7 +44,7 @@ Razon: preparar salud profunda, trazabilidad por `X-Request-ID`, noindex y opera
 - `ADENDOS: LEGAL/MANIFEST_REGLAMENTOS_2026-05.md`
 - `ADENDOS: LEGAL/source_manifest_checksums_2026-05-07.json`
 - PDFs/DOCs bajo `ADENDOS: LEGAL/pdfs/reglamentos/`
-- symlinks bajo `frontend/public/reglamentos/`
+> **Actualización 2026-05-18:** Los symlinks históricos se sustituyeron por **copias PDF** en `frontend/public/reglamentos/` (política PDF-only; `.doc` retirados del servido web). Nuevos: SLP capital, Soledad, QRO capital, GDL aseo público, SPG aseo público.
 - evidencia INFOMEX/no localizable.
 
 Razon: tener trazabilidad verificable de fuentes municipales. Estado: integrado con regla explicita: descarga/checksum no equivale a validacion juridica.

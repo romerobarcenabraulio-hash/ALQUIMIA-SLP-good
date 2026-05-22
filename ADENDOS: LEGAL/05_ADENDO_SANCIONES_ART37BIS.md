@@ -25,14 +25,14 @@
 
 ```
 [PENDIENTE: texto del articulado de sanciones desde PDF oficial del Reglamento de Aseo Público — Municipalidad de San Luis Potosí.]
-El PDF mal etiquetado era la Ley de Ingresos 2023 (antes `SLP_slp_capital_decreto_publicacion_reglamento_2023.pdf`); archivo archivado en:
-ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/SLP_slp_erroneo_es_Ley_Ingresos_2023_no_Reglamento_Aseo_Publico.pdf
-Acción requerida: colocar el reglamento correcto como ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf y el symlink en frontend/public/reglamentos/, para verificar el artículo de infracciones y sanciones.
+PDF en línea (2026-05-18): `frontend/public/reglamentos/SLP_slp_reglamento_aseo_publico.pdf` — en_revision.
+Histórico: espejo erróneo (Ley de Ingresos 2023) en `_espejo_catalogo_erroneo/`.
+[PENDIENTE EXTRACCIÓN AGENTE: pegar aquí artículo de infracciones y sanciones vigente.]
 
 [ARTÍCULO 37 BIS: NO EXISTE EN EL REGLAMENTO VIGENTE SLP 2018]
 El reglamento actual no tiene escalera específica de multas RSU para condominios.
 La técnica normativa es: Adicionar (nuevo artículo Art. 37 Bis).
-Fuente: Reglamento de Aseo Público del Municipio de San Luis Potosí · 2018 · pendiente verificación PDF
+Fuente: Reglamento de Aseo Público del Municipio de San Luis Potosí · 2018 · PDF en línea · en_revision (2026-05-18)
 
 Síntesis conocida del art. vigente:
 "Las infracciones al presente reglamento serán sancionadas conforme
@@ -161,7 +161,7 @@ Este artículo es la bisagra entre la norma y la realidad. Sin evidencia documen
 | **Querétaro** | Art. [📄 VERIFICAR] | Art. [N° Bis] | Parcialmente desarrollado — reformar para añadir escalera UMA y condominios |
 | **Monterrey** | **Art. 10** (multas 10-100 UMAs, Juzgado Cívico) | Reformar Art. 10 para añadir escalera condominial | Ya tiene procedimiento — adaptar |
 | **San Pedro G.G.** | **Art. 10** (multas 20-200 UMAs) | Reformar para escalera progresiva 3 niveles | El más avanzado — solo ajustar para condominios |
-| **Soledad de G.S.** | Sin reglamento | Art. [N°] del nuevo reglamento | Sin base sancionatoria |
+| **Soledad de G.S.** | Art. [📄 VERIFICAR en PDF 2013] | **Art. 37 Bis** (reforma) | Base en PDF en línea — extracción pendiente agentes |
 | **Corregidora** | Art. [📄 VERIFICAR] | Art. [N° Bis] | Muy débil |
 | **El Marqués** | Sin art. de sanciones RSU | Art. [N° Bis] | Sin base sancionatoria |
 

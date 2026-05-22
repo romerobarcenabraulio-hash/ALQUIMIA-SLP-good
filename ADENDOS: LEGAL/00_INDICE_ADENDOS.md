@@ -19,7 +19,7 @@ Cada archivo `.md` de esta carpeta representa un **adendo individual** al reglam
 ┌─────────────────────────────────────────────┐
 │  📄 ESTADO ACTUAL DEL REGLAMENTO            │
 │  Texto o captura del artículo vigente        │
-│  (se actualiza cuando el CSA cargue el PDF) │
+│  (extracción de artículos: agentes ALQUIMIA desde PDF en línea) │
 └─────────────────────────────────────────────┘
                     ↓
 ┌─────────────────────────────────────────────┐
@@ -64,19 +64,20 @@ Los adendos se incorporan en este orden en el decreto de reforma:
 
 ---
 
-## Reglamentos de referencia pendientes de carga
+## Reglamentos de referencia (PDFs en línea)
 
-El CSA cargará los siguientes PDFs para completar la sección "Estado actual" de cada adendo:
+PDFs servidos desde `frontend/public/reglamentos/` (solo PDF; adendos los generan agentes ALQUIMIA):
 
 | Ciudad | Reglamento | Estado |
 |---|---|---|
-| San Luis Potosí | Reglamento de Aseo Público 2018 | ⏳ Pendiente PDF |
-| Querétaro | Reglamento Municipal de GIRS 2021 | ⏳ Pendiente PDF |
-| Monterrey | Reglamento de GIRS Monterrey 2023 | ⏳ Pendiente PDF |
-| San Pedro G.G. | Reglamento Ambiental y RSU 2022 | ⏳ Pendiente PDF |
-| Soledad de G.S. | Sin reglamento propio | — Requiere reglamento nuevo |
-| Corregidora | Reglamento Servicios Municipales 2020 | ⏳ Pendiente PDF |
-| El Marqués | Reglamento de Limpia 2015 | ⏳ Pendiente PDF |
+| San Luis Potosí | Reglamento de Aseo Público 2018 | PDF en línea · en_revision |
+| Soledad de G.S. | Reglamento de Aseo Público 2013 | PDF en línea · en_revision |
+| Querétaro | Reglamento de Aseo Público | PDF en línea · en_revision |
+| Monterrey | Reglamento de Limpia Municipal | PDF en línea · en_revision |
+| San Pedro G.G. | Reglamento de Aseo Público | PDF en línea · en_revision |
+| Guadalajara | Reglamento de Aseo Público + Gestión Integral | PDF en línea · en_revision |
+| Corregidora | Referencia normativa ambiental | PDF en línea · en_revision |
+| El Marqués | Reglamento de Limpia 2015 | Sin PDF local — pendiente |
 
 ---
 

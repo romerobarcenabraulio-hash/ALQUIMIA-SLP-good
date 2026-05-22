@@ -66,7 +66,7 @@
 | **Querétaro** | Reg. GIRS 2021 | **Art. [📄 VERIFICAR]** | Nombre Dirección competente · nombre ley condominios QRO |
 | **Monterrey** | Reg. GIRS 2023 | **Art. [📄 VERIFICAR]** | Nombre Dirección competente · nombre ley condominios NL |
 | **San Pedro G.G.** | Reg. Ambiental RSU 2022 | **Art. [📄 VERIFICAR]** | Nombre Dirección · ley condominios NL |
-| **Soledad de G.S.** | Sin reglamento | Cap. I Art. 1 (nuevo) | Ídem SLP |
+| **Soledad de G.S.** | Reg. Aseo Público 2013 | **Art. [📄 VERIFICAR]** | Ídem SLP |
 | **Corregidora** | Reg. Servicios 2020 | **Art. [📄 VERIFICAR]** | Nombre Dirección · ley condominios QRO |
 | **El Marqués** | Reg. Limpia 2015 | **Art. [📄 VERIFICAR]** | Nombre Dirección · ley condominios QRO |
 

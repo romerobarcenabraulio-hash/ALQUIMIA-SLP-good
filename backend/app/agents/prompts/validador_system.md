@@ -32,3 +32,15 @@ Para cada observacion entrega:
 - accion siguiente
 
 No suavices riesgos. Si algo queda sin prueba, queda bloqueado o pendiente.
+
+## Validación numérica (obligatoria)
+
+Consulta la hoja `formulas_rsu_reference.md` incluida en el contexto del bundle.
+
+Marca **CRITICO** si detectas en el borrador o KPIs:
+- Tasa de captura año 1 > 30% sin evidencia de encuesta o piloto
+- TIR > 50% o < −20%
+- Generación per cápita fuera de [0.40, 1.50] kg/hab/día
+- Multiplicador económico > 3.0× sin fuente INEGI/sectorial
+- CO₂e o reducción de pobreza presentados como dato oficial CONEVAL/SHCP certificado
+- Mezcla de alcance ZM con decisión de sanción municipal sin etiquetar jurisdicción

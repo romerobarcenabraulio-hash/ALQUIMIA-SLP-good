@@ -4,8 +4,8 @@ from __future__ import annotations
 import hashlib
 from typing import List
 
-from app.legal.diagnostic import build_diagnostic
-from app.legal.repository import get_repo
+from app.legal.source_ingest import locate_municipal_legal_source, pdf_ingested_for_analysis
+from app.legal.schemas import LegalSourceIngestStatus
 from app.national.catalog import get_profile, list_zm_municipios
 from app.national.schemas import CoverageStage, CoverageStatus, LegalSource, SourceStatus
 
@@ -20,9 +20,15 @@ def legal_source_for_municipio(municipio_id: str) -> LegalSource | None:
     if reg is None:
         return None
     articulos = repo.get_articulos(municipio_id)
-    status = SourceStatus.verificado if reg.verificado else (
-        SourceStatus.localizado if reg.fuente != "No disponible" else SourceStatus.no_disponible
-    )
+    manifest = locate_municipal_legal_source(municipio_id)
+    if manifest and pdf_ingested_for_analysis(manifest):
+        status = SourceStatus.verificado
+    elif manifest and manifest.ingest_status == LegalSourceIngestStatus.localizado:
+        status = SourceStatus.localizado
+    elif reg.fuente != "No disponible":
+        status = SourceStatus.localizado
+    else:
+        status = SourceStatus.no_disponible
     checksum_input = f"{reg.municipio_id}|{reg.nombre}|{reg.version}|{reg.fecha_publicacion}|{reg.fuente}"
     return LegalSource(
         legal_source_id=f"legal:{reg.municipio_id}:{reg.version}",
@@ -32,7 +38,7 @@ def legal_source_for_municipio(municipio_id: str) -> LegalSource | None:
         fuente=reg.fuente,
         url=reg.url,
         fecha_publicacion=reg.fecha_publicacion,
-        fecha_verificacion="2026-04-30" if reg.verificado else None,
+        fecha_verificacion="2026-05-18" if status == SourceStatus.verificado else None,
         version=reg.version,
         checksum=_checksum(checksum_input),
         status=status,
@@ -57,7 +63,7 @@ def coverage_for_municipio(municipio_id: str) -> CoverageStatus:
     else:
         legal_status = legal.status
         if legal.status != SourceStatus.verificado:
-            bloqueos.append("Reglamento municipal no verificado; documento juridico debe bloquearse o degradarse.")
+            bloqueos.append("Sin PDF municipal cargado; el análisis jurídico permanece bloqueado.")
 
     if diag and diag.agora_bloqueado:
         bloqueos.append(f"Gate juridico activo para {municipio_id}: {diag.reglamento_nombre}.")

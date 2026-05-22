@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
+import { useEffect, useMemo, useState } from 'react'
 import type { RsuFootprintMapResponse } from '@/types'
 import { getRsuFootprintMap } from '@/lib/api'
+import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
+import { getGoogleMapsApiKey, GOOGLE_MAPS_MISSING_MSG } from '@/lib/googleMaps'
 
 // ── Static fallback ───────────────────────────────────────────────────────────
 // Geographic reference only (cabeceras municipales, EPSG:4326).
@@ -45,12 +46,10 @@ function zmBadgeColor(zm: string): string {
 }
 
 export default function MexicoRsuFootprintMap() {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef       = useRef<mapboxgl.Map | null>(null)
   const [payload, setPayload] = useState<RsuFootprintMapResponse | null>(null)
   const [error,   setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
-  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? ''
+  const token = getGoogleMapsApiKey()
 
   // Live data fetch — silently falls back to STATIC_FALLBACK on error
   useEffect(() => {
@@ -73,116 +72,21 @@ export default function MexicoRsuFootprintMap() {
   const displayPayload = payload ?? STATIC_FALLBACK
   const isFallback     = payload === null
 
-  useEffect(() => {
-    if (!containerRef.current || !token) return
+  const markers = useMemo(
+    () => displayPayload.features.map(f => ({
+      id: f.municipio_id,
+      lat: f.lat,
+      lon: f.lng,
+      title: `${f.nombre} · ZM ${f.zm_id}`,
+      color: zmBadgeColor(f.zm_id),
+    })),
+    [displayPayload.features],
+  )
 
-    mapboxgl.accessToken = token
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-102, 23],
-      zoom: 4.2,
-    })
-    mapRef.current = map
-
-    const fc = {
-      type: 'FeatureCollection' as const,
-      features: displayPayload.features.map(f => ({
-        type: 'Feature' as const,
-        geometry: { type: 'Point' as const, coordinates: [f.lng, f.lat] },
-        properties: {
-          municipio_id: f.municipio_id,
-          nombre: f.nombre,
-          zm_id: f.zm_id,
-          estado: f.estado,
-          poblacion: f.poblacion,
-          gen_per_capita_kg_dia: f.gen_per_capita_kg_dia,
-          rsu_ton_dia: f.rsu_ton_dia,
-          co2e_disposal_ton_dia: f.co2e_disposal_ton_dia,
-          is_fallback: isFallback,
-        },
-      })),
-    }
-
-    map.on('load', () => {
-      map.addSource('rsu-footprint', { type: 'geojson', data: fc })
-
-      map.addLayer({
-        id: 'rsu-footprint-circles',
-        type: 'circle',
-        source: 'rsu-footprint',
-        paint: {
-          'circle-radius': isFallback
-            ? 9 // fixed size for fallback (no data to interpolate)
-            : [
-                'interpolate', ['linear'], ['get', 'rsu_ton_dia'],
-                50, 7, 400, 14, 1200, 28,
-              ],
-          'circle-color': [
-            'match', ['get', 'zm_id'],
-            'SLP', '#3B6D11',
-            'QRO', '#1A5FA8',
-            'MTY', '#D4881E',
-            '#8A857C',
-          ],
-          'circle-opacity': isFallback ? 0.45 : 0.72,
-          'circle-stroke-width': 1.2,
-          'circle-stroke-color': '#1C1B18',
-        },
-      })
-
-      const bounds = new mapboxgl.LngLatBounds()
-      displayPayload.features.forEach(f => bounds.extend([f.lng, f.lat]))
-      map.fitBounds(bounds, { padding: 56, maxZoom: 7 })
-
-      map.on('click', 'rsu-footprint-circles', e => {
-        const feat = e.features?.[0]
-        if (!feat?.properties) return
-        const p = feat.properties as Record<string, unknown>
-        const nombre = escHtml(String(p.nombre ?? ''))
-        const zm     = String(p.zm_id ?? '')
-        const isFb   = Boolean(p.is_fallback)
-        const pop    = Number(p.poblacion ?? 0)
-        const gen    = Number(p.gen_per_capita_kg_dia ?? 0)
-        const rsu    = Number(p.rsu_ton_dia ?? 0)
-        const co2    = Number(p.co2e_disposal_ton_dia ?? 0)
-
-        const html = isFb
-          ? `<div style="font-family:system-ui,sans-serif;max-width:240px;font-size:12px;color:#1C1B18;">
-               <div style="font-weight:600;margin-bottom:6px;">${nombre}</div>
-               <div style="color:#6B6760;">ZM ${zm}</div>
-               <div style="margin-top:8px;font-size:11px;color:#D4881E;">Datos de generación RSU en espera del servidor.</div>
-             </div>`
-          : `<div style="font-family:system-ui,sans-serif;max-width:240px;font-size:12px;color:#1C1B18;">
-               <div style="font-weight:600;margin-bottom:6px;">${nombre}</div>
-               <div style="color:#6B6760;">ZM ${zm} · población ~${pop.toLocaleString('es-MX')}</div>
-               <div style="margin-top:8px;"><strong>Gen. aprox.</strong> ${gen.toFixed(2)} kg/hab/día</div>
-               <div><strong>RSU ~</strong> ${rsu.toLocaleString('es-MX', { maximumFractionDigits: 1 })} t/día</div>
-               <div><strong>Huella disposición ~</strong> ${co2.toLocaleString('es-MX', { maximumFractionDigits: 3 })} t CO₂e/día</div>
-               <div style="margin-top:8px;font-size:10px;color:#8A857C;">Orden de magnitud educativa; no inventario oficial.</div>
-             </div>`
-
-        new mapboxgl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat).setHTML(html).addTo(map)
-      })
-
-      map.on('mouseenter', 'rsu-footprint-circles', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'rsu-footprint-circles', () => { map.getCanvas().style.cursor = '' })
-    })
-
-    return () => {
-      map.remove()
-      mapRef.current = null
-    }
-  // Re-initialize when real payload arrives (replaces fallback)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payload, token])
-
-  // When no token: always show fallback table (no Mapbox)
   if (!token) {
     return (
       <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-950">
-        Para ver el mapa interactivo define <code className="font-mono text-[11px]">NEXT_PUBLIC_MAPBOX_TOKEN</code> en el entorno y reinicia el servidor.
+        {GOOGLE_MAPS_MISSING_MSG}
       </div>
     )
   }
@@ -236,8 +140,7 @@ export default function MexicoRsuFootprintMap() {
         </span>
       </div>
 
-      {/* Map canvas — always rendered when token is present */}
-      <div ref={containerRef} className="h-[420px] w-full rounded-[12px] overflow-hidden border border-[#E8E4DC]" />
+      <GoogleMapCanvas center={{ lat: 23, lon: -102 }} zoom={5} markers={markers} height={420} />
 
       <p className="text-[10px] text-[#A8A49C] font-mono">Época catálogo: {displayPayload.catalog_simulation_epoch}</p>
     </section>

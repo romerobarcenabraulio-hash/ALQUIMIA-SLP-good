@@ -223,6 +223,12 @@ def validate_bundle(
     """
     all_issues: list[ValidationIssue] = []
 
+    try:
+        from app.agents.numeric_guard import check_kpi_ranges
+        all_issues.extend(check_kpi_ranges(bundle))
+    except Exception as exc:
+        logger.debug("numeric_guard skip: %s", exc)
+
     for doc in draft_bundle.documentos:
         report, status = validate_document(doc, bundle)
         doc.validation_report = report

@@ -65,6 +65,7 @@
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/geojson": "^7946.0.16",
+    "@types/google.maps": "^3.64.1",
     "eslint": "^9.15.0",
     "eslint-config-next": "^16.2.4",
     "jsdom": "^29.1.1",

@@ -1,4 +1,4 @@
-# Espejos de ordenamiento municipal (justificación legislativa ALQUIMIA)
+# Reglamentos municipales — PDFs en línea (ALQUIMIA)
 
 **Instantánea de trabajo:** 2026-05-18
 **Advertencia (Navigator / Auditor):** Los archivos en esta carpeta son **copias de conveniencia** descargadas para contexto interno, revisión de adendos y demos de UI. La vigencia jurídica y la versión única reconocible ante terceros siguen siendo la **publicación oficial** en portal municipal, gaceta o **Compilación del orden jurídico** del Poder Judicial estatal (cuando aplique). Antes de citar en dictamen, confirmar fecha de última reforma en fuente oficial.

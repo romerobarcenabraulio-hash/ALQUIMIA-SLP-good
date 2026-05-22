@@ -72,11 +72,11 @@ Un **sistema de reforma normativa escalable** que permite a ALQUIMIA:
 
 | Ciudad          | Estado      | Reglamento base    | Reto                        |
 | --------------- | ----------- | ------------------ | --------------------------- |
-| San Luis Potosí | Modelo base | Aseo Público 2018  | PDF pendiente de cargar     |
-| Querétaro       | Escalar     | GIRS 2021          | Mapear artículos            |
-| Monterrey       | Escalar     | GIRS 2023          | Ya tiene multas — adaptar   |
-| San Pedro G.G.  | Escalar     | Ambiental RSU 2022 | El más avanzado             |
-| Soledad de G.S. | Crear       | Sin reglamento     | Nuevo reglamento desde cero |
+| San Luis Potosí | Modelo base | Aseo Público 2018  | PDF en línea · extracción artículos (agentes) |
+| Querétaro       | Escalar     | Aseo Público 2021  | PDF en línea · mapear artículos               |
+| Monterrey       | Escalar     | Limpia municipal   | PDF en línea · adaptar multas                 |
+| San Pedro G.G.  | Escalar     | Aseo Público       | PDF en línea · el más avanzado                |
+| Soledad de G.S. | Escalar     | Aseo Público 2013  | PDF en línea · mapear artículos               |
 | Corregidora     | Escalar     | Servicios 2020     | Mapear artículos            |
 | El Marqués      | Escalar     | Limpia 2015        | Sin base sancionatoria      |
 

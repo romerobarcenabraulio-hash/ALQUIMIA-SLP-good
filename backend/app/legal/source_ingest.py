@@ -28,6 +28,14 @@ def _source_id(municipio_id: str, title: str) -> str:
     return f"legal-src-{municipio_id.lower()}-{safe_title[:48] or 'sin-titulo'}"
 
 
+def pdf_ingested_for_analysis(manifest: MunicipalLegalSourceManifest) -> bool:
+    """True cuando hay PDF en plataforma (descargado o verificado)."""
+    return manifest.ingest_status in (
+        LegalSourceIngestStatus.descargado,
+        LegalSourceIngestStatus.verified,
+    )
+
+
 def _manifest_no_disponible(municipio_id: str) -> Optional[MunicipalLegalSourceManifest]:
     repo = get_repo()
     reg = repo.get_reglamento(municipio_id)
@@ -49,31 +57,39 @@ def _manifest_no_disponible(municipio_id: str) -> Optional[MunicipalLegalSourceM
         checksum_sha256=None,
         bytes_size=None,
         source_authority="Municipio no localizado",
+        can_enable_education=True,
+        can_enable_simulation=False,
         can_enable_sanctions=False,
         can_generate_official_document=False,
         warnings=[
-            "No hay URL oficial localizada para este municipio.",
-            "La ausencia de fuente legal municipal no bloquea educación ni simulación.",
+            "No hay PDF municipal cargado en la plataforma.",
+            "Sin PDF no se habilita el análisis jurídico municipal.",
         ],
         blockers=[
-            "Sanciones propuestas y documentos definitivos quedan restringidos hasta localizar fuente oficial municipal y validar jurídicamente.",
+            "Suba el PDF del reglamento municipal para habilitar diagnóstico y análisis.",
+            "Sanciones propuestas y documentos definitivos siguen restringidos hasta validación jurídica competente.",
         ],
-        next_action="Localizar reglamento en sitio municipal, periódico oficial estatal, Orden Jurídico Nacional o portal de transparencia.",
+        next_action="Subir PDF del reglamento en el apartado «Alimentar reglamento» o localizar fuente oficial.",
     )
 
 
 def locate_municipal_legal_source(municipio_id: str) -> Optional[MunicipalLegalSourceManifest]:
-    """Localiza una fuente configurada por municipio sin asumir vigencia ni validación."""
+    """Manifiesto por municipio: primero PDF en plataforma, luego URL/localizado."""
     repo = get_repo()
-    reg = repo.get_reglamento(municipio_id.lower())
+    mid = municipio_id.lower()
+    stored = repo.get_source_manifest(mid)
+    if stored is not None:
+        return stored
+
+    reg = repo.get_reglamento(mid)
     if reg is None:
         return None
     if not reg.url:
-        return _manifest_no_disponible(municipio_id)
+        return _manifest_no_disponible(mid)
 
     return MunicipalLegalSourceManifest(
-        source_id=_source_id(municipio_id, reg.nombre),
-        municipio_id=municipio_id.lower(),
+        source_id=_source_id(mid, reg.nombre),
+        municipio_id=mid,
         zm=reg.zm,
         title=reg.nombre,
         official_url=reg.url,
@@ -87,16 +103,19 @@ def locate_municipal_legal_source(municipio_id: str) -> Optional[MunicipalLegalS
         checksum_sha256=None,
         bytes_size=None,
         source_authority=reg.fuente,
+        can_enable_education=True,
+        can_enable_simulation=False,
         can_enable_sanctions=False,
         can_generate_official_document=False,
         warnings=[
-            "Fuente localizada por municipio; no se declara vigente ni validada.",
-            "Documento legal tratado como insumo pendiente de validación jurídica competente.",
+            "Hay referencia oficial, pero aún no hay PDF cargado en la plataforma.",
+            "Sin PDF no se habilita el análisis jurídico municipal.",
         ],
         blockers=[
+            "Suba el PDF del reglamento para habilitar diagnóstico y análisis.",
             "Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles.",
         ],
-        next_action="Descargar archivo oficial, registrar checksum y solicitar validación jurídica competente.",
+        next_action="Subir PDF del reglamento en el apartado «Alimentar reglamento».",
     )
 
 
@@ -121,7 +140,10 @@ def ingest_municipal_legal_source(
     source_authority = request.source_authority or reg.fuente or "Fuente oficial municipal pendiente"
 
     if not official_url and not request.content_base64:
-        return _manifest_no_disponible(municipio_id)
+        manifest = _manifest_no_disponible(municipio_id.lower())
+        if manifest is not None:
+            repo.set_source_manifest(municipio_id.lower(), manifest)
+        return manifest
 
     checksum = None
     bytes_size = None
@@ -148,17 +170,32 @@ def ingest_municipal_legal_source(
         "Manifest municipal registrado sin declarar vigencia ni dictamen.",
         "Una descarga exitosa no equivale a validación jurídica competente.",
     ]
-    blockers = ["Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles."]
+    blockers = [
+        "Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles.",
+    ]
     next_action = "Enviar fuente y manifest a revisión jurídica competente."
+    can_enable_simulation = ingest_status == LegalSourceIngestStatus.descargado
 
     if ingest_status == LegalSourceIngestStatus.no_disponible:
-        warnings.append("La descarga/localización falló o no produjo archivo verificable.")
+        warnings = [
+            "No hay PDF municipal cargado en la plataforma.",
+            "Sin PDF no se habilita el análisis jurídico municipal.",
+        ]
         blockers = [
+            "Suba el PDF del reglamento municipal para habilitar diagnóstico y análisis.",
             "Sanciones propuestas y documentos definitivos quedan restringidos hasta localizar fuente oficial municipal y validar jurídicamente.",
         ]
-        next_action = "Reintentar desde fuente oficial municipal, periódico oficial, Orden Jurídico Nacional o transparencia."
+        next_action = "Subir PDF del reglamento en el apartado «Alimentar reglamento»."
+        can_enable_simulation = False
+    elif ingest_status == LegalSourceIngestStatus.localizado:
+        warnings.append("Hay URL de referencia, pero falta PDF en plataforma para análisis.")
+        blockers.insert(0, "Suba el PDF del reglamento para habilitar diagnóstico y análisis.")
+        next_action = "Subir PDF del reglamento en el apartado «Alimentar reglamento»."
+        can_enable_simulation = False
+    elif ingest_status == LegalSourceIngestStatus.descargado:
+        next_action = "Análisis municipal habilitado. Los agentes ALQUIMIA pueden extraer artículos y proponer adendos."
 
-    return MunicipalLegalSourceManifest(
+    manifest = MunicipalLegalSourceManifest(
         source_id=_source_id(municipio_id, title),
         municipio_id=municipio_id.lower(),
         zm=reg.zm,
@@ -178,11 +215,29 @@ def ingest_municipal_legal_source(
         checksum_sha256=checksum,
         bytes_size=bytes_size,
         source_authority=source_authority,
+        can_enable_education=True,
+        can_enable_simulation=can_enable_simulation,
         can_enable_sanctions=False,
         can_generate_official_document=False,
         warnings=warnings,
         blockers=blockers,
         next_action=next_action,
+    )
+    repo.set_source_manifest(municipio_id.lower(), manifest)
+    return manifest
+
+
+def upload_municipal_pdf_bytes(
+    municipio_id: str,
+    content: bytes,
+    *,
+    original_filename: Optional[str] = None,
+) -> Optional[MunicipalLegalSourceManifest]:
+    """Guarda PDF en disco, registra manifiesto descargado y habilita análisis."""
+    return get_repo().upload_municipal_pdf(
+        municipio_id.lower(),
+        content,
+        original_filename=original_filename,
     )
 
 

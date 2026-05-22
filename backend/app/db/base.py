@@ -14,3 +14,4 @@ class Base(DeclarativeBase):
 def import_all_models() -> None:
     """Registra modelos en Base.metadata sin import circular con proyecto.py."""
     import app.models.proyecto  # noqa: F401
+    import app.models.research  # noqa: F401

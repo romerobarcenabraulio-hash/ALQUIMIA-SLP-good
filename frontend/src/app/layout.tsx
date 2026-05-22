@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { ReglamentoFuenteProvider } from '@/components/reglamento/ReglamentoModal'
-import 'mapbox-gl/dist/mapbox-gl.css'
 import './globals.css'
 
 export const metadata: Metadata = {

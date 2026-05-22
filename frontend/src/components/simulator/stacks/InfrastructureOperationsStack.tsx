@@ -196,7 +196,7 @@ export function InfrastructureOperationsStack() {
   const municipio   = seleccionMunicipioCatalog?.nombre ?? zmActiva
 
   const centersTable = useMemo(() => generateCentersTable(mixCAs), [mixCAs])
-  const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
+  const rsuDia = resultados?.rsuTotalTonDia ?? 0
 
   const capInstalada = useMemo(() =>
     (mixCAs.P ?? 0) * CA_CONFIG.P.capTonDia +

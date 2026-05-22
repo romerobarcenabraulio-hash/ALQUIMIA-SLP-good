@@ -2,7 +2,7 @@
 ## Mapa de artículos por reglamento — programa de separación en cinco fracciones
 
 **trace:** CLC-MULTI-CIUDAD  
-**Estado:** `[BORRADOR — pendiente de carga de PDFs de reglamentos por el CSA]`
+**Estado:** `[BORRADOR — PDFs base cargados 2026-05-18; extracción de artículos pendiente agentes ALQUIMIA]`
 
 ---
 
@@ -12,15 +12,15 @@
 
 ## Mapa de artículos por ciudad
 
-> **Clave:** ✅ Verificado en PDF · `[📄 VERIFICAR]` = pendiente PDF · `[NO EXISTE]` = artículo a crear nuevo
+> **Clave:** ✅ Verificado en PDF · `[📄 VERIFICAR]` = extracción pendiente agente · `[NO EXISTE]` = artículo a crear nuevo
 
 | Adendo | Contenido | **SLP** | **Querétaro** | **Monterrey** | **San Pedro G.G.** | **Soledad G.S.** | **Corregidora** | **El Marqués** |
 |---|---|---|---|---|---|---|---|---|
-| **1 — Definiciones** | Condominio, administración, centro de acopio, 5 fracciones | **Art. 4** (adición fracciones) `[📄 PDF pendiente]` | Art. `[📄]` | **Art. 3** ✅ (verificado — 35 fracs.) | Art. `[📄]` | Art. 1 (nuevo) | Art. `[📄]` | Art. `[📄]` |
-| **2 — Esquemas condominio** | Modelos A y B de recolección | **Art. 20 Bis** `[NO EXISTE]` `[📄 PDF pendiente]` | Art. `[📄]` Bis | **Art. 7 Bis** `[NO EXISTE]` — ref. Art. 8 ✅ (condominios) | Art. `[📄]` Bis | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
-| **3 — Obligaciones habitantes** | Separar, no mezclar, respetar horarios | **Art. 21** fracs. X-XII `[📄 PDF pendiente]` | Art. `[📄]` fracs. | **Art. 20** fracs. ✅ (Obligaciones ciudadanía — adición fracs.) | Art. `[📄]` fracs. | Art. `[N°]` (nuevo) | Art. `[📄]` fracs. | Art. `[📄]` fracs. |
-| **4 — Obligaciones administraciones** | 5 obligaciones operativas RSU | **Art. 21 Bis** `[NO EXISTE]` `[📄 PDF pendiente]` | Art. `[📄]` Bis | **Art. 8 Bis** `[NO EXISTE]` — ref. Art. 8 ✅ (propietarios/admin) | Art. `[📄]` Bis | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
-| **5 — Sanciones** | Escalera 4→8→12 UMAs, 3 niveles | **Art. 37 Bis** `[NO EXISTE]` — remite al Bando `[📄 PDF pendiente]` | Art. `[📄]` Bis | **Art. 54-55 + Tabulador** ✅ (reformar para escalera condominial) | Art. `[📄]` (multas 20-200 UMAs) | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
+| **1 — Definiciones** | Condominio, administración, centro de acopio, 5 fracciones | **Art. 4** (adición fracciones) `[📄 extracción pendiente agente]` | Art. `[📄]` | **Art. 3** ✅ (verificado — 35 fracs.) | Art. `[📄]` | Art. 1 (nuevo) | Art. `[📄]` | Art. `[📄]` |
+| **2 — Esquemas condominio** | Modelos A y B de recolección | **Art. 20 Bis** `[NO EXISTE]` `[📄 extracción pendiente agente]` | Art. `[📄]` Bis | **Art. 7 Bis** `[NO EXISTE]` — ref. Art. 8 ✅ (condominios) | Art. `[📄]` Bis | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
+| **3 — Obligaciones habitantes** | Separar, no mezclar, respetar horarios | **Art. 21** fracs. X-XII `[📄 extracción pendiente agente]` | Art. `[📄]` fracs. | **Art. 20** fracs. ✅ (Obligaciones ciudadanía — adición fracs.) | Art. `[📄]` fracs. | Art. `[N°]` (nuevo) | Art. `[📄]` fracs. | Art. `[📄]` fracs. |
+| **4 — Obligaciones administraciones** | 5 obligaciones operativas RSU | **Art. 21 Bis** `[NO EXISTE]` `[📄 extracción pendiente agente]` | Art. `[📄]` Bis | **Art. 8 Bis** `[NO EXISTE]` — ref. Art. 8 ✅ (propietarios/admin) | Art. `[📄]` Bis | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
+| **5 — Sanciones** | Escalera 4→8→12 UMAs, 3 niveles | **Art. 37 Bis** `[NO EXISTE]` — remite al Bando `[📄 extracción pendiente agente]` | Art. `[📄]` Bis | **Art. 54-55 + Tabulador** ✅ (reformar para escalera condominial) | Art. `[📄]` (multas 20-200 UMAs) | Art. `[N°]` (nuevo) | Art. `[📄]` Bis | Art. `[📄]` Bis |
 | **6 — Transitorios** | Vigencia, gradualidad, periodo educativo | Transitorios 1-6 | Transitorios 1-6 | Transitorios 1-6 | Transitorios 1-6 | Transitorios 1-6 | Transitorios 1-6 | Transitorios 1-6 |
 | **Lineamiento técnico** | 5 fracciones, contenedores, frecuencias | Dirección Aseo Público | Dirección `[📄]` | Dirección Servicios Públicos ✅ | Dirección `[📄]` | Dirección Aseo | Dirección `[📄]` | Dirección `[📄]` |
 
@@ -30,12 +30,12 @@
 
 | Ciudad | Reglamento | Año | Estado actual sanciones RSU | PDF cargado | Nota de verificación |
 |---|---|---|---|---|---|
-| **San Luis Potosí** | Reglamento de Aseo Público | 2018 | Remite al Bando — sin escalera específica | ⏳ Pendiente | ⚠️ El PDF equivocado (Ley de Ingresos 2023) está archivado en `ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/`. Cargar el reglamento correcto como `…/SLP_slp_reglamento_aseo_publico.pdf` + symlink en `frontend/public/reglamentos/`. |
-| **Querétaro (capital)** | Reglamento de Limpia y Aseo Público del Municipio de Querétaro (denominación de trabajo; verificar rubro en POE) | 2021 | Marco propio de obligaciones, prohibiciones e infracciones — brecha principal en instrumentación 5 fracciones condominio | ⏳ PDF en repo pendiente | ⚠️ **No afirmar ausencia normativa total.** Corregir etiqueta histórica “solo GIRS” si el instrumento oficial es de Limpia y Aseo. Cargar PDF íntegro y mapear Arts. 2, 15–18, 8–11 (cotejo literal). |
-| **Monterrey** | Reglamento de Limpia Municipal | 2020 (ref. 2023) | Art. 54-55 con Tabulador de Multas en cuotas UMA — procedimiento completo | ✅ Cargado | PDF verificado: `MTY_mty_monterrey_reglamento_limpia_municipal.pdf` · 41 páginas · Gobierno 2021-2024. Arts. mapeados: definiciones (Art. 3), recolección (Art. 7), obligaciones (Art. 20), sanciones (Art. 54-55). Sin artículo específico de condominios. |
-| **San Pedro G.G.** | Reglamento Ambiental y Desarrollo Sustentable | 2009 (Gaceta 118) | Art. de sanciones en reglamento ambiental | ⏳ Pendiente PDF RSU | PDF disponible: `MTY_spg_san_pedro_reglamento_ambiental_gaceta118_2009.pdf` — contiene Reglamento Ambiental (2009), no el de RSU/Limpia específico. Verificar artículos RSU. |
-| **Soledad de G.S.** | Sin reglamento propio | — | Sin base normativa | — No aplica | Requiere reglamento nuevo completo (trabajo adicional CLC). |
-| **Corregidora** | Reglamento Ambiental (referencia QRO) | 2020 | Por verificar | ⏳ Pendiente | PDF disponible: `QRO_cor_reglamento_ambiente_segob_queretaro_reference.pdf` — pendiente de revisión para mapear arts. RSU. |
+| **San Luis Potosí** | Reglamento de Aseo Público | 2018 | Remite al Bando — sin escalera específica | ✅ PDF en línea | `SLP_slp_reglamento_aseo_publico.pdf` — en_revision; agentes extraen Arts. 4, 20, 21, 37. |
+| **Querétaro (capital)** | Reglamento de Aseo Público | 2021 | Marco propio de obligaciones e infracciones | ✅ PDF en línea | `QRO_qro_reglamento_aseo_publico.pdf` — en_revision; mapear Arts. 2, 15–18, 8–11. |
+| **Monterrey** | Reglamento de Limpia Municipal | 2021 | Art. 54-55 con Tabulador de Multas en cuotas UMA | ✅ PDF en línea | `MTY_mty_monterrey_reglamento_limpia_municipal.pdf` |
+| **San Pedro G.G.** | Reglamento de Aseo Público + contexto ambiental | en_revision | Art. de sanciones por verificar | ✅ PDF en línea | `MTY_spg_san_pedro_reglamento_aseo_publico.pdf` + gaceta 118 en repo |
+| **Soledad de G.S.** | Reglamento de Aseo Público | 2013 | Por verificar | ✅ PDF en línea | `SLP_sol_reglamento_aseo_publico_2013.pdf` — matriz de artículos pendiente |
+| **Corregidora** | Reglamento Ambiental (referencia QRO) | 2012 | Por verificar | ✅ PDF en línea | `QRO_cor_reglamento_ambiente_segob_queretaro_reference.pdf` |
 | **El Marqués** | Reglamento de Limpia Municipal | 2015 | Sin artículo de sanciones RSU | ⏳ Pendiente | No hay PDF en repo. Requiere carga. |
 
 ---
@@ -80,7 +80,7 @@ Con esos 5 datos por ciudad, se completan todos los `📄 VERIFICAR` de la tabla
 | **SPGG** `spg` | RSU / Aseo SPGG + normas ambientales (validar instrumento único aplicable) | Numeración y titularidad inspectiva [VERIFICAR]; evitar mezclar reglamentos | Mismo paquete 6 adendos con mapeo PDF | **Alta** — verificación fuente primaria |
 | **Corregidora** `cor` | Servicios públicos / normativa ambiental municipal (titulación [VERIFICAR]) | Riesgo de copy-paste desde capital; numeración propia obligatoria | Cargar PDF + validar competencias vs capital | **Alta** |
 | **El Marqués** `mar` | Reglamento de limpia (ref. 2015 — [VERIFICAR]) | Sin mapeo en repo | Toda la cadena de adendos pendiente | **Alta** — bloqueado hasta PDF |
-| **Soledad** `sol` | Sin reglamento RSU propio en seed — paquete `adendosExtendedCiudades` | Instrumento propio o armonía ZM | Localización CLC 2026-05-07 | **Media–Alta** |
+| **Soledad** `sol` | Reg. Aseo Público 2013 | PDF en línea · matriz de artículos pendiente agentes | Localización CLC 2026-05-18 | **Media** — extracción Arts. 4, 20, 21, 37 |
 
 ---
 

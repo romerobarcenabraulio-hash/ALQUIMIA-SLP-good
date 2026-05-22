@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
+import { useEffect, useMemo, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getCentrosAcopio, type CentroAcopio } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
 import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter } from 'lucide-react'
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -39,16 +39,18 @@ function escHtml(s: string) {
 
 export function CentrosAcopioMap() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const token    = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '').trim()
-
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef       = useRef<mapboxgl.Map | null>(null)
 
   const [centros, setCentros]         = useState<CentroAcopio[]>([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState<string | null>(null)
   const [selectedMat, setSelectedMat] = useState<string>('all')
   const [selected, setSelected]       = useState<CentroAcopio | null>(null)
+
+  const mapCenter = useMemo(() => {
+    if (zmActiva === 'MTY') return { lat: 25.67, lon: -100.31 }
+    if (zmActiva === 'QRO') return { lat: 20.59, lon: -100.39 }
+    return { lat: 22.15, lon: -100.98 }
+  }, [zmActiva])
 
   // Fetch centros
   useEffect(() => {
@@ -70,134 +72,19 @@ export function CentrosAcopioMap() {
   // Unique materials for filter
   const allMaterials = Array.from(new Set(centros.flatMap(c => c.materiales))).sort()
 
-  // Build/update map
-  useEffect(() => {
-    if (!filtered.length || !containerRef.current || !token) return
-
-    mapboxgl.accessToken = token
-
-    // Remove old map
-    if (mapRef.current) {
-      mapRef.current.remove()
-      mapRef.current = null
-    }
-
-    const centerCoord: [number, number] = zmActiva === 'MTY'
-      ? [-100.31, 25.67]
-      : zmActiva === 'QRO'
-      ? [-100.39, 20.59]
-      : [-100.98, 22.15]
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: centerCoord,
-      zoom: 11,
-    })
-    mapRef.current = map
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'top-right')
-
-    map.on('load', () => {
-      const fc: GeoJSON.FeatureCollection = {
-        type: 'FeatureCollection',
-        features: filtered
-          .filter(c => c.lat != null && c.lon != null)
-          .map(c => ({
-            type: 'Feature',
-            geometry: { type: 'Point', coordinates: [c.lon!, c.lat!] },
-            properties: {
-              centro_id:   c.centro_id,
-              nombre:      c.nombre,
-              tipo:        c.tipo,
-              direccion:   c.direccion,
-              municipio:   c.municipio,
-              materiales:  c.materiales.join(', '),
-              verificado:  c.verificado,
-              score:       c.score_confianza,
-              horario:     c.horario ?? '—',
-              telefono:    c.telefono ?? '—',
-              acepta_empresa: c.acepta_empresa,
-              color:       TIPO_COLORS[c.tipo] ?? '#8A857C',
-            },
-          })),
-      }
-
-      map.addSource('centros', { type: 'geojson', data: fc })
-
-      // Outer ring for verified centers
-      map.addLayer({
-        id: 'centros-verified-ring',
-        type: 'circle',
-        source: 'centros',
-        filter: ['==', ['get', 'verificado'], true],
-        paint: {
-          'circle-radius': 14,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 0.15,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': ['get', 'color'],
-        },
-      })
-
-      map.addLayer({
-        id: 'centros-circles',
-        type: 'circle',
-        source: 'centros',
-        paint: {
-          'circle-radius': 9,
-          'circle-color': ['get', 'color'],
-          'circle-opacity': 0.85,
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#1C1B18',
-        },
-      })
-
-      map.addLayer({
-        id: 'centros-labels',
-        type: 'symbol',
-        source: 'centros',
-        layout: {
-          'text-field': ['get', 'nombre'],
-          'text-size': 10,
-          'text-offset': [0, 1.6],
-          'text-anchor': 'top',
-        },
-        paint: {
-          'text-color': '#1C1B18',
-          'text-halo-color': '#FFFFFF',
-          'text-halo-width': 1.5,
-        },
-      })
-
-      // Fit bounds
-      if (filtered.filter(c => c.lat != null).length > 0) {
-        const bounds = new mapboxgl.LngLatBounds()
-        filtered
-          .filter(c => c.lat != null && c.lon != null)
-          .forEach(c => bounds.extend([c.lon!, c.lat!]))
-        map.fitBounds(bounds, { padding: 50, maxZoom: 13 })
-      }
-
-      map.on('click', 'centros-circles', e => {
-        const feat = e.features?.[0]
-        if (!feat?.properties) return
-        const p = feat.properties as Record<string, string | boolean | number>
-        const found = filtered.find(c => c.centro_id === p.centro_id)
-        if (found) setSelected(found)
-      })
-      map.on('mouseenter', 'centros-circles', () => { map.getCanvas().style.cursor = 'pointer' })
-      map.on('mouseleave', 'centros-circles', () => { map.getCanvas().style.cursor = '' })
-    })
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-      }
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filtered, token])
+  const mapMarkers = useMemo(
+    () => filtered
+      .filter(c => c.lat != null && c.lon != null)
+      .map(c => ({
+        id: c.centro_id,
+        lat: c.lat!,
+        lon: c.lon!,
+        title: c.nombre,
+        color: TIPO_COLORS[c.tipo] ?? '#8A857C',
+        onClick: () => setSelected(c),
+      })),
+    [filtered],
+  )
 
   if (loading) {
     return (
@@ -271,14 +158,12 @@ export function CentrosAcopioMap() {
           className="relative min-h-[320px] overflow-hidden rounded-[12px] border border-[#E8E4DC]"
           style={{ height: 360 }}
         >
-          {!token && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#F8F6F1]">
-              <p className="text-center text-[12px] text-[#8A857C]">
-                Configura NEXT_PUBLIC_MAPBOX_TOKEN<br />para ver el mapa interactivo
-              </p>
-            </div>
-          )}
-          <div ref={containerRef} className="h-full w-full" />
+          <GoogleMapCanvas
+            center={mapCenter}
+            zoom={11}
+            markers={mapMarkers}
+            height={360}
+          />
         </div>
 
         {/* Sidebar: selected card OR list */}

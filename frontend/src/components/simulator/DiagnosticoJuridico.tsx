@@ -15,6 +15,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
+import { LEGAL_PDF_UPLOADED_EVENT, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
 import { withRequestId } from '@/lib/requestId'
 import type {
   EstadoArticulo, Criticidad, LegalDiagnostic,
@@ -98,9 +99,11 @@ function TarjetaReglamentoPendiente({
             )
           : (
               <>
-                La fuente del reglamento está en estado{' '}
-                <span className="font-mono text-[10px]">no_disponible</span>
-                {' '}(sin URL oficial localizada / ingest incompleta). Complete la localización antes de usar el diagnóstico completo.
+                Aún no hay PDF del reglamento cargado en la plataforma. Suba el archivo en{' '}
+                <a href="#panel-reglamento-ciudad" className="text-[#1A5FA8] underline underline-offset-2">
+                  Alimentar reglamento
+                </a>
+                {' '}para habilitar el análisis jurídico de este municipio.
               </>
             )}
       </p>
@@ -112,7 +115,7 @@ function TarjetaReglamentoPendiente({
       )}
       <p className="mt-2 text-[11px]">
         <a href="#panel-reglamento-ciudad" className="text-[#1A5FA8] underline underline-offset-2">
-          Ver panel «Reglamento municipal» e instrucciones para agentes
+          Ir a «Alimentar reglamento (PDF)»
         </a>
       </p>
     </div>
@@ -398,6 +401,13 @@ export function DiagnosticoJuridico() {
   const [loading,  setLoading]  = useState(true)
   const [error,    setError]    = useState<string | null>(null)
   const [expandido, setExpandido] = useState<string | null>(null)
+  const [legalRefreshSeq, setLegalRefreshSeq] = useState(0)
+
+  useEffect(() => {
+    const onUploaded = () => setLegalRefreshSeq(n => n + 1)
+    window.addEventListener(LEGAL_PDF_UPLOADED_EVENT, onUploaded)
+    return () => window.removeEventListener(LEGAL_PDF_UPLOADED_EVENT, onUploaded)
+  }, [])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -416,7 +426,7 @@ export function DiagnosticoJuridico() {
         setPaquete(p)
         const faltaReglamentoOCatalogo = municipiosActivos.some((mid) => {
           const dm = p.paquete_municipal.find(x => x.municipio_id === mid)
-          return !dm || dm.diagnostic.source_manifest.ingest_status === 'no_disponible'
+          return !dm || !pdfListoParaAnalisis(dm.diagnostic.source_manifest)
         })
         const activosBloqueadosRevision = p.paquete_municipal.some(
           dm => municipiosActivos.includes(dm.municipio_id)
@@ -431,7 +441,7 @@ export function DiagnosticoJuridico() {
         setAgoraLegalBloqueado(true)
       })
       .finally(() => setLoading(false))
-  }, [zmActiva, municipiosActivos, setAgoraLegalBloqueado])
+  }, [zmActiva, municipiosActivos, setAgoraLegalBloqueado, legalRefreshSeq])
 
   if (loading) {
     return (
@@ -469,7 +479,7 @@ export function DiagnosticoJuridico() {
   const diagnosticables = municipiosActivos
     .map(mid => paquete.paquete_municipal.find(x => x.municipio_id === mid))
     .filter((dm): dm is DiagnosticoMunicipal =>
-      dm != null && dm.diagnostic.source_manifest.ingest_status !== 'no_disponible',
+      dm != null && pdfListoParaAnalisis(dm.diagnostic.source_manifest),
     )
 
   const inactivos = paquete.paquete_municipal.filter(dm => !municipiosActivos.includes(dm.municipio_id))
@@ -557,7 +567,7 @@ export function DiagnosticoJuridico() {
             <div className="space-y-2">
               {municipiosActivos.map((mid) => {
                 const dm = paquete.paquete_municipal.find(x => x.municipio_id === mid)
-                const bloqueadoReglamento = !dm || dm.diagnostic.source_manifest.ingest_status === 'no_disponible'
+                const bloqueadoReglamento = !dm || !pdfListoParaAnalisis(dm.diagnostic.source_manifest)
                 const nombre = nombreActivo(mid, dm, seleccionMunicipioCatalog)
                 if (bloqueadoReglamento) {
                   return (

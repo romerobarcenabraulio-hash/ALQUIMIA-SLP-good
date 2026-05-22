@@ -168,6 +168,91 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'social_encuesta':
+      return {
+        moduleId,
+        title: 'Encuesta de aceptación y preparación ciudadana',
+        pregunta_guia: '¿La ciudadanía está lista para separar y en qué colonias no?',
+        subtitulo_catchy: 'IPC y barreras reales — con o sin datos de campo del municipio',
+        situacion_actual: `El diseño de participación en ${territorio} requiere medir disposición a separar, no asumirla homogénea en toda la ZM.`,
+        observacion_alquimia: `${scope} Sin encuesta local, el IPC usa benchmark nacional documentado. Con encuesta, los valores de campo sustituyen el proxy con trazabilidad explícita.`,
+        criterio_decision: 'Priorizar colonias y mensajes según IPC segmentado antes de fijar metas de captura en cabildo.',
+        que_no_significa: 'No es consulta ciudadana vinculante ni padrón de beneficiarios del programa.',
+        siguiente_accion: 'Cargar resultados de campo o documentar que se usa benchmark hasta tener n≥30 respuestas.',
+        fuente_o_evidencia: 'Endpoint encuesta ALQUIMIA, SEMARNAT 2022, matriz de riesgos sociales.',
+        metodologia_editorial: {
+          como_se_calcula: 'IPC global y por segmento (condominio vs vía pública) desde respuestas ponderadas o benchmark 70 si null.',
+          origen_datos: 'Encuesta municipal o benchmark SEMARNAT documentado en el módulo.',
+          por_que_este_enfoque: 'La aceptación condiciona la curva de captura más que la infraestructura en años 1–2.',
+          supuesto_critico: 'Representatividad de la muestra — una encuesta en colonias de alto ingreso no generaliza al municipio.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'mapeo_actores':
+      return {
+        moduleId,
+        title: 'Mapa de actores y legitimidad política',
+        pregunta_guia: '¿Quién debe estar en la mesa antes de comprometer el programa?',
+        subtitulo_catchy: 'Pepenadores, concesionario, cabildo y sociedad civil — sin mapa no hay arranque',
+        situacion_actual: `En ${territorio}, los programas RSU fracasan con frecuencia por actores ausentes o en conflicto, no por falta de tecnología.`,
+        observacion_alquimia: `${scope} El mapeo es cualitativo y editable. No sustituye análisis político ni convenios formales.`,
+        criterio_decision: 'Identificar bloqueadores y aliados con estrategia de incorporación antes de licitar o reformar reglamento.',
+        que_no_significa: 'No es registro de partidos, ni diagnóstico electoral oficial, ni acta de cabildo.',
+        siguiente_accion: 'Completar fichas de actores críticos y definir primer encuentro facilitado.',
+        fuente_o_evidencia: 'Proyecto Vivo ALQUIMIA, literatura de programas RSU LATAM 2010–2024.',
+        metodologia_editorial: {
+          como_se_calcula: 'Matriz poder/interés + rutas de influencia documentadas por el equipo consultor.',
+          origen_datos: 'Entrevistas de campo, actas públicas, contratos de limpia visibles.',
+          por_que_este_enfoque: 'El riesgo político pondera 40% en el score de riesgo del simulador por evidencia histórica municipal.',
+          supuesto_critico: 'Honestidad del equipo al marcar resistencia interna — omitir al concesionario invalida el mapa.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'organigrama_diagnostico':
+      return {
+        moduleId,
+        title: 'Organigrama actual — gobernanza operativa as-is',
+        pregunta_guia: '¿Quién decide hoy desde la queja ciudadana hasta cabildo?',
+        subtitulo_catchy: 'Municipio y concesionario sin suposiciones — checklist de campo persistido',
+        situacion_actual: `Antes de diseñar el organigrama objetivo (M07), ${territorio} debe documentar titularidades reales de limpia, ecología, tesorería y operador.`,
+        observacion_alquimia: `${scope} Las verificaciones y checklist se guardan en el simulador. Hasta validar en campo, la plantilla es referencia metodológica, no organigrama oficial.`,
+        criterio_decision: 'Cerrar vacíos de titular y de interfaz municipio–operador antes de comprometer CAPEX o reforma reglamentaria.',
+        que_no_significa: 'No es el organigrama aprobado por RH ni la estructura objetivo del programa.',
+        siguiente_accion: 'Completar checklist de campo y marcar nodos confirmados; luego abrir M07 Planificación.',
+        fuente_o_evidencia: 'Plantilla ALQUIMIA M02D, organigramas PDF municipio/concesionario, contrato de limpia.',
+        metodologia_editorial: {
+          como_se_calcula: 'KPI % confirmados = nodos con estatus confirmado / total nodos mapeados. Checklist = ítems marcados por el equipo.',
+          origen_datos: 'Validación en campo; persistencia local del simulador.',
+          por_que_este_enfoque: 'Sin dueño operativo identificado, el programa no tiene quién firme bitácora PER ni reportes GRI.',
+          supuesto_critico: 'Actualización del contrato de concesión — define si el operador puede o no ejecutar separación.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'capacidad_institucional':
+      return {
+        moduleId,
+        title: 'Capacidad institucional y habilitación ÁGORA',
+        pregunta_guia: '¿El municipio puede ejecutar y generar plan hoy?',
+        subtitulo_catchy: 'Fase institucional, diagnóstico jurídico y bloqueos antes de planear',
+        situacion_actual: `${territorio} puede tener diagnóstico técnico sólido y aun así carecer de capacidad administrativa o marco habilitante para operar.`,
+        observacion_alquimia: `${scope} El semáforo ÁGORA refleja el diagnóstico jurídico cargado — no es dictamen de autoridad.`,
+        criterio_decision: 'Desbloquear requisitos jurídicos mínimos antes de prometer fechas de arranque en cabildo.',
+        que_no_significa: 'No certifica madurez institucional ni autoriza erogaciones.',
+        siguiente_accion: 'Completar diagnóstico jurídico y revisar fase institucional documentada.',
+        fuente_o_evidencia: 'DiagnosticoJuridico, reglamento municipal, LGPGIR.',
+        metodologia_editorial: {
+          como_se_calcula: 'Gate legal = checklist de artículos operables vs vacíos detectados en M03B.',
+          origen_datos: 'Reglamento cargado, manifest de fuentes.',
+          por_que_este_enfoque: 'Evita generar planes ÁGORA sobre supuestos que el área jurídica aún no habilita.',
+          supuesto_critico: 'Vigencia y completitud del reglamento municipal analizado.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'marco_legal':
     case 'municipal_context':
       return {
         moduleId,
@@ -208,6 +293,27 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             },
           },
         ],
+      }
+
+    case 'cobertura_territorial':
+      return {
+        moduleId,
+        title: 'Cobertura territorial y alcance del programa',
+        pregunta_guia: '¿Dónde aplica el programa y con qué delimitación oficial?',
+        subtitulo_catchy: 'Municipio propio vs ZM — sin mezclar jurisdicciones en una sola decisión',
+        situacion_actual: `La lectura territorial de ${territorio} debe usar límites y fuentes oficiales antes de fijar colonias piloto o inversión.`,
+        observacion_alquimia: `${scope} INEGI MGN es referencia para límites; OSM no sustituye documentos oficiales. Métricas de área en SLP/NL/QRO usan EPSG:6369, no 3857.`,
+        criterio_decision: 'Fijar alcance municipal explícito para sanción y operación; usar ZM solo para coordinación, no para mezclar reglamentos.',
+        que_no_significa: 'No redefine límites municipales ni sustituye plan de desarrollo urbano.',
+        siguiente_accion: 'Confirmar municipio ancla y colonias dentro del polígono oficial antes de oleadas territoriales.',
+        fuente_o_evidencia: 'INEGI Marco Geoestadístico, CONAPO ZM, capas ALQUIMIA.',
+        metodologia_editorial: {
+          como_se_calcula: 'Superposición de polígonos municipales y capas de cobertura de servicio documentadas.',
+          origen_datos: 'INEGI MGN, selección municipio catálogo ALQUIMIA.',
+          por_que_este_enfoque: 'Navigator veta decisiones que mezclan Municipio y ZM sin etiquetar alcance.',
+          supuesto_critico: 'Municipio activo en el selector — sin ancla, los supuestos son proxy ZM.',
+        },
+        chart_briefs: [],
       }
 
     case 'dictamen_tecnico':
@@ -467,6 +573,28 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'impacto_ambiental':
+      return {
+        moduleId,
+        title: 'Impacto ambiental y sanitario del programa',
+        pregunta_guia: '¿Qué externalidades evita el programa y con qué supuestos?',
+        subtitulo_catchy: 'CO₂e, salud pública y vida útil del relleno — sin mezclar con ingresos de mercado',
+        situacion_actual: `En ${territorio}, las externalidades del RSU (emisiones, salud, saturación de relleno) suelen quedar fuera del expediente de cabildo si solo se presentan ingresos por material.`,
+        observacion_alquimia: `${scope} Los KPIs provienen del motor del simulador con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI municipal.`,
+        criterio_decision: 'Separar beneficio ambiental de ingreso directo antes de presentar el programa a finanzas o financiadores verdes.',
+        que_no_significa: 'No es inventario GEI oficial, ni aval de PROFEPA o SEMARNAT sobre emisiones evitadas.',
+        siguiente_accion: 'Revisar factores de emisión y contrafactual sin programa antes de anexar cifras a un informe ESG.',
+        fuente_o_evidencia: 'INECC factores RSU, IPCC AR6, motor ALQUIMIA M01.',
+        metodologia_editorial: {
+          como_se_calcula: 'CO₂e = toneladas desviadas × factor emisión relleno × GWP. Salud = funciones documentadas sobre fracción orgánica y clima local.',
+          origen_datos: 'Factores INECC 2024, parámetros del escenario activo (M01).',
+          por_que_este_enfoque: 'El cabildo necesita ver el costo sanitario y climático de la omisión, no solo la derrama de venta de material.',
+          supuesto_critico: 'Factor de captura de biogás en el relleno local — cambia el CO₂e evitado hasta en 60%.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'social_diagnostico':
     case 'social_study':
       return {
         moduleId,
@@ -474,9 +602,9 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Quiénes son las personas que deben participar y qué barreras enfrentan?',
         subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
         situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
-        observacion_alquimia: `${scope} Los indicadores de este módulo son referencias estadísticas trazables (INEGI Censo 2020, CONEVAL 2022, ENOE 2024), no diagnósticos municipales certificados. Cada cifra citada aquí debe declararse como "estimación con supuestos explícitos" en comunicación pública.`,
+        observacion_alquimia: `${scope} Los indicadores de este módulo son referencias estadísticas trazables (INEGI Censo 2020, CONEVAL 2022, ENOE 2024), no diagnósticos municipales validados por instituto. Cada cifra citada aquí debe declararse como "estimación con supuestos explícitos" en comunicación pública.`,
         criterio_decision: 'Identificar grupos prioritarios, colonias de rezago, pepenadores a integrar y riesgos de reputación antes de cerrar el diseño de la estrategia de participación ciudadana.',
-        que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico certificado ni padrón de beneficiarios.',
+        que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico validado por instituto ni padrón de beneficiarios.',
         siguiente_accion: 'Revisar la matriz de riesgos sociales, documentar supuestos en la bitácora y cerrar brechas con evidencia de campo antes de presentar el programa a Cabildo.',
         fuente_o_evidencia: 'INEGI Censo de Población y Vivienda 2020; CONEVAL Índice de Rezago Social 2022; INEGI ENOE T1 2024 (sector informal); INEGI ENIGH 2022; INE calendario electoral 2024–2027.',
         metodologia_editorial: {
@@ -643,6 +771,111 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
           origen_datos: 'Las fuentes son las mismas de los módulos anteriores: Censo INEGI 2020, SEMARNAT DBGIR 2020, INECC 2024, SHCP, mercado secundario documentado.',
           por_que_este_enfoque: 'Sin esta matriz, un número en una presentación pública no puede ser defendido. No hay forma de distinguir si es un cálculo del modelo, un dato del censo o una estimación editorial — ambigüedad suficiente para que una contraloría descarte todo el análisis.',
           supuesto_critico: 'El estado de verificación de cada fila. Las filas pendientes no deben aparecer en documentos oficiales hasta que la fuente esté cerrada y el responsable confirmado.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'evaluacion_socioeconomica':
+      return {
+        moduleId,
+        title: 'Evaluación socioeconómica y alivio fiscal estatal',
+        pregunta_guia: '¿Cuántos empleos se traducen en reducción de pobreza y alivio fiscal proxy?',
+        subtitulo_catchy: 'CONEVAL/SHCP como referencia — no certificación estatal',
+        situacion_actual: `El argumento social-fiscal de ${territorio} conecta empleos del programa con pobreza municipal y canales de alivio estatal documentados.`,
+        observacion_alquimia: `${scope} Etiquetado honesto: estimación con supuestos CONEVAL 2022 y referencias SHCP. No es cifra autorizada de Secretaría de Finanzas.`,
+        criterio_decision: 'Usar escenario conservador/base/optimista antes de citar reducción de pobreza en foro público.',
+        que_no_significa: 'No es resolución oficial de CONEVAL ni impacto fiscal avalado por SHCP.',
+        siguiente_accion: 'Seleccionar municipio en catálogo y revisar waterfall de canales con ProvenanceBadge.',
+        fuente_o_evidencia: 'CONEVAL 2022, baselines estatales ALQUIMIA, motor empleos M01–M09.',
+        metodologia_editorial: {
+          como_se_calcula: 'Personas beneficiadas = empleos efectivos × factor hogar × formalización. Alivio = ISN + salud estatal + rescate + spread deuda verde.',
+          origen_datos: 'stateFiscalBaselines.ts, resultados.ingresosMunicipioFiscal, ahorroSalud.',
+          por_que_este_enfoque: 'Permite al gobernador ver co-beneficios fiscales sin confundirlos con ingreso municipal directo.',
+          supuesto_critico: 'Tasa de formalización del escenario — mueve personas en pobreza y alivio rescate.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'teoria_cambio':
+      return {
+        moduleId,
+        title: 'Teoría de cambio — cierre del diagnóstico',
+        pregunta_guia: '¿Cómo se conectan insumos, actividades y resultados del capítulo 1?',
+        subtitulo_catchy: 'Del problema a la hipótesis de intervención antes de planificar',
+        situacion_actual: `El diagnóstico de ${territorio} dispersa hallazgos en seis rubros; la teoría de cambio los ordena en una cadena verificable.`,
+        observacion_alquimia: `${scope} Es síntesis narrativa de módulos anteriores — no introduce cifras nuevas sin fuente.`,
+        criterio_decision: 'Validar que cada outcome tenga indicador y responsable antes de pasar a Planificación.',
+        que_no_significa: 'No sustituye evaluación de impacto ex post ni M&E operativo (M17).',
+        siguiente_accion: 'Revisar eslabones débiles y abrir Capítulo 2 con plan maestro.',
+        fuente_o_evidencia: 'Outputs M01–M04C, estándar Theory of Change en programas públicos.',
+        metodologia_editorial: {
+          como_se_calcula: 'Cadena inputs → actividades → outputs → outcomes → impacto con vínculo a variables del store.',
+          origen_datos: 'Módulos Cap 1 completados.',
+          por_que_este_enfoque: 'Cabildo y BID piden teoría de cambio explícita, no solo tablas sueltas.',
+          supuesto_critico: 'Completitud del diagnóstico — eslabones vacíos indican módulos pendientes.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'ruta_critica':
+      return {
+        moduleId,
+        title: 'Ruta crítica y holgura del programa',
+        pregunta_guia: '¿Qué tareas no pueden retrasarse sin mover todo el calendario?',
+        subtitulo_catchy: 'PERT con varianza — dónde concentrar supervisión',
+        situacion_actual: `El calendario de ${territorio} solo es creíble si identifica la cadena de tareas sin holgura.`,
+        observacion_alquimia: `${scope} La ruta crítica sale del PERT del plan maestro; no es fecha de cabildo ni de licitación cerrada.`,
+        criterio_decision: 'Asignar recursos y supervisión a tareas con holgura cero antes de comprometer fechas públicas.',
+        que_no_significa: 'No es cronograma de obra autorizado ni programa de inversión federal.',
+        siguiente_accion: 'Revisar tareas críticas y validar estimados optimista/probable/pesimista con área operativa.',
+        fuente_o_evidencia: 'Catálogo de hitos ALQUIMIA, PMBOK 6, experiencia SEMARNAT-BID.',
+        metodologia_editorial: {
+          como_se_calcula: 'Duración esperada β-PERT; holgura = LS − ES; ruta crítica = tareas con holgura ≤ 0.',
+          origen_datos: 'Estimados por tipo de tarea municipal en FutureGoalsModule.',
+          por_que_este_enfoque: 'El retraso en permisos o licitación suele estar en la ruta crítica — no en tareas paralelas.',
+          supuesto_critico: 'Estimado pesimista de trámites — subestimarlo desplaza el arranque político del programa.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'oleadas_territoriales':
+      return {
+        moduleId,
+        title: 'Oleadas territoriales de despliegue',
+        pregunta_guia: '¿En qué colonias y en qué orden arranca el piloto?',
+        subtitulo_catchy: 'Secuencia territorial — no todo el municipio el día uno',
+        situacion_actual: `Desplegar en todo ${territorio} a la vez suele colapsar operación y comunicación.`,
+        observacion_alquimia: `${scope} Las oleadas priorizan rezago social, densidad y viabilidad logística — no solo criterio político.`,
+        criterio_decision: 'Fijar oleada 1 con colonias defendibles antes de escalar captura en todo el territorio.',
+        que_no_significa: 'No es mapa de distritación electoral ni padrón de beneficiarios.',
+        siguiente_accion: 'Validar lista de colonias piloto con logística M08 y social M02.',
+        fuente_o_evidencia: 'Plan maestro, CONEVAL rezago, cobertura territorial M03C.',
+        metodologia_editorial: {
+          como_se_calcula: 'Priorización por score compuesto: rezago, densidad, distancia a CA propuesto.',
+          origen_datos: 'INEGI, CONEVAL, motor de infraestructura.',
+          por_que_este_enfoque: 'La adopción ciudadana es local — un piloto mal elegido invalida el programa entero.',
+          supuesto_critico: 'Disponibilidad real de flota y personal en oleada 1.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'plan_educativo':
+      return {
+        moduleId,
+        title: 'Plan educativo y sensibilización ciudadana',
+        pregunta_guia: '¿Cuánto cuesta enseñar a separar y en qué segmentos?',
+        subtitulo_catchy: 'IPC, condominios y vía pública — costos distintos',
+        situacion_actual: `La captura en ${territorio} depende de hábitos; el costo educativo no es uniforme por tipo de vivienda.`,
+        observacion_alquimia: `${scope} El módulo usa IPC del store (encuesta o benchmark SEMARNAT) y factor vía pública del M02.`,
+        criterio_decision: 'Dimensionar brigadas y presupuesto de comunicación antes de fijar meta de captura año 1.',
+        que_no_significa: 'No sustituye campaña de comunicación social aprobada por cabildo.',
+        siguiente_accion: 'Cargar IPC de encuesta o documentar uso de benchmark 70 con ProvenanceBadge.',
+        fuente_o_evidencia: 'SEMARNAT 2022, ENIGH vivienda, calculator costoComSocial.',
+        metodologia_editorial: {
+          como_se_calcula: 'Costo educación = f(hogares, IPC, % vía pública, brigadas).',
+          origen_datos: 'Store: casaViaPublicaPct, indicePreparacionCiudadana.',
+          por_que_este_enfoque: 'Separar en condominio vs calle evita subestimar costo en zonas de rezago.',
+          supuesto_critico: 'IPC real de campo — sin encuesta, el benchmark puede sobrestimar preparación.',
         },
         chart_briefs: [],
       }

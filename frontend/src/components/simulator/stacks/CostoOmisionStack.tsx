@@ -82,7 +82,7 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 export function CostoOmisionStack() {
   const { resultados, horizonte } = useSimulatorStore()
 
-  const rsuDia = resultados?.rsuTotalTonDia ?? 379.3
+  const rsuDia = resultados?.rsuTotalTonDia ?? 0
   const ingresoAnual = ((resultados?.ingresosBrutos ?? 0) / Math.max(1, 10)) * 0.8
   const co2eAnual = resultados?.co2eEvitadasAnualTon ?? rsuDia * 365 * 0.35
 

@@ -5,7 +5,7 @@
   "instrucciones_agente_legal": [
     "Priorizar siempre el texto y metadatos de la fuente oficial enlazada en url_fuente_descarga.",
     "Para adendos: los agentes de ALQUIMIA los generan; el frontend los consume, no los produce.",
-    "Cuando se consiga un PDF oficial para un municipio sin espejo, agregarlo aquí y en reglamentos.ts."
+    "Cuando se consiga un PDF oficial para un municipio sin PDF en línea, agregarlo aquí y en reglamentos.ts."
   ],
   "municipios": [
     {
@@ -180,7 +180,7 @@
       "mime": [],
       "url_fuente_descarga": "https://www.marques.gob.mx/transparencia/",
       "tipo_fuente": "pendiente_scrape",
-      "riesgos_calidad": ["Sin espejo PDF local en esta instantánea."]
+      "riesgos_calidad": ["Sin PDF local en línea en esta instantánea."]
     },
     {
       "zm_id": "QRO",
@@ -191,7 +191,7 @@
       "mime": [],
       "url_fuente_descarga": "https://huimilpan.gob.mx/category/transparencia/",
       "tipo_fuente": "pendiente_scrape",
-      "riesgos_calidad": ["Sin espejo PDF local en esta instantánea."]
+      "riesgos_calidad": ["Sin PDF local en línea en esta instantánea."]
     },
     {
       "zm_id": "GDL",
@@ -202,7 +202,7 @@
       "mime": [],
       "url_fuente_descarga": "https://www.tlaquepaque.gob.mx/transparencia/",
       "tipo_fuente": "pendiente_scrape",
-      "riesgos_calidad": ["Sin espejo PDF local en esta instantánea."]
+      "riesgos_calidad": ["Sin PDF local en línea en esta instantánea."]
     },
     {
       "zm_id": "SLP",

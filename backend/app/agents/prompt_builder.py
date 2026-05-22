@@ -302,6 +302,24 @@ def build_agent_prompt(
             else:
                 user_lines.append(f"  - {m_id}: sin diagnóstico jurídico ⚠️")
 
+    # Research compacto (top por categoría — ahorra tokens vs JSON completo)
+    rf = bundle.inputs_usuario.get("research_findings")
+    if isinstance(rf, dict):
+        user_lines.append("\n## Investigación web (resumen compacto):")
+        for cat in (
+            "precios_materiales", "costos_construccion", "costos_terreno",
+            "reglamentos", "benchmarks_latam",
+        ):
+            items = rf.get(cat) or []
+            for it in items[:2]:
+                tit = (it.get("titulo") or "")[:80]
+                val = it.get("valor_numerico")
+                dom = it.get("domain", "?")
+                extra = f" · ${val}" if val else ""
+                user_lines.append(f"  - [{cat}] {tit} ({dom}){extra}")
+        if rf.get("advertencias"):
+            user_lines.append(f"  - Advertencia: {rf['advertencias'][0][:120]}")
+
     # Evidence pack
     if evidence_pack and evidence_pack.items:
         user_lines.append("\n## Evidencia disponible para este documento:")

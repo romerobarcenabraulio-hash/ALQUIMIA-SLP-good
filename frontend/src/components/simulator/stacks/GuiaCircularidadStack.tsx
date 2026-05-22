@@ -58,10 +58,12 @@ const STEPS: StepDef[] = [
     question: 'Entender el municipio antes de proponer soluciones',
     color: '#3B6D11', bgColor: '#EAF3DE', borderColor: '#C9DDB1',
     modules: [
-      { label: 'M01 Línea Base RSU',      id: 'city_baseline' },
-      { label: 'M02 Estudio Social',       id: 'social_study' },
-      { label: 'M03 Marco Legal',          id: 'municipal_context' },
-      { label: 'M04 Costo de la Omisión', id: 'costo_omision' },
+      { label: 'M01 Línea Base RSU',       id: 'city_baseline' },
+      { label: 'M01B Impacto ambiental',   id: 'impacto_ambiental' },
+      { label: 'M02 Diagnóstico social',   id: 'social_diagnostico' },
+      { label: 'M02D Organigrama actual', id: 'organigrama_diagnostico' },
+      { label: 'M03 Marco legal',          id: 'marco_legal' },
+      { label: 'M04 Costo de la omisión',  id: 'costo_omision' },
     ],
     body: (ctx) =>
       `Todo comienza con un dato simple y contundente: el municipio de ${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de residuos sólidos urbanos al día. De esa cantidad, hoy se recupera menos del 6%. Primero entendemos cuánta basura hay y de qué tipo (M01 — línea base técnica con fuente SEMARNAT/INEGI), luego si la ciudadanía está dispuesta a separar (M02 — diagnóstico social con Índice de Preparación Ciudadana), y solo entonces evaluamos si el marco legal es suficiente para respaldar el programa (M03 — brechas normativas y adendos propuestos).\n\nM04 cierra el diagnóstico con la pregunta que ningún consultor hace: ¿cuánto cuesta NO actuar? El análisis contrafactual cuantifica el pasivo acumulado en 10 años: costo de disposición, daño sanitario, multas PROFEPA y la pérdida de elegibilidad para financiamiento verde.\n\nDiagnosticar la ley sin diagnosticar primero a la sociedad es legislar a ciegas. Este capítulo entrega el punto de partida defendible ante cabildo, financiadores y auditoría técnica.`,
@@ -80,12 +82,12 @@ const STEPS: StepDef[] = [
     question: 'Cuánta infraestructura, logística, personal y dinero se requiere',
     color: '#1A5FA8', bgColor: '#E8F0FA', borderColor: '#BDD7F5',
     modules: [
-      { label: 'M05 Metas y Trayectorias',   id: 'future_goals' },
-      { label: 'M06 Infraestructura (CAs)',   id: 'infrastructure_operations' },
-      { label: 'M07 Organigrama Operativo',   id: 'organigrama_programa' },
-      { label: 'M08 Logística Operativa',     id: 'logistica_operativa' },
+      { label: 'M05 Plan maestro',            id: 'plan_maestro' },
+      { label: 'M06 Infraestructura (CAs)',   id: 'infraestructura' },
+      { label: 'M07 Organigrama objetivo',    id: 'organigrama' },
+      { label: 'M08 Logística operativa',     id: 'logistica' },
       { label: 'M09 Costos CAPEX / OPEX',     id: 'costos_programa' },
-      { label: 'M10 Mercado de Materiales',   id: 'market_traceability' },
+      { label: 'M10 Mercado de materiales',   id: 'mercado_materiales' },
     ],
     body: (ctx) =>
       `Con el diagnóstico claro, se definen metas con modelo matemático detrás: la curva de captura año por año, cuántos centros de acopio se necesitan y de qué tamaño (M05–M06). M07 define quién hace qué: organigrama, matriz RACI y plantilla de personal por tipo de CA — la pieza que las consultoras olvidan y que el tesorero siempre pregunta. La logística determina rutas, zona piloto y protocolo PER (M08). El módulo de costos presenta la tabla ejecutiva completa: CAPEX y OPEX con desglose de equipos, personal y operación anual (M09). Finalmente, M10 muestra a quién se vende el material recuperado y a qué precio.\n\nSin costos no hay presupuesto. Sin organigrama no hay responsables. Sin mercado no hay ingresos. Este capítulo entrega el número que el director de finanzas pregunta antes de pedir nada más: ¿cuánto cuesta y quién lo opera?`,
@@ -104,11 +106,11 @@ const STEPS: StepDef[] = [
     question: 'Qué le presentamos al cabildo para que vote',
     color: '#D4881E', bgColor: '#FEF7E7', borderColor: '#F5DCA0',
     modules: [
-      { label: 'M11 Esquema de Concesión',    id: 'esquema_concesion' },
-      { label: 'M12 Escenarios Financieros',  id: 'scenarios_export' },
-      { label: 'M13 Árbol de Financiamiento', id: 'arbol_financiamiento' },
-      { label: 'M14 Riesgos del Modelo',      id: 'risk_trends' },
-      { label: 'M15 Expediente Cabildo',      id: 'expediente_cabildo' },
+      { label: 'M11 Esquema de concesión',    id: 'esquema_concesion' },
+      { label: 'M12 Escenarios financieros',  id: 'escenarios_financieros' },
+      { label: 'M13 Árbol de financiamiento', id: 'arbol_financiamiento' },
+      { label: 'M14 Riesgos del modelo',      id: 'riesgos_modelo' },
+      { label: 'M15 Expediente cabildo',      id: 'expediente_cabildo' },
     ],
     body: (ctx) =>
       `El cabildo no vota la técnica — vota el modelo de negocio. Aquí es donde la mayoría de los programas municipales se detienen: nadie contestó las tres preguntas que el cabildo realmente necesita. M11 responde quién opera y cómo se distribuyen los ingresos bajo cuatro esquemas: municipal directo, concesionado privado, APP o fideicomiso.\n\nM12 presenta los escenarios financieros (base, optimista, adverso) con análisis Monte Carlo y tornado de sensibilidad. Bajo el escenario base, el programa proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales al municipio y una TIR de ${fmtN(ctx.tir)}%. M13 va un paso más allá: el árbol de financiamiento mapea los 6 caminos reales para conseguir el capital — con criterios de elegibilidad y costo de capital de cada uno. M14 evalúa los riesgos del modelo completo. M15 consolida toda la documentación en el expediente listo para presentar ante el Cabildo.`,
@@ -127,10 +129,10 @@ const STEPS: StepDef[] = [
     question: 'Ya aprobado el programa, cómo se opera y se demuestra que funciona',
     color: '#4A1C7A', bgColor: '#F5EFF9', borderColor: '#D8C4E8',
     modules: [
-      { label: 'M16 Inspección y Cumplimiento', id: 'inspeccion_predios' },
-      { label: 'M17 Monitoreo Real',             id: 'monitoreo_real' },
-      { label: 'M18 Doble Materialidad / ESG',   id: 'doble_materialidad' },
-      { label: 'M19 Trazabilidad de Fuentes',    id: 'source_traceability' },
+      { label: 'M16 Inspección y cumplimiento', id: 'inspeccion' },
+      { label: 'M17 Monitoreo operativo',       id: 'monitoreo_operativo' },
+      { label: 'M18 Doble materialidad / ESG',  id: 'doble_materialidad' },
+      { label: 'M19 Trazabilidad de fuentes',   id: 'trazabilidad' },
     ],
     body: (ctx) =>
       `Un programa sin medición no es un programa — es una promesa electoral. M16 implementa la inspección escalonada: educación → advertencia → sanción documentada. No es punitiva; es el mecanismo que garantiza que la infraestructura reciba material de calidad.\n\nM17 compara proyección vs. realidad en un semáforo de desempeño. M18 convierte los resultados en el lenguaje de financiadores: GRI 306 (residuos) y ESRS E5 (economía circular), con reportes listos para BANOBRAS y fondos internacionales. El programa proyecta evitar ${fmtN(ctx.co2e)} t CO₂e/año — una cifra que vale dinero en mercados de carbono. M19 cierra el ciclo: cada número del simulador tiene fórmula, fuente y estado de verificación. Trazabilidad total.`,
@@ -263,9 +265,9 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
           {[
             { icon: MapPin,     label: 'Diagnóstico',   sub: 'M01 – M04', desc: 'Entender el municipio',    color: '#3B6D11', firstId: 'city_baseline' },
-            { icon: Target,     label: 'Planificación', sub: 'M05 – M10', desc: 'Diseñar la solución',      color: '#1A5FA8', firstId: 'future_goals' },
+            { icon: Target,     label: 'Planificación', sub: 'M05 – M10', desc: 'Diseñar la solución',      color: '#1A5FA8', firstId: 'plan_maestro' },
             { icon: Scale,      label: 'Modelo',        sub: 'M11 – M15', desc: 'Quién paga, quién opera',  color: '#D4881E', firstId: 'esquema_concesion' },
-            { icon: BarChart3,  label: 'Control',       sub: 'M16 – M19', desc: 'Operar y demostrar',       color: '#4A1C7A', firstId: 'inspeccion_predios' },
+            { icon: BarChart3,  label: 'Control',       sub: 'M16 – M19', desc: 'Operar y demostrar',       color: '#4A1C7A', firstId: 'inspeccion' },
           ].map(e => (
             <button
               key={e.label}

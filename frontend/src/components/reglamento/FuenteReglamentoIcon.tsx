@@ -1,7 +1,11 @@
 'use client'
 
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
-import { reglamentoFuentePorMunicipio, tieneUrlFuentePrimaria } from '@/data/reglamentos'
+import {
+  reglamentoFuentePorMunicipio,
+  tienePdfLocalEmbebible,
+  tieneUrlFuentePrimaria,
+} from '@/data/reglamentos'
 import { FileText } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -24,7 +28,7 @@ export function FuenteReglamentoIcon({
   const activos = useSimulatorStore(s => s.municipiosActivos)
   const mid = (municipioProp ?? activos[0] ?? 'slp').toLowerCase()
   const reg = reglamentoFuentePorMunicipio(mid)
-  const marcaVerificacion = !reg || !tieneUrlFuentePrimaria(reg)
+  const marcaVerificacion = !reg || (!tienePdfLocalEmbebible(reg) && !tieneUrlFuentePrimaria(reg))
 
   return (
     <span className="relative inline-flex shrink-0 align-middle">

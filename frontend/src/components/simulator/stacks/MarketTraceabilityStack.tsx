@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   AreaChart, Area, ReferenceLine, Cell, Legend,
@@ -14,6 +14,10 @@ import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { TRAJECTORY_UI, PRECIOS_DEFAULTS, PRECIOS_RANGO, COMPOSICION_RSU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
+import { getMarketBuyers } from '@/lib/api'
+import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import type { MaterialBuyer } from '@/types'
 
 // ── Triangular distribution helper ───────────────────────────────────────────
 
@@ -94,8 +98,64 @@ const RISK_COMPOSITION = [
   { cat: 'Político',    pct: 3  },
 ]
 
-// Buyers table — 8 materials
-const COMPRADORES_TABLE = [
+type CompradorRow = {
+  material: string
+  comprador: string
+  tipo: string
+  distKm: number
+  capTon: number
+  p50: number
+  p10: number
+  p90: number
+  estatus: string
+  rechazo: string
+  calidad: string
+  fuenteApi?: boolean
+}
+
+const MATERIAL_LABELS: Record<string, string> = {
+  pet: 'PET',
+  plastico: 'PET',
+  papel: 'Papel / Cartón',
+  carton: 'Papel / Cartón',
+  aluminio: 'Aluminio',
+  vidrio: 'Vidrio',
+  organico: 'Orgánicos',
+  hdpe: 'HDPE / PEAD',
+  pead: 'HDPE / PEAD',
+  metales: 'Metales',
+  otros: 'Otros recuperables',
+}
+
+function buyerToRow(b: MaterialBuyer): CompradorRow {
+  const p50kg = (b.precio_min_mxn_kg + b.precio_max_mxn_kg) / 2
+  const p50t = Math.round(p50kg * 1000)
+  const spread = Math.max(0.15, (b.precio_max_mxn_kg - b.precio_min_mxn_kg) / Math.max(p50kg, 0.01))
+  const estatus =
+    b.status === 'verificado' ? 'Verificado (API)' :
+    b.status === 'estimado' ? 'Benchmark (API)' :
+    b.status === 'manual' ? 'Manual' :
+    b.status === 'pendiente_verificacion' ? 'Pendiente verificación' :
+    b.status === 'inactivo' ? 'Sin comprador' : String(b.status)
+  const rechazo = b.calidad_requerida === 'alta' ? 'Alto' : b.calidad_requerida === 'basica' ? 'Bajo' : 'Medio'
+  return {
+    material: MATERIAL_LABELS[b.material] ?? b.material,
+    comprador: b.nombre,
+    tipo: b.tipo_comprador,
+    distKm: Math.round(b.distancia_km ?? 0),
+    capTon: Math.round(b.capacidad_disponible_ton_anio),
+    p50: p50t,
+    p10: Math.round(p50t * (1 - spread)),
+    p90: Math.round(p50t * (1 + spread)),
+    estatus,
+    rechazo,
+    calidad: b.calidad_requerida,
+    fuenteApi: true,
+  }
+}
+
+/** Fallback editorial — etiquetar como benchmark, no como contrato. */
+const COMPRADORES_FALLBACK: CompradorRow[] = [
   { material: 'PET',           comprador: 'Recicladoras (Eco-Oro, PetFiber, Ajax)', tipo: 'Recicladora regional',    distKm: 35,  capTon: 7950,  p50: 7850, p10: 6800, p90: 9200,  estatus: 'LOI firmada',    rechazo: 'Bajo',   calidad: 'PET limpio, sin tapas' },
   { material: 'Papel / Cartón', comprador: 'Papelera de Bajío, SmurfitKappa, Bio Papel', tipo: 'Industrial',        distKm: 45,  capTon: 4220,  p50: 2150, p10: 1000, p90: 2700,  estatus: 'Contrato',       rechazo: 'Bajo',   calidad: 'Seco y clasificado' },
   { material: 'Aluminio',      comprador: 'Ahmsa de México, Reciclimetal',              tipo: 'Recicladora grande',  distKm: 88,  capTon: 310,   p50: 45000,p10: 39000,p90: 58600, estatus: 'LOI firmada',    rechazo: 'Bajo',   calidad: 'Sin pintura, sin oxido' },
@@ -103,7 +163,7 @@ const COMPRADORES_TABLE = [
   { material: 'Orgánicos',     comprador: 'Campo directo / agroindustria',              tipo: 'Agroindustrial',      distKm: 30,  capTon: 3000,  p50: 300,  p10: 160,  p90: 600,   estatus: 'En negociación', rechazo: 'Medio',  calidad: 'Composta básica, <15% hum.' },
   { material: 'HDPE / PEAD',   comprador: 'Transformadores plásticos regionales',      tipo: 'Recicladora regional', distKm: 50, capTon: 1050,  p50: 8500, p10: 6200, p90: 10000, estatus: 'En negociación', rechazo: 'Alto',   calidad: 'Alto grado de pureza' },
   { material: 'Metales',       comprador: 'Acerinox / chatarrero industrial',           tipo: 'Chatarrero',          distKm: 70,  capTon: 420,   p50: 6000, p10: 3500, p90: 8500,  estatus: 'No confirmado',  rechazo: 'Bajo',   calidad: 'Limpio, sin plomo' },
-  { material: 'Otros recuperables', comprador: 'Terra Pak, textil reciclado',          tipo: 'Especializado',        distKm: 120, capTon: 800,   p50: 1200, p10: 500,  p90: 2000,  estatus: 'Sin comprador',  rechazo: 'Alto',   calidad: 'Por corriente y contenido' },
+  { material: 'Otros recuperables', comprador: 'Terra Pak, textil reciclado',          tipo: 'Especializado',        distKm: 120, capTon: 800,   p50: 1200, p10: 500,  p90: 2000,  estatus: 'Sin comprador',  rechazo: 'Alto',   calidad: 'Por corriente y contenido', fuenteApi: false },
 ]
 
 // Sensitivity tornado — 7 variables
@@ -241,6 +301,10 @@ function matrixTextColor(prob: RiskLevel, imp: RiskLevel): string {
 function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact = false }: {
   municipio: string; horizonte: number; trayectoria: string; rsuDia: number; compact?: boolean
 }) {
+  const mixCAs = useSimulatorStore(s => s.mixCAs)
+  const resultados = useSimulatorStore(s => s.resultados)
+  const infra = useMemo(() => infraOperativaFromStore(mixCAs, resultados), [mixCAs, resultados])
+
   function fmt(n: number) { return `${n.toFixed(1)} t/día` }
   if (compact) {
     return (
@@ -251,7 +315,8 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
             <span className="text-[#3B6D11] font-semibold">M1:</span>{' '}<span className="text-[#4A4740]">{municipio} · {horizonte}a · {trayectoria} · {fmt(rsuDia)} capturable</span>
           </span>
           <span className="rounded-[6px] border border-[#BDD7F5] bg-[#EBF3FB] px-2.5 py-1">
-            <span className="text-[#1A5FA8] font-semibold">M4:</span>{' '}<span className="text-[#4A4740]">18 centros · 230 t/día cap. · brecha 149.3 t/día</span>
+            <span className="text-[#1A5FA8] font-semibold">M06:</span>{' '}
+            <span className="text-[#4A4740]">{infra.label} · {infra.sub}</span>
           </span>
         </div>
       </div>
@@ -266,8 +331,8 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         {[
           { label: 'Módulo 1 · Escenario comprometido', color: '#3B6D11', bg: '#F4FAEC', border: '#D7E8C0', body: `${municipio} · ${horizonte} años · ${trayectoria}`, sub: `${fmt(rsuDia)} capturable`, note: 'Flujo, composición, precios y merma heredados' },
-          { label: 'Módulo 4 · Infraestructura',        color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5', body: '18 centros · 230 t/día capacidad', sub: 'Brecha operativa: 149.3 t/día', note: 'Capacidad, flujos y logística heredados' },
-          { label: 'Módulo 5 · Decisión actual',        color: '#A8A49C', bg: '#FAFAF8', border: '#E8E4DC', body: 'Dictamen de mercado, aceptación y riesgo', sub: 'Emitir dictamen de viabilidad', note: 'Proceder / Condicionado / No proceder' },
+          { label: 'Módulo 6 · Infraestructura',        color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5', body: infra.label, sub: infra.sub, note: 'Capacidad desde mix CAs y motor M01' },
+          { label: 'Módulo 5 · Decisión actual',        color: '#A8A49C', bg: '#FAFAF8', border: '#E8E4DC', body: 'Viabilidad de mercado, aceptación y riesgo', sub: 'Emitir recomendación de viabilidad', note: 'Proceder / Condicionado / No proceder' },
         ].map(b => (
           <div key={b.label} className="flex-1 min-w-[150px] rounded-[10px] border px-4 py-3" style={{ borderColor: b.border, background: b.bg }}>
             <p className="text-[9px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
@@ -767,6 +832,31 @@ function Page1({ prob }: { prob: number }) {
 // ── Page 2 — Mercado y sensibilidad ──────────────────────────────────────────
 
 function Page2({ ingresoAnual }: { ingresoAnual: number }) {
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const [buyers, setBuyers] = useState<CompradorRow[]>(COMPRADORES_FALLBACK)
+  const [buyersSource, setBuyersSource] = useState<'api' | 'fallback'>('fallback')
+
+  useEffect(() => {
+    let cancelled = false
+    getMarketBuyers(undefined, zmActiva)
+      .then(list => {
+        if (cancelled || !list?.length) return
+        const byMat = new Map<string, MaterialBuyer>()
+        for (const b of list) {
+          const prev = byMat.get(b.material)
+          if (!prev || b.confianza > prev.confianza) byMat.set(b.material, b)
+        }
+        setBuyers([...byMat.values()].map(buyerToRow))
+        setBuyersSource('api')
+      })
+      .catch(() => {
+        if (!cancelled) setBuyersSource('fallback')
+      })
+    return () => { cancelled = true }
+  }, [zmActiva])
+
+  const compradoresTable = buyers
+
   const p10Rev = ingresoAnual * 0.67
   const p90Rev = ingresoAnual * 1.40
   const cv     = 18.1
@@ -777,8 +867,22 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
       <ExpandableChart chartId="m05-buyers" title="Compradores y colocación esperada por material" subtitle="Comprador · precio base · estatus contractual · riesgo de rechazo">
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
           <div className="px-5 py-4 border-b border-[#F0EDE5]">
-            <p className="text-[12px] font-semibold text-[#1C1B18]">Compradores y colocación esperada por material</p>
-            <p className="text-[10px] text-[#A8A49C]">Precios base MXN/t · estatus contractual · riesgo · distancia · fuente: ANIPAC/CEMPRE mayo 2026</p>
+            <div className="flex flex-wrap items-start justify-between gap-2">
+              <div>
+                <p className="text-[12px] font-semibold text-[#1C1B18]">Compradores y colocación esperada por material</p>
+                <p className="text-[13px] text-[#6B6760] mt-0.5">
+                  {buyersSource === 'api'
+                    ? 'Fuente: catálogo /market/buyers (ZM activa). No equivale a LOI firmada.'
+                    : 'Benchmark editorial — conecte backend para catálogo vivo.'}
+                </p>
+              </div>
+              <ProvenanceBadge
+                tipo={buyersSource === 'api' ? 'estimado' : 'manual'}
+                confianza={buyersSource === 'api' ? 0.72 : 0.45}
+                fuente={buyersSource === 'api' ? 'GET /market/buyers' : 'COMPRADORES_FALLBACK'}
+                advertencia="Precios son referencia de mercado secundario, no cotización contractual."
+              />
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-[10px]">
@@ -790,7 +894,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
                 </tr>
               </thead>
               <tbody>
-                {COMPRADORES_TABLE.map((r, i) => {
+                {compradoresTable.map((r, i) => {
                   const estColor = r.estatus === 'Contrato' ? 'bg-[#D1FAE5] text-[#065F46]' :
                                    r.estatus === 'LOI firmada' ? 'bg-[#EAF3DE] text-[#2D5A0D]' :
                                    r.estatus === 'En negociación' ? 'bg-[#FEF3C7] text-[#92400E]' :
@@ -824,7 +928,7 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
             <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Bandas de precio por material (MXN/t)</p>
             <p className="text-[10px] text-[#A8A49C] mb-4">P10 / P50 / P90 · si precio usado &gt; P90 → riesgo alto</p>
             <div className="space-y-3">
-              {COMPRADORES_TABLE.filter(r => r.estatus !== 'Sin comprador').map(r => {
+              {compradoresTable.filter(r => r.estatus !== 'Sin comprador').map(r => {
                 const range = r.p90 - r.p10
                 const p50Pct = range > 0 ? ((r.p50 - r.p10) / range) * 100 : 50
                 return (
@@ -1159,7 +1263,7 @@ export function MarketTraceabilityStack({ pageOnly }: { pageOnly?: 1 | 2 | 3 } =
 
   const trayectoria = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria ?? 'Moderado'
   const municipio   = seleccionMunicipioCatalog?.nombre ?? 'San Luis Potosí'
-  const rsuDia      = resultados?.rsuTotalTonDia ?? 379.3
+  const rsuDia      = resultados?.rsuTotalTonDia ?? 0
 
   // Probability heuristic: base 62 ± adjustments
   const prob = useMemo(() => {

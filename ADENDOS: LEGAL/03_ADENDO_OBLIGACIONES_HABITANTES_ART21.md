@@ -25,9 +25,9 @@
 
 ```
 [PENDIENTE: texto del Art. 21 desde PDF oficial del Reglamento de Aseo Público — Municipalidad de San Luis Potosí.]
-El PDF mal etiquetado era la Ley de Ingresos 2023 (antes `SLP_slp_capital_decreto_publicacion_reglamento_2023.pdf`); archivo archivado en:
-ADENDOS: LEGAL/pdfs/reglamentos/_espejo_catalogo_erroneo/SLP_slp_erroneo_es_Ley_Ingresos_2023_no_Reglamento_Aseo_Publico.pdf
-Acción requerida: colocar el reglamento correcto como ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf y el symlink en frontend/public/reglamentos/, para verificar el texto completo del Art. 21 y el número total de fracciones actuales (necesario para numerar correctamente las fracciones nuevas X, XI y XII).
+PDF en línea (2026-05-18): `frontend/public/reglamentos/SLP_slp_reglamento_aseo_publico.pdf` — en_revision.
+Histórico: espejo erróneo (Ley de Ingresos 2023) en `_espejo_catalogo_erroneo/`.
+[PENDIENTE EXTRACCIÓN AGENTE: pegar aquí texto completo del Art. 21 y número de fracciones actuales.]
 ```
 
 **Referencia cruzada MTY (Reglamento de Limpia Municipal de Monterrey, 2020-2024):**  

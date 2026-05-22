@@ -16,8 +16,11 @@ import {
   CHECKLIST_CAMPO_ORG,
   VERIFICACION_LABEL,
   VERIFICACION_STYLE,
+  cadenaContactoId,
   type VerificacionOrg,
 } from '@/data/organigramaDiagnostico'
+
+const VERIFICACION_OPTIONS: VerificacionOrg[] = ['confirmado', 'pendiente', 'desconocido', 'referencia']
 
 function VerificacionChip({ v }: { v: VerificacionOrg }) {
   const s = VERIFICACION_STYLE[v]
@@ -31,11 +34,18 @@ function VerificacionChip({ v }: { v: VerificacionOrg }) {
   )
 }
 
-function OrgNodeCard({ titulo, subtitulo, verificacion, pregunta }: {
+function OrgNodeCard({
+  titulo,
+  subtitulo,
+  verificacion,
+  pregunta,
+  onVerificacionChange,
+}: {
   titulo: string
   subtitulo: string
   verificacion: VerificacionOrg
   pregunta: string
+  onVerificacionChange: (v: VerificacionOrg) => void
 }) {
   return (
     <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
@@ -44,26 +54,65 @@ function OrgNodeCard({ titulo, subtitulo, verificacion, pregunta }: {
         <VerificacionChip v={verificacion} />
       </div>
       <p className="text-[10px] text-[#6B6760] mb-2">{subtitulo}</p>
-      <p className="text-[10px] text-[#5A4A2A] flex items-start gap-1.5">
+      <p className="text-[10px] text-[#5A4A2A] flex items-start gap-1.5 mb-2">
         <HelpCircle className="w-3 h-3 shrink-0 mt-0.5 text-[#D4881E]" />
         {pregunta}
       </p>
+      <label className="flex flex-col gap-1">
+        <span className="text-[9px] uppercase tracking-[0.06em] font-semibold text-[#8A9286]">
+          Estatus en campo
+        </span>
+        <select
+          value={verificacion}
+          onChange={e => onVerificacionChange(e.target.value as VerificacionOrg)}
+          className="h-9 rounded-[8px] border border-[#E7E5DC] bg-[#FAFAF7] px-2 text-[11px] text-[#1F2933]"
+          aria-label={`Verificación: ${titulo}`}
+        >
+          {VERIFICACION_OPTIONS.map(opt => (
+            <option key={opt} value={opt}>{VERIFICACION_LABEL[opt]}</option>
+          ))}
+        </select>
+      </label>
     </div>
   )
 }
 
 export function OrganigramaDiagnosticoStack() {
-  const { municipiosActivos, zmActiva, seleccionMunicipioCatalog } = useSimulatorStore()
+  const {
+    municipiosActivos,
+    zmActiva,
+    seleccionMunicipioCatalog,
+    organigramaDiagnostico,
+    setOrganigramaVerificacion,
+    toggleOrganigramaChecklist,
+    setOrganigramaNotaCampo,
+  } = useSimulatorStore()
   const municipioLabel = seleccionMunicipioCatalog?.nombre ?? municipiosActivos[0] ?? 'municipio activo'
 
+  const resolveVerificacion = (nodoId: string, fallback: VerificacionOrg): VerificacionOrg =>
+    organigramaDiagnostico.verificaciones[nodoId] ?? fallback
+
   const stats = useMemo(() => {
-    const all = [...ORGANIGRAMA_MUNICIPAL_AS_IS, ...ORGANIGRAMA_CONCESIONARIO_AS_IS, ...CADENA_CONTACTO_RSU.map(p => ({ verificacion: p.verificacion }))]
+    const all: { verificacion: VerificacionOrg }[] = [
+      ...CADENA_CONTACTO_RSU.map(p => ({
+        verificacion: resolveVerificacion(cadenaContactoId(p.orden), p.verificacion),
+      })),
+      ...ORGANIGRAMA_MUNICIPAL_AS_IS.map(n => ({
+        verificacion: resolveVerificacion(n.id, n.verificacion),
+      })),
+      ...ORGANIGRAMA_CONCESIONARIO_AS_IS.map(n => ({
+        verificacion: resolveVerificacion(n.id, n.verificacion),
+      })),
+    ]
     const counts = { confirmado: 0, pendiente: 0, desconocido: 0, referencia: 0 }
-    for (const n of all) counts[n.verificacion as VerificacionOrg]++
+    for (const n of all) counts[n.verificacion]++
     const total = all.length
     const cubierto = counts.confirmado
-    return { ...counts, total, pctConfirmado: total ? Math.round((cubierto / total) * 100) : 0 }
-  }, [])
+    const checklistDone = CHECKLIST_CAMPO_ORG.filter(
+      (_, i) => organigramaDiagnostico.checklistCompletado[`chk-${i}`],
+    ).length
+    return { ...counts, total, pctConfirmado: total ? Math.round((cubierto / total) * 100) : 0, checklistDone }
+  }, [organigramaDiagnostico])
 
   return (
     <div className="space-y-5 pb-6">
@@ -80,11 +129,12 @@ export function OrganigramaDiagnosticoStack() {
         </p>
         <div className="mt-3 flex flex-wrap gap-2 items-center">
           <ProvenanceBadge tipo="manual" confianza={0.35} fuente="Plantilla metodológica ALQUIMIA" advertencia="Validar organigrama y concesionario en campo antes de usar en cabildo." />
-          <span className="text-[10px] text-[#A8A49C]">ZM {zmActiva} · {stats.pctConfirmado}% nodos confirmados en plantilla</span>
+          <span className="text-[10px] text-[#A8A49C]">
+            ZM {zmActiva} · {stats.pctConfirmado}% nodos confirmados · checklist {stats.checklistDone}/{CHECKLIST_CAMPO_ORG.length}
+          </span>
         </div>
       </div>
 
-      {/* KPI strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
           { icon: Users, label: 'Pasos cadena contacto', value: String(CADENA_CONTACTO_RSU.length), sub: 'Ciudadano → cabildo' },
@@ -103,52 +153,80 @@ export function OrganigramaDiagnosticoStack() {
         ))}
       </div>
 
-      {/* Cadena de contacto */}
       <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
         <div className="px-5 py-4 border-b border-[#F0EDE5]">
           <p className="text-[12px] font-semibold text-[#1C1B18]">Cadena de primer contacto a decisión</p>
           <p className="text-[10px] text-[#A8A49C] mt-0.5">Lo primero que encuentra el ciudadano y cómo escala hasta quien decide</p>
         </div>
         <ol className="divide-y divide-[#F0EDE5]">
-          {CADENA_CONTACTO_RSU.map(paso => (
-            <li key={paso.orden} className="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-3">
-              <div className="shrink-0 w-8 h-8 rounded-full bg-[#1C2B15] text-white flex items-center justify-center text-[11px] font-bold">
-                {paso.orden}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1">
-                  <p className="text-[12px] font-semibold text-[#1C1B18]">{paso.quien}</p>
-                  <VerificacionChip v={paso.verificacion} />
+          {CADENA_CONTACTO_RSU.map(paso => {
+            const nodoId = cadenaContactoId(paso.orden)
+            const v = resolveVerificacion(nodoId, paso.verificacion)
+            return (
+              <li key={paso.orden} className="px-5 py-4 flex flex-col sm:flex-row sm:items-start gap-3">
+                <div className="shrink-0 w-8 h-8 rounded-full bg-[#1C2B15] text-white flex items-center justify-center text-[11px] font-bold">
+                  {paso.orden}
                 </div>
-                <p className="text-[10px] text-[#6B6760] mb-1"><span className="font-medium text-[#4A4740]">Rol:</span> {paso.rol}</p>
-                <p className="text-[10px] text-[#6B6760] mb-1"><span className="font-medium text-[#4A4740]">Canal:</span> {paso.canal}</p>
-                <p className="text-[10px] text-[#5A4A2A] flex items-start gap-1">
-                  <ChevronRight className="w-3 h-3 shrink-0 mt-0.5 text-[#3B6D11]" />
-                  {paso.queResuelve}
-                </p>
-              </div>
-            </li>
-          ))}
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
+                    <p className="text-[12px] font-semibold text-[#1C1B18]">{paso.quien}</p>
+                    <VerificacionChip v={v} />
+                  </div>
+                  <p className="text-[10px] text-[#6B6760] mb-1"><span className="font-medium text-[#4A4740]">Rol:</span> {paso.rol}</p>
+                  <p className="text-[10px] text-[#6B6760] mb-2"><span className="font-medium text-[#4A4740]">Canal:</span> {paso.canal}</p>
+                  <p className="text-[10px] text-[#5A4A2A] flex items-start gap-1 mb-2">
+                    <ChevronRight className="w-3 h-3 shrink-0 mt-0.5 text-[#3B6D11]" />
+                    {paso.queResuelve}
+                  </p>
+                  <label className="flex flex-col gap-1 max-w-xs">
+                    <span className="text-[9px] uppercase tracking-[0.06em] font-semibold text-[#8A9286]">Estatus en campo</span>
+                    <select
+                      value={v}
+                      onChange={e => setOrganigramaVerificacion(nodoId, e.target.value as VerificacionOrg)}
+                      className="h-9 rounded-[8px] border border-[#E7E5DC] bg-[#FAFAF7] px-2 text-[11px]"
+                      aria-label={`Verificación paso ${paso.orden}`}
+                    >
+                      {VERIFICACION_OPTIONS.map(opt => (
+                        <option key={opt} value={opt}>{VERIFICACION_LABEL[opt]}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              </li>
+            )
+          })}
         </ol>
       </section>
 
-      {/* Dual organigram */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <section className="rounded-[12px] border border-[#BDD7F5] bg-[#EBF3FB]/40 p-4 space-y-2.5">
           <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-[#1A5FA8]">Gobierno municipal — RSU</p>
           {ORGANIGRAMA_MUNICIPAL_AS_IS.map(n => (
-            <OrgNodeCard key={n.id} titulo={n.titulo} subtitulo={n.subtitulo} verificacion={n.verificacion} pregunta={n.preguntaCampo} />
+            <OrgNodeCard
+              key={n.id}
+              titulo={n.titulo}
+              subtitulo={n.subtitulo}
+              verificacion={resolveVerificacion(n.id, n.verificacion)}
+              pregunta={n.preguntaCampo}
+              onVerificacionChange={v => setOrganigramaVerificacion(n.id, v)}
+            />
           ))}
         </section>
         <section className="rounded-[12px] border border-[#E5D5C5] bg-[#FAF6F2]/60 p-4 space-y-2.5">
           <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-[#8B6B4A]">Operador / concesionario — as-is</p>
           {ORGANIGRAMA_CONCESIONARIO_AS_IS.map(n => (
-            <OrgNodeCard key={n.id} titulo={n.titulo} subtitulo={n.subtitulo} verificacion={n.verificacion} pregunta={n.preguntaCampo} />
+            <OrgNodeCard
+              key={n.id}
+              titulo={n.titulo}
+              subtitulo={n.subtitulo}
+              verificacion={resolveVerificacion(n.id, n.verificacion)}
+              pregunta={n.preguntaCampo}
+              onVerificacionChange={v => setOrganigramaVerificacion(n.id, v)}
+            />
           ))}
         </section>
       </div>
 
-      {/* Vacíos */}
       <section className="rounded-[12px] border border-[#F5DCA0] bg-[#FEF7E7]/50 p-5">
         <p className="text-[12px] font-semibold text-[#6B4800] mb-3">Vacíos, duplicidades e interfaces rotas (hipótesis de trabajo)</p>
         <div className="space-y-2">
@@ -164,20 +242,40 @@ export function OrganigramaDiagnosticoStack() {
         </div>
       </section>
 
-      {/* Checklist campo */}
       <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
         <div className="flex items-center gap-2 mb-3">
           <ClipboardList className="w-4 h-4 text-[#3B6D11]" />
           <p className="text-[12px] font-semibold text-[#1C1B18]">Checklist de verificación en campo</p>
         </div>
         <ul className="space-y-2">
-          {CHECKLIST_CAMPO_ORG.map(item => (
-            <li key={item} className="flex items-start gap-2 text-[11px] text-[#4A4740] leading-relaxed">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
-              {item}
-            </li>
-          ))}
+          {CHECKLIST_CAMPO_ORG.map((item, i) => {
+            const chkId = `chk-${i}`
+            const done = organigramaDiagnostico.checklistCompletado[chkId] ?? false
+            return (
+              <li key={chkId}>
+                <label className="flex items-start gap-2.5 cursor-pointer text-[11px] text-[#4A4740] leading-relaxed">
+                  <input
+                    type="checkbox"
+                    checked={done}
+                    onChange={() => toggleOrganigramaChecklist(chkId)}
+                    className="mt-1 shrink-0 rounded border-[#C9DDB1] text-[#2F6B1F]"
+                  />
+                  <span className={cn(done && 'text-[#5F6B5F] line-through decoration-[#C9DDB1]')}>{item}</span>
+                </label>
+              </li>
+            )
+          })}
         </ul>
+        <label className="mt-4 block">
+          <span className="text-[9px] uppercase tracking-[0.06em] font-semibold text-[#8A9286]">Notas de campo</span>
+          <textarea
+            value={organigramaDiagnostico.notaCampo}
+            onChange={e => setOrganigramaNotaCampo(e.target.value)}
+            rows={3}
+            placeholder="Titulares confirmados, hallazgos de entrevistas, enlaces a organigramas PDF…"
+            className="mt-1 w-full rounded-[10px] border border-[#E7E5DC] bg-[#FAFAF7] px-3 py-2 text-[12px] text-[#1F2933] resize-y min-h-[72px]"
+          />
+        </label>
         <p className={cn('mt-4 text-[10px] text-[#A8A49C] border-t border-[#F0EDE5] pt-3')}>
           Al completar este diagnóstico, continúe a M03 Capacidad institucional y M07 Organigrama objetivo en Planificación.
         </p>

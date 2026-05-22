@@ -23,7 +23,7 @@ from typing import Dict, List, Optional
 
 from app.legal.schemas import (
     ArticuloMatriz, CategoriaArticulo, Criticidad,
-    EstadoArticulo, Reglamento,
+    EstadoArticulo, MunicipalLegalSourceManifest, Reglamento,
 )
 
 # ─── Artículos canónicos ──────────────────────────────────────────────────────
@@ -104,9 +104,9 @@ def _build_slp() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="slp", zm="SLP",
-        nombre="Reglamento de Limpia y Gestión Integral de Residuos Sólidos de San Luis Potosí",
-        version="2018-A", fecha_publicacion="2018-03-15",
-        fuente="POE", url="https://ordenjuridico.gob.mx/municipalslp/limpia2018.pdf",
+        nombre="Reglamento de Aseo Público del Municipio de San Luis Potosí",
+        version="2018", fecha_publicacion="2018 (confirmar POE)",
+        fuente="Portal municipal SLP", url="https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -129,15 +129,13 @@ def _build_slp() -> tuple[Reglamento, list[ArticuloMatriz]]:
 def _build_sol() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     Soledad de Graciano Sánchez. 323K hab.
-    No tiene reglamento propio de limpia — opera bajo acuerdo de mancomunidad
-    con SLP pero sin instrumento jurídico propio verificado.
-    Fuente no disponible: requiere revisión jurídica urgente.
+    Reglamento de Aseo Público 2013 — PDF en línea; artículos pendientes de mapeo en matriz.
     """
     reg = Reglamento(
         municipio_id="sol", zm="SLP",
-        nombre="Sin reglamento propio — mancomunidad con SLP no formalizada",
-        version="N/A", fecha_publicacion="—",
-        fuente="No disponible", url=None,
+        nombre="Reglamento de Aseo Público de Soledad de Graciano Sánchez",
+        version="2013-06-18", fecha_publicacion="2013-06-18",
+        fuente="Portal municipal Soledad", url="https://soledad.gob.mx/transparencia/",
         verificado=False, requiere_revision_juridica=True,
     )
     return reg, _todos_ausentes()
@@ -183,7 +181,7 @@ def _build_qro() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="qro", zm="QRO",
-        nombre="Reglamento de Limpia y Aseo Público del Municipio de Querétaro, Querétaro",
+        nombre="Reglamento de Aseo Público del Municipio de Querétaro",
         version="2021-B", fecha_publicacion="2021-06-10",
         fuente="Portal reglamentario municipal", url="https://municipiodequeretaro.gob.mx/reglamento/",
         verificado=True, requiere_revision_juridica=False,
@@ -318,9 +316,9 @@ def _build_spg() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="spg", zm="MTY",
-        nombre="Reglamento de Limpia de San Pedro Garza García — candidato SISTEC",
+        nombre="Reglamento de Aseo Público de San Pedro Garza García",
         version="en_revision", fecha_publicacion="Pendiente cotejo POE/gaceta SPGG",
-        fuente="SISTEC NL", url="https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf",
+        fuente="Portal municipal / archivo local", url="https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -347,9 +345,9 @@ def _build_snl() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """
     reg = Reglamento(
         municipio_id="snl", zm="MTY",
-        nombre="Reglamento de Limpia y Manejo de Residuos Sólidos de San Nicolás de los Garza",
-        version="2019-A", fecha_publicacion="2019-11-20",
-        fuente="POE", url=None,
+        nombre="Reglamento del servicio de limpieza municipal de San Nicolás de los Garza",
+        version="2016", fecha_publicacion="2016 (Compilación NL)",
+        fuente="Compilación NL", url="http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=6913&ambito=MUNICIPAL",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -375,7 +373,7 @@ def _build_gua() -> tuple[Reglamento, list[ArticuloMatriz]]:
         municipio_id="gua", zm="MTY",
         nombre="Reglamento de Limpia Municipal de Guadalupe, NL",
         version="2018-B", fecha_publicacion="2018-06-01",
-        fuente="POE", url=None,
+        fuente="Portal municipal Guadalupe", url="https://webguadalupe.s3.amazonaws.com/wp-content/uploads/2023/01/REGLAMENTO-DE-LIMPIA-DEL-MUNICIPIO-DE-GUADALUPE-NUEVO-LEON.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -401,7 +399,7 @@ def _build_apo() -> tuple[Reglamento, list[ArticuloMatriz]]:
         municipio_id="apo", zm="MTY",
         nombre="Reglamento de Servicios de Limpia de Apodaca, NL",
         version="2017-A", fecha_publicacion="2017-03-14",
-        fuente="POE", url=None,
+        fuente="SISTEC NL", url="https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC_0001_0008_0168498-0000001.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -427,7 +425,7 @@ def _build_sca() -> tuple[Reglamento, list[ArticuloMatriz]]:
         municipio_id="sca", zm="MTY",
         nombre="Reglamento de Gestión de Residuos Sólidos de Santa Catarina, NL",
         version="2020-B", fecha_publicacion="2020-08-12",
-        fuente="POE", url=None,
+        fuente="Compilación NL", url="http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=7027&ambito=MUNICIPAL",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -453,7 +451,7 @@ def _build_gar() -> tuple[Reglamento, list[ArticuloMatriz]]:
         municipio_id="gar", zm="MTY",
         nombre="Reglamento de Limpia de García, NL",
         version="2021-A", fecha_publicacion="2021-01-15",
-        fuente="POE", url=None,
+        fuente="Portal municipal García", url="https://www.garcia.gob.mx/wp-content/uploads/2022/08/R-IRMG-3-40.pdf",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -479,7 +477,7 @@ def _build_esc() -> tuple[Reglamento, list[ArticuloMatriz]]:
         municipio_id="esc", zm="MTY",
         nombre="Reglamento de Servicios de Limpia de General Escobedo, NL",
         version="2018-C", fecha_publicacion="2018-10-05",
-        fuente="POE", url=None,
+        fuente="Compilación NL", url="http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=6968&ambito=MUNICIPAL",
         verificado=False, requiere_revision_juridica=True,
     )
     arts = [
@@ -503,16 +501,16 @@ def _build_jua() -> tuple[Reglamento, list[ArticuloMatriz]]:
     """Juárez NL. 276K hab. Crecimiento reciente. Sin reglamento dedicado a RSU diferenciado."""
     reg = Reglamento(
         municipio_id="jua", zm="MTY",
-        nombre="Sin reglamento propio de RSU diferenciado — aplica Ley Estatal RSU NL",
-        version="N/A", fecha_publicacion="—",
-        fuente="No disponible", url=None,
+        nombre="Reglamento de Limpia de Juárez, NL",
+        version="2025", fecha_publicacion="2025 (Compilación NL)",
+        fuente="Compilación NL", url="http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=105171&ambito=MUNICIPAL",
         verificado=False, requiere_revision_juridica=True,
     )
     return reg, _todos_ausentes()
 
 
 def _build_gdl() -> tuple[Reglamento, list[ArticuloMatriz]]:
-    """Guadalajara — PDF oficial descargado/verificado por checksum; vigencia jurídica queda en revisión competente."""
+    """Guadalajara — gestión integral + reglamento de aseo público en línea; vigencia jurídica en revisión competente."""
     reg = Reglamento(
         municipio_id="gdl", zm="GDL",
         nombre="Reglamento de Gestión Integral del Municipio de Guadalajara",
@@ -588,6 +586,7 @@ class ReglamentoRepository:
     def __init__(self) -> None:
         self._reglamentos: Dict[str, Reglamento] = {}
         self._articulos:   Dict[str, List[ArticuloMatriz]] = {}
+        self._manifests:  Dict[str, MunicipalLegalSourceManifest] = {}
         self._seed()
 
     def _seed(self) -> None:
@@ -602,6 +601,21 @@ class ReglamentoRepository:
             reg, arts = builder()
             self._reglamentos[reg.municipio_id] = reg
             self._articulos[reg.municipio_id]   = arts
+        self._seed_static_pdf_manifests()
+
+    def _seed_static_pdf_manifests(self) -> None:
+        from app.legal.pdf_storage import bootstrap_manifest_from_disk
+
+        for municipio_id, reg in self._reglamentos.items():
+            manifest = bootstrap_manifest_from_disk(
+                municipio_id,
+                zm=reg.zm,
+                title=reg.nombre,
+                source_authority=reg.fuente or "Fuente municipal",
+                official_url=reg.url,
+            )
+            if manifest is not None:
+                self._manifests[municipio_id] = manifest
 
     def get_reglamento(self, municipio_id: str) -> Optional[Reglamento]:
         return self._reglamentos.get(municipio_id.lower())
@@ -638,6 +652,43 @@ class ReglamentoRepository:
         reg.verificado                 = verificado
         reg.requiere_revision_juridica = not verificado
         return True
+
+    def get_source_manifest(self, municipio_id: str) -> Optional[MunicipalLegalSourceManifest]:
+        return self._manifests.get(municipio_id.lower())
+
+    def set_source_manifest(self, municipio_id: str, manifest: MunicipalLegalSourceManifest) -> None:
+        self._manifests[municipio_id.lower()] = manifest
+
+    def upload_municipal_pdf(
+        self,
+        municipio_id: str,
+        content: bytes,
+        *,
+        original_filename: Optional[str] = None,
+    ) -> Optional[MunicipalLegalSourceManifest]:
+        from app.legal.pdf_storage import manifest_from_pdf_file, save_municipal_pdf
+
+        reg = self.get_reglamento(municipio_id)
+        if reg is None:
+            return None
+        filename, _path, checksum = save_municipal_pdf(
+            municipio_id=municipio_id.lower(),
+            zm=reg.zm,
+            content=content,
+            original_filename=original_filename,
+        )
+        manifest = manifest_from_pdf_file(
+            municipio_id=municipio_id.lower(),
+            zm=reg.zm,
+            title=reg.nombre,
+            source_authority=reg.fuente or "Carga manual ALQUIMIA",
+            official_url=reg.url,
+            pdf_filename=filename,
+            checksum=checksum,
+            bytes_size=len(content),
+        )
+        self.set_source_manifest(municipio_id, manifest)
+        return manifest
 
 
 _repo: Optional[ReglamentoRepository] = None

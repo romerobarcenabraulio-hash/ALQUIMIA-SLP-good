@@ -46,6 +46,7 @@ import type {
   InegiMunicipalSourceAudit,
   MunicipioMxApi,
   MunicipalLegalSourceManifest,
+  LegalPdfUploadResponse,
 } from '@/types'
 import type { AgoraPlanGenerateBody } from '@/lib/agoraPlanPayload'
 import { withRequestId } from '@/lib/requestId'
@@ -136,7 +137,6 @@ export async function backendFetch(input: RequestInfo, init?: RequestInit): Prom
   return fetch(input, withRequestId(init))
 }
 
-/** GET /legal/{municipio}/source-manifest — 404 si no hay reglamento en repositorio backend. */
 export async function getLegalSourceManifest(municipioId: string): Promise<MunicipalLegalSourceManifest | null> {
   const mid = municipioId.trim().toLowerCase()
   const res = await backendFetch(`${getApiUrl()}/legal/${encodeURIComponent(mid)}/source-manifest`)
@@ -153,6 +153,31 @@ export async function getLegalSourceManifest(municipioId: string): Promise<Munic
     throw new Error(`Manifiesto legal (${mid}): ${detail}`)
   }
   return res.json() as Promise<MunicipalLegalSourceManifest>
+}
+
+/** POST /legal/{municipio}/upload-pdf — sube PDF, habilita municipio y dispara diagnóstico. */
+export async function uploadLegalReglamentoPdf(
+  municipioId: string,
+  file: File,
+): Promise<LegalPdfUploadResponse> {
+  const mid = municipioId.trim().toLowerCase()
+  const form = new FormData()
+  form.append('file', file, file.name)
+  const res = await backendFetch(`${getApiUrl()}/legal/${encodeURIComponent(mid)}/upload-pdf`, {
+    method: 'POST',
+    body: form,
+  })
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`
+    try {
+      const j = (await res.json()) as { detail?: unknown }
+      if (typeof j.detail === 'string') detail = j.detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(`Carga PDF (${mid}): ${detail}`)
+  }
+  return res.json() as Promise<LegalPdfUploadResponse>
 }
 
 export { fetchWithRetry, fetchWithRetry as apiFetch }

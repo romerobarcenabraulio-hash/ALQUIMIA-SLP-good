@@ -25,6 +25,7 @@ import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } fro
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
+import { ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY } from '@/data/organigramaDiagnostico'
 import { migrateSimulatorPersistedState, propuestaSlotsVacios } from '@/store/simulatorPersistMigrate'
 
 const PRESET_PLAN_FIJADO = 'Realista' as const
@@ -121,11 +122,15 @@ interface SimulatorStore extends SimulatorState {
   activeDecisionModuleId: string | null
   /** Índice de la propuesta que fue cargada más recientemente (0|1|2), null si ninguna. */
   propuestaActivaIdx: number | null
+  /** Onboarding obligatorio cliente: territorio + PDF antes del simulador. */
+  clientSetupComplete: boolean
 
   // Actions
   setPortalEntry:      (entry: PortalEntry) => Promise<void>
   setAudience:         (audience: Audience) => Promise<void>
   resetAudience:       () => void
+  completeClientSetup: () => void
+  resetClientSetup:    () => void
   fetchCityPortalData: (cityId: string) => Promise<void>
   setZM:               (id: string) => void
   applyMunicipioCatalog: (row: MunicipioMxApi) => void
@@ -193,6 +198,9 @@ interface SimulatorStore extends SimulatorState {
   setPctSocioPublico: (v: number) => void
   setArbolDecisionAnswer: (key: keyof import('@/types').ArbolDecisionAnswers, value: boolean | null) => void
   setFechaInicioPrograma: (v: string | null) => void
+  setOrganigramaVerificacion: (nodoId: string, v: import('@/data/organigramaDiagnostico').VerificacionOrg) => void
+  toggleOrganigramaChecklist: (itemId: string) => void
+  setOrganigramaNotaCampo: (v: string) => void
 }
 
 const defaultState: SimulatorState = {
@@ -237,6 +245,7 @@ const defaultState: SimulatorState = {
     tipoCambio: 'fallback', temperatura: 'fallback', recicladoras: 'fallback',
   },
   seleccionMunicipioCatalog: null,
+  clientSetupComplete: false,
   casaViaPublicaPct: 70,           // % de no-condominio en calle pública; estimado DONUE/INEGI como fallback
   indicePreparacionCiudadana: null, // null = sin encuesta de campo; usa benchmark SEMARNAT 2022 (70)
   indexAceptacionVP: null,
@@ -251,6 +260,7 @@ const defaultState: SimulatorState = {
     aceptaRenegociar: null,
   },
   fechaInicioPrograma: null,
+  organigramaDiagnostico: { ...ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY },
 }
 
 /** Plantilla de estado inicial (tests Q-024 y fixtures). */
@@ -289,6 +299,15 @@ export const useSimulatorStore = create<SimulatorStore>()(
         cityPortalError: null,
         activeDecisionModuleId: null,
         propuestaActivaIdx: null,
+        clientSetupComplete: false,
+
+        completeClientSetup: () => {
+          set({ clientSetupComplete: true })
+        },
+
+        resetClientSetup: () => {
+          set({ clientSetupComplete: false })
+        },
 
         setActiveDecisionModuleId: moduleId => {
           set({ activeDecisionModuleId: moduleId })
@@ -808,6 +827,34 @@ export const useSimulatorStore = create<SimulatorStore>()(
           set({ fechaInicioPrograma: v })
         },
 
+        setOrganigramaVerificacion: (nodoId, v) => {
+          set(state => ({
+            organigramaDiagnostico: {
+              ...state.organigramaDiagnostico,
+              verificaciones: { ...state.organigramaDiagnostico.verificaciones, [nodoId]: v },
+            },
+          }))
+        },
+        toggleOrganigramaChecklist: (itemId) => {
+          set(state => {
+            const prev = state.organigramaDiagnostico.checklistCompletado[itemId] ?? false
+            return {
+              organigramaDiagnostico: {
+                ...state.organigramaDiagnostico,
+                checklistCompletado: {
+                  ...state.organigramaDiagnostico.checklistCompletado,
+                  [itemId]: !prev,
+                },
+              },
+            }
+          })
+        },
+        setOrganigramaNotaCampo: (v) => {
+          set(state => ({
+            organigramaDiagnostico: { ...state.organigramaDiagnostico, notaCampo: v },
+          }))
+        },
+
         fetchEncuestaResultados: async (municipioId) => {
           try {
             const apiUrl = getApiUrl()
@@ -882,6 +929,11 @@ export const useSimulatorStore = create<SimulatorStore>()(
         partialize: (s) => ({
           audience: s.audience,
           propuestaSlots: s.propuestaSlots,
+          organigramaDiagnostico: s.organigramaDiagnostico,
+          clientSetupComplete: s.clientSetupComplete,
+          zmActiva: s.zmActiva,
+          municipiosActivos: s.municipiosActivos,
+          seleccionMunicipioCatalog: s.seleccionMunicipioCatalog,
         }),
         onRehydrateStorage: () => (partial, error) => {
           if (error || typeof window === 'undefined') return

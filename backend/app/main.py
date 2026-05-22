@@ -42,6 +42,10 @@ from app.planning.router import router as planning_router
 from app.proyecto.router import router as proyecto_router
 from app.standards.router import router as standards_router
 from app.cotizacion.router import router as cotizacion_router
+from app.statistical.router import router as statistical_router
+from app.research.router import router as research_router
+from app.routing.router import router as routing_router
+from app.google.router import router as google_router
 from app.observability import (
     RequestLoggingMiddleware,
     app_version_from_env,
@@ -213,6 +217,10 @@ app.include_router(planning_router,  prefix="/api/planning",      tags=["plannin
 app.include_router(proyecto_router,    prefix="/api/v1/proyecto",      tags=["proyecto-vivo"])
 app.include_router(standards_router,   prefix="/api/v1/standards",     tags=["standards"])
 app.include_router(cotizacion_router,  prefix="/api/v1/cotizaciones",  tags=["cotizaciones"])
+app.include_router(statistical_router, tags=["statistical"])
+app.include_router(research_router,   tags=["research"])
+app.include_router(routing_router,    prefix="/api/v1/routing",       tags=["routing"])
+app.include_router(google_router,     prefix="/api/v1/google",        tags=["google-maps"])
 
 
 @app.on_event("startup")

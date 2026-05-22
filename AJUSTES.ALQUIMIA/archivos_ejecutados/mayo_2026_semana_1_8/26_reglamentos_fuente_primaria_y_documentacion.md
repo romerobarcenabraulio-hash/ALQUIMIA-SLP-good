@@ -73,7 +73,7 @@ El capítulo San Luis (y otros) tenía más documentos de lo que actualmente mue
 
 | Tipo de documento | ¿Se sube al repo / CDN? | Notas |
 |-------------------|------------------------|-------|
-| Reglamento oficial municipal (PDF público) | ✅ Solo enlace + captura | No hospedar el PDF si ya existe URL oficial estable |
+| Reglamento oficial municipal (PDF público) | ✅ PDF en `public/reglamentos/` + enlace oficial | Solo PDFs en línea; copia local para modal embebido cuando la URL no es estable |
 | Simulación generada por ALQUIMIA | ✅ Sí | Marcada como "Simulación — no documento oficial" |
 | Propuesta elaborada por ALQUIMIA | ✅ Sí | Marcada como "Propuesta — requiere revisión institucional" |
 | Dictamen legal o acuerdo de cabildo | ❌ Solo enlace | No reproducir sin permiso |

@@ -12,7 +12,7 @@ import {
   LayoutDashboard,
   MapPin,
   Recycle,
-  Settings,
+  LogOut,
   ClipboardList,
 } from 'lucide-react'
 
@@ -97,7 +97,7 @@ export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
         {/* Extra nav */}
         {[
           { href: '/hub', Icon: ClipboardList, label: 'Biblioteca' },
-          { href: '/acceso', Icon: Settings, label: 'Configuración' },
+          { href: '/gobierno', Icon: LogOut, label: 'Cambiar servicio' },
         ].map(({ href, Icon, label }) => (
           <Link
             key={href}

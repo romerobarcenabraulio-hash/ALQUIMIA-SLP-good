@@ -237,6 +237,16 @@ class LegalSourceIngestRequest(BaseModel):
     source_authority: Optional[str] = None
 
 
+class LegalPdfUploadResponse(BaseModel):
+    ok: bool
+    municipio_id: str
+    municipio_habilitado: bool
+    analysis_ready: bool
+    manifest: MunicipalLegalSourceManifest
+    diagnostic: "LegalDiagnostic"
+    message: str
+
+
 class LegalVerificarRequest(BaseModel):
     """Cuerpo opcional para trazabilidad humana al marcar verificado (no reemplaza auditoría en BD)."""
 
@@ -271,7 +281,7 @@ class LegalDiagnostic(BaseModel):
 
     # ── Gate ────────────────────────────────────────────────────────────────
     requiere_revision_juridica: bool
-    agora_bloqueado:            bool  # True ↔ reglamento no verificado
+    agora_bloqueado:            bool  # True ↔ sin PDF municipal cargado para análisis
     legal_scope:                str = "municipio"
     jurisdiction_scope: Literal["Municipality"] = "Municipality"
     source_manifest:            MunicipalLegalSourceManifest
@@ -408,3 +418,6 @@ class PaqueteMetropolitano(BaseModel):
     score_legal_zm:         int   # promedio ponderado por población
     paquete_municipal:      List[DiagnosticoMunicipal]
     paquete_metropolitano:  CoordinacionMetropolitana
+
+
+LegalPdfUploadResponse.model_rebuild()

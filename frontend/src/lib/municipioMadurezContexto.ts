@@ -3,7 +3,7 @@
  * Refuerza que cada municipio es un escenario propio: norma, supuestos del motor y proyecto simulado no son intercambiables.
  */
 import { ZMS } from '@/lib/constants'
-import { reglamentoFuentePorMunicipio } from '@/data/reglamentos'
+import { reglamentoFuentePorMunicipio, tienePdfLocalEmbebible } from '@/data/reglamentos'
 
 export interface MunicipioMadurezVista {
   municipio_id: string
@@ -24,19 +24,22 @@ function ubicarMunicipio(municipioId: string) {
   return null
 }
 
-/** Una línea sobre el inventario de reglamentos (espejos `ADENDOS: LEGAL/pdfs/reglamentos/`). */
+/** Una línea sobre el inventario de reglamentos (`public/reglamentos/` — solo PDFs en línea). */
 function lineaCatálogoNormativa(municipioId: string): string {
   const reg = reglamentoFuentePorMunicipio(municipioId)
   if (!reg) {
     return 'Este municipio aún no tiene fila propia en el catálogo de reglamentos del simulador; Marco Legal y validación competente definen qué instrumento aplica.'
   }
+  if (tienePdfLocalEmbebible(reg)) {
+    return 'Catálogo: PDF municipal disponible en línea para lectura y adendos propuestos por agentes ALQUIMIA; la vigencia reconocible ante terceros sigue siendo la publicación oficial enlazada.'
+  }
   switch (reg.estado_verificacion) {
     case 'vigente':
       return 'Catálogo: anclaje marcado como vigente para trabajo consultivo — la versión reconocible ante terceros sigue siendo la publicación oficial enlazada.'
     case 'en_revision':
-      return 'Catálogo: hay PDF o referencia de compilación para revisión interna; la vigencia y el título exacto deben confirmarse en fuente oficial antes de cualquier acto de autoridad.'
+      return 'Catálogo: hay referencia oficial para revisión interna; pendiente PDF en `public/reglamentos/`. La vigencia y el título exacto deben confirmarse en fuente oficial antes de cualquier acto de autoridad.'
     case 'no_localizado':
-      return 'Catálogo: anclaje normativo pendiente (sin PDF municipal verificado en el espejo de `ADENDOS: LEGAL/pdfs/reglamentos/`); el simulador no asume que el ayuntamiento comparte el mismo “piso” normativo que un vecino metropolitano.'
+      return 'Catálogo: anclaje normativo pendiente (sin PDF municipal en línea); el simulador no asume que el ayuntamiento comparte el mismo “piso” normativo que un vecino metropolitano.'
     default:
       return 'Estado normativo en catálogo sin clasificar; tratar como pendiente de verificación.'
   }

@@ -32,9 +32,9 @@ prohibiciones expreso, o cuando el existente no contempla el supuesto
 de acumulación en vía pública como infracción autónoma distinta de
 "tirar basura".
 
-[PENDIENTE: pegar texto del capítulo de prohibiciones vigente del
-Reglamento de Aseo Público SLP 2018 desde el PDF oficial una vez
-disponible en ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf]
+[PENDIENTE EXTRACCIÓN AGENTE: pegar texto del capítulo de prohibiciones vigente del
+Reglamento de Aseo Público SLP 2018 desde `frontend/public/reglamentos/SLP_slp_reglamento_aseo_publico.pdf`
+(o copia en `ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf`)]
 ```
 
 **Referencia cruzada MTY (Reglamento de Limpia Municipal de Monterrey, 2020-2024):**
@@ -250,7 +250,7 @@ Esta tabla justifica por qué este capítulo es un bloque separado y no una exte
 | **Querétaro** | Art. [📄 VERIFICAR] | Arts. [N°] a [N°+2] | Si el Reglamento de GIRS 2021 ya tiene prohibición genérica, adicionar el procedimiento de retiro con plazos y el retiro subsidiario |
 | **Monterrey** | **Arts. 14–15** (prohibiciones y predio baldío — verificados) | Reformar Arts. 14–15 para añadir: prelación de obligados, plazo de retiro, retiro subsidiario, urgencia sanitaria, coordinación con otras dependencias | La base ya existe — ampliar procedimiento |
 | **San Pedro G.G.** | Art. [📄 VERIFICAR] | Arts. [N°] a [N°+2] | Adaptar según articulado vigente |
-| **Soledad de G.S.** | Sin reglamento propio | Capítulo completo en nuevo reglamento | Incorporar íntegro |
+| **Soledad de G.S.** | Reg. Aseo Público 2013 (PDF en línea) | Capítulo de vía pública [VERIFICAR no.] | Extracción + armonía con SLP |
 | **Corregidora** | Art. [📄 VERIFICAR] | Arts. [N°] a [N°+2] | Adicionar |
 | **El Marqués** | Art. [📄 VERIFICAR] | Arts. [N°] a [N°+2] | Adicionar |
 

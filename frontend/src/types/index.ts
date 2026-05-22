@@ -580,6 +580,9 @@ export interface SimulatorState {
   /** Selección explícita vía catálogo Estado→Municipio (Q-009); null si solo se usó ZM o chips legacy. */
   seleccionMunicipioCatalog: SeleccionMunicipioCatalog | null
 
+  /** Cliente completó onboarding inicial (estado + municipio + PDF). Desarrolladores omiten vía JWT. */
+  clientSetupComplete: boolean
+
   // ── Estudio social — campo y educación ciudadana ───────────────────────────
   /** % del total de viviendas no-condominio que están en calle pública (vs. privada/coto).
    *  Fuente: DONUE + INEGI Censo 2020 fracción municipal. Rango 0-100.
@@ -609,6 +612,9 @@ export interface SimulatorState {
   // ── Informe / exportación ──────────────────────────────────────────────────
   /** Fecha de inicio del programa para proyecciones de calendario (Gantt). */
   fechaInicioPrograma: string | null
+
+  /** M02D — verificaciones de campo y checklist (no sustituye organigrama objetivo M07). */
+  organigramaDiagnostico: import('@/data/organigramaDiagnostico').OrganigramaDiagnosticoPersist
 }
 
 export interface SeleccionMunicipioCatalog {
@@ -867,6 +873,16 @@ export interface MunicipalLegalSourceManifest {
   warnings: string[]
   blockers: string[]
   next_action: string
+}
+
+export interface LegalPdfUploadResponse {
+  ok: boolean
+  municipio_id: string
+  municipio_habilitado: boolean
+  analysis_ready: boolean
+  manifest: MunicipalLegalSourceManifest
+  diagnostic: LegalDiagnostic
+  message: string
 }
 
 export interface LegalDiagnostic {

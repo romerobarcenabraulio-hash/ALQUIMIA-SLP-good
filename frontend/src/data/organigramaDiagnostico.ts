@@ -168,3 +168,19 @@ export const CHECKLIST_CAMPO_ORG = [
   'Confirmar quién opera relleno y quién paga transporte de residuos reciclables.',
   'Entrevistar supervisor de ruta (primer escalón operativo) antes que dirección.',
 ]
+
+export interface OrganigramaDiagnosticoPersist {
+  verificaciones: Partial<Record<string, VerificacionOrg>>
+  checklistCompletado: Record<string, boolean>
+  notaCampo: string
+}
+
+export const ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY: OrganigramaDiagnosticoPersist = {
+  verificaciones: {},
+  checklistCompletado: {},
+  notaCampo: '',
+}
+
+export function cadenaContactoId(orden: number): string {
+  return `cadena-${orden}`
+}

@@ -8,7 +8,7 @@ La autoridad legal vive municipio por municipio.
 GET  /legal/{municipio}/diagnostic          → LegalDiagnostic
 GET  /legal/{municipio}/strategy            → ReformStrategyOutput
 PUT  /legal/{municipio}/verificar           → marcar verificado (admin)
-POST /legal/{municipio}/reglamento          → upsert metadata (admin)
+POST /legal/{municipio}/upload-pdf         → subir PDF y habilitar análisis
 
 ── Endpoints ZM-level (agregación + coordinación) ──────────────────────────────
 GET  /legal/zm/{zm}/municipios              → List[LegalStatusHub]
@@ -19,7 +19,7 @@ GET  /legal/hub                             → List[LegalStatusHub] (todos)
 """
 from __future__ import annotations
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends, File, HTTPException, UploadFile
 
 from app.legal.diagnostic import build_diagnostic, build_municipal_legal_context
 from app.legal.metropolitan import build_paquete_metropolitano
@@ -33,9 +33,12 @@ from app.legal.zm_context import execute_zm_context
 from app.legal.source_ingest import (
     ingest_municipal_legal_source,
     locate_municipal_legal_source,
+    pdf_ingested_for_analysis,
     reject_zm_legal_source,
+    upload_municipal_pdf_bytes,
 )
 from app.legal.schemas import (
+    LegalPdfUploadResponse,
     LegalSourceIngestRequest,
     LegalVerificarRequest,
     LegalDiagnostic, LegalStatusHub, PaqueteMetropolitano,
@@ -100,6 +103,55 @@ async def post_source_manifest(
     if manifest is None:
         raise HTTPException(status_code=404, detail=f"Municipio '{municipio}' no encontrado")
     return manifest
+
+
+@router.post("/{municipio}/upload-pdf", response_model=LegalPdfUploadResponse)
+async def upload_municipio_pdf(
+    municipio: str,
+    file: UploadFile = File(...),
+) -> LegalPdfUploadResponse:
+    """
+    Sube el PDF del reglamento municipal.
+
+    Regla de producto: sin PDF no hay análisis. Al cargar el archivo se habilita
+    el municipio para diagnóstico y dispara la instantánea de análisis jurídico.
+    """
+    content_type = (file.content_type or "").lower()
+    if content_type not in {"application/pdf", "application/octet-stream", "binary/octet-stream"}:
+        raise HTTPException(status_code=400, detail="Solo se aceptan archivos PDF.")
+    content = await file.read()
+    if not content:
+        raise HTTPException(status_code=400, detail="El archivo PDF está vacío.")
+    try:
+        manifest = upload_municipal_pdf_bytes(
+            municipio.lower(),
+            content,
+            original_filename=file.filename,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    if manifest is None:
+        raise HTTPException(status_code=404, detail=f"Municipio '{municipio}' no encontrado")
+
+    diag = build_diagnostic(municipio.lower())
+    if diag is None:
+        raise HTTPException(status_code=500, detail="PDF cargado pero no se pudo generar diagnóstico.")
+
+    habilitado = pdf_ingested_for_analysis(manifest) and not diag.agora_bloqueado
+    return LegalPdfUploadResponse(
+        ok=True,
+        municipio_id=municipio.lower(),
+        municipio_habilitado=habilitado,
+        analysis_ready=habilitado,
+        manifest=manifest,
+        diagnostic=diag,
+        message=(
+            "PDF registrado. Análisis jurídico municipal habilitado."
+            if habilitado
+            else "PDF registrado, pero el municipio sigue bloqueado para análisis."
+        ),
+    )
+
 
 @router.get("/{municipio}/diagnostic", response_model=LegalDiagnostic)
 async def get_diagnostic(municipio: str) -> LegalDiagnostic:

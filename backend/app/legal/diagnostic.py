@@ -4,7 +4,7 @@ Motor de diagnóstico jurídico.
 Dado un municipio_id produce un LegalDiagnostic con:
   - matriz de 12 artículos canónicos con su estado actual
   - métricas derivadas (brecha, score, booleanos clave)
-  - gate ÁGORA (agora_bloqueado ↔ reglamento no verificado)
+  - gate ÁGORA (agora_bloqueado ↔ sin PDF municipal cargado)
 """
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from app.legal.schemas import (
 from app.legal.municipal_legal_copy import build_legal_disclaimer, build_next_action
 from app.legal.repository import get_repo
 from app.legal.reform_strategy import select_strategy
-from app.legal.source_ingest import locate_municipal_legal_source
+from app.legal.source_ingest import locate_municipal_legal_source, pdf_ingested_for_analysis
 
 
 # ─── Pesos para score_legal (0-100) ──────────────────────────────────────────
@@ -129,10 +129,12 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
     )
 
     # ── Gate ÁGORA ────────────────────────────────────────────────────────────
-    agora_bloqueado = not reg.verificado  # reglamento sin fuente verificada → bloquea
     source_manifest = locate_municipal_legal_source(municipio_id)
     if source_manifest is None:
         return None
+
+    analysis_ready = pdf_ingested_for_analysis(source_manifest)
+    agora_bloqueado = not analysis_ready
 
     has_validated_source = (
         source_manifest.validation_status == LegalSourceValidationStatus.validado_externamente
@@ -160,7 +162,7 @@ def build_diagnostic(municipio_id: str) -> LegalDiagnostic | None:
         legal_validation_status=source_manifest.validation_status,
         officiality=source_manifest.officiality,
         can_enable_education=source_manifest.can_enable_education,
-        can_enable_simulation=source_manifest.can_enable_simulation,
+        can_enable_simulation=analysis_ready,
         can_enable_sanctions=False,
         can_generate_official_document=False,
         sanctions_blocked_reason=None,

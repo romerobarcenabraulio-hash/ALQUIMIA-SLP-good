@@ -8,4 +8,6 @@ Adjuntar en un ZIP homónimo (p. ej. `evidencia_no_localizable_2026-05-07.zip`) 
 
 Plantilla de texto INFOMEX: ver `MODELO_SOLICITUD_INFOMEX.md` en esta carpeta.
 
-Municipios con paquete pendiente al cierre de esta bitácora: **slp**, **qro**, **mar**, **hui**, **tla**.
+Municipios con paquete pendiente al cierre de esta bitácora: **mar**, **hui**, **tla**, **csp**, **vip**.
+
+> **Actualización 2026-05-18:** **slp**, **sol** y **qro** ya tienen PDF en `frontend/public/reglamentos/`; pendiente extracción de artículos por agentes ALQUIMIA, no localización del archivo.

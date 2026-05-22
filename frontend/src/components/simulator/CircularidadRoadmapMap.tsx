@@ -14,13 +14,14 @@
  * Fuente de fases: store simulatorStore (pctCapturaPorAño + horizonte)
  */
 
-import { useEffect, useRef, useState, useMemo } from 'react'
-import mapboxgl from 'mapbox-gl'
+import { useEffect, useMemo, useState } from 'react'
 import { AlertTriangle, MapPin } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getCircularityHeatmap } from '@/lib/api'
 import type { CircularityHeatmapResponse } from '@/types'
 import { cn } from '@/lib/utils'
+import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
+import { getGoogleMapsApiKey, GOOGLE_MAPS_MISSING_MSG } from '@/lib/googleMaps'
 
 // ─── Colores por fase ─────────────────────────────────────────────────────────
 
@@ -119,14 +120,11 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
   const horizonte = useSimulatorStore(s => s.horizonte)
   const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
 
-  const mapContainerRef = useRef<HTMLDivElement>(null)
-  const mapRef = useRef<mapboxgl.Map | null>(null)
-
   const [heatmap, setHeatmap] = useState<CircularityHeatmapResponse | null>(null)
   const [loadingMap, setLoadingMap] = useState(true)
   const [errorMap, setErrorMap] = useState<string | null>(null)
-  const [añoSlider, setAñoSlider] = useState(0)   // índice 0 = año 1 del horizonte
-  const [mapReady, setMapReady] = useState(false)
+  const [añoSlider, setAñoSlider] = useState(0)
+  const token = getGoogleMapsApiKey()
 
   // Fetch heatmap data
   useEffect(() => {
@@ -139,146 +137,28 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
     return () => { cancelled = true }
   }, [zmActiva])
 
-  // Tokens Mapbox
-  useEffect(() => {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-    if (token) mapboxgl.accessToken = token
-  }, [])
+  const capturaAñoActual = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
 
-  // Init map
-  useEffect(() => {
-    if (!mapContainerRef.current || !heatmap || mapRef.current) return
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-    if (!token) return
-
-    const map = new mapboxgl.Map({
-      container: mapContainerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center: [-100.9, 22.15],
-      zoom: 10,
-      attributionControl: false,
-    })
-
-    mapRef.current = map
-
-    map.on('load', () => {
-      const fc = heatmap.geojson as GeoJSON.FeatureCollection
-      const features = fc.features ?? []
-
-      map.addSource('circularity-roadmap', {
-        type: 'geojson',
-        data: fc,
-      })
-
-      map.addLayer({
-        id: 'circularity-fill',
-        type: 'fill',
-        source: 'circularity-roadmap',
-        paint: {
-          'fill-color': FASE_COLORS[0],
-          'fill-opacity': 0.75,
-        },
-      })
-
-      map.addLayer({
-        id: 'circularity-outline',
-        type: 'line',
-        source: 'circularity-roadmap',
-        paint: {
-          'line-color': '#FFFFFF',
-          'line-width': 0.5,
-          'line-opacity': 0.6,
-        },
-      })
-
-      // Fit bounds
-      if (features.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds()
-        features.forEach(f => {
-          const g = f.geometry as GeoJSON.Polygon
-          if (g?.type === 'Polygon') {
-            g.coordinates[0]?.forEach(([lng, lat]) => bounds.extend([lng, lat]))
-          }
-        })
-        if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 24, maxZoom: 13 })
-      }
-
-      // Popup
-      const popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false })
-      map.on('mousemove', 'circularity-fill', e => {
-        if (!e.features?.length) return
-        const props = e.features[0].properties ?? {}
-        const municipio = props['municipio'] ?? 'Zona'
-        const cve = props['cve_geoestadistica_proxy'] ?? '—'
-        popup.setLngLat(e.lngLat)
-          .setHTML(`
-            <div style="font-size:11px;padding:4px 8px;line-height:1.5">
-              <strong>${municipio}</strong><br/>
-              Clave proxy: ${cve}<br/>
-              <em style="font-size:9px;color:#A8A49C">Geometría simulación — no AGEB INEGI</em>
-            </div>
-          `)
-          .addTo(map)
-      })
-      map.on('mouseleave', 'circularity-fill', () => popup.remove())
-
-      setMapReady(true)
-    })
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), 'bottom-right')
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), 'bottom-right')
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove()
-        mapRef.current = null
-        setMapReady(false)
-      }
-    }
-  }, [heatmap])
-
-  // Update fill colors when slider or captura changes
-  useEffect(() => {
-    if (!mapRef.current || !mapReady || !heatmap) return
-    const map = mapRef.current
-    if (!map.getLayer('circularity-fill')) return
-
-    const features = (heatmap.geojson as GeoJSON.FeatureCollection).features ?? []
+  const geoJsonStyle = useMemo(() => {
+    const features = heatmap?.geojson?.features ?? []
     const pct = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
-
-    // Actualizar color de cada feature según su fase en el año seleccionado
+    const colorByCve: Record<string, string> = {}
     features.forEach((f, i) => {
-      const cve = (f.properties ?? {})['cve_geoestadistica_proxy'] ?? `Z${i}`
+      const cve = String((f.properties ?? {})['cve_geoestadistica_proxy'] ?? `Z${i}`)
       const adelanto = Math.max(0, 3 - Math.floor(i / 3))
       const pctLocal = Math.max(0, Math.min(100, pct * (1 + adelanto * 0.15) - i * 2))
-      const fase = faseDesdeCaptura(pctLocal)
-      // En Mapbox la forma más eficiente es usar data-driven styling con match expression
-      // Actualizamos vía setFeatureState
-      if (f.id !== undefined) {
-        map.setFeatureState(
-          { source: 'circularity-roadmap', id: f.id },
-          { fase, color: FASE_COLORS[fase] }
-        )
-      }
+      colorByCve[cve] = FASE_COLORS[faseDesdeCaptura(pctLocal)]
     })
-
-    // Actualizar la expresión de color globalmente
-    map.setPaintProperty('circularity-fill', 'fill-color', [
-      'match',
-      ['get', 'cve_geoestadistica_proxy'],
-      ...features.flatMap((f, i) => {
-        const cve = (f.properties ?? {})['cve_geoestadistica_proxy'] ?? `Z${i}`
-        const adelanto = Math.max(0, 3 - Math.floor(i / 3))
-        const pct2 = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
-        const pctLocal = Math.max(0, Math.min(100, pct2 * (1 + adelanto * 0.15) - i * 2))
-        return [cve, FASE_COLORS[faseDesdeCaptura(pctLocal)]]
-      }),
-      '#F5F5F5',
-    ])
-  }, [añoSlider, pctCapturaPorAño, mapReady, heatmap])
-
-  const capturaAñoActual = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
-  const token = (process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? '').trim()
+    return (feature: google.maps.Data.Feature) => {
+      const cve = String(feature.getProperty('cve_geoestadistica_proxy') ?? '')
+      return {
+        fillColor: colorByCve[cve] ?? '#F5F5F5',
+        fillOpacity: 0.75,
+        strokeWeight: 0.5,
+        strokeColor: '#FFFFFF',
+      }
+    }
+  }, [heatmap, añoSlider, pctCapturaPorAño])
 
   if (loadingMap) {
     return (
@@ -309,10 +189,7 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
         <AlertTriangle size={16} className="text-amber-600 mt-0.5 shrink-0" />
         <div>
           <p className="text-[12px] font-semibold text-amber-900">Mapa no disponible</p>
-          <p className="text-[11px] text-amber-700 mt-1">
-            Para ver el mapa interactivo define{' '}
-            <code className="font-mono text-[11px]">NEXT_PUBLIC_MAPBOX_TOKEN</code> en el entorno y reinicia el servidor.
-          </p>
+          <p className="text-[11px] text-amber-700 mt-1">{GOOGLE_MAPS_MISSING_MSG}</p>
         </div>
       </div>
     )
@@ -349,7 +226,13 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
 
       {/* Mapa */}
       <div className="relative rounded-[12px] overflow-hidden border border-[#E8E4DC]" style={{ height: 380 }}>
-        <div ref={mapContainerRef} className="w-full h-full" />
+        <GoogleMapCanvas
+          center={{ lat: 22.15, lon: -100.9 }}
+          zoom={10}
+          geoJson={heatmap?.geojson as GeoJSON.FeatureCollection | undefined}
+          geoJsonStyle={geoJsonStyle}
+          height={380}
+        />
         <MapLegend />
         <MapSourceBadge geometrySource={heatmap?.geometry_source} />
       </div>

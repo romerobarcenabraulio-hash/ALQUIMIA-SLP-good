@@ -1,8 +1,15 @@
 'use client'
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
+import { isPlatformDeveloper } from '@/lib/authSession'
+
+function loginDestination(next?: string | null): string {
+  if (next) return next
+  if (isPlatformDeveloper()) return '/simulator'
+  return '/gobierno'
+}
 
 export default function LoginPage() {
   const [email, setEmail]     = useState('')
@@ -10,6 +17,8 @@ export default function LoginPage() {
   const [loading, setLoading]  = useState(false)
   const [error, setError]     = useState('')
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const next = searchParams.get('next')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -24,12 +33,12 @@ export default function LoginPage() {
       if (!res.ok) throw new Error('Credenciales inválidas')
       const { access_token } = await res.json()
       localStorage.setItem('alquimia_token', access_token)
-      router.push('/simulator')
+      router.push(loginDestination(next))
     } catch (err: unknown) {
       // Demo fallback
       if (email === 'demo@alquimia.mx' && password === 'demo2025') {
         localStorage.setItem('alquimia_token', 'demo-token')
-        router.push('/simulator')
+        router.push(loginDestination(next))
       } else {
         setError('Credenciales inválidas. Usa demo@alquimia.mx / demo2025')
       }
@@ -43,7 +52,7 @@ export default function LoginPage() {
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[20px] p-8 w-full max-w-md shadow-md">
         <div className="text-center mb-8">
           <h1 className="font-serif text-[32px] text-[#3B6D11]">ALQUIMIA</h1>
-          <p className="text-[13px] text-[#6B6760] mt-1">Plataforma de circularidad municipal</p>
+          <p className="text-[13px] text-[#6B6760] mt-1">Consultoría integral de gestión pública</p>
         </div>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
@@ -85,11 +94,10 @@ export default function LoginPage() {
           </button>
         </div>
 
-        <p className="text-center mt-4">
-          <a href="/aprende" className="text-[12px] text-[#A8A49C] hover:text-[#3B6D11]">
-            Centro educativo público →
-          </a>
-        </p>
+        <div className="mt-5 pt-5 border-t border-[#E8E4DC] flex justify-between text-[12px]">
+          <a href="/" className="text-[#A8A49C] hover:text-[#3B6D11]">← Inicio</a>
+          <a href="/aprende" className="text-[#A8A49C] hover:text-[#3B6D11]">Centro educativo →</a>
+        </div>
       </div>
     </div>
   )

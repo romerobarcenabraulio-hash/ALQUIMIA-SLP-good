@@ -48,7 +48,7 @@ La descarga o checksum de un PDF no equivale a validacion juridica ni vigencia c
 
 - GDL y Zapopan tienen PDF descargado/verificado por checksum, pero siguen en revision para oficialidad.
 - San Pedro Garza Garcia tiene candidato SISTEC de limpia; no debe presentarse como reglamento maestro validado.
-- QRO capital se ancla a portal reglamentario y a sintesis CLC; queda pendiente PDF directo estable.
+- QRO capital: PDF en línea (`QRO_qro_reglamento_aseo_publico.pdf`) + portal reglamentario; extracción de artículos pendiente agentes ALQUIMIA.
 
 ## P2 visual
 

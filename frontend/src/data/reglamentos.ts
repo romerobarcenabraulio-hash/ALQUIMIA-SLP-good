@@ -34,6 +34,11 @@ export function tieneUrlFuentePrimaria(reg: ReglamentoFuente): boolean {
   return Boolean(reg.url_fuente?.trim())
 }
 
+/** True si hay al menos un PDF servido en línea desde `public/reglamentos/`. */
+export function tienePdfLocalEmbebible(reg: ReglamentoFuente): boolean {
+  return (reg.archivo_local ?? []).some(path => path.toLowerCase().endsWith('.pdf'))
+}
+
 /** Catálogo por municipio del simulador (`frontend/src/lib/constants.ts`) + Cadereyta (EXT). */
 export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
   {
@@ -228,7 +233,7 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
   {
     zm_id: 'QRO',
     municipio_id: 'mar',
-    nombre: 'El Marqués · ordenamiento en materia de residuos / servicios (pendiente espejo)',
+    nombre: 'El Marqués · ordenamiento en materia de residuos / servicios (pendiente PDF local)',
     anio_version: 0,
     url_fuente: 'https://www.marques.gob.mx/transparencia/',
     estado_verificacion: 'no_localizado',
@@ -238,7 +243,7 @@ export const REGLAMENTOS_FUENTE: ReglamentoFuente[] = [
   {
     zm_id: 'QRO',
     municipio_id: 'hui',
-    nombre: 'Huimilpan · ordenamiento municipal aplicable (pendiente espejo)',
+    nombre: 'Huimilpan · ordenamiento municipal aplicable (pendiente PDF local)',
     anio_version: 0,
     url_fuente: 'https://huimilpan.gob.mx/category/transparencia/',
     estado_verificacion: 'no_localizado',

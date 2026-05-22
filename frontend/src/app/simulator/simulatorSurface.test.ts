@@ -45,6 +45,19 @@ describe('simulator functionary surface', () => {
     expect(readFrontend('src/app/simulator/page.tsx')).not.toContain('Trazabilidad de datos')
   })
 
+  it('no usa cifras placeholder 379.3 ni 18 centros en stacks de mercado/logística', () => {
+    const paths = [
+      'src/components/simulator/stacks/MarketTraceabilityStack.tsx',
+      'src/components/simulator/stacks/LogisticaOperativaStack.tsx',
+      'src/components/simulator/stacks/CostoOmisionStack.tsx',
+    ]
+    for (const p of paths) {
+      const src = readFrontend(p)
+      expect(src).not.toContain('379.3')
+      expect(src).not.toMatch(/18 centros/)
+    }
+  })
+
   it('no presenta composicion RSU como certificacion municipal', () => {
     const compositionSource = readFrontend('src/components/simulator/ComposicionRSU.tsx')
 

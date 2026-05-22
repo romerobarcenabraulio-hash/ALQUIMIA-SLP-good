@@ -216,23 +216,37 @@ async def run_agora(
             pass
 
         if _investigador_enabled:
-            await report(5, f"Investigador — Buscando costos y contexto para {plan_input.municipio}...")
+            await report(5, f"Investigador — costos y contexto para {plan_input.municipio}...")
         try:
             from app.agents.research_service import investigate_municipio
             _estado = bundle.zm.split("_")[-1] if "_" in bundle.zm else bundle.zm
-            findings = await investigate_municipio(
-                municipio=plan_input.municipio,
-                estado=_estado,
-                zm=bundle.zm,
-            )
-            bundle.inputs_usuario["research_findings"] = findings.model_dump(mode="json")
-            if findings.advertencias:
-                bundle.warnings.extend(findings.advertencias[:3])
-            logger.info(
-                f"ÁGORA — Investigador: {findings.queries_con_resultado}/"
-                f"{findings.queries_ejecutadas} queries con resultado. "
-                f"Serper: {findings.fuente_serper}"
-            )
+            _mun_id = plan_input.municipio.lower().replace(" ", "_")[:50]
+            used_cache = False
+            findings = None
+            try:
+                from app.research.cache import load_cached_findings
+                cached = load_cached_findings(_mun_id, bundle.zm, plan_input.municipio)
+                if cached and cached.queries_con_resultado >= 3:
+                    bundle.inputs_usuario["research_findings"] = cached.model_dump(mode="json")
+                    bundle.warnings.append(cached.advertencias[0] if cached.advertencias else "Research desde caché DB.")
+                    logger.info("ÁGORA — Investigador omitido (caché Postgres).")
+                    used_cache = True
+            except Exception:
+                pass
+            if not used_cache:
+                findings = await investigate_municipio(
+                    municipio=plan_input.municipio,
+                    estado=_estado,
+                    zm=bundle.zm,
+                )
+            if findings is not None:
+                bundle.inputs_usuario["research_findings"] = findings.model_dump(mode="json")
+                if findings.advertencias:
+                    bundle.warnings.extend(findings.advertencias[:3])
+                logger.info(
+                    f"ÁGORA — Investigador: {findings.queries_con_resultado}/"
+                    f"{findings.queries_ejecutadas} queries. Serper: {findings.fuente_serper}"
+                )
         except Exception as exc:
             logger.warning(f"ÁGORA — Investigador falló, continuando sin findings: {exc}")
             bundle.warnings.append("Investigador no disponible — costos sin enriquecer con datos web.")
@@ -639,8 +653,13 @@ async def _call_anthropic_text(
 ) -> str:
     import anthropic
     client = anthropic.AsyncAnthropic()
+    try:
+        from app.config import settings
+        model = getattr(settings, "ANTHROPIC_MODEL", "claude-sonnet-4-6")
+    except Exception:
+        model = "claude-sonnet-4-6"
     message = await client.messages.create(
-        model="claude-sonnet-4-6",
+        model=model,
         max_tokens=4096,
         system=system_prompt,
         messages=[{"role": "user", "content": user_message}],
@@ -651,9 +670,14 @@ async def _call_anthropic_text(
 def _load_prompt(name: str) -> str:
     path = PROMPTS_DIR / f"{name}_system.md"
     try:
-        return path.read_text(encoding="utf-8")
+        text = path.read_text(encoding="utf-8")
     except FileNotFoundError:
-        return f"Eres el agente {name} del sistema ÁGORA GOV."
+        text = f"Eres el agente {name} del sistema ÁGORA GOV."
+    if name == "validador":
+        ref = PROMPTS_DIR / "formulas_rsu_reference.md"
+        if ref.exists():
+            text += "\n\n---\n\n## Referencia numérica RSU\n\n" + ref.read_text(encoding="utf-8")
+    return text
 
 
 def _store_agent_output(agent_name: str, content: str, output: PlanOutput) -> None:

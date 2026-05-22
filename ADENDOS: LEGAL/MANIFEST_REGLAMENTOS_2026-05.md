@@ -1,20 +1,20 @@
-# Manifest verificable — espejos RSU / limpia municipal (CSA · 2026-05-07)
+# Manifest verificable — PDFs RSU / limpia municipal (CSA · 2026-05-18)
 
-Artefactos canónicos en disco: `ADENDOS: LEGAL/pdfs/reglamentos/<ZM>_<municipio_id>_<slug>.<pdf|doc>`
-Enlaces públicos del frontend: `frontend/public/reglamentos/` → symlinks al mismo árbol ADENDOS.
+Artefactos canónicos en disco: `ADENDOS: LEGAL/pdfs/reglamentos/<ZM>_<municipio_id>_<slug>.pdf`
+Enlaces públicos del frontend: `frontend/public/reglamentos/` (copias PDF servidas en línea; solo PDF).
 
 **Notas**
 
-- **Páginas (PDF):** conteo heurístico `/Type /Page` en el binario (coincide con lectura visual salvo PDFs con objetos no estándar). Zapopan reemplazado el **2026-05-07** por la versión **Oct 2024** del portal oficial (`SHA256` alineado con descarga directa).
-- **Word (.doc):** compilación estatal NL — páginas no aplicables (`—`). Requisito jurídico frente a terceros: confrontar con POE/gaceta municipal.
-- **Criterio ≥12/17:** la tabla incluye **17 filas** (backlog CSA **16** IDs + **mty** como referencia de ingest NL). Con archivo binario local hay **12** filas del backlog principal (`snl`, `gua`, `apo`, `sca`, `gar`, `esc`, `jua`, `spg`, `cor`, `gdl`, `zap`). Si el auditor exige **solo PDF** y excluye `.doc`, el cómputo cae por debajo de 12 hasta obtener POE PDF para los municipios NL en compilación Word — documentado para Ejecutor/Auditor.
+- **Solo PDF en línea:** archivos `.doc` retirados de `public/reglamentos/`; pendiente POE PDF para municipios NL que solo tenían compilación Word.
+- **Adendos:** los generan los agentes de ALQUIMIA; el frontend consume, no produce.
 
 ## Tabla
 
 | municipio_id | URL_oficial | fecha_publicación | SHA256 | páginas | año_versión | arts_localizados | estado_final |
 |--------------|-------------|-------------------|--------|---------|-------------|------------------|--------------|
-| slp | https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria | — | — | — | 2018 (referencia catálogo) | POE SLP + portal — sin PDF vigente espejado CSA | no_localizable |
-| qro | https://municipiodequeretaro.gob.mx/reglamento/ | — | — | — | 2021 (referencia) | Marco municipal propio — pendiente PDF directo estable | no_localizable |
+| slp | https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria | 2018 (referencia) | 2b0fd5d8ac456c56ab618ca7abb0c545e008cdef39298c388c6eae59b5566838 | — | 2018 | Definiciones; obligaciones; sanciones; transitorios | en_revision |
+| sol | https://soledad.gob.mx/transparencia/ | 2013-06-18 | a2f4c6e90b7463d2c27e6277fd17bb48ee31462047c0ac59eb616b0bb0c35a71 | — | 2013 | Reglamento de Aseo Público Soledad | en_revision |
+| qro | https://municipiodequeretaro.gob.mx/reglamento/ | — | f995ab1dc37d9a5d4df6fd904b8b67a076cd2d1fa88acfdc5335a4d6cd834139 | — | 2021 (referencia) | Reglamento de Aseo Público capital | en_revision |
 | mar | https://www.marques.gob.mx/transparencia/ | — | — | — | — | Búsqueda portal / DDG sin PDF RSU dedicado en esta pasada | no_localizable |
 | hui | https://huimilpan.gob.mx/category/transparencia/ | — | — | — | — | Solo avisos de privacidad en índice HTML scrapeado; sin reglamento RSU | no_localizable |
 | gdl | https://transparencia.guadalajara.gob.mx/sites/default/files/reglamentos/Reg.GestionIntegralMunicipioGuadalajara.pdf | Gaceta base 2016-07-15 + reformas posteriores (consultar POE/GEM); servidor Last-Modified 2025-05-13 | cb3eaae5bebee6c1b11b5645cb3e60baab3785505fd9ad4567ab0d0b09c3239b | 152 | 2016 (consolidado portal) | Objeto; definiciones; obligaciones; sanciones; desarrollo urbano articulado | checksum_verificado_en_revision |
@@ -27,7 +27,7 @@ Enlaces públicos del frontend: `frontend/public/reglamentos/` → symlinks al m
 | gar | https://www.garcia.gob.mx/wp-content/uploads/2022/08/R-IRMG-3-40.pdf | 2022-08 (documento interno) | c3c08cad63e3096896e1a1597fc565542eeb6f0994d5003040833c88d7584aec | 19 | 2022 | Instrucción interna — **no** reglamento maestro RSU | en_revision |
 | esc | http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=6968&ambito=MUNICIPAL | Por expediente compilación | 23f4e95bb01d9c009b36ac8b2b96f6aff3828c1df83f5ee8d5ac4352bd53df28 | — | 2016 | Limpia | en_revision |
 | jua | http://compilacion.ordenjuridico.gob.mx/fichaOrdenamiento.php?idArchivo=105171&ambito=MUNICIPAL | Por expediente compilación | 38a5cc689d4237b66a31c7a30f7b33166183f74f332dc4aed59332d3ac04498c | — | 2025 | Limpia | en_revision |
-| spg | https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf | Pendiente cotejo POE/gaceta SPGG vs título «limpia» | 8c4e345e1a69be81e388ba33c622cd4df004ec4b401d7e6955e8b4d36f35de4c | 12 | pendiente | Candidato corto «limpia» — contrastar con instrumentos ambientales gaceta 118 en repo | en_revision |
+| spg | https://sistec.nl.gob.mx/Transparencia_2015/Archivos/AC-F0108-07-M020011171-01.pdf | Pendiente cotejo POE/gaceta SPGG | dd6852d685b7bd43936f2641284bd1a73f48ec45081b1e6f8b01bfc4fe14040b | — | en_revision | Reglamento de Aseo Público SPGG + contexto ambiental gaceta 118 | en_revision |
 | cor | https://lasombradearteaga.segobqueretaro.gob.mx/getfile.php?p1=20121059-01.pdf | 2012 (SEGOB QRO referencia) | 3d27cb5209c8f62f05ba2c323626626f67c2f118c29babc5c05dee196ff2887f | 228 | 2012 | Ambiente municipal — **sin** confirmación RSU exclusiva | en_revision |
 | mty | https://www.monterrey.gob.mx/pdf/reglamentos/1/Reglamento_de_Limpia_Municipal_de_Monterrey.pdf | Confirmar POE/gaceta NL | 23d9a2e511a1184db6971987492a9a46d23ffed7775b822c52b19e85cb784977 | 41 | 2021 | Limpia; obligaciones; orden público | en_revision |
 

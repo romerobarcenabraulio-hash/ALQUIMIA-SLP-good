@@ -221,6 +221,21 @@ class ResearchService:
         Ejecuta el conjunto estándar de queries para un municipio.
         Respeta el límite de MAX_QUERIES_RUN para controlar costos de API.
         """
+        municipio_id = municipio.lower().replace(" ", "_")[:50]
+
+        try:
+            from app.research.cache import load_cached_findings
+            cached = load_cached_findings(municipio_id, zm, municipio)
+            if cached and (
+                cached.costos_construccion
+                or cached.precios_materiales
+                or cached.reglamentos
+            ):
+                logger.info("ResearchService: caché Postgres (%s)", municipio)
+                return cached
+        except Exception as exc:
+            logger.debug("research cache miss: %s", exc)
+
         key = self._get_api_key()
         findings = ResearchFindings(zm=zm, municipio=municipio)
 
@@ -268,6 +283,18 @@ class ResearchService:
             bucket.sort(key=lambda x: x.confianza, reverse=True)
             setattr(findings, categoria, bucket[:5])
             findings.queries_con_resultado += 1
+
+            try:
+                from app.research.persistence import persist_research_items
+                persist_research_items(
+                    result,
+                    categoria=categoria,
+                    query=query,
+                    municipio_id=municipio_id,
+                    zm_id=zm,
+                )
+            except Exception as exc:
+                logger.debug("research persist skip: %s", exc)
 
         findings.fuente_serper = True
 

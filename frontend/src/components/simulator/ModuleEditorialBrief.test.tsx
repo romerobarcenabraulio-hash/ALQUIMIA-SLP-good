@@ -7,6 +7,13 @@ import { SIMULATOR_STATE_DEFAULT, useSimulatorStore } from '@/store/simulatorSto
 
 const FUNCTIONARY_MODULES = [
   'city_baseline',
+  'impacto_ambiental',
+  'social_diagnostico',
+  'organigrama_diagnostico',
+  'evaluacion_socioeconomica',
+  'ruta_critica',
+  'oleadas_territoriales',
+  'plan_educativo',
   'municipal_context',
   'future_goals',
   'infrastructure_operations',

@@ -1,10 +1,10 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import mapboxgl from 'mapbox-gl'
-import type { FeatureCollection } from 'geojson'
+import { useEffect, useMemo, useState } from 'react'
 import type { CircularityHeatmapResponse } from '@/types'
 import { getCircularityHeatmap } from '@/lib/api'
+import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
+import { getGoogleMapsApiKey, GOOGLE_MAPS_MISSING_MSG } from '@/lib/googleMaps'
 
 type HeatMode = 'actual' | 'projected'
 
@@ -26,39 +26,20 @@ function escHtml(s: string): string {
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
-function boundsFromFc(fc: CircularityHeatmapResponse['geojson']): mapboxgl.LngLatBounds {
-  const b = new mapboxgl.LngLatBounds()
-  for (const f of fc.features) {
-    const g = f.geometry as { type: string; coordinates: number[][][] }
-    if (g?.type !== 'Polygon' || !g.coordinates?.[0]) continue
-    for (const pt of g.coordinates[0]) b.extend([pt[0], pt[1]])
-  }
-  return b
-}
-
-function fillColorExpr(mode: HeatMode): object {
-  const prop = mode === 'actual' ? 'circularity_actual_pct' : 'circularity_projected_pct'
-  return [
-    'interpolate', ['linear'], ['get', prop],
-    18, '#f7fcf0',
-    32, '#ccebc5',
-    48, '#7fbc41',
-    72, '#2d8f47',
-    92, '#0d5c27',
-  ]
+function heatColor(pct: number): string {
+  if (pct <= 18) return '#f7fcf0'
+  if (pct <= 32) return '#ccebc5'
+  if (pct <= 48) return '#7fbc41'
+  if (pct <= 72) return '#2d8f47'
+  return '#0d5c27'
 }
 
 export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const mapRef       = useRef<mapboxgl.Map | null>(null)
   const [payload, setPayload] = useState<CircularityHeatmapResponse | null>(null)
   const [error,   setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mode,    setMode]    = useState<HeatMode>('actual')
-  const modeRef = useRef(mode)
-  const token   = process.env.NEXT_PUBLIC_MAPBOX_TOKEN?.trim() ?? ''
-
-  useEffect(() => { modeRef.current = mode }, [mode])
+  const token = getGoogleMapsApiKey()
 
   // Live data fetch
   useEffect(() => {
@@ -79,93 +60,22 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
     return () => { cancelled = true }
   }, [zmId])
 
-  // Map initialization — always render the basemap regardless of backend state.
-  // When payload arrives with features, add the data layers.
-  useEffect(() => {
-    if (!containerRef.current || !token) return
+  const mapCenter = useMemo(() => {
+    const c = ZM_CENTERS[zmId] ?? [-100.92, 22.14]
+    return { lat: c[1], lon: c[0] }
+  }, [zmId])
 
-    mapboxgl.accessToken = token
-
-    const center: [number, number] = ZM_CENTERS[zmId] ?? [-100.92, 22.14]
-    const zoom = ZM_ZOOM[zmId] ?? 9
-
-    const map = new mapboxgl.Map({
-      container: containerRef.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      center,
-      zoom,
-    })
-    mapRef.current = map
-
-    const hasFeatures = payload && payload.feature_count > 0
-
-    if (hasFeatures && payload) {
-      map.on('load', () => {
-        const b = boundsFromFc(payload.geojson)
-        if (!b.isEmpty()) map.fitBounds(b, { padding: 48, maxZoom: 11 })
-
-        map.addSource('circularity-heatmap', {
-          type: 'geojson',
-          data: payload.geojson as FeatureCollection,
-        })
-        map.addLayer({
-          id: 'circularity-fill',
-          type: 'fill',
-          source: 'circularity-heatmap',
-          paint: {
-            'fill-color': fillColorExpr(modeRef.current) as mapboxgl.ExpressionSpecification,
-            'fill-opacity': 0.82,
-          },
-        })
-        map.addLayer({
-          id: 'circularity-outline',
-          type: 'line',
-          source: 'circularity-heatmap',
-          paint: {
-            'line-color': '#1C1B18',
-            'line-width': 0.35,
-            'line-opacity': 0.45,
-          },
-        })
-
-        map.on('click', 'circularity-fill', e => {
-          const feat = e.features?.[0]
-          if (!feat?.properties) return
-          const p   = feat.properties as Record<string, unknown>
-          const mun = escHtml(String(p.nombre_municipio ?? ''))
-          const cve = escHtml(String(p.cve_geoestadistica_proxy ?? ''))
-          const act  = Number(p.circularity_actual_pct ?? 0)
-          const proj = Number(p.circularity_projected_pct ?? 0)
-          const html = `
-            <div style="font-family:system-ui,sans-serif;max-width:260px;font-size:12px;color:#1C1B18;">
-              <div style="font-weight:600;margin-bottom:4px;">${mun}</div>
-              <div style="font-size:10px;color:#6B6760;font-family:monospace;">${cve}</div>
-              <div style="margin-top:8px;"><strong>Actual (sim.)</strong> ${act.toFixed(1)}%</div>
-              <div><strong>Proyectado (sim.)</strong> ${proj.toFixed(1)}%</div>
-              <div style="margin-top:8px;font-size:10px;color:#8A857C;">Rejilla educativa; no AGEB INEGI oficial.</div>
-            </div>`
-          new mapboxgl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat).setHTML(html).addTo(map)
-        })
-
-        map.on('mouseenter', 'circularity-fill', () => { map.getCanvas().style.cursor = 'pointer' })
-        map.on('mouseleave', 'circularity-fill', () => { map.getCanvas().style.cursor = '' })
-      })
+  const geoJsonStyle = useMemo(() => {
+    const prop = mode === 'actual' ? 'circularity_actual_pct' : 'circularity_projected_pct'
+    return (feature: google.maps.Data.Feature) => {
+      const pct = Number(feature.getProperty(prop) ?? 0)
+      return {
+        fillColor: heatColor(pct),
+        fillOpacity: 0.72,
+        strokeWeight: 0.5,
+        strokeColor: '#1C1B18',
+      }
     }
-
-    return () => {
-      map.remove()
-      mapRef.current = null
-    }
-  // Re-initialize when payload (real data) arrives
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [payload, token, zmId])
-
-  // Mode toggle — update paint property without reinitializing
-  useEffect(() => {
-    const map = mapRef.current
-    if (!map?.isStyleLoaded()) return
-    if (!map.getLayer('circularity-fill')) return
-    map.setPaintProperty('circularity-fill', 'fill-color', fillColorExpr(mode) as mapboxgl.ExpressionSpecification)
   }, [mode])
 
   const sampleRows = useMemo(() => {
@@ -174,12 +84,12 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
   }, [payload])
 
   const hasFeatures   = payload && payload.feature_count > 0
-  const isFallbackMap = !hasFeatures // basemap only, no data layers
+  const isFallbackMap = !hasFeatures
 
   if (!token) {
     return (
       <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-950">
-        Para ver el mapa Mapbox define <code className="font-mono text-[11px]">NEXT_PUBLIC_MAPBOX_TOKEN</code> en el frontend y reinicia el servidor.
+        {GOOGLE_MAPS_MISSING_MSG}
       </div>
     )
   }
@@ -245,10 +155,12 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
         </div>
       )}
 
-      {/* Map canvas — ALWAYS rendered when token is present */}
-      <div
-        ref={containerRef}
-        className="h-[440px] w-full rounded-[12px] overflow-hidden border border-[#E8E4DC]"
+      <GoogleMapCanvas
+        center={mapCenter}
+        zoom={ZM_ZOOM[zmId] ?? 9}
+        geoJson={hasFeatures ? (payload!.geojson as GeoJSON.FeatureCollection) : undefined}
+        geoJsonStyle={geoJsonStyle}
+        height={440}
       />
 
       {/* Fallback table when no data layers */}

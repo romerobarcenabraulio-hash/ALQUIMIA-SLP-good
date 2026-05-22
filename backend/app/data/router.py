@@ -80,3 +80,21 @@ async def get_kpi(zm: str, kpi_id: str) -> KPIConProvenance:
         detail=f"KPI '{kpi_id}' no encontrado para ZM '{zm_upper}'. "
                f"KPIs disponibles: {[k.kpi_id for k in snapshot.kpis]}",
     )
+
+
+@router.get(
+    "/municipio/{cve_municipio}/poblacion",
+    response_model=KPIConProvenance,
+    summary="Población CONAPO proyectada por CVE municipal y año",
+)
+async def get_poblacion_conapo(
+    cve_municipio: str,
+    anio: int = 2026,
+) -> KPIConProvenance:
+    """
+    Proyección CONAPO offline (catálogo ALQUIMIA).
+    2020 = censo; 2021–2030 = proyección (tipo estimado).
+    """
+    from app.data.adapters.conapo import ConapoProyeccionesAdapter
+    adapter = ConapoProyeccionesAdapter()
+    return adapter.get_poblacion_proyectada(cve_municipio, anio)

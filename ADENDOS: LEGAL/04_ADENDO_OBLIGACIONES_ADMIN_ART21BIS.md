@@ -28,7 +28,7 @@
 [ARTÍCULO 21 BIS: NO EXISTE EN EL REGLAMENTO VIGENTE SLP 2018]
 El reglamento actual no tiene un artículo equivalente.
 La técnica normativa es: Adicionar (nuevo artículo Art. 21 Bis).
-Fuente: Reglamento de Aseo Público del Municipio de San Luis Potosí · 2018 · pendiente verificación PDF
+Fuente: Reglamento de Aseo Público del Municipio de San Luis Potosí · 2018 · PDF en línea · en_revision (2026-05-18)
 
 Referencia complementaria (Ley de Condominios de SLP, síntesis conocida):
 "El administrador es responsable del buen funcionamiento y

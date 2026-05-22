@@ -26,7 +26,14 @@ from typing import Optional, List
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 
+from sqlalchemy.exc import OperationalError, ProgrammingError
+
 from app.db.session import get_db
+from app.proyecto.showcase import (
+    build_showcase_estado,
+    db_error_is_schema_missing,
+    is_simulator_proyecto_id,
+)
 from app.proyecto.timeline_engine import (
     calcular_progreso,
     evaluar_riesgo_politico,
@@ -225,6 +232,8 @@ async def arrancar_proyecto(proyecto_id: str, data: ArrancarRequest, db=Depends(
 async def estado_proyecto(proyecto_id: str, db=Depends(get_db)):
     """Estado completo: progreso, alertas, semáforo, próximas acciones."""
     if db is None:
+        if is_simulator_proyecto_id(proyecto_id):
+            return build_showcase_estado(proyecto_id)
         p = _proyectos_mem.get(proyecto_id)
         if not p:
             raise HTTPException(404, "Proyecto no encontrado")
@@ -243,6 +252,8 @@ async def estado_proyecto(proyecto_id: str, db=Depends(get_db)):
         from app.models.proyecto import ProyectoMunicipal
         p = db.query(ProyectoMunicipal).filter_by(id=proyecto_id).first()
         if not p:
+            if is_simulator_proyecto_id(proyecto_id):
+                return build_showcase_estado(proyecto_id)
             raise HTTPException(404, "Proyecto no encontrado")
 
         progreso = calcular_progreso(p)
@@ -280,7 +291,17 @@ async def estado_proyecto(proyecto_id: str, db=Depends(get_db)):
         }
     except HTTPException:
         raise
+    except (ProgrammingError, OperationalError) as exc:
+        db.rollback()
+        if is_simulator_proyecto_id(proyecto_id) and db_error_is_schema_missing(exc):
+            logger.warning("Proyecto vivo sin esquema — showcase sim: %s", exc)
+            return build_showcase_estado(proyecto_id, schema_pending=True)
+        raise HTTPException(500, str(exc))
     except Exception as exc:
+        db.rollback()
+        if is_simulator_proyecto_id(proyecto_id) and db_error_is_schema_missing(exc):
+            logger.warning("Proyecto vivo sin esquema — showcase sim: %s", exc)
+            return build_showcase_estado(proyecto_id, schema_pending=True)
         raise HTTPException(500, str(exc))
 
 

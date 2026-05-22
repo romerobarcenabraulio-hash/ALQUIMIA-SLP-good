@@ -5,8 +5,8 @@
 
 ## Hechos ejecutados
 
-1. **Guadalajara (`gdl`)** — PDF oficial de transparencia municipal descargado y verificado contra portal (`SHA256` coincidente). Symlink en `frontend/public/reglamentos/GDL_gdl_guadalajara_reglamento_gestion_integral_municipio.pdf`.
-2. **Zapopan (`zap`)** — Sustituido espejo previo por **PDF Oct 2024** desde `servicios.zapopan.gob.mx:8000` (coincidencia `SHA256` con descarga directa). Symlink `frontend/public/reglamentos/GDL_zap_zapopan_reglamento_gestion_integral_residuos.pdf`.
+1. **Guadalajara (`gdl`)** — PDF oficial de transparencia municipal descargado y verificado contra portal (`SHA256` coincidente). Copia en `frontend/public/reglamentos/GDL_gdl_guadalajara_reglamento_gestion_integral_municipio.pdf` (+ aseo público 2026-05-18).
+2. **Zapopan (`zap`)** — Sustituido espejo previo por **PDF Oct 2024** desde `servicios.zapopan.gob.mx:8000` (coincidencia `SHA256` con descarga directa). Copia en `frontend/public/reglamentos/GDL_zap_zapopan_reglamento_gestion_integral_residuos.pdf`.
 3. **San Pedro Garza García (`spg`)** — Incorporado candidato **SISTEC** corto de materia limpia (`MTY_spg_san_pedro_reglamento_limpia_sistec_candidate.pdf`), manteniendo PDFs ambientales y de zonificación como **anexos de contexto** (no deben sustituir verificación POE de un «Reglamento de Limpia» consolidado si existe).
 4. **Backend seeds** — `repository.py`: URLs corregidas para **SLP** y **QRO** capital (eliminados enlaces rotos/DNS); **SPGG** apunta al expediente SISTEC limpia candidato; **gdl/zap** metadatos alineados con fuentes oficiales. La descarga/checksum **no** equivale a validación jurídica, dictamen, documento oficial ni vigencia certificada por ALQUIMIA.
 

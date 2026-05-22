@@ -18,10 +18,17 @@ class Settings(BaseSettings):
 
     # APIs externas
     SERPER_API_KEY:   Optional[str] = None
-    MAPBOX_TOKEN:     Optional[str] = None
+    PERPLEXITY_API_KEY: Optional[str] = None  # diferido — ver RESEARCH_INTELLIGENCE_ROADMAP.md
+    MAPBOX_TOKEN:     Optional[str] = None  # deprecated — usar Google Maps en frontend
     ANTHROPIC_API_KEY: Optional[str] = None
-    # INEGI: el runtime también lee INEGI_DENUE_TOKEN / DENUE_API_TOKEN vía resolve_inegi_api_token().
+    # INEGI DENUE — resolve_inegi_api_token()
     INEGI_API_TOKEN: Optional[str] = None
+    INEGI_RUTEO_TOKEN: Optional[str] = None
+    # Google Maps Platform (Render env names)
+    GOOGLE_PLACES_API_KEY: str = ""
+    GEOCODING_API: Optional[str] = None
+    MAPS_PLATFORM_API: Optional[str] = None
+    OPTIMIZATION_ROUTE_API: Optional[str] = None
     # Banxico SIE — token para consultas con rango de fecha (INPC histórico).
     # Sin token: solo endpoint "oportuno" (tipo cambio). Con token: también INPC anual.
     # Registro gratuito en: https://www.banxico.org.mx/SieAPIRest/service/v1/token
@@ -31,8 +38,7 @@ class Settings(BaseSettings):
     ANTHROPIC_MODEL: str = "claude-sonnet-4-6"
     # Feature flags — deshabilitar en staging si dependencias externas no están listas
     INVESTIGADOR_ENABLED: bool = True   # Ejecutar Agente Investigador (requiere SERPER_API_KEY)
-    PLACES_SYNC_ENABLED:  bool = False  # Sync Google Places para CentroAcopio (requiere PLACES_API_KEY)
-    GOOGLE_PLACES_API_KEY: str = ""     # API key para Google Places (CentroAcopio)
+    PLACES_SYNC_ENABLED:  bool = False
 
     # Google Drive
     DRIVE_ROOT_ID:     str = "1mVC_ay_qvmT08QZReoKp2X8jTHZiPoMW"
@@ -65,3 +71,12 @@ def resolve_inegi_api_token() -> str:
         if raw is not None and str(raw).strip():
             return str(raw).strip()
     return (settings.INEGI_API_TOKEN or "").strip()
+
+
+def resolve_inegi_ruteo_token() -> str:
+    """Token API de Ruteo SAKBÉ v3.1 (gaia.inegi.org.mx/sakbe_v3.1/genera_token.jsp)."""
+    for key in ("INEGI_RUTEO_TOKEN", "SAKBE_API_KEY", "INEGI_RUTEO_KEY"):
+        raw = os.environ.get(key)
+        if raw is not None and str(raw).strip():
+            return str(raw).strip()
+    return (settings.INEGI_RUTEO_TOKEN or "").strip()

@@ -37,9 +37,9 @@ contra este tipo de sujeto sin que pueda ser impugnada por falta de
 norma previa que imponga la conducta requerida (principio de legalidad
 — Art. 16 CPEUM; principio de tipicidad en materia administrativa).
 
-[PENDIENTE: pegar texto íntegro del Art. 21 vigente del Reglamento
-de Aseo Público SLP 2018 desde el PDF oficial una vez disponible en
-ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf]
+[PENDIENTE EXTRACCIÓN AGENTE: pegar texto íntegro del Art. 21 vigente del Reglamento
+de Aseo Público SLP 2018 desde `frontend/public/reglamentos/SLP_slp_reglamento_aseo_publico.pdf`
+(o copia en `ADENDOS: LEGAL/pdfs/reglamentos/SLP_slp_reglamento_aseo_publico.pdf`)]
 ```
 
 **Referencia cruzada MTY (Reglamento de Limpia Municipal de Monterrey, 2020-2024):**
@@ -176,7 +176,7 @@ Durante el periodo de implementación gradual previsto en los artículos transit
 | **Querétaro** | Art. [📄 VERIFICAR] | Art. [N° Ter] | Verificar si el Reglamento de GIRS 2021 incluye obligaciones para vivienda individual — si ya las tiene, reformar para añadir separación en 5 fracciones |
 | **Monterrey** | Art. 20 fr. I-II (general, sin separación en fracciones) | Art. [N° inmediato después de art. de obligaciones condominiales] | Adicionar con la misma estructura |
 | **San Pedro G.G.** | Art. [📄 VERIFICAR] | Art. [N° Ter] | Puede ya tener algo — verificar y adaptar |
-| **Soledad de G.S.** | Sin reglamento propio | Artículo completo en nuevo reglamento | Incorporar íntegro |
+| **Soledad de G.S.** | Reg. Aseo Público 2013 (PDF en línea) | Reforma al artículo vigente [VERIFICAR no.] | Extracción + armonía con SLP |
 | **Corregidora** | Art. [📄 VERIFICAR] | Art. [N° Ter] | Adicionar |
 | **El Marqués** | Art. [📄 VERIFICAR] | Art. [N° Ter] | Adicionar |
 

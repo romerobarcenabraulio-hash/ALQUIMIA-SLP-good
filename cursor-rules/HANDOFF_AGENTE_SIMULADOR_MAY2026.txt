@@ -1,0 +1,324 @@
+================================================================================
+HANDOFF AGENTE SIGUIENTE — ALQUIMIA Simulador Funcionario
+Fecha cierre conversación: 2026-05-21
+Commit en main: dcce10a1 (pusheado a origin/main)
+Repo: /Users/braulioromerobarcena/Documents/alquimia-slp
+Transcript origen: agent-transcripts/dabd4497-ee4b-48be-ade8-754c6edd2460/dabd4497-ee4b-48be-ade8-754c6edd2460.jsonl
+Plan referencia: .cursor/plans/impacto_fiscal-social_m02_8c6055fd.plan.md
+================================================================================
+
+█ OBLIGATORIO: TRABAJAR BAJO CURSOR RULES / PD&SA / PIS
+================================================================================
+
+ANTES DE TOCAR CÓDIGO, LEE Y APLICA (en este orden):
+
+1. cursor-rules/01_PROTOCOLO_PIS_ALQUIMIA.md
+   - Constitución multi-agente. Autonomía operativa máxima; estratégica nula.
+   - Mensajes formales: PROPOSE / INFORM / VETO / REQUEST / ACCEPT / REJECT.
+   - Fuente de verdad única; no inventar cifras ni normas.
+
+2. cursor-rules/PD&SA.md  (Project Director & Senior Advisor)
+   - NO escribe código. Diagnostica, dirige, desafía.
+   - Hypothesis-driven, MECE, anti-sycophancy.
+   - Distingue proyecto técnico vs proyecto institucional.
+   - Cuarto vértice: legitimidad política (puede matar al producto perfecto).
+   - Municipio ≠ Zona Metropolitana (siempre explícito).
+
+3. cursor-rules/EJECUTOR.md
+   - Implementa QUÉ está aprobado, no decide QUÉ construir.
+   - TypeScript estricto, pruebas, WCAG 2.2 AA, OWASP ASVS L2.
+   - Entrega mínima y verificable: tsc, vitest, diff quirúrgico.
+   - Convención commits: Conventional Commits.
+
+4. cursor-rules/AUDITOR.md
+   - Línea 3 — assurance independiente.
+   - Veto universal. Lo no demostrable con evidencia trazable no existe.
+   - ProvenanceBadge, fórmulas, unidades, fuentes, advertencia oficialidad.
+   - No presentar estimaciones como certificación municipal.
+
+5. cursor-rules/NAVIGATOR.md + .cursor/rules/navigator.mdc (alwaysApply)
+   - Geo: almacenamiento EPSG:4326, visualización web EPSG:3857, métricas SLP/NL/QRO EPSG:6369.
+   - NUNCA 3857 para distancias/áreas.
+   - INEGI MGN primero; OSM no como fuente única para documentos oficiales.
+   - Navigator veta solo geo/jurisdicción/fuente/privacidad geográfica.
+
+6. cursor-rules/ESTETICA_FRONTEND.md
+   - Paleta Elite, tipografía serif títulos, tokens verdes/beige.
+   - Cards, KPIs, chips, botones — copiar convenciones del doc.
+
+7. cursor-rules/plans/REESTRUCTURA_MODULOS_FASE2.md
+   - Plan PD&SA para reestructura módulos: "ejecutar AL PIE DE LA LETRA".
+   - Jerarquía de páginas, anti-tabs, un módulo = una decisión.
+
+8. cursor-rules/HANDOFF_AGENTE_SIGUIENTE.md (handoff anterior más amplio del ecosistema)
+
+REGLA DE ORO DEL USUARIO (Braulio):
+- Ejecutar planes al pie de la letra cuando lo pida.
+- NO hacer git commit ni push salvo que el usuario lo pida explícitamente.
+- UI en español. ProvenanceBadge y etiquetado honesto en proxies (CONEVAL/SHCP).
+- Minimizar scope: diff pequeño, reutilizar stacks con pageOnly/view, no duplicar JSX.
+- Diagnóstico "humilde": no asumir que el municipio/concesionario ya se conoce.
+
+================================================================================
+█ ESTADO ACTUAL DEL PRODUCTO (SIMULADOR FUNCIONARIO)
+================================================================================
+
+FILOSOFÍA IMPLEMENTADA:
+- Un sidebar module = una decisión / una página visible.
+- Nada crítico oculto en tabs/pills internos (usar props pageOnly / view en stacks legacy).
+- Sidebar 3 niveles: Capítulo → Rubro → Módulo.
+- 4 capítulos consultivos × rubros flexibles.
+- Journey: guía M00 + 31 módulos canónicos = 32 ítems en AUDIENCE_MODULES.functionary.
+
+ÚLTIMO COMMIT:
+  dcce10a1 — feat(simulator): reestructura funcionario en 4 capítulos × rubros con 31 módulos
+  Push: origin/main OK. Pre-push hook: tsc --noEmit pasa.
+  45 archivos, +3612 / -648 líneas.
+
+VERIFICACIÓN RÁPIDA:
+  cd frontend && npx tsc --noEmit
+  cd frontend && npx vitest run src/app/simulator/simulatorSurface.test.ts
+
+================================================================================
+█ SINGLE SOURCE OF TRUTH (ARCHIVOS CLAVE)
+================================================================================
+
+chapterConfig.ts          frontend/src/lib/chapterConfig.ts
+  - CHAPTERS[], rubros, FUNCTIONARY_MODULE_ORDER
+  - MODULE_NUMBERS, MODULE_CHAPTER, MODULE_RUBRO
+  - LEGACY_MODULE_ALIASES, resolveModuleId()
+
+audienceModules.ts        frontend/src/lib/audienceModules.ts
+  - functionary: ['guia_circularidad', ...FUNCTIONARY_MODULE_ORDER]
+
+clientModuleRegistry.ts   frontend/src/lib/simulator/clientModuleRegistry.ts
+  - CLIENT_FUNCTIONARY_MODULES (labels, decision, evidence, next_action)
+  - buildFunctionaryJourney(backendModules) — ordena y merge backend
+
+variableSurfaceRegistry.ts frontend/src/lib/simulator/variableSurfaceRegistry.ts
+  - Cada key de ResultadosCalculados → ownerModuleId
+
+page.tsx                  frontend/src/app/simulator/page.tsx
+  - buildFunctionaryJourney(enrichFunctionaryModules(portalJourney))
+  - SIN inyección manual de módulos (eliminada ~90 líneas legacy)
+
+renderDecisionModule.tsx  frontend/src/app/simulator/renderDecisionModule.tsx
+  - resolveModuleId() + switch 31 IDs canónicos → stacks
+
+narrativaSpine.ts         frontend/src/lib/narrativaSpine.ts
+  - JOURNEY_ORDER = guia + FUNCTIONARY_MODULE_ORDER
+  - generarTransicion() con rich transitions + fallback
+
+DecisionModuleShell.tsx   frontend/src/components/simulator/DecisionModuleShell.tsx
+  - ModuleNav: details/summary por rubro
+  - MobileModuleSelect: optgroups "Cap N · Rubro"
+
+functionaryJourneyEnrichment.ts — overlay labels backend (parcialmente legacy)
+
+================================================================================
+█ MAPA CAPÍTULO 1 — DIAGNÓSTICO (RUBROS ACORDADOS CON USUARIO)
+================================================================================
+
+Orden rubros confirmado por usuario (2026-05-21):
+  1. Ambiental
+  2. Social
+  3. Gobernanza operativa          ← NUEVO rubro + módulo organigrama_diagnostico
+  4. Institucional-normativo       ← "por último" entre los 4 core de gobierno
+  5. Financiero-económico
+  6. Teoría de cambio (cierre capítulo)
+
+MÓDULOS CAP 1 (IDs canónicos):
+  Ambiental:
+    city_baseline (M01)
+    impacto_ambiental (M01B)
+
+  Social:
+    social_diagnostico (M02)      ← alias legacy: social_study
+    social_encuesta (M02B)
+    mapeo_actores (M02C)          ← ProyectoVivoPortal
+
+  Gobernanza operativa:
+    organigrama_diagnostico (M02D) ← AS-IS: municipio + concesionario, cadena contacto
+      Stack: OrganigramaDiagnosticoStack.tsx
+      Data: frontend/src/data/organigramaDiagnostico.ts
+      NO persiste respuestas de campo en store aún (deuda)
+
+  Institucional-normativo:
+    capacidad_institucional (M03)
+    marco_legal (M03B)            ← alias: municipal_context, view=diagnostico
+    cobertura_territorial (M03C)  ← MunicipalContextStack view=cobertura
+    dictamen_tecnico (M03D)
+
+  Financiero-económico:
+    costo_omision (M04)
+    evaluacion_socioeconomica (M04B) ← motor fiscal-social CONEVAL/SHCP
+
+  Teoría de cambio:
+    teoria_cambio (M04C)
+
+DISTINCIÓN CRÍTICA:
+  M02D organigrama_diagnostico = cómo está HOY (humilde, checklist campo)
+  M07 organigrama (Cap 2)        = estructura OBJETIVO del programa (RACI, plantilla CA)
+
+================================================================================
+█ MAPA CAPÍTULOS 2–4 (RESUMEN)
+================================================================================
+
+CAP 2 PLANIFICACIÓN:
+  plan_maestro, ruta_critica, oleadas_territoriales  → FutureGoalsModule pageOnly 1/2/3
+  infraestructura, organigrama, logistica, plan_educativo
+  costos_programa, mercado_materiales
+
+CAP 3 MODELO:
+  esquema_concesion, arbol_financiamiento
+  escenarios_financieros  → ScenariosExportStack (2 págs; export removido de aquí)
+  riesgos_modelo          → MarketTraceabilityStack pageOnly={1}
+  expediente_cabildo      → export, gobernanza, checklist cabildo (M15)
+
+CAP 4 CONTROL:
+  inspeccion, monitoreo_operativo, doble_materialidad, trazabilidad
+  trazabilidad = ReferenciasCalculos + CierreSimulador → navega a expediente_cabildo
+
+LEGACY ALIASES (resolveModuleId):
+  social_study → social_diagnostico
+  municipal_context → marco_legal
+  future_goals → plan_maestro
+  infrastructure_operations → infraestructura
+  organigrama_programa → organigrama
+  logistica_operativa → logistica
+  market_traceability → mercado_materiales
+  scenarios_export → escenarios_financieros
+  risk_trends → riesgos_modelo
+  inspeccion_predios → inspeccion
+  monitoreo_real → monitoreo_operativo
+  source_traceability → trazabilidad
+
+================================================================================
+█ WIRING RENDER → STACK (REFERENCIA RÁPIDA)
+================================================================================
+
+social_diagnostico / social_encuesta → SocialDemographicContextPanel + view
+mapeo_actores                        → ProyectoVivoPortal (MapeoActoresBridge)
+organigrama_diagnostico              → OrganigramaDiagnosticoStack
+capacidad_institucional              → CapacidadInstitucionalStack
+marco_legal / cobertura_territorial  → MunicipalContextStack + view
+dictamen_tecnico                     → DictamenTecnicoStack
+costo_omision                        → CostoOmisionStack
+evaluacion_socioeconomica            → EvaluacionSocioeconomicaStack
+teoria_cambio                        → TeoriaCambioStack
+plan_maestro / ruta_critica / oleadas → FutureGoalsModule pageOnly 1/2/3
+infraestructura                      → InfrastructureOperationsStack
+organigrama                          → OrganigramaStack (objetivo)
+logistica                            → LogisticaOperativaStack
+plan_educativo                       → PlanEducativoStack
+costos_programa                      → CostosProgramaStack
+mercado_materiales                    → MarketTraceabilityStack pageOnly={2}
+riesgos_modelo                       → MarketTraceabilityStack pageOnly={1}
+escenarios_financieros               → ScenariosExportStack (sin page 3)
+esquema_concesion                    → EsquemaConcesionStack
+arbol_financiamiento                 → ArbolFinanciamientoStack
+expediente_cabildo                   → ExpedienteCabildoStack
+inspeccion                           → InspeccionStack
+monitoreo_operativo                  → MonitoreoRealStack
+doble_materialidad                   → DobleMaterialidadStack
+trazabilidad                         → ReferenciasCalculos + CierreSimulador
+
+PATRÓN pageOnly / view:
+  - FutureGoalsModule: pageOnly?: 1|2|3 — oculta tabs y footer
+  - MunicipalContextStack: view?: 'diagnostico'|'cobertura'
+  - SocialDemographicContextPanel: view?: 'diagnostico'|'encuesta'|...
+  - ScenariosExportStack: pageOnly?: 1|2 — page 3 eliminada (export → M15)
+  - MarketTraceabilityStack: pageOnly?: 1|2|3 — oculta tabs cuando fijado
+
+================================================================================
+█ FEATURES NUEVOS DESTACABLES (ARCHIVOS CREADOS EN ESTE EPIC)
+================================================================================
+
+Fiscal-social:
+  frontend/src/lib/social/socialFiscalImpact.ts
+  frontend/src/data/stateFiscalBaselines.ts
+  frontend/src/components/simulator/SocialFiscalImpactSection.tsx
+
+Organigrama diagnóstico:
+  frontend/src/data/organigramaDiagnostico.ts
+  frontend/src/components/simulator/stacks/OrganigramaDiagnosticoStack.tsx
+
+Stacks Cap 1:
+  ImpactoAmbientalStack, CapacidadInstitucionalStack, EvaluacionSocioeconomicaStack
+  TeoriaCambioStack, DictamenTecnicoStack
+
+Cap 2:
+  PlanEducativoStack
+
+Utilidades:
+  logisticsCalc.ts, concesionClausulas.ts, researchChecklist.ts
+  dictamenTecnicoEvidence.ts
+
+UI aux:
+  NoDataState.tsx, ResearchCompletenessBar.tsx, ExportStatusPanel.tsx
+  CentrosAcopioMap.tsx
+
+Registry:
+  clientModuleRegistry.ts, variableSurfaceRegistry.ts
+
+================================================================================
+█ DEUDA TÉCNICA / PENDIENTE (PRIORIDAD SUGERIDA)
+================================================================================
+
+P0 — Contenido (usuario lo dijo explícitamente):
+  "Hay muchos módulos nuevos dentro de los capítulos que tendremos que ir trabajando."
+  → Profundizar stacks módulo a módulo sin reintroducir tabs.
+  → moduleEditorialBriefs.ts incompleto para IDs nuevos.
+
+P1 — Persistencia organigrama diagnóstico:
+  → Guardar en store titulares confirmados, nombre concesionario, % verificación campo.
+
+P2 — Tests:
+  → socialFiscalImpact.test.ts (mencionado en plan, no creado)
+  → Test que variableSurfaceRegistry cubra 100% keys ResultadosCalculados
+
+P3 — Limpieza legacy:
+  → functionaryJourneyEnrichment.ts FUNCTIONARY_MODULE_LABELS con IDs viejos
+  → GuiaCircularidadStack puede referenciar organigrama_programa (legacy)
+  → MarketTraceabilityStack page 3 (mitigación) sin módulo propio — decidir destino
+
+P4 — embeddedBundle.ts: slices pobreza/deuda no extendidos
+
+P5 — Geo en mapas nuevos (CentrosAcopioMap): validar NAVIGATOR.md
+
+================================================================================
+█ LO QUE NO HACER
+================================================================================
+
+- NO revertir a journey de 9 módulos ni inyección manual en page.tsx
+- NO reintroducir tabs/pills para sub-decisiones que ya tienen módulo propio
+- NO commit/push sin pedido explícito del usuario
+- NO presentar composición RSU o organigrama plantilla como dato certificado municipal
+- NO usar OSM como única fuente para documentos oficiales
+- NO mezclar jurisdicción Municipio y ZM en copy de sanción/decisión municipal
+- NO sustituir NAVIGATOR.md con suposiciones de SRID/fuentes
+
+================================================================================
+█ PROMPT LISTO PARA PEGAR AL SIGUIENTE AGENTE
+================================================================================
+
+Continúa ALQUIMIA simulador funcionario post-commit dcce10a1 en main.
+
+OBLIGATORIO: lee y obedece cursor-rules/PD&SA.md, 01_PROTOCOLO_PIS_ALQUIMIA.md,
+EJECUTOR.md, AUDITOR.md, NAVIGATOR.md, ESTETICA_FRONTEND.md y
+plans/REESTRUCTURA_MODULOS_FASE2.md antes de codear.
+
+Estado: journey guía + 31 módulos, sidebar 3 niveles, buildFunctionaryJourney(),
+renderDecisionModule con resolveModuleId(). Cap 1 Diagnóstico rubros:
+Ambiental → Social → Gobernanza operativa (organigrama_diagnostico M02D as-is)
+→ Institucional-normativo → Financiero → Teoría de cambio.
+
+Tu trabajo: profundizar contenido de módulos nuevos (muchos son plantilla/wireframe).
+Patrón: pageOnly/view, no tabs. ProvenanceBadge en estimaciones. Español UI.
+tsc + vitest antes de terminar. NO commit salvo que Braulio lo pida.
+
+Handoff completo: cursor-rules/HANDOFF_AGENTE_SIMULADOR_MAY2026.txt
+
+================================================================================
+FIN HANDOFF
+================================================================================
