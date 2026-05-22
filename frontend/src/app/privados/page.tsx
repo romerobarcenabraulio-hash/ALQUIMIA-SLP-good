@@ -17,8 +17,8 @@ const COMING: Array<{ Icon: LucideIcon; label: string; desc: string }> = [
   },
   {
     Icon: TrendingUp,
-    label: 'Due diligence ambiental',
-    desc: 'Análisis técnico de activos y riesgos ambientales para M&A, concesiones o financiamiento de proyectos.',
+    label: 'Debida diligencia ambiental',
+    desc: 'Análisis técnico de activos y riesgos ambientales para M&A, concesiones o financiamiento (due diligence).',
   },
   {
     Icon: FileText,
@@ -137,7 +137,7 @@ export default function PrivadosPage() {
             <Link href="/" className="hover:text-[#3B6D11]">Inicio</Link>
             <Link href="/gobierno" className="hover:text-[#3B6D11]">Gobierno</Link>
             <Link href="/aprende" className="hover:text-[#3B6D11]">Aprende</Link>
-            <Link href="/login" className="hover:text-[#3B6D11]">Acceso</Link>
+            <Link href="/login" className="hover:text-[#3B6D11]">Iniciar sesión</Link>
           </nav>
         </div>
       </footer>

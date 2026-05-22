@@ -141,6 +141,50 @@ const DictamenTecnicoStack = dynamic(
   },
 )
 
+const KronosEvmDashboardStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/KronosEvmDashboardStack').then(m => ({
+      default: m.KronosEvmDashboardStack,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando EVM dashboard…</p>,
+  },
+)
+
+const KronosConciliacionStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/KronosConciliacionStack').then(m => ({
+      default: m.KronosConciliacionStack,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando conciliación…</p>,
+  },
+)
+
+const KronosRiskDashboardStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/KronosRiskDashboardStack').then(m => ({
+      default: m.KronosRiskDashboardStack,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando registro de riesgos…</p>,
+  },
+)
+
+const KronosGateStatusStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/KronosGateStatusStack').then(m => ({
+      default: m.KronosGateStatusStack,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando estado de gates…</p>,
+  },
+)
+
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
   const { module, audience, isOrganizationJourney, sociodemographicBlock, onNavigate } = ctx
 
@@ -254,6 +298,14 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
           <CierreSimulador onNavigate={onNavigate} />
         </div>
       )
+    case 'evm_dashboard':
+      return <KronosEvmDashboardStack />
+    case 'conciliacion_mensual':
+      return <KronosConciliacionStack />
+    case 'risk_dashboard':
+      return <KronosRiskDashboardStack />
+    case 'gate_status':
+      return <KronosGateStatusStack />
     default:
       return <ModuleEmpty module={module} />
   }

@@ -20,6 +20,8 @@ import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
 import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { FASES_INVERSION } from '@/lib/capexOpexData'
+import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
+import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -207,29 +209,65 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
   const [pageInternal, setPageInternal] = useState<1 | 2>(pageOnly ?? 1)
   const page = pageOnly ?? pageInternal
   const [scenarioId, setScenarioId] = useState<ScenarioId>('base')
-  const { resultados, horizonte } = useSimulatorStore()
+  const {
+    resultados,
+    horizonte,
+    zmActiva,
+    mixCAs,
+    cityContext,
+    capCamionTon,
+    municipiosActivos,
+  } = useSimulatorStore()
   const r = resultados
+
+  const logisticsContract = useMemo(
+    () =>
+      buildLogisticsKpiFromStore({
+        zmActiva,
+        municipioLabel: cityContext?.nombre ?? zmActiva,
+        municipioId: municipiosActivos[0] ?? null,
+        capCamionTon,
+        mixCAs,
+        resultados: r,
+      }),
+    [zmActiva, cityContext?.nombre, municipiosActivos, capCamionTon, mixCAs, r],
+  )
+
+  const stressMult = useMemo(
+    () => scenarioStressMultiplier(logisticsContract),
+    [logisticsContract],
+  )
+
+  const riesgoOperativo = useMemo(() => {
+    if (!logisticsContract) return null
+    const brecha = logisticsContract.kpis_logisticos.brecha_ton_dia
+    const est = logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.length
+    if (brecha > 5 || est >= 3) return 'Alto' as const
+    if (brecha > 0 || est > 0) return 'Medio' as const
+    return 'Bajo' as const
+  }, [logisticsContract])
 
   const sv = SCENARIO_DEF.find(s => s.id === scenarioId) ?? SCENARIO_DEF[1]!
 
   // Derived — all from store; never hardcoded
   const metrics = useMemo(() => {
     if (!r || !sv) return null
-    // CAPEX reference: optimal phase total from FASES_INVERSION
     const optFase = FASES_INVERSION.find(f => f.nombre.includes('Madurez'))
     const capexRef = optFase?.capexTotalSistema ?? 0
     const pb = r.paybackDescontado ?? (r.paybackMeses ? r.paybackMeses / 12 : null)
     const opexAnual = r.opexAnual ?? 0
     const ebitdaAnual = r.ebitda / Math.max(horizonte ?? 10, 1)
+    const stress = scenarioId === 'conservador' ? stressMult : scenarioId === 'base' && riesgoOperativo === 'Alto' ? stressMult : 1
     return {
-      tir:      r.tir * sv.tirMult,
-      vpn:      r.vpn * sv.vpnMult,
-      ebitda:   ebitdaAnual * sv.vpnMult,
-      payback:  pb != null ? pb / sv.tirMult : null,
+      tir:      r.tir * sv.tirMult * stress,
+      vpn:      r.vpn * sv.vpnMult * stress,
+      ebitda:   ebitdaAnual * sv.vpnMult * stress,
+      payback:  pb != null ? pb / Math.max(sv.tirMult * stress, 0.01) : null,
       capex:    capexRef * sv.capexMult,
       opexAnual: opexAnual * sv.vpnMult,
+      stressMult: stress,
     }
-  }, [r, sv, horizonte])
+  }, [r, sv, horizonte, scenarioId, stressMult, riesgoOperativo])
 
   // Value waterfall derived from VPN breakdown
   const waterfallData = useMemo(() => {
@@ -276,6 +314,22 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
       <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-5 text-[11px] text-[#6B6760]">
         Export y expediente Cabildo: módulo <strong className="text-[#1C1B18]">M15 Expediente Cabildo</strong>.
       </div>
+
+      {riesgoOperativo && riesgoOperativo !== 'Bajo' && (
+        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 mb-5 text-[12px] text-amber-900 flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>
+            Riesgo operativo <strong>{riesgoOperativo}</strong> desde M08
+            {logisticsContract && logisticsContract.kpis_logisticos.brecha_ton_dia > 0
+              ? ` (brecha ${logisticsContract.kpis_logisticos.brecha_ton_dia.toFixed(1)} t/día)`
+              : ''}
+            {logisticsContract && logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.length > 0
+              ? ` · saturación en ${logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.join(', ')}`
+              : ''}
+            . Escenario conservador aplica factor de estrés {(stressMult * 100).toFixed(0)}%.
+          </span>
+        </div>
+      )}
 
       {/* ── Scenario selector (pages 1 and 2) ───────────────────────────── */}
       {page <= 2 && (

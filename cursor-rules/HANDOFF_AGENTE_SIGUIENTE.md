@@ -14,7 +14,7 @@ Antes de tocar código, **lee estos archivos en orden**:
 2. `cursor-rules/AUDITOR.md` — veto universal, seguridad jurídica, compliance
 3. `cursor-rules/EJECUTOR.md` — stack técnico, disciplina de pruebas, estándares de código
 4. `cursor-rules/NAVIGATOR.md` — geo/jurisdicción, SRID, fuentes oficiales
-5. `cursor-rules/WALKME_SIMULATOR.md` — mapa editorial del simulador
+5. `cursor-rules/OLD/WALKME_SIMULATOR.md` — mapa editorial del simulador (OBSOLETO — ver `chapterConfig.ts` como fuente canónica)
 6. `.cursor/rules/navigator.mdc` — regla siempre activa (EPSG, jurisdicción)
 
 **Principio rector:** ALQUIMIA es una plataforma gov-tech de circularidad municipal mexicana. **Municipio ≠ Zona Metropolitana.** Todo número lleva fuente. Todo texto público lleva disclaimer. Nada es dictamen oficial.
@@ -203,7 +203,7 @@ Solo aparece el tooltip de "RSU" en el header. Plan: aplicar en KPIs, labels de 
 | `AUDITOR.md` | Antes de merge, validación legal/editorial, veto de copy público |
 | `EJECUTOR.md` | Para implementación: stack, tests, disciplina de código |
 | `NAVIGATOR.md` | Para temas geo: coordenadas, capas, jurisdicción, fuentes cartográficas |
-| `WALKME_SIMULATOR.md` | Para editar briefings, walk-me, copys del simulador |
+| `OLD/WALKME_SIMULATOR.md` | OBSOLETO — briefings y copys del simulador (reemplazado por `chapterConfig.ts`) |
 | `PROMPTS_CAPA_SOCIAL_POR_AGENTE.md` | Para continuar el epic de capa social (prompts 1–15 hechos, 16+ pendientes) |
 | `PROMPTS_CIERRE_EPICO_SOCIAL_DELEGACION.md` | Para cerrar/delegar el epic social |
 | `PLAN_Y_PROMPTS_AGENTES_EPICO_SIGUIENTE.md` | Para la fase post-runtime: prompts 29–36 |
@@ -285,15 +285,20 @@ El usuario construyó un sistema de prompts por agente, organizado en épicos. E
 
 ## 10. AUDIENCIAS Y SUS MÓDULOS
 
-```
-citizen:       city_baseline, municipal_context, citizen_inputs, impact_finance
-functionary:   city_baseline, municipal_context, future_goals, infrastructure_operations,
-               market_traceability, risk_trends, inspeccion_predios, scenarios_export,
-               source_traceability
-entrepreneur:  organization_profile, containers_provider, market_traceability, organization_report
-```
+> **FUENTE CANÓNICA:** `frontend/src/lib/simulator/chapterConfig.ts`
+> Esta sección ya NO es la fuente de verdad de módulos y audiencias. El mapa de módulos,
+> sus IDs canónicos y los alias heredados se encuentran en `chapterConfig.ts`.
 
-Si se crea un nuevo módulo (capacitación, estudio social como módulo propio), **debe agregarse a `AUDIENCE_MODULES`** en `frontend/src/lib/audienceModules.ts` y tener su brief en `moduleEditorialBriefs.ts`.
+**IDs de módulos vigentes** — consultar directamente `chapterConfig.ts`, que expone:
+- `CHAPTERS`: capítulos con sus rubros y módulos
+- `LEGACY_MODULE_ALIASES`: mapeo de IDs antiguos → IDs canónicos actuales
+
+| ID anterior | ID canónico actual | Alias definido en `LEGACY_MODULE_ALIASES` |
+|-------------|--------------------|--------------------------------------------|
+| (ver `chapterConfig.ts` para tabla completa) | | |
+
+Si se crea un nuevo módulo, **debe registrarse en `chapterConfig.ts`** (no aquí) y tener su brief en `moduleEditorialBriefs.ts`.
+El módulo de guía de lectura canónico es `M00` — etiqueta: "Guía de circularidad".
 
 ---
 

@@ -5,6 +5,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { getCentrosAcopio, type CentroAcopio } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
+import { useMapCenter } from '@/hooks/useMapCenter'
 import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter } from 'lucide-react'
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -39,18 +40,14 @@ function escHtml(s: string) {
 
 export function CentrosAcopioMap() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const cityContext = useSimulatorStore(s => s.cityContext)
+  const { center: mapCenter, loading: mapCenterLoading } = useMapCenter(zmActiva, cityContext?.nombre)
 
   const [centros, setCentros]         = useState<CentroAcopio[]>([])
   const [loading, setLoading]         = useState(true)
   const [error, setError]             = useState<string | null>(null)
   const [selectedMat, setSelectedMat] = useState<string>('all')
   const [selected, setSelected]       = useState<CentroAcopio | null>(null)
-
-  const mapCenter = useMemo(() => {
-    if (zmActiva === 'MTY') return { lat: 25.67, lon: -100.31 }
-    if (zmActiva === 'QRO') return { lat: 20.59, lon: -100.39 }
-    return { lat: 22.15, lon: -100.98 }
-  }, [zmActiva])
 
   // Fetch centros
   useEffect(() => {
@@ -158,12 +155,18 @@ export function CentrosAcopioMap() {
           className="relative min-h-[320px] overflow-hidden rounded-[12px] border border-[#E8E4DC]"
           style={{ height: 360 }}
         >
-          <GoogleMapCanvas
-            center={mapCenter}
-            zoom={11}
-            markers={mapMarkers}
-            height={360}
-          />
+          {mapCenter && !mapCenterLoading ? (
+            <GoogleMapCanvas
+              center={mapCenter}
+              zoom={11}
+              markers={mapMarkers}
+              height={360}
+            />
+          ) : (
+            <div className="flex h-full items-center justify-center bg-[#EBF3FB]">
+              <p className="text-[11px] text-[#1A5FA8]">Cargando mapa…</p>
+            </div>
+          )}
         </div>
 
         {/* Sidebar: selected card OR list */}

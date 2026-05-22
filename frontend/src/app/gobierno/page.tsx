@@ -65,15 +65,15 @@ const SERVICES: ServiceDef[] = [
   {
     id: 'transporte',
     label: 'Transporte público',
-    tagline: 'Eficiencia de rutas, cobertura y modelo de concesión',
+    tagline: 'Eficiencia de rutas, cobertura y modelo de concesión de ruta',
     description:
-      'Análisis de cobertura por polígono urbano, eficiencia de rutas concesionadas, modelo tarifario ' +
+      'Análisis de cobertura por polígono urbano, eficiencia de rutas de transporte concesionadas, modelo tarifario ' +
       'y recomendaciones de modernización con base en datos INEGI y GPS de flota.',
     scope: [
       'Cobertura por zona vs. demanda INEGI',
       'Eficiencia operativa de rutas',
       'Modelo tarifario sostenible',
-      'Plan de modernización de concesiones',
+      'Plan de modernización de concesiones de ruta',
     ],
     status: 'coming',
     color: '#D4881E',
@@ -278,11 +278,11 @@ export default function GobiernoPage() {
       <section className="max-w-7xl mx-auto px-5 py-14">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-8">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.1em] text-[#A8A49C] mb-1">Módulos de consultoría</p>
+            <p className="text-[11px] uppercase tracking-[0.1em] text-[#A8A49C] mb-1">Servicios sectoriales de consultoría</p>
             <h2 className="font-serif text-[26px] text-[#1C1B18]">Servicios disponibles para tu municipio</h2>
           </div>
           <p className="text-[12px] text-[#6B6760] max-w-xs sm:text-right">
-            Cada módulo es un servicio contratado independiente. Hoy desbloqueado: RSU.
+            Cada servicio sectorial es un contrato independiente. Hoy desbloqueado: RSU.
           </p>
         </div>
 
@@ -339,7 +339,7 @@ export default function GobiernoPage() {
             <Link href="/" className="hover:text-[#3B6D11]">Inicio</Link>
             <Link href="/aprende" className="hover:text-[#3B6D11]">Aprende</Link>
             <Link href="/privados" className="hover:text-[#3B6D11]">Privados</Link>
-            <Link href="/login" className="hover:text-[#3B6D11]">Acceso</Link>
+            <Link href="/login" className="hover:text-[#3B6D11]">Iniciar sesión</Link>
           </nav>
         </div>
       </footer>

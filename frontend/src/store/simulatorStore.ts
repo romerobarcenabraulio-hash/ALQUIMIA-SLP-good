@@ -22,6 +22,7 @@ import type {
 } from '@/types'
 import { AUDIENCE_TO_PORTAL } from '@/types'
 import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } from '@/lib/constants'
+import { OPEX_LOGISTICA_DEFAULTS, deriveCostoDisposicionPorTon, deriveMixCasFromPoblacion } from '@/lib/financeLogisticsCalc'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
 import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
@@ -150,6 +151,9 @@ interface SimulatorStore extends SimulatorState {
   setCostoComSocial:   (v: number) => void
   setCostoDisposicionActivo: (v: boolean) => void
   setCostoDisposicionPorTon: (v: number) => void
+  setCostoCamionMesMxn: (v: number) => void
+  setCostoVisitaMxn: (v: number) => void
+  setCostoContingenciaTonMxn: (v: number) => void
   setViviendaCondominioPct: (v: number) => void
   setViviendaNoCondominioPct: (v: number) => void
   setViviendaCondominioDepartamentoPct: (v: number) => void
@@ -234,6 +238,9 @@ const defaultState: SimulatorState = {
   tipoCambio:        17.10,
   precioCarbonoEsc:  'voluntario',
   genPercapita:      0.90,
+  costoCamionMesMxn: OPEX_LOGISTICA_DEFAULTS.costoCamionMesMxn,
+  costoVisitaMxn: OPEX_LOGISTICA_DEFAULTS.costoVisitaMxn,
+  costoContingenciaTonMxn: OPEX_LOGISTICA_DEFAULTS.costoContingenciaTonMxn,
   distanciaRelleno:  25,
   capacidadRelleno:  12,
   factorCapturaGas:  65,
@@ -454,6 +461,8 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const genKg =
             row.poblacion > 0 ? (row.generacion_rsu_dia * 1000) / row.poblacion : 0.688
           const sel = catalogRowToSeleccion(row)
+          const mixSugerido = deriveMixCasFromPoblacion(row.poblacion)
+          const costoDisp = deriveCostoDisposicionPorTon(row.poblacion)
           if (get().zmActiva.toUpperCase() !== zmId.toUpperCase()) {
             get().setZM(zmId)
           }
@@ -461,6 +470,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
             municipiosActivos: [mid],
             genPercapita: genKg,
             seleccionMunicipioCatalog: sel,
+            mixCAs: mixSugerido,
+            costoDisposicionPorTon: costoDisp,
+            viviendaCondominioPct: row.poblacion > 500_000 ? 55 : row.poblacion > 150_000 ? 45 : 30,
           })
           get().recalcular()
         },
@@ -545,6 +557,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
         setCostoComSocial: (v) => { set({ costoComSocial: v }); get().recalcular() },
         setCostoDisposicionActivo: (v) => { set({ costoDisposicionActivo: v }); get().recalcular() },
         setCostoDisposicionPorTon: (v) => { set({ costoDisposicionPorTon: v }); get().recalcular() },
+        setCostoCamionMesMxn: (v) => { set({ costoCamionMesMxn: Math.max(0, v) }) },
+        setCostoVisitaMxn: (v) => { set({ costoVisitaMxn: Math.max(0, v) }) },
+        setCostoContingenciaTonMxn: (v) => { set({ costoContingenciaTonMxn: Math.max(0, v) }) },
         setViviendaCondominioPct: (v) => {
           set({ viviendaCondominioPct: Math.min(100, Math.max(0, v)) })
           get().recalcular()

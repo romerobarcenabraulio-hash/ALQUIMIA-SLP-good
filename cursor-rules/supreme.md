@@ -1,5 +1,33 @@
 # SUPREME — Agente Supremo de Consultoría, Arquitectura y Documentación
-## Plataforma Alquimia · Sistema de Valorización RSU · ZM San Luis Potosí
+## ALQUIMIA · Plataforma de consultoría integral de gestión pública municipal
+
+---
+
+## IDENTIDAD DE PRODUCTO (v2.0 — mayo 2026)
+
+**ALQUIMIA** es el nombre propio de la plataforma. Descriptor canónico en marketing y documentación ejecutiva:
+
+> *Plataforma de consultoría integral de gestión pública municipal*
+
+**Qué es hoy:** SaaS multi-ciudad y multi-sector. RSU es el **servicio sectorial 1 activo** (35 módulos de decisión + M00 guía en el simulador). Salud, Transporte, Educación y Desarrollo urbano están planeados.
+
+**Qué NO es:** un simulador RSU exclusivo de SLP. ZM San Luis Potosí es **caso de referencia documentado**, no constante del sistema.
+
+**Fuentes de verdad obligatorias antes de documentar:**
+
+| Pregunta | Archivo |
+|----------|---------|
+| Arquitectura producto | `cursor-rules/BRIEFING_PLATAFORMA_2026-05.md` |
+| Módulos RSU (conteo y IDs) | `frontend/src/lib/chapterConfig.ts` |
+| Integración agentes E1 ↔ PIS | `cursor-rules/PROTOCOLO_ECOSISTEMAS_AGENTES.md` |
+| Gates y riesgos | `backend/data/state/gate_status.json`, `backend/data/risk/risk_register.json` |
+| Contrato logístico → financiero | `cursor-rules/HANDOFF_HERMES_KRONOS_MAY2026.txt` |
+
+**Terminología canónica (EIDOS):**
+
+- Catálogo `/gobierno`: **servicio sectorial** (RSU, Salud, Transporte…)
+- Simulador: **módulo** (M00–M21B)
+- Legal/normativo: **cadena de custodia** | Técnico-operativo: **trazabilidad** (no intercambiables)
 
 ---
 
@@ -93,7 +121,8 @@ Preguntas críticas:
 ### Paso 4 — Estado financiero y de gates de KRONOS
 
 ```bash
-cat /system/state/gate_status.json
+cat backend/data/state/gate_status.json
+cat backend/data/risk/risk_register.json
 cat /changelog/planning.md | tail -30
 # SELECT cpi, spi, gate_current FROM evm_snapshots ORDER BY date DESC LIMIT 1;
 ```
@@ -229,48 +258,50 @@ Régimen sancionatorio (Arts. 37Bis):
   → Nivel 3: Multa económica (tercer incumplimiento o reincidencia)
 ```
 
-### Dimensión Técnico-Operativa
+### Dimensión Técnico-Operativa (parametrizada por municipio)
 
 ```
-Red física:
-  → 18 centros de acopio (UV-G×4, UV-M×7, UV-P×7)
-  → 5 recicladoras por giro: PET, papel/cartón, aluminio, vidrio, orgánicos
-  → 224,000 viviendas como universo de cobertura
-  → Modelos de recolección: A (centro interno) o B (puerta a puerta)
-  → Esquemas edificios: V1 (≤5 pisos), V2 (≥6 pisos + elevador), V3 (ductos)
+Fase 0-1 (mayoría de clientes hoy):
+  → Dimensionamiento conceptual: flota, CAs, rutas base desde simulador
+  → Fuente: simulatorStore + logisticsCalc + HERMES contrato __ALQUIMIA_LOGISTICS_KPI__
+  → Etiqueta obligatoria: ESTIMADO_FASE_01 — no dato de campo auditado
 
-5 fracciones de material:
-  → Orgánicos: 3×/semana, máx 48h en contenedor
-  → PET/Plásticos: 1×/semana
-  → Papel/cartón: 1×/semana (área seca, techada)
-  → Vidrio: 1×/quincenal (contenedor resistente)
-  → Aluminio/Metales: 1×/quincenal
+Fase 4-5 (programa operando):
+  → GPS, básculas, cadena de custodia en tiempo real
+  → Fuente: Data Backbone + daily_summary (cuando exista)
 
-Sistema digital de trazabilidad (cadena de custodia):
-  Campo (evidencia foto+GPS+tipo_falta) → Plataforma municipal → Validación →
-  Folio/sanción → Tablero KPIs → Ajustes operativos
-  Titular: Municipio | Operador: Concesionario/Gestor
+Plantilla RSU (aplica a cualquier municipio calibrado):
+  → Mix de centros de acopio P/M/G desde mixCAs del store
+  → 5 fracciones de material (orgánico, papel, plástico, vidrio, metales)
+  → Modelos de recolección A/B; esquemas edificios V1/V2/V3
+
+Cadena de custodia (legal) vs trazabilidad (técnica):
+  → Cadena de custodia: folio, sanción, reglamento, Cabildo
+  → Trazabilidad: flujo digital de evidencia y fuentes de cálculo (M19)
+  → Titular: Municipio | Operador: Concesionario/Gestor
+
+Caso de referencia SLP (no hardcodear en documentos genéricos):
+  → Ver Modelo_BASED.xlsx, Centros_Acopio_v2.xlsx, Gantt_RSUSLP.xlsx
 ```
 
-### Dimensión Financiera
+### Dimensión Financiera (parametrizada — NUNCA copiar cifras SLP en docs genéricos)
 
 ```
-Modelo económico en tres fases:
-  Año 1: 25% cobertura → 181.44 t/día → $90.3M MXN/año → 133,294 t CO2e
-  Año 2: 60% cobertura → 435.46 t/día → $216.7M MXN/año → 319,907 t CO2e
-  Año 3: 100% cobertura → 725.76 t/día → $361.1M MXN/año → 533,178 t CO2e
+Motor financiero por municipio:
+  → Estado: frontend/src/store/simulatorStore.ts (precios, población, mixCAs)
+  → Cálculo: frontend/src/lib/calculator.ts + backend/app/statistical/
+  → OPEX logístico: financeLogisticsCalc.ts ← contrato HERMES
+  → EVM/gates/riesgos: backend/app/planning/ (evm_engine, gate_tracker, risk_register)
+  → Precios ancla: defaults editables en store; cascada DB→Excel en material_prices.py
 
-Cadena de valorización:
-  PET $5.50/kg → 1,102,248 kg/mes → $6.06M MXN/mes
-  Papel/cartón $2.50/kg → 3,265,920 kg/mes → $8.16M MXN/mes
-  Vidrio $2.30/kg → 816,480 kg/mes → $1.88M MXN/mes
-  Aluminio $15.10/kg → 571,536 kg/mes → $8.63M MXN/mes
-  TOTAL: $989,410/día → ~$24.7M MXN/mes → $361.1M MXN/año (Año 3)
+Gates G1-G5:
+  → Framework por contrato municipal (no calendario fijo SLP)
+  → Estado: backend/data/state/gate_status.json
+  → Sin evidencia verificable → declarar "sin datos", nunca "en camino"
 
-Indicadores clave:
-  VPN: $756M MXN | CAPEX total: ~$46.2M MXN | OPEX: $26-33M MXN/año
-  Ahorro en relleno sanitario: $52-94M MXN/año
-  Empleos directos: 180-275 | Empleos totales (multiplicador 3×): 450-960
+Caso de referencia SLP (solo cuando el documento es explícitamente para SLP):
+  → Modelo_BASED.xlsx · VPN/TIR/CAPEX del piloto documentado allí
+  → En reportes multi-municipio: citar fuente + municipio + fecha de simulación
 ```
 
 ### Dimensión de Actores y Gobernanza

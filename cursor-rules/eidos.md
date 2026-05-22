@@ -161,7 +161,8 @@ Una vez completado el reconocimiento, EIDOS mantiene y hace cumplir este glosari
 | Concesionario | operador, empresa, contratista | El título de concesión define este término |
 | Promotor/Gestor | PMO genérico, administrador | El convenio usa "Promotor/Gestor" como figura específica |
 | Zona residencial | condominio genérico, desarrollo, fraccionamiento | El proyecto distingue tipos por cédula de idoneidad |
-| Cadena de custodia | trazabilidad, seguimiento, tracking | "Cadena de custodia" es el término legal aplicable |
+| Cadena de custodia | trazabilidad, seguimiento, tracking | Término **legal/normativo** (reglamento, folio, sanción, Cabildo) |
+| Trazabilidad | cadena de custodia (en contexto técnico) | Capacidad **técnica** del sistema digital (evidencia, fuentes M19, flujo físico). No sustituye "cadena de custodia" en documentos legales |
 | Phase gate | fase gate, gate de fase | Usar siempre en inglés: "gate" es el término de gestión de proyectos del proyecto |
 
 ### Anglicismos con criterio de uso
@@ -186,6 +187,29 @@ Una vez completado el reconocimiento, EIDOS mantiene y hace cumplir este glosari
 | VPN | Valor Presente Neto — nunca NPV en documentos en español |
 | TIR | Tasa Interna de Retorno — nunca IRR en documentos en español |
 | EBITDA | Aceptado sin traducción en todos los contextos |
+
+### Términos de Arquitectura del Producto
+
+| Término canónico | Prohibido usar | Razón |
+|-----------------|---------------|-------|
+| Capítulo | sección, bloque, área, parte | Unidad organizativa de mayor nivel en la plataforma (`CHAPTERS` en `chapterConfig.ts`) |
+| Rubro | categoría, sección, grupo, módulo-padre | Unidad organizativa de segundo nivel dentro de un Capítulo |
+| Módulo | pantalla, página, vista, sección | Unidad mínima de contenido con ID canónico propio (`M00`, `M01`, etc.) |
+| Stack | componente, panel, sección del módulo | Bloque visual dentro de un módulo (TSX: `*Stack.tsx`) |
+| `chapterConfig.ts` | WALKME_SIMULATOR.md (obsoleto) | Fuente de verdad de IDs, títulos y estructura de módulos |
+| Plataforma ALQUIMIA | simulador, software, app, herramienta | Nombre canónico de la solución; "plataforma" es el sustantivo correcto |
+| Servicio sectorial | módulo (cuando habla de RSU, Salud, etc.) | Distingue los servicios de `/gobierno` de los módulos del simulador |
+| Flujo de onboarding | acceso, login previo, pasos iniciales | El proceso: estado → municipio → PDF del reglamento |
+
+### Términos por Sector Futuro (reservados — no usar hasta que el sector esté activo)
+
+| Sector | Términos fundacionales | Término a evitar |
+|--------|----------------------|-----------------|
+| RSU (activo) | residuos sólidos urbanos, fracción, separación en origen, valorización, cadena de custodia, trazabilidad (técnica) | basura, desperdicio, chatarra |
+| Salud | red de servicios de salud, establecimiento de salud, cartera de servicios, cobertura sanitaria | hospital genérico (usar categoría CLUES), clínica sin especificar nivel |
+| Transporte | red de movilidad urbana, ruta de transporte concesionado, unidad de transporte, cobertura de ruta | concesión (ambiguo — usar "concesión de ruta" con especificador) |
+| Educación | plantel educativo, matrícula, cobertura educativa, indicador de rezago, absorción escolar | escuela genérica (usar nivel: preescolar/primaria/secundaria) |
+| Desarrollo urbano | ordenamiento territorial, uso de suelo, densidad habitacional, equipamiento urbano, gestión de riesgo | urbanismo (muy general), desarrollo (ambiguo) |
 
 ---
 

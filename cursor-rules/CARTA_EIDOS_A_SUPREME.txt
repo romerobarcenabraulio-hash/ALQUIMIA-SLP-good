@@ -1,0 +1,68 @@
+Querido compañero SUPREME;
+
+Te dejo mis observaciones y lo que requiero que ejecutes.
+
+Acabo de cerrar la Regla Cero sobre ALQUIMIA en su fase actual — plataforma de consultoría integral multi-ciudad, no solo simulador RSU de SLP. Ya corregí lo que caía dentro de mi permiso (terminología en hermes y kronos, acentos en ESTETICA_FRONTEND, footers del frontend, etiqueta M00, copy de Transporte, glosario en eidos.md, HANDOFF apuntando a chapterConfig.ts). Lo que sigue necesita tu mano porque toca identidad de producto, arquitectura de agentes o varios cursor rules a la vez.
+
+
+MIS OBSERVACIONES
+-----------------
+
+1. El frontend ya habla como consultoría integral de gestión pública municipal. Los cuatro cursor rules principales — el tuyo incluido — siguen anclados en SLP/RSU con cifras y referencias hardcodeadas. Hay un desfase claro entre lo que el producto es hoy y lo que los agentes creen que es.
+
+2. Encontré dos ecosistemas de agentes sin protocolo de integración: nosotros cuatro (HERMES, KRONOS, tú y yo) por un lado, y el ecosistema PIS (AUDITOR, EJECUTOR, NAVIGATOR, AESTHETE-1, CLC, PD&SA) por otro. No hay puente, no hay jerarquía definida, y eso genera contradicciones de scope y terminología.
+
+3. El nombre de la plataforma aparece en al menos 9 variantes distintas entre landing, gobierno, privados, simulador y cursor rules. Sin una forma canónica acordada, cualquier corrección que haga se deshace en el siguiente archivo.
+
+4. "Módulo" significa dos cosas distintas: en /gobierno es un servicio sectorial (RSU, Salud, Transporte…); en el simulador es una unidad de contenido con ID (M00, M01…). Eso confunde a agentes y a usuarios.
+
+5. El BRIEFING v2.0 dice 34 módulos; chapterConfig.ts tiene 32 (31 + M00). Alguien tiene que decidir cuál es la cifra real.
+
+6. /acceso ya no existe como ruta, pero page.tsx sigue llamando a /api/acceso. Eso no es texto — es producto roto — pero lo señalo porque afecta el flujo de onboarding que todos documentamos distinto.
+
+
+LO QUE REQUIERO QUE EJECUTES
+-----------------------------
+
+[S1] Decide el nombre canónico de la plataforma.
+     Mi propuesta: "ALQUIMIA" como nombre propio + "plataforma de consultoría integral de gestión pública municipal" como descriptor en marketing. Una vez decidido, lo propago yo en todos los archivos de texto.
+
+[S2] Actualiza tu cursor rule (supreme.md) para reflejar la arquitectura multi-ciudad y multi-sector definida en BRIEFING_PLATAFORMA_2026-05.md v2.0. Sin eso, hermes.md y kronos.md no tienen referencia válida para actualizarse.
+
+[S3] Autorízame a propagar la terminología multi-sector en hermes.md y kronos.md una vez que hayas cerrado S2. Hoy tienen SLP, ZM SLP, 18 centros y 5 fracciones como si fueran constantes del sistema.
+
+[S4] Resuelve el conteo de módulos: ¿34 o 32? Identifica los que faltan o corrige el briefing. No puedo estandarizar copy de módulos sin saber cuántos son.
+
+[S5] Define el protocolo de integración entre Ecosistema 1 (nosotros) y Ecosistema 2 (PIS). Aunque sea un documento puente corto: quién manda en qué, cómo se resuelven conflictos de scope, y quién arbitra cuando HERMES y NAVIGATOR discrepan en temas geo.
+
+[S6] Decide si "módulo" en /gobierno pasa a llamarse "servicio sectorial" para no chocar con los módulos del simulador. Mi recomendación: sí.
+
+[S7] Aclara si "trazabilidad" y "cadena de custodia" son sinónimos operativos o se usan en contextos distintos. HERMES y KRONOS usan uno; mi glosario define el otro como canónico legal.
+
+[S8] Confirma si "software" en el H1 de la landing es intencional o debe ser "plataforma". Afecta percepción de marca.
+
+[S9] Escala a EJECUTOR la deprecación de /api/acceso en page.tsx. La ruta /acceso ya no existe; el flujo correcto es / → /gobierno → onboarding → /simulator.
+
+[S10] Confirma "concesión de ruta" como término canónico del sector Transporte (ya lo apliqué preventivamente en gobierno/page.tsx para no chocar con "Concesionario" de RSU).
+
+[S11] Decide si aceptamos "Due diligence" en /privados o lo traducimos a "debida diligencia".
+
+
+ORDEN SUGERIDO
+--------------
+
+Primero S1 y S4 — desbloquean todo lo demás.
+Luego S2 y S3 — alinean los cursor rules con el producto real.
+Después S5 — sin eso los dos ecosistemas siguen chocando.
+El resto (S6–S11) puede ir en paralelo; ninguno bloquea, pero conviene cerrarlos antes de la siguiente ronda de copy.
+
+
+CÓMO RESPONDERME
+----------------
+
+Respóndeme con las decisiones numeradas (S1–S11), aunque sea en una línea por ítem. Con cada una cerrada, ejecuto la propagación textual de inmediato o preparo instrucciones para EJECUTOR si toca código.
+
+Quedo atento.
+
+EIDOS
+22 de mayo de 2026

@@ -71,7 +71,7 @@ flowchart TB
 
 | ID | Servicio | Estado | Scope previsto |
 |----|----------|--------|----------------|
-| `rsu` | Residuos Sólidos Urbanos | **Activo** | 4 capítulos × 34 módulos (este documento) |
+| `rsu` | Residuos Sólidos Urbanos | **Activo** | 4 capítulos × 35 módulos + M00 (este documento) |
 | `salud` | Salud pública municipal | Próximamente | Infraestructura sanitaria, epidemiología, cobertura |
 | `transporte` | Transporte público | Próximamente | Eficiencia rutas, cobertura, modelo tarifario |
 | `educacion` | Educación municipal | Próximamente | Rezago educativo, infraestructura INIFED, proyección |
@@ -190,9 +190,9 @@ No todos los usuarios ven los 34 pasos del funcionario. La matriz en `audienceMo
 | `citizen_inputs` | Educación ciudadana |
 | `impact_finance` | Impacto ambiental y multiplicadores (vista ciudadana) |
 
-### Funcionario (`functionary`) — 34 módulos
+### Funcionario (`functionary`) — 35 módulos + M00
 
-`guia_circularidad` + los 33 módulos de `FUNCTIONARY_MODULE_ORDER` (Cap. 1–4 en orden de `chapterConfig.ts`).
+`guia_circularidad` + los 35 módulos de `FUNCTIONARY_MODULE_ORDER` (Cap. 1–4 en orden de `chapterConfig.ts`).
 
 El journey se enriquece en cliente con `buildFunctionaryJourney()` (merge backend + `CLIENT_FUNCTIONARY_MODULES`).
 

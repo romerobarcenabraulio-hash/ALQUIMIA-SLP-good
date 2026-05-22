@@ -1,45 +1,37 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   Cell, Line, Legend,
 } from 'recharts'
 import {
-  AlertTriangle, Truck, Clock, TrendingUp, ChevronDown, MapPin,
+  AlertTriangle, Truck, Clock, TrendingUp, ChevronDown,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { ESTACIONALIDAD } from '@/lib/constants'
-import { computeTrucksByMaterial, computeLogisticsKpis } from '@/lib/logisticsCalc'
+import {
+  buildLogisticsKpiContract,
+  computeBottlenecks,
+  computeLogisticsConfidence,
+  computeLogisticsKpis,
+  computePerRoutes,
+  computeSeasonData,
+  computeTrucksByMaterial,
+} from '@/lib/logisticsCalc'
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
+import { useMapCenter } from '@/hooks/useMapCenter'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 
+const GoogleMapCanvas = dynamic(
+  () => import('@/components/maps/GoogleMapCanvas').then(m => m.GoogleMapCanvas),
+  { ssr: false },
+)
+
 const MESES = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic']
-
-const BOTTLENECKS_LOG = [
-  { zona: 'Zona sur con saturación', gravedad: 'Alto', causa: 'Carga superior a capacidad instalada', impacto: 'Retrasos y desbordamiento', accion: 'Desviar rutas al CA mediano de zona norte temporalmente' },
-  { zona: 'Ruta de orgánicos incompleta', gravedad: 'Medio', causa: 'Pérdida de material orgánico fresco', impacto: 'Pérdida de valor compostal', accion: 'Completar ruta en colonias pendientes de cobertura' },
-  { zona: 'Ventana de descarga insuficiente', gravedad: 'Medio', causa: 'Tiempo de descarga > ventana operativa', impacto: 'Tiempos muertos y filas', accion: 'Ampliar horario del CA principal a 6:00 am' },
-]
-
-function generatePERRoutes(municipioPrefix: string) {
-  return [
-    {
-      id: `${municipioPrefix}-Z1`, material: 'Orgánicos', presion: 'Saturación en zona sur. Carga 110% de capacidad.',
-      estado: 'Programada. Unidad RSU-01. Lun-Mié-Vie 07:00.',
-      respuesta: 'Ajuste en frecuencia. Agregar 1 recorrido. Revisar bitácora semanal.',
-      bitacora: 'Últimas visitas recientes', estado_chip: 'alerta' as const,
-    },
-    {
-      id: `${municipioPrefix}-Z2`, material: 'Reciclables', presion: 'Ruta incompleta; 2 colonias fuera de cobertura.',
-      estado: 'En operación. Unidad RSU-04. Mar-Jue 08:00.',
-      respuesta: 'Monitoreo de precio. Monitoreo calidad de separación.',
-      bitacora: 'Últimas visitas recientes', estado_chip: 'info' as const,
-    },
-  ]
-}
 
 function RailSection({ title, children, open: defaultOpen = false }: { title: string; children: React.ReactNode; open?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -56,25 +48,62 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 }
 
 export function LogisticaOperativaStack() {
-  const { zmActiva, resultados, mixCAs } = useSimulatorStore()
+  const { zmActiva, resultados, mixCAs, cityContext, capCamionTon, municipiosActivos } = useSimulatorStore()
+  const municipioLabel = cityContext?.nombre ?? zmActiva
+  const municipioId = municipiosActivos[0] ?? null
+  const { center: mapCenter, loading: mapLoading, source: mapSource } = useMapCenter(zmActiva, cityContext?.nombre)
 
   const rsuDia = resultados?.rsuTotalTonDia ?? 0
+  const hasResultados = rsuDia > 0 && !!resultados?.camionesRequeridos
   const infra = useMemo(() => infraOperativaFromStore(mixCAs, resultados), [mixCAs, resultados])
   const capInstalada = infra.capInstaladaTonDia
 
   const trucksByMaterial = useMemo(
-    () => (rsuDia > 0 ? computeTrucksByMaterial(rsuDia) : []),
-    [rsuDia],
+    () => computeTrucksByMaterial(rsuDia, resultados ?? undefined),
+    [rsuDia, resultados],
   )
   const logisticsKpis = useMemo(() => computeLogisticsKpis(trucksByMaterial), [trucksByMaterial])
 
-  const perRoutes = useMemo(() => generatePERRoutes(zmActiva.slice(0, 3).toUpperCase()), [zmActiva])
+  const seasonData = useMemo(
+    () => computeSeasonData(rsuDia, capInstalada, MESES, ESTACIONALIDAD),
+    [rsuDia, capInstalada],
+  )
 
-  const seasonData = MESES.map((m, i) => {
-    const base = rsuDia * 30
-    const factor = 1 + (ESTACIONALIDAD[i] ?? 0)
-    return { mes: m, rsu: Math.round(base * factor), cap: Math.round(rsuDia * 30 * 0.61) }
+  const calculatedBottlenecks = useMemo(
+    () => computeBottlenecks(infra, seasonData, trucksByMaterial),
+    [infra, seasonData, trucksByMaterial],
+  )
+
+  const perRoutes = useMemo(
+    () => computePerRoutes(trucksByMaterial, zmActiva),
+    [trucksByMaterial, zmActiva],
+  )
+
+  const confianza = computeLogisticsConfidence({
+    hasResultados,
+    rsuDia,
+    mapSource,
   })
+
+  // Contrato KRONOS — disponible en window para agentes/diagnostics (no persiste)
+  useEffect(() => {
+    if (!hasResultados) return
+    const contract = buildLogisticsKpiContract({
+      zm: zmActiva,
+      municipio: municipioLabel,
+      municipio_id: municipioId,
+      capCamionTon,
+      infra,
+      trucks: trucksByMaterial,
+      kpis: logisticsKpis,
+      seasonData,
+      hasResultados,
+      hasM06: mixCAs.P + mixCAs.M + mixCAs.G > 0,
+    })
+    ;(window as unknown as { __ALQUIMIA_LOGISTICS_KPI__?: typeof contract }).__ALQUIMIA_LOGISTICS_KPI__ = contract
+  }, [zmActiva, municipioLabel, municipioId, capCamionTon, infra, trucksByMaterial, logisticsKpis, seasonData, hasResultados, mixCAs])
+
+  const mesesSaturacion = seasonData.filter(d => d.rsu > d.cap && d.cap > 0).map(d => d.mes)
 
   return (
     <div className="pb-4">
@@ -84,7 +113,7 @@ export function LogisticaOperativaStack() {
           {/* Logistics KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
-              { label: 'Camiones requeridos', value: String(logisticsKpis.totalCamiones), sub: 'calculado del RSU', icon: Truck, color: '#1A5FA8' },
+              { label: 'Camiones requeridos', value: String(logisticsKpis.totalCamiones), sub: 'motor M01 + M06', icon: Truck, color: '#1A5FA8' },
               { label: 'Visitas mensuales', value: String(logisticsKpis.visitasMes), sub: 'est. operación', icon: Clock, color: '#3B6D11' },
               { label: 'Merma logística', value: `${logisticsKpis.mermaPct}%`, sub: 'del vol. movilizado', icon: AlertTriangle, color: '#C0392B' },
               { label: 'Presión operativa', value: logisticsKpis.presion, sub: 'según flota', icon: TrendingUp, color: '#D4881E' },
@@ -97,28 +126,21 @@ export function LogisticaOperativaStack() {
             ))}
           </div>
 
-          {/* Map placeholder */}
+          {/* Map */}
           <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle="Rutas orgánicas · reciclables · mixtas · zonas cubiertas">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
               <div className="px-5 py-3 border-b border-[#F0EDE5]">
                 <p className="text-[12px] font-semibold text-[#1C1B18]">Mapa de rutas y cobertura operativa</p>
-                <p className="text-[10px] text-[#A8A49C]">Rutas activas · colonias cubiertas · brechas críticas</p>
+                <p className="text-[10px] text-[#A8A49C]">{municipioLabel} · rutas dimensionadas · brechas críticas</p>
               </div>
               <div className="p-4">
-                <div className="h-48 rounded-[10px] bg-gradient-to-br from-[#EBF3FB] to-[#DBEAFE] border border-[#BDD7F5] relative overflow-hidden">
-                  {[['22%', '30%', '75%', '50%', '#3B6D11', 'Orgánica'], ['35%', '60%', '80%', '30%', '#1A5FA8', 'Reciclable'], ['50%', '20%', '70%', '70%', '#D4881E', 'Mixta']].map(([x1, y1, x2, y2, c, n]) => (
-                    <svg key={n} className="absolute inset-0 w-full h-full" style={{ pointerEvents: 'none' }}>
-                      <line x1={x1} y1={y1} x2={x2} y2={y2} stroke={c as string} strokeWidth="2" strokeDasharray="6,3" />
-                    </svg>
-                  ))}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="bg-white/90 backdrop-blur rounded-[8px] border border-[#BDD7F5] p-3 text-center shadow">
-                      <MapPin className="w-5 h-5 text-[#1A5FA8] mx-auto mb-1" />
-                      <p className="text-[11px] font-semibold text-[#1A5FA8]">Municipio</p>
-                      <p className="text-[11px] text-[#6B6760]">Rutas disponibles tras configurar centros de acopio en M06.</p>
-                    </div>
+                {mapCenter && !mapLoading ? (
+                  <GoogleMapCanvas center={mapCenter} zoom={11} height={192} className="rounded-[10px]" />
+                ) : (
+                  <div className="h-48 rounded-[10px] bg-[#EBF3FB] border border-[#BDD7F5] flex items-center justify-center">
+                    <p className="text-[11px] text-[#1A5FA8]">Cargando mapa de {municipioLabel}…</p>
                   </div>
-                </div>
+                )}
                 <div className="flex flex-wrap gap-3 mt-3 items-center">
                   <div className="rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5 text-[12px]">
                     <p className="font-bold text-[#1C1B18]">{logisticsKpis.totalCamiones}</p>
@@ -133,10 +155,16 @@ export function LogisticaOperativaStack() {
                     <p className="text-[11px] text-[#A8A49C]">Brecha vs capacidad</p>
                   </div>
                   <ProvenanceBadge
-                    tipo="manual"
-                    confianza={rsuDia > 0 ? 0.55 : 0.15}
-                    fuente="logisticsCalc + mixCAs"
-                    advertencia="Mapa ilustrativo — rutas vía Google Routes API (Render OPTIMIZATION_ROUTE_API)."
+                    tipo={hasResultados ? 'estimado' : 'manual'}
+                    confianza={confianza}
+                    fuente={hasResultados ? 'resultados.camionesRequeridos + mixCAs' : 'mixCAs'}
+                    advertencia={
+                      !hasResultados
+                        ? 'Complete M01 para dimensionar flota.'
+                        : mapSource === 'fallback'
+                          ? 'Mapa en coordenadas de respaldo — geocoding no disponible.'
+                          : undefined
+                    }
                   />
                 </div>
               </div>
@@ -148,33 +176,37 @@ export function LogisticaOperativaStack() {
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
               <div className="px-5 py-4 border-b border-[#F0EDE5]">
                 <p className="text-[12px] font-semibold text-[#1C1B18]">Camiones requeridos por material</p>
-                <p className="text-[10px] text-[#A8A49C]">Vol. t/día · unidades · frecuencia · riesgo · observación</p>
+                <p className="text-[10px] text-[#A8A49C]">Vol. t/día · unidades · frecuencia · riesgo · observación · cap. {capCamionTon} t/camión</p>
               </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-[10px]">
-                  <thead>
-                    <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                      {['Material', 'Vol. t/día', 'Camiones', 'Frecuencia', 'Riesgo logístico', 'Observación'].map(h => (
-                        <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[9px]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {trucksByMaterial.map((t, i) => {
-                      const rColor = t.riesgo === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : t.riesgo === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]'
-                      return (
-                        <tr key={t.material} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                          <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">{t.material}</td>
-                          <td className="px-3 py-2.5 font-mono">{t.volDia}</td>
-                          <td className="px-3 py-2.5 font-bold text-[#1A5FA8] font-mono">{t.camiones}</td>
-                          <td className="px-3 py-2.5 text-[#6B6760]">{t.frecuencia}</td>
-                          <td className="px-3 py-2.5"><span className={cn('px-1.5 py-0.5 rounded font-semibold text-[9px]', rColor)}>{t.riesgo}</span></td>
-                          <td className="px-3 py-2.5 text-[9px] text-[#6B6760]">{t.obs}</td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
+                {trucksByMaterial.length === 0 ? (
+                  <p className="px-5 py-8 text-[11px] text-[#A8A49C] text-center">Complete M01 para calcular flota por material.</p>
+                ) : (
+                  <table className="w-full text-[10px]">
+                    <thead>
+                      <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
+                        {['Material', 'Vol. t/día', 'Camiones', 'Frecuencia', 'Riesgo logístico', 'Observación'].map(h => (
+                          <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[9px]">{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {trucksByMaterial.map((t, i) => {
+                        const rColor = t.riesgo === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : t.riesgo === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]'
+                        return (
+                          <tr key={t.material} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
+                            <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">{t.material}</td>
+                            <td className="px-3 py-2.5 font-mono">{t.volDia}</td>
+                            <td className="px-3 py-2.5 font-bold text-[#1A5FA8] font-mono">{t.camiones}</td>
+                            <td className="px-3 py-2.5 text-[#6B6760]">{t.frecuencia}</td>
+                            <td className="px-3 py-2.5"><span className={cn('px-1.5 py-0.5 rounded font-semibold text-[9px]', rColor)}>{t.riesgo}</span></td>
+                            <td className="px-3 py-2.5 text-[9px] text-[#6B6760]">{t.obs}</td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                )}
               </div>
             </div>
           </ExpandableChart>
@@ -183,7 +215,11 @@ export function LogisticaOperativaStack() {
           <ExpandableChart chartId="m08-seasonality" title="Estacionalidad y capacidad de servicio" subtitle="RSU mensual esperado vs. capacidad instalada (t/mes)">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
               <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Estacionalidad y capacidad de servicio</p>
-              <p className="text-[10px] text-[#A8A49C] mb-4">Mayo y diciembre presentan picos — la capacidad instalada no cubre la demanda en esos meses</p>
+              <p className="text-[10px] text-[#A8A49C] mb-4">
+                {mesesSaturacion.length > 0
+                  ? `Meses con demanda superior a capacidad: ${mesesSaturacion.join(', ')}`
+                  : 'La capacidad instalada cubre la demanda estacional del escenario'}
+              </p>
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={seasonData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
@@ -194,51 +230,53 @@ export function LogisticaOperativaStack() {
                   <Legend wrapperStyle={{ fontSize: 10 }} />
                   <Bar dataKey="rsu" name="RSU mensual (t)" fill="#1A5FA8" radius={[3, 3, 0, 0]}>
                     {seasonData.map((d, i) => (
-                      <Cell key={i} fill={d.rsu > d.cap ? '#C0392B' : '#1A5FA8'} />
+                      <Cell key={i} fill={d.rsu > d.cap && d.cap > 0 ? '#C0392B' : '#1A5FA8'} />
                     ))}
                   </Bar>
                   <Line type="monotone" dataKey="cap" name="Cap. instalada" stroke="#3B6D11" strokeWidth={2} dot={false} />
                 </BarChart>
               </ResponsiveContainer>
-              <p className="text-[9px] text-[#A8A49C] mt-2">Barras rojas = meses donde la demanda supera capacidad instalada</p>
+              <p className="text-[9px] text-[#A8A49C] mt-2">Barras rojas = meses donde la demanda supera capacidad instalada ({capInstalada.toFixed(1)} t/día)</p>
             </div>
           </ExpandableChart>
 
           {/* PER routes */}
-          <div className="space-y-3">
-            <p className="text-[12px] font-semibold text-[#1C1B18]">PER — Presión, estado y respuesta por ruta crítica</p>
-            {perRoutes.map(r => (
-              <div key={r.id} className={cn('rounded-[10px] border p-4', r.estado_chip === 'alerta' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#BDD7F5] bg-[#EBF3FB]')}>
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="font-mono text-[10px] font-bold bg-[#1C2B15] text-white px-2 py-0.5 rounded">{r.id}</span>
-                  <span className="text-[11px] font-semibold text-[#1C1B18]">{r.material}</span>
-                  {r.estado_chip === 'alerta' && <AlertTriangle className="w-3.5 h-3.5 text-[#C0392B] ml-auto" />}
+          {perRoutes.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-[12px] font-semibold text-[#1C1B18]">PER — Presión, estado y respuesta por ruta crítica</p>
+              {perRoutes.map(r => (
+                <div key={r.id} className={cn('rounded-[10px] border p-4', r.estado_chip === 'alerta' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#BDD7F5] bg-[#EBF3FB]')}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="font-mono text-[10px] font-bold bg-[#1C2B15] text-white px-2 py-0.5 rounded">{r.id}</span>
+                    <span className="text-[11px] font-semibold text-[#1C1B18]">{r.material}</span>
+                    {r.estado_chip === 'alerta' && <AlertTriangle className="w-3.5 h-3.5 text-[#C0392B] ml-auto" />}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
+                    {[['Presión', r.presion, '#C0392B'], ['Estado', r.estado, '#1A5FA8'], ['Respuesta', r.respuesta, '#3B6D11']].map(([k, v, c]) => (
+                      <div key={k as string}>
+                        <p className="font-bold uppercase tracking-wide text-[10px] mb-0.5" style={{ color: c as string }}>{k as string}</p>
+                        <p className="text-[#4A4740] leading-snug">{v as string}</p>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[9px] text-[#A8A49C] mt-2 pt-2 border-t border-current/10">{r.bitacora}</p>
                 </div>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
-                  {[['Presión', r.presion, '#C0392B'], ['Estado', r.estado, '#1A5FA8'], ['Respuesta', r.respuesta, '#3B6D11']].map(([k, v, c]) => (
-                    <div key={k as string}>
-                      <p className="font-bold uppercase tracking-wide text-[10px] mb-0.5" style={{ color: c as string }}>{k as string}</p>
-                      <p className="text-[#4A4740] leading-snug">{v as string}</p>
-                    </div>
-                  ))}
-                </div>
-                <p className="text-[9px] text-[#A8A49C] mt-2 pt-2 border-t border-current/10">{r.bitacora}</p>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
 
           {/* Bottlenecks */}
           <div className="space-y-2.5">
             <p className="text-[12px] font-semibold text-[#1C1B18]">Cuellos de botella detectados</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-              {BOTTLENECKS_LOG.map(b => {
-                const gColor = b.gravedad === 'Alto' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#FDE68A] bg-[#FEF7E7]'
-                const tColor = b.gravedad === 'Alto' ? 'text-[#C0392B]' : 'text-[#D4881E]'
+              {calculatedBottlenecks.map(b => {
+                const gColor = b.gravedad === 'Alto' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : b.gravedad === 'Medio' ? 'border-[#FDE68A] bg-[#FEF7E7]' : 'border-[#D1FAE5] bg-[#F0FDF4]'
+                const tColor = b.gravedad === 'Alto' ? 'text-[#C0392B]' : b.gravedad === 'Medio' ? 'text-[#D4881E]' : 'text-[#3B6D11]'
                 return (
                   <div key={b.zona} className={cn('rounded-[10px] border p-4', gColor)}>
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <p className="text-[11px] font-semibold text-[#1C1B18] leading-snug">{b.zona}</p>
-                      <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0', b.gravedad === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-[#FEF3C7] text-[#92400E]')}>{b.gravedad}</span>
+                      <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0', b.gravedad === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : b.gravedad === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]')}>{b.gravedad}</span>
                     </div>
                     <p className="text-[9px] text-[#6B6760] mb-1">Causa: {b.causa}</p>
                     <p className={cn('text-[9px] font-semibold mb-2', tColor)}>Impacto: {b.impacto}</p>
@@ -259,23 +297,28 @@ export function LogisticaOperativaStack() {
         <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
           <div className="flex items-center justify-between mb-3 px-1">
             <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
-            <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Confianza 35%</span>
+            <span className={cn(
+              'text-[9px] font-bold px-2 py-0.5 rounded',
+              confianza >= 0.55 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]',
+            )}>
+              Confianza {Math.round(confianza * 100)}%
+            </span>
           </div>
           <RailSection title="Cómo se calcula" open>
-            <p>Camiones basados en 12 t/camión/día. Factores de estacionalidad del modelo de generación. PER basado en bitácoras operativas del piloto.</p>
+            <p>Camiones desde <code>resultados.camionesRequeridos</code> del motor (M01), con capacidad de {capCamionTon} t/camión/día. Estacionalidad del modelo de generación RSU. PER y cuellos derivados del escenario activo — fase 0-1, sin bitácora de campo.</p>
           </RailSection>
           <RailSection title="Decisión que habilita">
             <p>Dimensionar la flota y aprobar las rutas piloto antes de la primera fase de operación.</p>
           </RailSection>
           <RailSection title="Metodología">
-            <p>Análisis logístico con supuesto de 12 t/camión/día. Estacionalidad del modelo de generación RSU (M01). PER con bitácoras operativas del piloto.</p>
+            <p>Dimensionamiento conceptual multi-municipio. KPIs publicables vía <code>window.__ALQUIMIA_LOGISTICS_KPI__</code> para KRONOS (Fase 0-1, estimado).</p>
           </RailSection>
           <RailSection title="Módulos relacionados">
-            <p>M06: Infraestructura que estas rutas sirven. M07: Personal que opera las rutas. M11: Mercado que recibe el material.</p>
+            <p>M06: Infraestructura que estas rutas sirven. M07: Personal que opera las rutas. M10: Mercado que recibe el material.</p>
           </RailSection>
           <RailSection title="Qué verificar aún">
             <ul className="space-y-1">
-              {['Topografía y restricciones de acceso en zonas específicas.', 'Capacidad real de las unidades de recolección existentes.'].map(v => (
+              {['Topografía y restricciones de acceso en zonas específicas.', 'Capacidad real de las unidades de recolección existentes.', 'Coordenadas de CAs en M06 para rutas con Google Routes API.'].map(v => (
                 <li key={v} className="flex items-start gap-1.5"><span className="mt-1 w-1 h-1 rounded-full bg-[#D4881E] shrink-0" />{v}</li>
               ))}
             </ul>

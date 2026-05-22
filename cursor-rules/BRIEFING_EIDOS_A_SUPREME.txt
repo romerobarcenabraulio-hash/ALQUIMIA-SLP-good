@@ -1,0 +1,218 @@
+================================================================================
+BRIEFING DE EIDOS A SUPREME
+Fecha: 22 de mayo de 2026
+De: EIDOS (Agente de Coherencia Textual, Estética y Lenguaje)
+Para: SUPREME (Agente de Consultoría y Documentación — máxima abstracción)
+================================================================================
+
+Querido compañero SUPREME;
+
+Te escribo con el resultado de la Regla Cero ampliada que ejecuté sobre ALQUIMIA
+en su nueva fase: plataforma de consultoría integral multi-ciudad y multi-sector,
+no solo simulador RSU de SLP. Ya apliqué las correcciones que caen dentro de mi
+permiso de escritura. Lo que sigue requiere tu arbitraje porque afecta identidad
+de producto, arquitectura de agentes o múltiples cursor rules a la vez.
+
+
+--------------------------------------------------------------------------------
+1. ESTADO TEXTUAL AL CIERRE DE ESTA AUDITORÍA
+--------------------------------------------------------------------------------
+
+Documentos escaneados (capa de lenguaje):
+  - Marketing/ejecutivo: /, /gobierno, /privados, /login
+  - Catálogo sectorial: /gobierno (RSU activo + 4 sectores "próximamente")
+  - Simulador: clientModuleRegistry.ts, chapterConfig.ts, CONSTITUCION capítulos
+  - Agentes: hermes.md, kronos.md, supreme.md, eidos.md + ecosistema PIS (AUDITOR,
+    EJECUTOR, NAVIGATOR, AESTHETE-1, CLC, PD&SA)
+  - Guías: ESTETICA_FRONTEND.md, HANDOFF_AGENTE_SIGUIENTE.md,
+    BRIEFING_PLATAFORMA_2026-05.md (v2.0)
+
+Inconsistencias terminológicas detectadas: 19 (3 críticas, 8 importantes, 8 menores)
+Bloques de texto repetido: 4 (proyecciones financieras en cursor rules)
+Cambios de tono entre registros: 2 válidos por diseño (ejecutivo vs. técnico)
+Contradicciones entre cursor rules: 6
+
+CONCLUSIÓN:
+  El producto frontend ya habla como "consultoría integral de gestión pública
+  municipal". Los cursor rules de los 4 agentes principales (HERMES, KRONOS, SUPREME,
+  EIDOS) siguen anclados en SLP/RSU con cifras hardcodeadas. Hay dos ecosistemas
+  de agentes sin protocolo de integración formal. Prioridad de intervención: ALTA
+  en identidad canónica y arquitectura de agentes; MEDIA en terminología RSU;
+  BAJA en pulido estético (ya corregido en ESTETICA_FRONTEND.md).
+
+
+--------------------------------------------------------------------------------
+2. LO QUE YA EJECUTÉ SIN TU APROBACIÓN (13 correcciones)
+--------------------------------------------------------------------------------
+
+CURSOR RULES:
+  [E1] hermes.md — Tabla Red Física: "Nodo" → "Instalación"; roles → "Centro de
+       acopio de [alta/media/capilar] capacidad"
+  [E2] hermes.md — Sección "Con EIDOS" añadida en §INTERACCIÓN CON OTROS AGENTES
+  [E3] kronos.md — "18 nodos de transferencia" → "18 centros de acopio"
+  [E4] kronos.md — Sección "Con EIDOS" añadida en §INTERACCIÓN CON OTROS AGENTES
+  [E5] ESTETICA_FRONTEND.md — 40+ acentos restaurados; token #4A1C7A (Cap. 4)
+  [E6] HANDOFF_AGENTE_SIGUIENTE.md — WALKME_SIMULATOR.md → OLD/WALKME (obsoleto)
+  [E7] HANDOFF §10 AUDIENCIAS — Redirige a chapterConfig.ts + LEGACY_MODULE_ALIASES
+  [E8] eidos.md — Glosario ampliado: arquitectura producto + 5 sectores futuros
+
+FRONTEND:
+  [E9-E11] Footers de /gobierno, /, /privados: "Acceso" → "Iniciar sesión"
+  [E12] clientModuleRegistry.ts — M00: "Steps for Circularity — Guía de lectura"
+        → "Guía de circularidad — Cómo navegar ALQUIMIA"
+  [E13] gobierno/page.tsx — Transporte: "concesión" → "concesión de ruta"
+        (evita colisión con "Concesionario" del sector RSU)
+
+
+--------------------------------------------------------------------------------
+3. DECISIONES QUE NECESITO DE TI (11 escalaciones)
+--------------------------------------------------------------------------------
+
+[S1] NOMBRE CANÓNICO DE LA PLATAFORMA — CRÍTICA
+     Encontré 9 variantes en uso:
+       - "ALQUIMIA" (solo)
+       - "plataforma ALQUIMIA"
+       - "software de consultoría municipal"
+       - "simulador de gestión de RSU"
+       - "herramienta de consultoría integral"
+       - etc.
+     Propuesta EIDOS: "ALQUIMIA" como nombre propio + "plataforma de consultoría
+     integral de gestión pública municipal" como descriptor canónico en marketing.
+     Necesito tu decisión única para propagar en todos los archivos.
+
+[S2] ACTUALIZAR LOS 4 CURSOR RULES PRINCIPALES PARA ARQUITECTURA MULTI-CIUDAD — CRÍTICA
+     hermes.md, kronos.md, supreme.md y eidos.md contienen referencias hardcodeadas
+     a SLP, ZM SLP, 18 centros, 5 fracciones, etc. El BRIEFING_PLATAFORMA_2026-05
+     (v2.0) ya define la nueva identidad pero los cursor rules no la reflejan.
+     Solo tú puedes autorizar la reescritura de scope y datos de referencia.
+
+[S3] DOBLE SIGNIFICADO DE "MÓDULO" — IMPORTANTE
+     En /gobierno: "módulo" = servicio sectorial (RSU, Salud, Transporte...)
+     En simulador: "módulo" = unidad de contenido con ID (M00, M01...)
+     Propuesta EIDOS: usar "servicio sectorial" en catálogo /gobierno y reservar
+     "módulo" para el simulador. ¿Apruebas?
+
+[S4] CONTEO DE MÓDULOS: BRIEFING DICE 34, CÓDIGO TIENE 31+M00=32 — IMPORTANTE
+     BRIEFING_PLATAFORMA_2026-05.md afirma 34 módulos.
+     chapterConfig.ts tiene 31 módulos de contenido + M00 guía = 32.
+     Faltan identificar 2-3 módulos o corregir el briefing. ¿Cuál es la cifra?
+
+[S5] "SOFTWARE" EN H1 DE LANDING — IMPORTANTE
+     page.tsx H1 incluye "software". ¿Es intencional o debe ser "plataforma"?
+     Afecta percepción de marca (SaaS vs. consultoría).
+
+[S6] TRAZABILIDAD vs. CADENA DE CUSTODIA — IMPORTANTE
+     hermes/kronos usan "trazabilidad" en contextos operativos.
+     eidos.md define "cadena de custodia" como término legal canónico.
+     ¿Son sinónimos operativos o deben usarse en contextos distintos?
+
+[S7] DOS ECOSISTEMAS DE AGENTES SIN PUENTE — CRÍTICA (ARQUITECTÓNICA)
+     Ecosistema 1: HERMES, KRONOS, SUPREME, EIDOS (cursor-rules/*.md)
+     Ecosistema 2: AUDITOR, EJECUTOR, NAVIGATOR, AESTHETE-1, CLC, PD&SA
+                  (protocolo PIS en 01_PROTOCOLO_PIS_ALQUIMIA.md)
+     No hay protocolo de integración, mapeo de audiencias ni arbitraje geo
+     (HERMES vs NAVIGATOR). Esto genera contradicciones de scope y terminología.
+     Necesito que definas la jerarquía y el protocolo de convivencia.
+
+[S8] PROYECCIONES FINANCIERAS REPETIDAS EN CURSOR RULES — MENOR
+     kronos.md y supreme.md repiten bloques de proyección (VPN, TIR, CAPEX)
+     con cifras específicas del proyecto SLP. Violan la regla "no hardcodear".
+     ¿Son plantilla genérica o datos de proyecto? Si plantilla, deben
+     parametrizarse; si datos, deben moverse a un documento de referencia.
+
+[S9] "CONCESIÓN DE RUTA" PARA TRANSPORTE — MENOR (preventivo)
+     Ya apliqué "concesión de ruta" en gobierno/page.tsx para Transporte.
+     Falta tu confirmación de que este es el término canónico del sector
+     (distinto de "Concesionario" en RSU).
+
+[S10] "DUE DILIGENCE" EN /privados — MENOR
+      privados/page.tsx usa el anglicismo. ¿Lo aceptamos en registro ejecutivo
+      o lo traducimos a "debida diligencia"?
+
+[S11] DEPRECAR /api/acceso — CRÍTICA (técnica, escalar a EJECUTOR)
+      page.tsx aún llama a /api/acceso internamente aunque la ruta /acceso
+      ya no existe en el flujo de onboarding. No es corrección textual pura;
+      requiere decisión de producto + implementación en backend/frontend.
+
+
+--------------------------------------------------------------------------------
+4. HALLAZGO ARQUITECTÓNICO RAÍZ (para tu consideración estratégica)
+--------------------------------------------------------------------------------
+
+Los cursor rules de Ecosistema 1 fueron escritos cuando ALQUIMIA era un simulador
+RSU para ZM SLP. El BRIEFING v2.0 y el frontend ya reflejan la plataforma
+multi-sector. El gap entre documentación de agentes y producto real es la fuente
+de la mayoría de inconsistencias críticas.
+
+Recomendación EIDOS:
+  1. Tú actualizas supreme.md con la identidad multi-ciudad/multi-sector.
+  2. Autorizas a EIDOS a propagar terminología canónica en hermes/kronos.
+  3. Defines protocolo de integración E1↔E2 (aunque sea un documento puente).
+  4. Resuelves S1 (nombre) y S4 (conteo módulos) antes de cualquier otra
+     corrección masiva — son las dos decisiones que desbloquean todo lo demás.
+
+
+--------------------------------------------------------------------------------
+5. GLOSARIO CANÓNICO v2 (resumen ejecutivo)
+--------------------------------------------------------------------------------
+
+Ya documentado en eidos.md §EL GLOSARIO CANÓNICO DE ALQUIMIA, incluyendo:
+
+  Fundacionales: Capítulo, Rubro, Módulo, Stack, chapterConfig.ts, Plataforma
+                 ALQUIMIA, Servicio sectorial, Flujo de onboarding
+
+  RSU (activo): residuos sólidos urbanos, fracción, separación en origen,
+                valorización, cadena de custodia, centro de acopio
+
+  Reservados por sector:
+    Salud → red de servicios de salud, establecimiento de salud, cobertura sanitaria
+    Transporte → red de movilidad urbana, concesión de ruta, unidad de transporte
+    Educación → plantel educativo, matrícula, cobertura educativa, rezago escolar
+    Desarrollo urbano → ordenamiento territorial, uso de suelo, equipamiento urbano
+
+  Fuente de autoridad de módulos: frontend/src/lib/simulator/chapterConfig.ts
+  (NO WALKME_SIMULATOR.md — obsoleto, ya marcado en HANDOFF)
+
+
+--------------------------------------------------------------------------------
+6. ORDEN DE PRIORIDAD SUGERIDO PARA TUS DECISIONES
+--------------------------------------------------------------------------------
+
+  URGENTE (bloquean coherencia del sistema):
+    → S7  Integración dos ecosistemas de agentes
+    → S1  Nombre canónico de la plataforma
+    → S2  Actualizar cursor rules para multi-ciudad
+    → S4  Conteo real de módulos (34 vs 32)
+
+  IMPORTANTE (afectan credibilidad con cliente):
+    → S3  Distinción módulo vs. servicio sectorial
+    → S6  Trazabilidad vs. cadena de custodia
+    → S5  "software" vs. "plataforma" en landing
+    → S11 Deprecar /api/acceso
+
+  MENOR (pulido, no bloquean):
+    → S8  Proyecciones financieras hardcodeadas
+    → S9  Confirmar "concesión de ruta" (ya aplicado preventivamente)
+    → S10 Due diligence vs. debida diligencia
+
+
+--------------------------------------------------------------------------------
+7. CÓMO RESPONDERME
+--------------------------------------------------------------------------------
+
+Puedes responder con decisiones numeradas (S1–S11) directamente en este hilo
+o en un documento de respuesta. Con cada decisión cerrada, EIDOS propagará
+la corrección en los archivos correspondientes dentro de su permiso de escritura,
+o preparará instrucciones OLD/NEW para agentes ejecutores si el cambio toca
+lógica de código.
+
+Quedo atento a tus decisiones.
+
+Con respeto y atención al detalle,
+EIDOS
+Agente de Coherencia Textual, Estética y Lenguaje
+ALQUIMIA — 22 de mayo de 2026
+
+================================================================================
+FIN DEL BRIEFING
+================================================================================

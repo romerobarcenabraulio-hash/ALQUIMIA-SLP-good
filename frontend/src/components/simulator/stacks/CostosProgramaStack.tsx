@@ -1,10 +1,16 @@
 'use client'
 
-import { useMemo } from 'react'
-import { DollarSign, Users, Clock, TrendingUp } from 'lucide-react'
+import { useEffect, useMemo } from 'react'
+import { DollarSign, Users, Clock, TrendingUp, Truck } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { CapexOpexBreakdown } from '@/components/simulator/CapexOpexBreakdown'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
+import {
+  buildFinanceKpiContract,
+  computeOpexLogisticaAnual,
+} from '@/lib/financeLogisticsCalc'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from 'recharts'
@@ -31,6 +37,45 @@ const fasesData = FASES_INVERSION.map(f => ({
 export function CostosProgramaStack() {
   const mixCAs     = useSimulatorStore(s => s.mixCAs)
   const resultados = useSimulatorStore(s => s.resultados)
+  const zmActiva = useSimulatorStore(s => s.zmActiva)
+  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const cityContext = useSimulatorStore(s => s.cityContext)
+  const capCamionTon = useSimulatorStore(s => s.capCamionTon)
+  const costoCamionMesMxn = useSimulatorStore(s => s.costoCamionMesMxn)
+  const costoVisitaMxn = useSimulatorStore(s => s.costoVisitaMxn)
+  const costoContingenciaTonMxn = useSimulatorStore(s => s.costoContingenciaTonMxn)
+  const setCostoCamionMesMxn = useSimulatorStore(s => s.setCostoCamionMesMxn)
+  const setCostoVisitaMxn = useSimulatorStore(s => s.setCostoVisitaMxn)
+  const setCostoContingenciaTonMxn = useSimulatorStore(s => s.setCostoContingenciaTonMxn)
+
+  const municipioLabel = cityContext?.nombre ?? zmActiva
+  const municipioId = municipiosActivos[0] ?? null
+  const totalCAs = mixCAs.P + mixCAs.M + mixCAs.G
+  const hasM01 = (resultados?.rsuTotalTonDia ?? 0) > 0
+  const hasM06 = totalCAs > 0
+
+  const logisticsContract = useMemo(
+    () =>
+      buildLogisticsKpiFromStore({
+        zmActiva,
+        municipioLabel,
+        municipioId,
+        capCamionTon,
+        mixCAs,
+        resultados,
+      }),
+    [zmActiva, municipioLabel, municipioId, capCamionTon, mixCAs, resultados],
+  )
+
+  const opexLogistica = useMemo(
+    () =>
+      computeOpexLogisticaAnual(logisticsContract, {
+        costoCamionMesMxn,
+        costoVisitaMxn,
+        costoContingenciaTonMxn,
+      }),
+    [logisticsContract, costoCamionMesMxn, costoVisitaMxn, costoContingenciaTonMxn],
+  )
 
   const capexTotal = useMemo(
     () =>
@@ -57,7 +102,42 @@ export function CostosProgramaStack() {
   )
 
   const tir = resultados?.tir ?? null
-  const totalCAs = mixCAs.P + mixCAs.M + mixCAs.G
+
+  const opexMesTotalConLogistica = opexMesTotal + (opexLogistica?.opexLogisticaMensualMxn ?? 0)
+  const opexAnualTotal = opexMesTotal * 12 + (opexLogistica?.opexLogisticaAnualMxn ?? 0)
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const financeKpi = buildFinanceKpiContract({
+      municipioId,
+      capexTotal,
+      opexCentrosMensual: opexMesTotal,
+      opexLogistica,
+      tir,
+      logistics: logisticsContract,
+      hasM01,
+      hasM06,
+    })
+    ;(window as unknown as { __ALQUIMIA_FINANCE_KPI__?: typeof financeKpi }).__ALQUIMIA_FINANCE_KPI__ =
+      financeKpi
+    if (logisticsContract) {
+      ;(window as unknown as { __ALQUIMIA_LOGISTICS_KPI__?: typeof logisticsContract }).__ALQUIMIA_LOGISTICS_KPI__ =
+        logisticsContract
+    }
+  }, [
+    municipioId,
+    capexTotal,
+    opexMesTotal,
+    opexLogistica,
+    tir,
+    logisticsContract,
+    hasM01,
+    hasM06,
+  ])
+
+  const gateAdvertencia =
+    logisticsContract?.metadata?.advertencia_gate ??
+    (!hasM06 ? 'Configure al menos un centro de acopio en M06 antes de usar CAPEX en Cabildo.' : null)
 
   const kpis = [
     {
@@ -70,9 +150,20 @@ export function CostosProgramaStack() {
     {
       icon: Clock,
       label: 'OPEX MENSUAL',
-      value: fmtMXN(opexMesTotal),
-      sub: `${fmtMXN(opexMesTotal * 12)}/año`,
+      value: fmtMXN(opexMesTotalConLogistica),
+      sub: opexLogistica
+        ? `Centros ${fmtMXN(opexMesTotal)} + logística ${fmtMXN(opexLogistica.opexLogisticaMensualMxn)}`
+        : `${fmtMXN(opexMesTotal * 12)}/año (solo centros)`,
       color: '#D98A1E',
+    },
+    {
+      icon: Truck,
+      label: 'OPEX LOGÍSTICO/AÑO',
+      value: opexLogistica ? fmtMXN(opexLogistica.opexLogisticaAnualMxn) : '—',
+      sub: logisticsContract
+        ? `${logisticsContract.kpis_logisticos.total_camiones_requeridos} camiones · ESTIMADO_FASE_01`
+        : 'Complete M01 + M08',
+      color: '#4A1C7A',
     },
     {
       icon: Users,
@@ -93,8 +184,20 @@ export function CostosProgramaStack() {
   return (
     <div className="space-y-6">
 
+      {gateAdvertencia && (
+        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-900">
+          {gateAdvertencia}
+        </div>
+      )}
+
+      {!logisticsContract && hasM01 && (
+        <div className="rounded-[10px] border border-[#E7E5DC] bg-[#FAFAF8] px-4 py-3 text-[12px] text-[#5F6B5F]">
+          OPEX logístico pendiente — visite M08 Logística después de configurar M06 para dimensionar flota.
+        </div>
+      )}
+
       {/* S1: KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {kpis.map(kpi => (
           <div
             key={kpi.label}
@@ -121,9 +224,17 @@ export function CostosProgramaStack() {
         </p>
         <p className="text-[14px] leading-relaxed text-[#1F2933]">
           El programa requiere una inversión inicial de <strong>{fmtMXN(capexTotal)}</strong> y
-          un costo operativo de <strong>{fmtMXN(opexMesTotal)}/mes</strong> para operar{' '}
-          {totalCAs} centro{totalCAs !== 1 ? 's' : ''} de acopio que generarán{' '}
+          un costo operativo de <strong>{fmtMXN(opexMesTotalConLogistica)}/mes</strong>
+          {opexLogistica ? (
+            <> (centros + logística estimada desde M08)</>
+          ) : (
+            <> para operar centros de acopio</>
+          )}{' '}
+          — {totalCAs} centro{totalCAs !== 1 ? 's' : ''} de acopio,{' '}
           <strong>{empleosTotal} empleos directos</strong>.
+          {opexAnualTotal > 0 && (
+            <> OPEX anual total estimado: <strong>{fmtMXN(opexAnualTotal)}</strong>.</>
+          )}
           {tir !== null && tir > 0
             ? ` La TIR proyectada de ${fmtN(tir)}% indica que el programa se recupera solo.`
             : ''}
@@ -132,6 +243,74 @@ export function CostosProgramaStack() {
           de sesión de cabildo.
         </p>
       </div>
+
+      {opexLogistica && logisticsContract && (
+        <div className="bg-white border border-[#E7E5DC] rounded-[14px] p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="font-serif text-[18px] font-semibold text-[#1F2933]">
+              OPEX logístico (HERMES → KRONOS)
+            </h3>
+            <ProvenanceBadge
+              tipo="estimado"
+              confianza={opexLogistica.confianzaAplicada}
+              fuente={opexLogistica.fuente}
+              advertencia={opexLogistica.advertencia}
+            />
+          </div>
+          {opexLogistica.advertencia && (
+            <p className="text-[11px] text-amber-800">{opexLogistica.advertencia}</p>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[12px]">
+            <label className="block">
+              <span className="text-[#6B6760]">Costo camión/mes (MXN)</span>
+              <input
+                type="number"
+                className="mt-1 w-full rounded border border-[#E7E5DC] px-2 py-1"
+                value={costoCamionMesMxn}
+                onChange={e => setCostoCamionMesMxn(Number(e.target.value))}
+              />
+            </label>
+            <label className="block">
+              <span className="text-[#6B6760]">Costo visita (MXN)</span>
+              <input
+                type="number"
+                className="mt-1 w-full rounded border border-[#E7E5DC] px-2 py-1"
+                value={costoVisitaMxn}
+                onChange={e => setCostoVisitaMxn(Number(e.target.value))}
+              />
+            </label>
+            <label className="block">
+              <span className="text-[#6B6760]">Contingencia (MXN/ton)</span>
+              <input
+                type="number"
+                className="mt-1 w-full rounded border border-[#E7E5DC] px-2 py-1"
+                value={costoContingenciaTonMxn}
+                onChange={e => setCostoContingenciaTonMxn(Number(e.target.value))}
+              />
+            </label>
+          </div>
+          <table className="w-full text-left text-[12px]">
+            <tbody>
+              <tr className="border-b border-[#EDE9E3]">
+                <td className="py-2 text-[#5F6B5F]">Flota ({logisticsContract.kpis_logisticos.total_camiones_requeridos} camiones)</td>
+                <td className="py-2 text-right font-mono">{fmtMXN(opexLogistica.opexFlotaAnualMxn)}/año</td>
+              </tr>
+              <tr className="border-b border-[#EDE9E3]">
+                <td className="py-2 text-[#5F6B5F]">Visitas ({logisticsContract.kpis_logisticos.visitas_mes_estimadas}/mes)</td>
+                <td className="py-2 text-right font-mono">{fmtMXN(opexLogistica.opexVisitasAnualMxn)}/año</td>
+              </tr>
+              <tr className="border-b border-[#EDE9E3]">
+                <td className="py-2 text-[#5F6B5F]">Contingencia (brecha {logisticsContract.kpis_logisticos.brecha_ton_dia.toFixed(1)} t/día)</td>
+                <td className="py-2 text-right font-mono">{fmtMXN(opexLogistica.opexContingenciaAnualMxn)}/año</td>
+              </tr>
+              <tr>
+                <td className="py-2 font-semibold text-[#1F2933]">Total OPEX logístico</td>
+                <td className="py-2 text-right font-mono font-semibold">{fmtMXN(opexLogistica.opexLogisticaAnualMxn)}/año</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {/* S3: Gráfica protagonista — CAPEX por fase */}
       <div className="bg-white border border-[#E7E5DC] rounded-[14px] p-5">

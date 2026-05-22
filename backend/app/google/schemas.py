@@ -73,7 +73,7 @@ class RoutePlanRequest(BaseModel):
     municipio_id: str
     zm: str
     depot: GeoPoint
-    stops: List[GeoPoint] = Field(..., min_length=1, max_length=12)
+    stops: List[GeoPoint] = Field(..., min_length=1, max_length=50)
     return_to_depot: bool = True
 
 

@@ -40,7 +40,7 @@ async def compute_route(
         "origin": {"location": {"latLng": {"latitude": lat_o, "longitude": lon_o}}},
         "destination": {"location": {"latLng": {"latitude": lat_d, "longitude": lon_d}}},
         "travelMode": travel_mode,
-        "routingPreference": "TRAFFIC_UNAWARE",
+        "routingPreference": "TRAFFIC_AWARE_OPTIMAL",
         "computeAlternativeRoutes": False,
         "languageCode": "es-MX",
         "units": "METRIC",

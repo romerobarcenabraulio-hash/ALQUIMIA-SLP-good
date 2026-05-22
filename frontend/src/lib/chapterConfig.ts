@@ -139,6 +139,16 @@ export const CHAPTERS: ChapterDef[] = [
         label: 'Reporteo',
         modulos: ['doble_materialidad', 'trazabilidad'],
       },
+      {
+        id: 'control_presupuestal',
+        label: 'Control presupuestal',
+        modulos: ['evm_dashboard', 'conciliacion_mensual'],
+      },
+      {
+        id: 'gestion_riesgos',
+        label: 'Gestión de riesgos',
+        modulos: ['risk_dashboard', 'gate_status'],
+      },
     ],
     modulos: [] as string[],
     firstModuleId: 'inspeccion',
@@ -219,6 +229,10 @@ export const MODULE_NUMBERS: Record<string, string> = {
   monitoreo_operativo: '17',
   doble_materialidad: '18',
   trazabilidad: '19',
+  evm_dashboard: '20',
+  conciliacion_mensual: '20B',
+  risk_dashboard: '21',
+  gate_status: '21B',
   // Legacy aliases (redirect in render)
   social_study: '02',
   municipal_context: '03B',

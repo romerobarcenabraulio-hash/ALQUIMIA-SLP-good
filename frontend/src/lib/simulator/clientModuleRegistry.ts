@@ -18,7 +18,7 @@ const base = (
 export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   guia_circularidad: base({
     module_id: 'guia_circularidad',
-    label: 'Steps for Circularity — Guía de lectura',
+    label: 'Guía de circularidad — Cómo navegar ALQUIMIA',
     decision: 'Entender qué es ALQUIMIA, el problema de RSU y cómo navegar el simulador.',
     evidence: 'Narrativa en 5 pasos: Analizar, Diagnosticar, Planear, Ejecutar, Monitorear.',
     next_action: 'Leer la guía y navegar a M01 — Línea base RSU.',
@@ -239,6 +239,34 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     decision: 'Verificar qué afirmación sostiene cada número.',
     evidence: 'Matriz trazabilidad, fórmulas, estado verificación.',
     next_action: 'Cerrar pendientes de fuente antes de uso público formal.',
+  }),
+  evm_dashboard: base({
+    module_id: 'evm_dashboard',
+    label: 'EVM — Control presupuestal',
+    decision: 'Monitorear el desempeño real del proyecto vs plan usando Earned Value Management.',
+    evidence: 'CPI, SPI, SV, CV, TCPI, EAC (×3) y VAC calculados desde CAPEX del simulador y costos reales ingresados.',
+    next_action: 'Ingresar el % avance real y los costos acumulados para obtener el semáforo actualizado.',
+  }),
+  conciliacion_mensual: base({
+    module_id: 'conciliacion_mensual',
+    label: 'Conciliación mensual de presupuesto',
+    decision: 'Verificar que el presupuesto ejercido corresponde al avance físico reportado.',
+    evidence: 'Tabla de partidas presupuestales vs. costos reales ingresados por el PMO.',
+    next_action: 'Cargar los costos del mes en curso y comparar contra el PV del PERT schedule.',
+  }),
+  risk_dashboard: base({
+    module_id: 'risk_dashboard',
+    label: 'Registro de riesgos KRONOS',
+    decision: 'Visualizar y gestionar los 6 riesgos críticos del proyecto con su scoring calculado.',
+    evidence: 'Registro dinámico R01–R06: Score = Prob × Impacto (matriz PMBOK 6ed). Semáforo derivado del score.',
+    next_action: 'Asignar owner a riesgos ROJO y documentar el plan de mitigación.',
+  }),
+  gate_status: base({
+    module_id: 'gate_status',
+    label: 'Estado de gates G1–G5',
+    decision: 'Confirmar si el proyecto puede avanzar al siguiente gate o si hay prerequisitos bloqueantes.',
+    evidence: 'Prerequisitos de cada gate verificados contra el estado real de módulos del simulador.',
+    next_action: 'Revisar los prerequisitos del gate actual y cerrar los abiertos antes de la fecha límite.',
   }),
 }
 

@@ -558,6 +558,11 @@ export interface SimulatorState {
   precioCarbonoEsc:  PrecioCarbonoEscenario
   genPercapita:      number
 
+  /** OPEX logístico — editables, benchmark nacional (HANDOFF HERMES↔KRONOS). */
+  costoCamionMesMxn: number
+  costoVisitaMxn: number
+  costoContingenciaTonMxn: number
+
   // Ambiental
   distanciaRelleno:  number
   capacidadRelleno:  number

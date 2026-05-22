@@ -20,18 +20,6 @@ function LoginCard() {
     setError(null)
     setLoading(true)
     try {
-      const res = await fetch('/api/acceso', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: password }),
-      })
-      const data = await res.json() as { ok: boolean; error?: string }
-      if (data.ok) {
-        const dest = isPlatformDeveloper() ? '/simulator' : '/gobierno'
-        router.push(dest)
-        return
-      }
-      // Fallback: try real auth endpoint
       const res2 = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -50,7 +38,7 @@ function LoginCard() {
         router.push('/gobierno')
         return
       }
-      setError(data.error ?? 'Credenciales incorrectas.')
+      setError('Credenciales incorrectas.')
     } catch {
       setError('Error de conexión. Intenta de nuevo.')
     } finally {
@@ -165,7 +153,7 @@ export default function LandingPage() {
           </span>
 
           <h1 className="font-serif text-[44px] sm:text-[60px] lg:text-[72px] text-white leading-[1.02] max-w-4xl mx-auto mb-6">
-            Software de{' '}
+            Plataforma de{' '}
             <span className="text-[#6EC247]">consultoría integral</span>
             {' '}para ciudades mexicanas
           </h1>
@@ -284,7 +272,7 @@ export default function LandingPage() {
             <Link href="/aprende" className="hover:text-[#3B6D11]">Aprende</Link>
             <Link href="/gobierno" className="hover:text-[#3B6D11]">Gobierno</Link>
             <Link href="/privados" className="hover:text-[#3B6D11]">Privados</Link>
-            <Link href="/login" className="hover:text-[#3B6D11]">Acceso</Link>
+            <Link href="/login" className="hover:text-[#3B6D11]">Iniciar sesión</Link>
           </nav>
         </div>
       </footer>

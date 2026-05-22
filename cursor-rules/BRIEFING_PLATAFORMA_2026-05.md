@@ -77,7 +77,7 @@ AccesoForm.tsx       ELIMINADO — el selector de rol vive dentro del simulador
                                          │
                                ¿audience seleccionada? → NO → AudienceGateway
                                          │
-                               Simulador 4 capítulos × 34 módulos
+                               Simulador 4 capítulos × 35 módulos (+ M00 guía)
 ```
 
 ### Roles de usuario
@@ -92,15 +92,15 @@ AccesoForm.tsx       ELIMINADO — el selector de rol vive dentro del simulador
 
 ## 3. MÓDULOS RSU — LOS 4 CAPÍTULOS
 
-El módulo RSU tiene 34 módulos organizados en 4 capítulos. Esta es la fuente de verdad en código:
+El servicio sectorial RSU tiene **35 módulos de decisión** (+ **M00** guía) organizados en 4 capítulos. Fuente de verdad en código:
 `frontend/src/lib/chapterConfig.ts`
 
 | Cap. | Nombre | Color | Rubros | Módulos |
 |------|--------|-------|--------|---------|
-| **1** | Diagnóstico | Verde `#3B6D11` | Ambiental · Social · Gobernanza operativa · Institucional-normativo · Financiero-económico · Teoría de cambio | 14 módulos (M01–M04C) |
+| **1** | Diagnóstico | Verde `#3B6D11` | Ambiental · Social · Gobernanza operativa · Institucional-normativo · Financiero-económico · Teoría de cambio | 13 módulos (M01–M04C) |
 | **2** | Planificación | Azul `#1A5FA8` | Estratégico · Operativo · Económico | 9 módulos (M05–M10) |
-| **3** | Modelo | Ámbar `#D4881E` | Institucional · Financiero · Gobernanza | 6 módulos (M11–M15) |
-| **4** | Control | Púrpura `#4A1C7A` | Cumplimiento · Monitoreo · Reporteo | 5 módulos (M16–M19) |
+| **3** | Modelo | Ámbar `#D4881E` | Institucional · Financiero · Gobernanza | 5 módulos (M11–M15) |
+| **4** | Control | Púrpura `#4A1C7A` | Cumplimiento · Monitoreo · Reporteo · Control presupuestal · Gestión de riesgos | 8 módulos (M16–M21B) |
 
 Más **M00** (Guía de circularidad) como entrada narrativa.
 
@@ -153,7 +153,7 @@ Municipios fuera de esa lista: el cliente los sube en onboarding.
 
 | Sector | Estado | Entregable para el municipio |
 |--------|--------|------------------------------|
-| **RSU** | **Activo — 34 módulos** | Diagnóstico + plan + modelo financiero + expediente Cabildo |
+| **RSU** | **Activo — 35 módulos + M00** | Diagnóstico + plan + modelo financiero + expediente Cabildo |
 | Salud pública | En diseño | Cobertura sanitaria + inversión priorizada + indicadores OMS/OPS |
 | Transporte público | En diseño | Eficiencia rutas + modelo tarifario + plan concesiones |
 | Educación | En diseño | Rezago educativo AGEB + infraestructura INIFED + proyección matrícula |
@@ -203,6 +203,13 @@ Tu cursor rule describe la operación a **escala completa Año 3** (725 t/día, 
 
 **Tu tarea más urgente:**
 Asegurar que `LogisticaOperativaStack` calcule el dimensionamiento de flota y rutas para cualquier municipio (no solo la red fija de SLP). El componente debe usar `municipiosActivos` y `zmActiva` del store, no valores hardcodeados.
+
+**Mandato producto (mayo 2026): recicladoras por ciudad**
+- Dejar de asumir las 5 recicladoras fijas del piloto SLP como default global.
+- Construir catálogo por `municipio_id` / `zm_simulator_id` (DENUE → Places → seed curada).
+- Integrar en `CentrosAcopioMap`, M08 logística y M10 mercado de materiales.
+- Publicar KPI de cobertura de giros hacia KRONOS.
+- Ver detalle en `cursor-rules/hermes.md` § MANDATO PRODUCTO — RECICLADORAS POR CIUDAD.
 
 ---
 

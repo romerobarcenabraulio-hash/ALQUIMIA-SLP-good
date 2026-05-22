@@ -1,0 +1,47 @@
+{
+  "G1": {
+    "status": "NO_INICIADO",
+    "fecha_objetivo": null,
+    "fecha_cruce_real": null,
+    "prerequisitos_completados": [],
+    "ultima_revision": null,
+    "alertas_enviadas": [],
+    "notas": ""
+  },
+  "G2": {
+    "status": "NO_INICIADO",
+    "fecha_objetivo": null,
+    "fecha_cruce_real": null,
+    "prerequisitos_completados": [],
+    "ultima_revision": null,
+    "alertas_enviadas": [],
+    "notas": ""
+  },
+  "G3": {
+    "status": "NO_INICIADO",
+    "fecha_objetivo": null,
+    "fecha_cruce_real": null,
+    "prerequisitos_completados": [],
+    "ultima_revision": null,
+    "alertas_enviadas": [],
+    "notas": ""
+  },
+  "G4": {
+    "status": "NO_INICIADO",
+    "fecha_objetivo": null,
+    "fecha_cruce_real": null,
+    "prerequisitos_completados": [],
+    "ultima_revision": null,
+    "alertas_enviadas": [],
+    "notas": ""
+  },
+  "G5": {
+    "status": "NO_INICIADO",
+    "fecha_objetivo": null,
+    "fecha_cruce_real": null,
+    "prerequisitos_completados": [],
+    "ultima_revision": null,
+    "alertas_enviadas": [],
+    "notas": ""
+  }
+}
