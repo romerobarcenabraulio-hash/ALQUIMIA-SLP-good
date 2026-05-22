@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
@@ -12,6 +12,20 @@ function loginDestination(next?: string | null): string {
 }
 
 export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center" style={{ background: '#F8F6F1' }}>
+          <p className="text-[#A8A49C] text-[13px]">Cargando acceso…</p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
+  )
+}
+
+function LoginForm() {
   const [email, setEmail]     = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading]  = useState(false)
