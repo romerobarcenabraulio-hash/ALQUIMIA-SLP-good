@@ -8,14 +8,18 @@ from __future__ import annotations
 import logging
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
 
 from app.planning.risk.alert_engine import get_all_active_alerts
 from app.planning.risk.risk_register import (
     load_risk_register,
     update_risk,
 )
+from app.planning.budget.persistence import log_gate_status_change
 from app.planning.scheduling.gate_tracker import (
     check_gate_alerts,
     get_current_gate,
@@ -93,7 +97,10 @@ def get_gates() -> dict:
 
 
 @router.post("/gates/update", summary="Actualizar estado de un gate")
-def update_gate_endpoint(req: GateUpdateRequest) -> dict:
+def update_gate_endpoint(
+    req: GateUpdateRequest,
+    db: Session | None = Depends(get_db),
+) -> dict:
     """Actualiza el estado de un gate del proyecto."""
     from datetime import date
 
@@ -107,8 +114,10 @@ def update_gate_endpoint(req: GateUpdateRequest) -> dict:
                 detail=f"fecha_objetivo inválida: {req.fecha_objetivo}. Usar formato YYYY-MM-DD.",
             )
 
+    status_antes = load_gate_status().get(req.gate_id, {}).get("status")
+
     try:
-        return update_gate(
+        updated = update_gate(
             gate_id=req.gate_id,
             status=req.status,
             fecha_objetivo=fecha_obj,
@@ -117,3 +126,17 @@ def update_gate_endpoint(req: GateUpdateRequest) -> dict:
         )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    if db is not None:
+        try:
+            log_gate_status_change(
+                db,
+                gate_id=req.gate_id.upper(),
+                status_anterior=status_antes,
+                status_nuevo=req.status,
+                nota=req.nota,
+            )
+        except Exception as exc:
+            logger.warning("Gate actualizado pero log BD no persistido: %s", exc)
+
+    return updated

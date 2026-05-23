@@ -5,7 +5,13 @@ from typing import Optional
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env")
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+    # Runtime / deploy (.env.example)
+    ENVIRONMENT:     str = "development"
+    ALLOWED_ORIGINS: str = "http://localhost:3000"
+    PORT:            int = 8000
+    LOG_LEVEL:       str = "info"
 
     # JWT
     SECRET_KEY:          str = "alquimia-secret-change-in-prod-2025"
