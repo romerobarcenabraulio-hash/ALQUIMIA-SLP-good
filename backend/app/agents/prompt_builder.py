@@ -310,7 +310,7 @@ def build_agent_prompt(
         user_lines.append("\n## Investigación web (resumen compacto):")
         for cat in (
             "precios_materiales", "costos_construccion", "costos_terreno",
-            "reglamentos", "benchmarks_latam",
+            "reglamentos", "noticias_locales", "benchmarks_latam",
         ):
             items = rf.get(cat) or []
             for it in items[:2]:
@@ -321,6 +321,25 @@ def build_agent_prompt(
                 user_lines.append(f"  - [{cat}] {tit} ({dom}){extra}")
         if rf.get("advertencias"):
             user_lines.append(f"  - Advertencia: {rf['advertencias'][0][:120]}")
+
+    arbol = bundle.inputs_usuario.get("arbol_decision")
+    if isinstance(arbol, dict):
+        user_lines.append("\n## Árbol de decisión institucional (simulador):")
+        for key, label in (
+            ("tienepresupuesto", "Presupuesto propio CAPEX/OPEX"),
+            ("existeConcesionario", "Concesionario vigente"),
+            ("aceptaRenegociar", "Acepta renegociar contrato"),
+        ):
+            val = arbol.get(key)
+            user_lines.append(f"  - {label}: {val if val is not None else 'pendiente'}")
+        if arbol.get("camino_recomendado"):
+            user_lines.append(f"  - Camino sugerido: {arbol['camino_recomendado']}")
+        if arbol.get("esquema_recomendado"):
+            user_lines.append(f"  - Esquema: {arbol['esquema_recomendado']}")
+
+    implicacion = bundle.inputs_usuario.get("implicacion_decision")
+    if implicacion:
+        user_lines.append(f"\n## Implicación para la decisión:\n  - {implicacion}")
 
     # Evidence pack
     if evidence_pack and evidence_pack.items:

@@ -215,6 +215,81 @@ def build_municipal_context_narrative(story: list, ctx: dict) -> None:
         story.append(Spacer(1, 0.08 * MARGINS["top"]))
 
 
+def _escape_reportlab(text: str) -> str:
+    return (
+        text.replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+    )
+
+
+def _inline_md_to_reportlab(line: str) -> str:
+    """Convierte **bold** y viñetas simples a markup ReportLab."""
+    import re
+
+    s = _escape_reportlab(line.strip())
+    s = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", s)
+    if s.startswith("- ") or s.startswith("• "):
+        return s[2:]
+    return s
+
+
+def _append_markdown_body(story: list, contenido: str, styles: dict, margin_unit: float) -> None:
+    from reportlab.platypus import Paragraph, Spacer
+
+    blocks = [b.strip() for b in contenido.split("\n\n") if b.strip()]
+    for block in blocks:
+        if block.startswith("|") and "|" in block[1:]:
+            from reportlab.platypus import Table
+
+            rows = []
+            for row in block.split("\n"):
+                if row.strip().startswith("|---"):
+                    continue
+                cells = [c.strip() for c in row.strip("|").split("|")]
+                if cells:
+                    rows.append(cells)
+            if rows:
+                tbl = Table(rows)
+                tbl.setStyle(table_style_consulting())
+                story.append(tbl)
+                story.append(Spacer(1, 0.06 * margin_unit))
+            continue
+
+        for line in block.split("\n"):
+            line = line.strip()
+            if not line:
+                continue
+            if line.startswith(("- ", "• ", "* ")):
+                story.append(Paragraph(_inline_md_to_reportlab(line), styles["body_bullet"]))
+            else:
+                story.append(Paragraph(_inline_md_to_reportlab(line), styles["body"]))
+        story.append(Spacer(1, 0.06 * margin_unit))
+
+
+def build_ghostwriter_narrative(story: list, draft: Any) -> None:
+    """Secciones SCQA redactadas por Ghostwriter (+ Humanizador)."""
+    from reportlab.platypus import Paragraph, Spacer
+
+    styles = consulting_styles()
+    MARGINS = margins()
+
+    story.append(Paragraph("Narrativa ejecutiva — ÁGORA Ghostwriter", styles["section_h1"]))
+    badge = "borrador LLM" if not getattr(draft, "is_fallback", True) else "borrador asistido"
+    story.append(Paragraph(
+        f"Redacción institucional ALQUIMIA ({badge}). "
+        "Propuesta expositiva — no dictamen oficial.",
+        styles["body"],
+    ))
+    story.append(Spacer(1, 0.1 * MARGINS["top"]))
+
+    for sec in getattr(draft, "secciones", []) or []:
+        titulo = getattr(sec, "titulo", None) or sec.get("titulo", "Sección")
+        contenido = getattr(sec, "contenido", None) or sec.get("contenido", "")
+        story.append(Paragraph(_escape_reportlab(str(titulo)), styles["section_h2"]))
+        _append_markdown_body(story, str(contenido), styles, MARGINS["top"])
+
+
 def build_kpi_section(story: list, resultados: dict, manifest: dict) -> None:
     """Sección KPI para documento 01 — contenido productivo."""
     from reportlab.platypus import Paragraph, Spacer, Table

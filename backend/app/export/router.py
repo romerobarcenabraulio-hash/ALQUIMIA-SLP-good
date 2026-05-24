@@ -49,7 +49,7 @@ def export_report(req: ExportRequest, request: Request):
 
 
 @router.post("/executive-pdf")
-def export_executive_pdf(req: ExecutivePdfRequest):
+async def export_executive_pdf(req: ExecutivePdfRequest):
     """
     PDF consultoría con portada + índice + estructura del blueprint.
     document_id: 01_resumen_ejecutivo_municipal (default) u otro ID canónico.
@@ -63,6 +63,7 @@ def export_executive_pdf(req: ExecutivePdfRequest):
     package_id = f"sim-{uuid.uuid4().hex[:12]}"
 
     from app.export.municipal_context import merge_municipal_context
+    from app.export.executive_narrative import generate_executive_draft
 
     ctx = merge_municipal_context(
         req.municipio_id,
@@ -70,6 +71,10 @@ def export_executive_pdf(req: ExecutivePdfRequest):
         zm=req.zm,
         municipio_nombre=req.municipio_nombre,
     )
+
+    draft_ejecutivo = None
+    if doc_id == "01_resumen_ejecutivo_municipal":
+        draft_ejecutivo = await generate_executive_draft(req, ctx)
 
     pdf_bytes, reason = render_consulting_document_pdf(
         document_id=doc_id,
@@ -80,6 +85,7 @@ def export_executive_pdf(req: ExecutivePdfRequest):
         package_id=package_id,
         module_label=req.module_label or "",
         contexto_municipal=ctx,
+        draft_ejecutivo=draft_ejecutivo,
     )
     if not pdf_bytes:
         raise HTTPException(status_code=503, detail=reason or "PDF no disponible")

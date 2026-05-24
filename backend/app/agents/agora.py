@@ -776,6 +776,183 @@ def _format_director_coherence_summary(
     return "\n".join(lines)
 
 
+async def draft_ejecutivo_for_export(
+    plan_input: PlanInput,
+    municipios_activos: Optional[list[str]] = None,
+) -> Optional[DraftDocument]:
+    """
+    Redacta solo el doc 01 (Resumen ejecutivo) para export PDF del simulador.
+    Ghostwriter → Humanizador; fallback SCQA municipal si no hay LLM.
+    """
+    from app.agents.bundle_builder import build_bundle_from_plan_input
+    from app.agents.document_specs import DOC_EJECUTIVO, spec_ejecutivo
+    from app.agents.dossier import build_municipal_reasoning_dossier
+    from app.agents.schemas import DocumentPlan
+
+    bundle = build_bundle_from_plan_input(plan_input, municipios_activos)
+
+    if plan_input.research_findings:
+        bundle.inputs_usuario["research_findings"] = plan_input.research_findings
+    if plan_input.reasoning_graph:
+        bundle.inputs_usuario["reasoning_graph"] = plan_input.reasoning_graph
+    if plan_input.scenario_json.get("arbol_decision"):
+        bundle.inputs_usuario["arbol_decision"] = plan_input.scenario_json["arbol_decision"]
+    if plan_input.scenario_json.get("implicacion_decision"):
+        bundle.inputs_usuario["implicacion_decision"] = plan_input.scenario_json["implicacion_decision"]
+
+    try:
+        dossier = build_municipal_reasoning_dossier(bundle)
+        bundle.inputs_usuario["municipal_reasoning_dossier"] = dossier.model_dump(mode="json")
+    except Exception as exc:
+        logger.debug("dossier ejecutivo skip: %s", exc)
+
+    municipio = plan_input.municipio
+    spec = spec_ejecutivo(bundle.zm, municipio)
+    document_plan = DocumentPlan(
+        bundle_id=bundle.scenario_id,
+        zm=bundle.zm,
+        municipios=bundle.municipios_activos,
+        specs=[spec],
+    )
+    draft_bundle = _init_draft_bundle(bundle, document_plan)
+    output = PlanOutput()
+
+    ghostwriter_prompt = _load_prompt("ghostwriter")
+    await _run_ghostwriter_pass(
+        bundle,
+        document_plan,
+        draft_bundle,
+        ghostwriter_prompt,
+        plan_input,
+        output,
+        frozenset(),
+    )
+
+    doc = draft_bundle.documento_por_id(DOC_EJECUTIVO)
+    if doc is None:
+        return None
+
+    if not doc.secciones or doc.is_fallback:
+        text = _build_executivo_scqa_fallback(bundle, plan_input, spec)
+        doc.secciones = _text_to_sections(text, spec)
+        doc.is_fallback = not _anthropic_available()
+
+    if doc.secciones and _anthropic_available():
+        humanizador_prompt = _load_prompt("humanizador")
+        await _run_humanizador_pass(
+            bundle, draft_bundle, humanizador_prompt, plan_input, output,
+        )
+        doc = draft_bundle.documento_por_id(DOC_EJECUTIVO) or doc
+
+    return doc
+
+
+def _build_executivo_scqa_fallback(bundle: ScenarioBundle, plan_input: PlanInput, spec) -> str:
+    """Narrativa SCQA determinística — estándar fuerza de trabajo ALQUIMIA."""
+    kpis = plan_input.kpis_json or {}
+    municipio = plan_input.municipio
+    zm = plan_input.zm
+    score = (plan_input.data_provenance or {}).get("score_datos")
+    score_txt = f"{score:.0f}%" if score is not None else "N/D"
+
+    legal = {}
+    for m_id in bundle.municipios_activos:
+        legal = bundle.legal_municipal.get(m_id) or bundle.legal_municipal.get(m_id.lower()) or {}
+        if legal:
+            break
+
+    reg = legal.get("reglamento", "reglamento municipal pendiente de fuente verificada")
+    brecha = legal.get("brecha_critica", "N/D")
+    arbol = bundle.inputs_usuario.get("arbol_decision") or {}
+    camino = arbol.get("camino_recomendado") or plan_input.scenario_json.get("implicacion_decision") or "pendiente en simulador"
+
+    tir = kpis.get("tir")
+    vpn = kpis.get("vpn")
+    capex = kpis.get("capex_total")
+    empleos = kpis.get("empleos_directos")
+    co2 = kpis.get("co2e_evitadas_anual")
+
+    noticias_snip = ""
+    rf = bundle.inputs_usuario.get("research_findings") or {}
+    if rf.get("noticias_locales"):
+        n0 = rf["noticias_locales"][0]
+        noticias_snip = f" Contexto local: {(n0.get('titulo') or '')[:90]}."
+
+    disclaimer = (
+        "Borrador de consultoría ALQUIMIA — no dictamen oficial, no acto de Cabildo, "
+        "no presupuesto aprobado."
+    )
+
+    sections = [
+        (
+            "1. Página de decisión",
+            f"El Ayuntamiento de {municipio} puede deliberar si autoriza la exploración formal "
+            f"del programa de gestión integral de residuos modelado en ALQUIMIA para la ZM {zm}. "
+            f"Calidad de datos del simulador: {score_txt}. {disclaimer}",
+        ),
+        (
+            "2. Problema en 5 líneas",
+            f"La recolección y valorización de RSU en {municipio} requiere alinear reglamento, "
+            f"operación y financiamiento.{noticias_snip} "
+            f"El reglamento analizado ({reg}) presenta brecha crítica declarada: {brecha}. "
+            "Sin separación en origen verificable y sin fuente jurídica validada, la propuesta "
+            "permanece en simulación — no en obligación normativa.",
+        ),
+        (
+            "3. Propuesta resumida",
+            f"ALQUIMIA modela centros de acopio, captura progresiva y cadena de valor bajo el "
+            f"camino institucional sugerido: {camino}. "
+            "La propuesta es expositiva hasta validar competencia municipal, reglamento y capacidad operativa.",
+        ),
+        (
+            "4. Inversión requerida",
+            f"CAPEX total modelado: ${float(capex or 0):,.0f} MXN (simulador ALQUIMIA). "
+            "Cifra sujeta a cotización de mercado, disponibilidad de terreno y esquema "
+            "institucional elegido en el árbol de decisión.",
+        ),
+        (
+            "5. Retorno proyectado",
+            f"El simulador proyecta TIR {float(tir or 0):.1f}% y VPN ${float(vpn or 0):,.0f} MXN "
+            "bajo supuestos editables de precios, captura y costos de disposición. "
+            "Requiere validación de tesorería antes de cualquier compromiso.",
+        ),
+        (
+            "6. Impacto ambiental y empleos",
+            f"Empleos directos modelados: {float(empleos or 0):,.0f}. "
+            f"CO₂e evitadas anual: {float(co2 or 0):,.0f} t (estimación del modelo, no certificación).",
+        ),
+        (
+            "7. Riesgos principales",
+            "• Fuente del reglamento no verificada o brecha normativa alta.\n"
+            "• Dependencia de concesionario o presupuesto municipal no confirmado.\n"
+            "• Datos demográficos/RSU estimados — requieren validación INEGI/local.",
+        ),
+        (
+            "8. Próximos 30 días",
+            "1. Validar PDF del reglamento con jurídica municipal.\n"
+            "2. Confirmar esquema institucional (árbol de decisión en simulador).\n"
+            "3. Sesión de Comisión de Servicios Públicos con este resumen y modelo financiero.\n"
+            "4. Orden del día tentativo para Cabildo — sin votación hasta validar fuentes.",
+        ),
+        (
+            "9. Tabla de decisión requerida",
+            "| Decisión | Responsable | Plazo |\n"
+            "|----------|-------------|-------|\n"
+            "| Autorizar análisis formal del programa | Presidencia / Cabildo | 30 días |\n"
+            "| Validar reglamento y brechas | Jurídico municipal | 15 días |\n"
+            "| Confirmar viabilidad financiera | Tesorería | 30 días |",
+        ),
+    ]
+
+    lines = [f"# Resumen ejecutivo municipal — {municipio}", ""]
+    for title, body in sections:
+        lines.append(f"## {title}")
+        lines.append(body)
+        lines.append("")
+    lines.append(f"_Generado por ÁGORA Ghostwriter · ALQUIMIA · {zm}_")
+    return "\n".join(lines)
+
+
 # ─── Anthropic call (texto puro) ─────────────────────────────────────────────
 
 async def _call_anthropic_text(

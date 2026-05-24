@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import io
 import logging
-from typing import Optional
+from typing import Any, Optional
 
 from app.export.consulting_pdf_builder import (
     build_cover_page,
@@ -68,6 +68,7 @@ def render_consulting_document_pdf(
     package_id: str = "",
     module_label: str = "",
     contexto_municipal: Optional[dict] = None,
+    draft_ejecutivo: Optional[Any] = None,
 ) -> tuple[Optional[bytes], Optional[str]]:
     """
     Genera PDF con portada + índice + estructura del blueprint indicado.
@@ -93,7 +94,11 @@ def render_consulting_document_pdf(
         if contexto_municipal:
             from app.export.consulting_pdf_builder import build_municipal_context_narrative
             build_municipal_context_narrative(story, contexto_municipal)
-        build_kpi_section(story, res, manifest)
+        if draft_ejecutivo and getattr(draft_ejecutivo, "secciones", None):
+            from app.export.consulting_pdf_builder import build_ghostwriter_narrative
+            build_ghostwriter_narrative(story, draft_ejecutivo)
+        else:
+            build_kpi_section(story, res, manifest)
     elif bp.document_id == "00_indice_maestro_paquete":
         build_master_index_body(story, zm=zm, municipio=municipio, manifest=manifest)
     else:

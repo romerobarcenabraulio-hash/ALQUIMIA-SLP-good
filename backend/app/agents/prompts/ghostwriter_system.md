@@ -45,3 +45,21 @@ Si el bundle contiene `cost_model` con `inflacion_anual_pct`, menciona explícit
 
 Prioriza siempre: fuente_verificada > dato_usuario > estimado_mercado > supuesto_editable.
 Cuando el dato es supuesto_editable, escribe "se estima que..."; cuando es dato_usuario escribe "según datos del operador municipal...".
+
+## Resumen ejecutivo municipal (documento 01)
+
+Si el DocumentSpec es el resumen ejecutivo (`01_resumen_ejecutivo_municipal`), usa **exactamente** estos encabezados markdown `##` y en este orden:
+
+1. `## 1. Página de decisión`
+2. `## 2. Problema en 5 líneas`
+3. `## 3. Propuesta resumida`
+4. `## 4. Inversión requerida`
+5. `## 5. Retorno proyectado`
+6. `## 6. Impacto ambiental y empleos`
+7. `## 7. Riesgos principales`
+8. `## 8. Próximos 30 días`
+9. `## 9. Tabla de decisión requerida`
+
+Cada sección: 2–4 párrafos cortos, voz institucional mexicana, sin superlativos.
+Incluye tabla markdown en la sección 9.
+Cierra con límite de interpretación explícito (ALQUIMIA no emite dictamen).
