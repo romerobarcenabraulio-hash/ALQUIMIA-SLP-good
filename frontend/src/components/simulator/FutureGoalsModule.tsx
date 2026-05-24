@@ -1316,12 +1316,12 @@ function Page3({
       {/* Gates + Interdependency */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Gates */}
-        <ExpandableChart chartId="m03-gates" title="Gates para avanzar de fase" subtitle="Condiciones indispensables · estado actual">
+        <ExpandableChart chartId="m03-gates" title="Condiciones de avance (editorial)" subtitle="Checklist operativo · ver gates institucionales G1–G5 en M05D y M21B">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <p className="text-[13px] font-semibold text-[#1C1B18]">Gates para avanzar de fase</p>
-                <p className="text-[11px] text-[#A8A49C]">Condiciones indispensables · no avanzar sin cumplirlos</p>
+                <p className="text-[13px] font-semibold text-[#1C1B18]">Condiciones de avance (editorial)</p>
+                <p className="text-[11px] text-[#A8A49C]">Checklist operativo — no confundir con gates G1–G5 (M05D / M21B)</p>
               </div>
               <span className={cn('text-[13px] font-bold px-2.5 py-1 rounded-[8px]',
                 gatesCumplidos >= 5 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]'
@@ -1580,6 +1580,13 @@ export function FutureGoalsModule({
 
   return (
     <div className="pb-4">
+      <div className="mb-4 rounded-[8px] border border-[#BDD7F5] bg-[#E8F0FA] px-4 py-3">
+        <p className="text-[11px] text-[#1A5FA8]">
+          <strong>Nota KRONOS:</strong> Los gates <strong>G1–G5</strong> (fases institucionales 24 meses) son distintos
+          de las actividades <strong>G01–G14</strong> del Gantt operativo. Vista maestra por fases en{' '}
+          <strong>M05D Roadmap</strong>; seguimiento en <strong>M21B</strong>.
+        </p>
+      </div>
       {/* Page tab navigation — oculto con pageOnly */}
       {!pageOnly && (
       <div className="flex items-center gap-2 mb-6 flex-wrap">
