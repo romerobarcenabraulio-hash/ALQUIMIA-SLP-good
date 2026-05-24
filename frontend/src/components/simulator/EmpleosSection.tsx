@@ -10,9 +10,6 @@ export function EmpleosSection() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S12 — Empleos e impacto social</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Motor de empleo formal</h2>
-
       <ContextoModulo
         variante="operativo"
         titulo="¿De dónde vienen estos empleos y cómo se calculan?"

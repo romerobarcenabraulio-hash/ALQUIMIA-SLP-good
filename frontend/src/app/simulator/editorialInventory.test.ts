@@ -100,4 +100,22 @@ describe('editorial inventory', () => {
     const invalid = refs.filter(r => !valid.has(r))
     expect(invalid, `Referencias M inválidas: ${[...new Set(invalid)].join(', ')}`).toEqual([])
   })
+
+  it('stacks no repiten hero de módulo (título duplicado bajo DecisionModuleShell)', () => {
+    const stackPaths = [
+      'src/components/simulator/stacks/CapacidadInstitucionalStack.tsx',
+      'src/components/simulator/stacks/DictamenTecnicoStack.tsx',
+      'src/components/simulator/stacks/EvaluacionSocioeconomicaStack.tsx',
+      'src/components/simulator/stacks/ImpactoAmbientalStack.tsx',
+      'src/components/simulator/stacks/InspeccionStack.tsx',
+      'src/components/simulator/stacks/OrganigramaDiagnosticoStack.tsx',
+      'src/components/simulator/stacks/PlanEducativoStack.tsx',
+      'src/components/simulator/stacks/TeoriaCambioStack.tsx',
+      'src/components/simulator/stacks/MonitoreoRealStack.tsx',
+    ]
+    const heroPattern = /font-serif text-\[22px\]/
+    for (const p of stackPaths) {
+      expect(readFrontend(p), `${p} repite hero h2`).not.toMatch(heroPattern)
+    }
+  })
 })

@@ -638,31 +638,9 @@ function Page1({
         <PlanningKpi icon={Target}         label="Confianza cronograma"  value="72%"                        sub="supuestos validados"     color="#D4881E" />
       </div>
 
-      {/* Executive reading */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="w-2 h-2 rounded-full bg-[#3B6D11] shrink-0" />
-          <p className="text-[10px] uppercase tracking-[0.09em] text-[#6B6760] font-bold">Lectura ejecutiva del plan</p>
-        </div>
-        <p className="text-[14px] leading-relaxed text-[#3D3B36] mb-3 font-medium">
-          Este módulo convierte el escenario comprometido en una ruta operativa integral. Integra actividades
-          jurídicas, técnicas, financieras, operativas y sociales para identificar qué debe ocurrir primero,
-          qué depende de qué, quién decide y qué riesgos pueden retrasar la implementación.
-        </p>
-        <p className="text-[13px] leading-relaxed text-[#6B6760]">
-          La planeación aquí es una traducción ejecutiva del escenario: convierte toneladas, capturas, costos
-          y condiciones jurídicas en fases, actividades, responsables y gates de decisión. No se trata de
-          calendarizar tareas — se trata de asegurar que el programa no llegue a infraestructura sin permisos,
-          a operación sin responsables, ni a metas sin capacidad instalada.
-        </p>
-      </div>
-
       {/* Phase timeline */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Fases maestras del plan de implementación</p>
-        <p className="text-[11px] text-[#A8A49C] mb-5">
-          Secuencia operativa obligatoria — {M03_PHASES.filter(f => f.semanas > 0).reduce((s, f) => s + f.semanas, 0)} semanas de preparación + escalamiento continuo
-        </p>
+        <p className="text-[13px] font-semibold text-[#1C1B18] mb-4">Fases del plan</p>
         <div className="space-y-0">
           {M03_PHASES.map((f, i) => (
             <div key={f.n} className="flex items-stretch gap-0">
@@ -701,12 +679,8 @@ function Page1({
       </div>
 
       {/* PERT summary */}
-      <ExpandableChart chartId="m03-pert-summary" title="PERT resumido — secuencia lógica del plan" subtitle="Flujo principal · flechas = dependencia obligatoria">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-          <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">PERT resumido — secuencia lógica</p>
-          <p className="text-[11px] text-[#A8A49C] mb-4">
-            Flujo principal de dependencias · nodo en azul requiere validación jurídica del Módulo 2
-          </p>
+      <ExpandableChart chartId="m03-pert-summary" title="PERT resumido" subtitle="Flujo principal · flechas = dependencia obligatoria">
+        <>
           <PertSummaryDiagram />
           <div className="flex gap-4 mt-3 flex-wrap text-[10px]">
             {[['#2D5A0D','Ruta crítica'],['#1A5FA8','Depende de M2'],['#9CA3AF','Dependencia fuerte']].map(([c,l]) => (
@@ -716,14 +690,12 @@ function Page1({
               </div>
             ))}
           </div>
-        </div>
+        </>
       </ExpandableChart>
 
       {/* Gantt master */}
-      <ExpandableChart chartId="m03-gantt-master" title="Gantt maestro — líneas de trabajo" subtitle="7 líneas de trabajo · escala en semanas">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-          <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Gantt maestro — 7 líneas de trabajo</p>
-          <p className="text-[11px] text-[#A8A49C] mb-5">Escala temporal en semanas · horizonte {totalSemanas} sem</p>
+      <ExpandableChart chartId="m03-gantt-master" title="Gantt maestro" subtitle={`7 líneas · ${totalSemanas} semanas`}>
+        <>
           {/* week ticks header */}
           <div className="flex items-center gap-3 mb-2">
             <div className="w-44 shrink-0" />
@@ -764,23 +736,11 @@ function Page1({
               </div>
             ))}
           </div>
-        </div>
+        </>
       </ExpandableChart>
-
-      {/* Recommendation card */}
       <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-[10px] bg-[#3B6D11] flex items-center justify-center shrink-0">
-            <Zap className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13px] font-bold text-[#3B6D11] mb-1">Recomendación del motor de planeación</p>
-            <p className="text-[13px] text-[#3B5F23] leading-relaxed mb-4">
-              El motor recomienda mantener un <strong>plan moderado de implementación</strong>. La ruta es viable
-              si permisos, predios y contratación se cierran antes de iniciar infraestructura. El riesgo principal
-              es el retraso en el proceso licitatorio, que puede comprometer la fecha del piloto.
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-4">
+        <p className="text-[13px] font-bold text-[#3B6D11] mb-3">Recomendación del motor</p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mb-3">
               {[
                 { label: 'Tiempo total',       value: `${totalSemanas} sem`,     color: '#1A5FA8' },
                 { label: 'Costo total',         value: fmt.mxnM(capexTotal),       color: '#3B6D11' },
@@ -793,16 +753,10 @@ function Page1({
                   <p className="text-[12px] font-semibold" style={{ color: c.color }}>{c.value}</p>
                 </div>
               ))}
-            </div>
-            <div className="rounded-[8px] border border-[#B8D99A] bg-[#EAF3DE] px-3 py-2">
-              <p className="text-[11px] text-[#3B5F23] font-semibold mb-1">Condición crítica · siguiente acción</p>
-              <p className="text-[11px] text-[#3B5F23]">
-                Iniciar gestión de permisos ambientales en paralelo con el proceso licitatorio.
-                No esperar a que la licitación cierre para tramitar MIA — un retraso de 2 semanas puede costar +20 días en la ruta crítica.
-              </p>
-            </div>
-          </div>
         </div>
+        <p className="text-[11px] text-[#3B5F23] rounded-[8px] border border-[#B8D99A] bg-[#EAF3DE] px-3 py-2">
+          Tramitar MIA en paralelo con licitación — no en serie (+20 días en ruta crítica).
+        </p>
       </div>
     </div>
   )
@@ -862,12 +816,8 @@ function Page2({
       </div>
 
       {/* PERT full network */}
-      <ExpandableChart chartId="m03-pert-full" title="A) Red PERT — dependencias y ruta crítica" subtitle="T01–T15 · flechas = dependencia obligatoria · verde = ruta crítica">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-          <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">A) Red PERT — dependencias y ruta crítica</p>
-          <p className="text-[11px] text-[#A8A49C] mb-2">
-            Verde = ruta crítica · gris = dependencia fuerte · naranja = dependencia débil · hacer clic en nodo para ver detalle
-          </p>
+      <ExpandableChart chartId="m03-pert-full" title="Red PERT" subtitle="T01–T15 · clic en nodo para detalle · verde = ruta crítica">
+        <>
           <div className="flex gap-4 mb-4">
             <PertDiagram compact selectedId={selectedNode ?? undefined} onSelect={id => setSelectedNode(id === selectedNode ? null : id)} />
             {selectedNodeData && (
@@ -912,17 +862,12 @@ function Page2({
               <span className="text-[#6B6760]">Sin holgura (crítico)</span>
             </div>
           </div>
-        </div>
+        </>
       </ExpandableChart>
 
       {/* Critical path table */}
-      <ExpandableChart chartId="m03-critical-table" title="B) Tabla de ruta crítica" subtitle="Actividades con holgura 0 · responsable · impacto si se retrasa">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#F0EDE5]">
-            <p className="text-[13px] font-semibold text-[#1C1B18]">B) Tabla de ruta crítica</p>
-            <p className="text-[11px] text-[#A8A49C]">Actividades sin holgura · IDs coinciden con los nodos del PERT</p>
-          </div>
-          <div className="overflow-x-auto">
+      <ExpandableChart chartId="m03-critical-table" title="Ruta crítica" subtitle="Holgura 0 · responsable · impacto si se retrasa">
+        <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
@@ -953,18 +898,13 @@ function Page2({
                 ))}
               </tbody>
             </table>
-          </div>
         </div>
       </ExpandableChart>
 
       {/* Gantt detailed */}
-      <ExpandableChart chartId="m03-gantt-detail" title="C) Gantt detallado por líneas de trabajo" subtitle="Filtrar por tipo · barras alineadas a escala temporal">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#F0EDE5]">
-            <p className="text-[13px] font-semibold text-[#1C1B18]">C) Gantt detallado por líneas de trabajo</p>
-            <p className="text-[11px] text-[#A8A49C]">Ruta crítica resaltada · filtrar por tipo de actividad</p>
-          </div>
-          <div className="px-6 py-3 flex flex-wrap gap-1.5 border-b border-[#F0EDE5]">
+      <ExpandableChart chartId="m03-gantt-detail" title="Gantt detallado" subtitle="Filtrar por tipo · escala en semanas">
+        <>
+          <div className="flex flex-wrap gap-1.5 mb-4 pb-3 border-b border-[#F0EDE5]">
             {GANTT_FILTERS.map(f => (
               <button key={f.id} type="button" onClick={() => setGanttFilter(f.id)}
                 className={cn(
@@ -975,7 +915,7 @@ function Page2({
               </button>
             ))}
           </div>
-          <div className="px-6 py-4 space-y-2.5">
+          <div className="space-y-2.5">
             {/* week ticks */}
             <div className="flex items-center gap-3">
               <div className="w-48 shrink-0" />
@@ -1018,7 +958,7 @@ function Page2({
               )
             })}
           </div>
-          <div className="px-6 pb-4 flex gap-4 flex-wrap">
+          <div className="flex gap-4 flex-wrap pt-2">
             {[['#2D5A0D','Ruta crítica'],['#1A5FA8','En ejecución'],['#A8A49C','Completado'],['#CBD5E1','Pendiente']].map(([c,l]) => (
               <div key={l} className="flex items-center gap-1.5 text-[9px] text-[#6B6760]">
                 <div className="w-3 h-2.5 rounded-sm" style={{ background: c }} />
@@ -1026,17 +966,12 @@ function Page2({
               </div>
             ))}
           </div>
-        </div>
+        </>
       </ExpandableChart>
 
       {/* RACI */}
-      <ExpandableChart chartId="m03-raci" title="D) Matriz RACI — gobernanza por actividad crítica" subtitle="R=Responsable · A=Aprueba · C=Consulta · I=Informa">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#F0EDE5]">
-            <p className="text-[13px] font-semibold text-[#1C1B18]">D) Matriz RACI — gobernanza por actividad crítica</p>
-            <p className="text-[11px] text-[#A8A49C]">La claridad de gobernanza evita cuellos de botella y acelera decisiones críticas</p>
-          </div>
-          <div className="overflow-x-auto p-6">
+      <ExpandableChart chartId="m03-raci" title="Matriz RACI" subtitle="R · A · C · I por actividad crítica">
+        <div className="overflow-x-auto">
             <table className="text-[11px]">
               <thead>
                 <tr>
@@ -1069,18 +1004,12 @@ function Page2({
                 </div>
               ))}
             </div>
-          </div>
         </div>
       </ExpandableChart>
 
       {/* Bottlenecks */}
-      <ExpandableChart chartId="m03-bottlenecks" title="E) Riesgos y cuellos de botella de calendario" subtitle="Probabilidad × impacto · efecto en días · mitigación">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-          <div className="px-6 py-4 border-b border-[#F0EDE5]">
-            <p className="text-[13px] font-semibold text-[#1C1B18]">E) Riesgos y cuellos de botella de calendario</p>
-            <p className="text-[11px] text-[#A8A49C]">Cada riesgo tiene efecto en ruta crítica y mitigación específica</p>
-          </div>
-          <div className="overflow-x-auto">
+      <ExpandableChart chartId="m03-bottlenecks" title="Riesgos de calendario" subtitle="Probabilidad × impacto · mitigación">
+        <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
@@ -1112,11 +1041,8 @@ function Page2({
                 })}
               </tbody>
             </table>
-          </div>
         </div>
       </ExpandableChart>
-
-      {/* Decision card */}
       <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5 flex items-start gap-4">
         <CheckCircle className="w-7 h-7 text-[#3B6D11] shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
@@ -1206,10 +1132,6 @@ function Page3({
 
       {/* Progress timeline */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <div className="flex items-baseline gap-2 mb-3">
-          <p className="text-[13px] font-semibold text-[#1C1B18]">Lectura del plan comprometido</p>
-          <span className="text-[10px] text-[#A8A49C]">Estado actual del programa vs. metas del horizonte</span>
-        </div>
         <div className="flex items-center gap-3 mb-4">
           <div className="flex-1 h-2 bg-[#E8E4DC] rounded-full overflow-hidden">
             <div className="h-full rounded-full bg-[#3B6D11]" style={{ width: `${Math.min((9 / Math.max(totalMeses, 1)) * 100, 100)}%` }} />
@@ -1273,13 +1195,9 @@ function Page3({
       </div>
 
       {/* Progression chart */}
-      <ExpandableChart chartId="m03-progression" title="Progresión acumulada — contra meta del plan" subtitle="Empleos, CO₂ evitado, derrama y captura por año">
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-          <div className="flex items-center justify-between mb-1 flex-wrap gap-2">
-            <div>
-              <p className="text-[13px] font-semibold text-[#1C1B18]">Progresión acumulada — contra meta del plan</p>
-              <p className="text-[10px] text-[#A8A49C]">Estos filtros cambian la ventana de lectura — no modifican el escenario comprometido del Módulo 1</p>
-            </div>
+      <ExpandableChart chartId="m03-progression" title="Progresión acumulada" subtitle="Empleos · CO₂ · derrama · captura por año">
+        <>
+          <div className="flex justify-end mb-3">
             <div className="flex gap-1">
               {([1, 3, 5, 10] as const).map(w => (
                 <button key={w} type="button" onClick={() => setChartWindow(w)}
@@ -1310,19 +1228,15 @@ function Page3({
               <p className="text-[12px] text-[#A8A49C]">Selecciona un municipio en Módulo 1 para ver la progresión.</p>
             </div>
           )}
-        </div>
+        </>
       </ExpandableChart>
 
       {/* Gates + Interdependency */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Gates */}
-        <ExpandableChart chartId="m03-gates" title="Condiciones de avance (editorial)" subtitle="Checklist operativo · ver gates institucionales G1–G5 en M05D y M21B">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[13px] font-semibold text-[#1C1B18]">Condiciones de avance (editorial)</p>
-                <p className="text-[11px] text-[#A8A49C]">Checklist operativo — no confundir con gates G1–G5 (M05D / M21B)</p>
-              </div>
+        <ExpandableChart chartId="m03-gates" title="Condiciones de avance" subtitle="Editorial · gates G1–G5 en M05D / M21B">
+          <>
+            <div className="flex items-center justify-end mb-4">
               <span className={cn('text-[13px] font-bold px-2.5 py-1 rounded-[8px]',
                 gatesCumplidos >= 5 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]'
               )}>
@@ -1355,13 +1269,12 @@ function Page3({
                 )
               })}
             </div>
-          </div>
+          </>
         </ExpandableChart>
 
         {/* Interdependency */}
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Interdependencia con otros módulos</p>
-          <p className="text-[11px] text-[#A8A49C] mb-4">Este plan se construye sobre decisiones ya validadas en módulos anteriores</p>
+          <p className="text-[12px] font-semibold text-[#1C1B18] mb-3">Cadena de módulos</p>
           <div className="space-y-2.5">
             {[
               { m: 'M1', label: 'Escenario y trayectoria',       desc: 'Define la meta, el ritmo y el volumen de captura que este plan debe alcanzar.', color: '#3B6D11', bg: '#F4FAEC', border: '#D7E8C0' },
@@ -1580,11 +1493,9 @@ export function FutureGoalsModule({
 
   return (
     <div className="pb-4">
-      <div className="mb-4 rounded-[8px] border border-[#BDD7F5] bg-[#E8F0FA] px-4 py-3">
+      <div className="mb-4 rounded-[8px] border border-[#BDD7F5] bg-[#E8F0FA] px-4 py-2.5">
         <p className="text-[11px] text-[#1A5FA8]">
-          <strong>Nota KRONOS:</strong> Los gates <strong>G1–G5</strong> (fases institucionales 24 meses) son distintos
-          de las actividades <strong>G01–G14</strong> del Gantt operativo. Vista maestra por fases en{' '}
-          <strong>M05D Roadmap</strong>; seguimiento en <strong>M21B</strong>.
+          Gates <strong>G1–G5</strong> (institucionales) ≠ actividades <strong>G01–G14</strong> (Gantt). Maestra: M05D · seguimiento: M21B.
         </p>
       </div>
       {/* Page tab navigation — oculto con pageOnly */}

@@ -5,7 +5,6 @@ import {
   Building2, ChevronRight, Network, Users, AlertTriangle, ClipboardList, Scale,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { OrganigramaJerarquico } from '@/components/simulator/OrganigramaJerarquico'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { cn } from '@/lib/utils'
@@ -19,7 +18,6 @@ import {
   type VerificacionOrg,
 } from '@/data/organigramaDiagnostico'
 import {
-  ORGANIGRAMA_BASE_LEGAL,
   ORGANIGRAMA_MUNICIPAL_JERARQUICO,
   flattenOrganigramaNodes,
 } from '@/data/organigramaMunicipalCanon'
@@ -41,14 +39,11 @@ function VerificacionChip({ v }: { v: VerificacionOrg }) {
 export function OrganigramaDiagnosticoStack() {
   const {
     municipiosActivos,
-    zmActiva,
-    seleccionMunicipioCatalog,
     organigramaDiagnostico,
     setOrganigramaVerificacion,
     toggleOrganigramaChecklist,
     setOrganigramaNotaCampo,
   } = useSimulatorStore()
-  const municipioLabel = seleccionMunicipioCatalog?.nombre ?? municipiosActivos[0] ?? 'municipio activo'
 
   const resolveVerificacion = (nodoId: string, fallback: VerificacionOrg): VerificacionOrg =>
     organigramaDiagnostico.verificaciones[nodoId] ?? fallback
@@ -90,50 +85,37 @@ export function OrganigramaDiagnosticoStack() {
 
   return (
     <div className="space-y-5 pb-6">
-      <ScopeAnclaKicker />
 
-      <div className="rounded-[12px] border border-[#D7E8C0] bg-gradient-to-br from-[#F4FAEC] to-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#5A9438] mb-1">M02D · Gobernanza operativa</p>
-        <h2 className="font-serif text-[22px] text-[#1C1B18]">Organigrama municipal — diagnóstico as-is</h2>
-        <p className="mt-2 text-[13px] text-[#6B6760] leading-relaxed max-w-3xl">
-          Jerarquía del ayuntamiento con <strong>poder legislativo, ejecutivo y operador</strong> del servicio RSU
-          en {municipioLabel}. No asumimos titulares: valide en campo y marque estatus por cargo.
-          M07 diseña la estructura objetivo del programa; aquí documenta cómo está hoy.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2 items-center">
-          <ProvenanceBadge
-            tipo="manual"
-            confianza={0.35}
-            fuente="Plantilla Art. 115 + LOM estatal"
-            advertencia="Validar organigrama firmado y concesionario antes de cabildo."
-          />
-          <span className="text-[10px] text-[#A8A49C]">
-            ZM {zmActiva} · {stats.pctConfirmado}% confirmados · checklist {stats.checklistDone}/{CHECKLIST_CAMPO_ORG.length}
-          </span>
-        </div>
+      <div className="flex flex-wrap gap-2 items-center">
+        <ProvenanceBadge
+          tipo="manual"
+          confianza={0.35}
+          fuente="Plantilla Art. 115 + LOM estatal"
+          advertencia="Validar organigrama firmado y concesionario antes de cabildo."
+        />
+        <span className="text-[10px] text-[#A8A49C]">
+          {stats.pctConfirmado}% confirmados · checklist {stats.checklistDone}/{CHECKLIST_CAMPO_ORG.length}
+        </span>
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
         {[
-          { icon: Scale, label: 'Poder legislativo', value: String(stats.legislativo), sub: 'Cabildo y comisiones' },
-          { icon: Building2, label: 'Poder ejecutivo', value: String(stats.ejecutivo), sub: 'Secretarías y direcciones' },
-          { icon: Network, label: 'Operador + interfaz', value: String(stats.operador), sub: 'Concesionario y actas' },
-          { icon: Users, label: 'Cadena de contacto', value: String(CADENA_CONTACTO_RSU.length), sub: 'Ciudadano → cabildo' },
-        ].map(({ icon: Icon, label, value, sub }) => (
+          { icon: Scale, label: 'Legislativo', value: String(stats.legislativo) },
+          { icon: Building2, label: 'Ejecutivo', value: String(stats.ejecutivo) },
+          { icon: Network, label: 'Operador', value: String(stats.operador) },
+          { icon: Users, label: 'Cadena contacto', value: String(CADENA_CONTACTO_RSU.length) },
+        ].map(({ icon: Icon, label, value }) => (
           <div key={label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
             <div className="flex items-center gap-1.5 mb-1">
               <Icon className="w-3.5 h-3.5 text-[#3B6D11]" strokeWidth={2} />
               <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
             </div>
             <p className="font-semibold text-[18px] text-[#1C1B18]">{value}</p>
-            <p className="text-[9px] text-[#A8A49C]">{sub}</p>
           </div>
         ))}
       </div>
 
       <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-        <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Organigrama jerárquico del ayuntamiento</p>
-        <p className="text-[10px] text-[#A8A49C] mb-4">{ORGANIGRAMA_BASE_LEGAL}</p>
         <OrganigramaJerarquico
           resolveVerificacion={resolveVerificacion}
           onVerificacionChange={setOrganigramaVerificacion}
@@ -141,9 +123,8 @@ export function OrganigramaDiagnosticoStack() {
       </section>
 
       <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-        <div className="px-5 py-4 border-b border-[#F0EDE5]">
-          <p className="text-[12px] font-semibold text-[#1C1B18]">Cadena de primer contacto a decisión</p>
-          <p className="text-[10px] text-[#A8A49C] mt-0.5">Lo primero que encuentra el ciudadano y cómo escala hasta quien decide</p>
+        <div className="px-5 py-3 border-b border-[#F0EDE5]">
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Cadena de contacto</p>
         </div>
         <ol className="divide-y divide-[#F0EDE5]">
           {CADENA_CONTACTO_RSU.map(paso => {
@@ -159,8 +140,7 @@ export function OrganigramaDiagnosticoStack() {
                     <p className="text-[12px] font-semibold text-[#1C1B18]">{paso.quien}</p>
                     <VerificacionChip v={v} />
                   </div>
-                  <p className="text-[10px] text-[#6B6760] mb-1"><span className="font-medium text-[#4A4740]">Rol:</span> {paso.rol}</p>
-                  <p className="text-[10px] text-[#6B6760] mb-2"><span className="font-medium text-[#4A4740]">Canal:</span> {paso.canal}</p>
+                  <p className="text-[10px] text-[#6B6760] mb-2">{paso.rol} · {paso.canal}</p>
                   <p className="text-[10px] text-[#5A4A2A] flex items-start gap-1 mb-2">
                     <ChevronRight className="w-3 h-3 shrink-0 mt-0.5 text-[#3B6D11]" />
                     {paso.queResuelve}
@@ -188,7 +168,7 @@ export function OrganigramaDiagnosticoStack() {
       <section className="rounded-[12px] border border-[#F5DCA0] bg-[#FEF7E7]/50 p-5">
         <div className="flex items-center gap-2 mb-3">
           <AlertTriangle className="w-4 h-4 text-[#D4881E]" />
-          <p className="text-[12px] font-semibold text-[#6B4800]">Vacíos, duplicidades e interfaces rotas (hipótesis de trabajo)</p>
+          <p className="text-[12px] font-semibold text-[#6B4800]">Vacíos e interfaces (hipótesis)</p>
         </div>
         <div className="space-y-2">
           {VACIOS_ORGANIZACIONALES.map(v => (
@@ -238,7 +218,7 @@ export function OrganigramaDiagnosticoStack() {
           />
         </label>
         <p className={cn('mt-4 text-[10px] text-[#A8A49C] border-t border-[#F0EDE5] pt-3')}>
-          Al completar este diagnóstico, continúe a M03 Capacidad institucional y M07 Organigrama objetivo en Planificación.
+          Siguiente: M03 capacidad institucional · M07 organigrama objetivo.
         </p>
       </section>
     </div>

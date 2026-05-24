@@ -62,12 +62,17 @@ export function ExpandableChart({ children, title, chartId, subtitle, className 
   return (
     <>
       <div
-        className={`relative group ${className}`}
+        className={`relative group rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden ${className}`}
         data-chart-id={chartId}
       >
-        {children}
-
-        <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 z-10">
+        <div className="flex items-start justify-between gap-3 px-5 pt-4 pb-2 border-b border-[#F0EDE5]">
+          <div className="min-w-0">
+            <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">{title}</p>
+            {subtitle && (
+              <p className="text-[11px] text-[#A8A49C] mt-0.5 leading-snug">{subtitle}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-1 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
           {brief && (
             <button
               type="button"
@@ -93,10 +98,13 @@ export function ExpandableChart({ children, title, chartId, subtitle, className 
             <Expand size={10} />
             Ampliar
           </button>
+          </div>
         </div>
 
+        <div className="px-5 py-4">{children}</div>
+
         {brief && briefOpen && (
-          <div className="mt-2 rounded-[10px] border border-[#D7E8C0] bg-[#F6FAEF] px-4 py-3">
+          <div className="mx-5 mb-4 rounded-[10px] border border-[#D7E8C0] bg-[#F6FAEF] px-4 py-3">
             <BriefPanel brief={brief} compact />
           </div>
         )}

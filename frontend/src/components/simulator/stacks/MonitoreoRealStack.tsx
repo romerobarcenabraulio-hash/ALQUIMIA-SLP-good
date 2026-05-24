@@ -525,16 +525,7 @@ export function MonitoreoRealStack() {
 
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] shadow-[0_2px_12px_rgba(28,27,24,0.06)] overflow-hidden">
-      {/* Header */}
-      <div className="px-6 pt-5 pb-0 border-b border-[#E8E4DC]">
-        <p className="text-[10px] font-mono uppercase tracking-[0.12em] text-[#A8A49C] mb-0.5">
-          Módulo de Monitoreo
-        </p>
-        <h2 className="font-serif text-[20px] text-[#1C1B18] mb-4">
-          Monitoreo con Datos Reales
-        </h2>
-
-        {/* Tab bar */}
+      <div className="px-6 pt-4 pb-0 border-b border-[#E8E4DC]">
         <div className="flex gap-0 -mb-px overflow-x-auto">
           {TABS.map(tab => (
             <button

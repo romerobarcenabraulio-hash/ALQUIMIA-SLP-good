@@ -2,8 +2,6 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
-
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -23,15 +21,6 @@ export function MultiplicadoresEco() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S16 — Valorización económica</p>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Derrama por valorización de residuos</h2>
-      <ScopeAnclaKicker className="mb-2" />
-      <p className="text-[13px] text-[#6B6760] mb-6">
-        Se estima una derrama de {r ? fmt.mxnK(r.ingresosBrutos) : '—'} considerando solamente la venta del residuo
-        separado a la industria del reciclaje con el precio fijado en este escenario. La derrama puede aumentar si después
-        se modela el efecto industrial por mayor oferta de RSU recuperable.
-      </p>
-
       {/* KPI strip */}
       {r && (
         <div className="bg-gradient-to-r from-[#EAF3DE] to-[#EBF3FB] rounded-[14px] p-5 mb-6">

@@ -210,11 +210,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
       </div>
       )}
 
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-5 text-[11px] text-[#6B6760]">
-        Export y expediente Cabildo: módulo <strong className="text-[#1C1B18]">M15 Expediente Cabildo</strong>.
-      </div>
-
-      {riesgoOperativo && riesgoOperativo !== 'Bajo' && (
+      {/* ── Scenario selector (pages 1 and 2) ───────────────────────────── */}
         <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 mb-5 text-[12px] text-amber-900 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>

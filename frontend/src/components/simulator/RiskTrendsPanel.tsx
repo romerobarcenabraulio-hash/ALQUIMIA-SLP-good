@@ -180,11 +180,6 @@ export function RiskTrendsPanel() {
     ]
   }, [riskScores])
 
-  const territorio = useMemo(() => {
-    if (municipiosActivos.length === 0) return `ZM ${zmActiva} (sin municipio activo todavía)`
-    return `${municipiosActivos.length} municipio(s) activo(s) en ZM ${zmActiva}`
-  }, [municipiosActivos.length, zmActiva])
-
   const municipiosKey = useMemo(() => municipiosActivos.join(','), [municipiosActivos])
 
   useEffect(() => {
@@ -222,15 +217,6 @@ export function RiskTrendsPanel() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S19 — Riesgos y tendencias</p>
-        <h2 className="mt-1 font-serif text-[22px] text-[#1C1B18]">Estudio operativo y lectura de tendencias</h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-          Alcance de lectura para análisis: <span className="font-medium text-[#1C1B18]">{territorio}</span>. Las decisiones
-          formales por municipio conservan su propio trámite; la ZM no sustituye al ayuntamiento en actos de autoridad.
-        </p>
-      </section>
-
       {/* ── Panel de fórmulas documentadas ────────────────────────────── */}
       <section
         className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-5 space-y-4"

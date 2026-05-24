@@ -111,10 +111,7 @@ _Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan
       {tab === 1 && (
         <div className="space-y-5">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-5 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <p className="font-serif text-[14px] font-semibold text-[#1C1B18] mb-1">Matriz de Doble Materialidad</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">
-              CSRD/ESRS E5 §10 — Impacto en ambiente (eje X) vs. Materialidad financiera (eje Y)
-            </p>
+            <p className="text-[10px] text-[#A8A49C] mb-4">CSRD/ESRS E5 — impacto (X) vs. materialidad financiera (Y)</p>
 
             <div className="overflow-x-auto">
               <svg
@@ -208,14 +205,9 @@ _Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan
       {tab === 2 && (
         <div className="space-y-5">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="px-5 py-4 border-b border-[#F0EDE5]">
-              <div className="flex items-center gap-3">
-                <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">GRI 306: Residuos 2020</p>
-                <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Proyectado</span>
-              </div>
-              <p className="text-[10px] text-[#A8A49C] mt-0.5">
-                {municipio} · Año 1 del programa · {rsuAnual > 0 ? 'Datos del simulador' : 'Sin cálculo activo'}
-              </p>
+            <div className="px-5 py-3 border-b border-[#F0EDE5] flex items-center justify-between gap-2">
+              <p className="text-[10px] text-[#A8A49C]">{municipio} · Año 1 · {rsuAnual > 0 ? 'Simulador' : 'Sin cálculo'}</p>
+              <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Proyectado</span>
             </div>
             <table className="w-full text-[10px]">
               <thead>
@@ -256,8 +248,7 @@ _Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan
       {tab === 3 && (
         <div className="space-y-5">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-            <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-              <p className="font-serif text-[14px] font-semibold text-[#1C1B18]">Borrador de reporte para financiadores</p>
+            <div className="flex items-center justify-end mb-4 flex-wrap gap-3">
               <button
                 type="button"
                 onClick={handleCopiar}

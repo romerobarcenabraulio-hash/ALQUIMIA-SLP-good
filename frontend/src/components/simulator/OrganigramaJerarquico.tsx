@@ -347,9 +347,6 @@ export function OrganigramaJerarquico({
         </div>
       )}
 
-      <p className="text-[10px] text-[#A8A49C] text-center">
-        Toca un cargo para ver detalle y actualizar verificación en campo. Orden jerárquico según Art. 115 y LOM estatal — validar fusiones de área por municipio.
-      </p>
     </div>
   )
 }

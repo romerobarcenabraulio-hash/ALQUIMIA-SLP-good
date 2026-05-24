@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useState } from 'react'
-import { FileText, Download, Share2, Zap, Check } from 'lucide-react'
+import { FileText, Download, Share2, Check } from 'lucide-react'
 import { CotizacionRecomendada } from '@/components/simulator/CotizacionRecomendada'
 import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
@@ -36,18 +36,7 @@ export function ExpedienteCabildoStack() {
   return (
     <div className="space-y-5 pb-4">
 
-      {/* Hero */}
-      <div className="rounded-[12px] border border-[#D7E8C0] bg-gradient-to-br from-[#F4FAEC] to-[#EBF3FB] p-5">
-        <div className="flex items-start gap-4">
-          <div className="shrink-0 w-10 h-10 rounded-[10px] bg-[#3B6D11] flex items-center justify-center">
-            <Zap className="w-5 h-5 text-white" strokeWidth={2} />
-          </div>
-          <div className="flex-1">
-            <p className="text-[14px] font-semibold text-[#1A4200] mb-1">Expediente completo para sesión de Cabildo</p>
-            <p className="text-[12px] text-[#5A6347] mb-3">
-              Todo lo que necesitas para presentar el programa ante Cabildo y obtener la autorización de inversión.
-              El expediente incluye: análisis financiero, cotización, plan de gobernanza y checklist de arranque.
-            </p>
+      <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
             <div className="flex flex-wrap gap-2">
               {[
                 { label: 'PDF ejecutivo', icon: FileText, color: '#C0392B', bg: 'bg-[#FDE8E8]' },
@@ -77,13 +66,10 @@ export function ExpedienteCabildoStack() {
                 </button>
               ))}
             </div>
-          </div>
-        </div>
       </div>
 
-      {/* What a complete cabildo package includes */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <p className="text-[12px] font-semibold text-[#1C1B18] mb-3">El expediente contiene</p>
+        <p className="text-[12px] font-semibold text-[#1C1B18] mb-3">Contenido del expediente</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {[
             { num: '01', title: 'Diagnóstico municipal RSU', desc: 'Generación, composición, contrafactual', fuente: 'M01 + M04' },
@@ -115,12 +101,8 @@ export function ExpedienteCabildoStack() {
       <GovernancePanel />
       <LaunchChecklist />
 
-      {/* Ruta de contratación */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Ruta de contratación pública</p>
-        <p className="text-[11px] text-[#6B6760] mb-4 leading-relaxed">
-          Cómo pasar del punto de acuerdo a contrato firmo bajo LAASSP — sin improvisar el procedimiento.
-        </p>
+        <p className="text-[12px] font-semibold text-[#1C1B18] mb-4">Ruta de contratación (LAASSP)</p>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
           {[
             { route: 'Licitación pública', when: 'CAPEX > $2M MXN', plazo: '4–8 meses', docs: 'Bases, dictamen técnico, suficiencia' },
@@ -143,10 +125,9 @@ export function ExpedienteCabildoStack() {
         </ol>
       </div>
 
-      {/* Cross-reference note */}
-      <div className="rounded-[10px] border border-[#D7E8C0] bg-[#EAF3DE] px-4 py-3 text-[11px] text-[#3B5F23]">
-        <span className="font-semibold">Análisis financiero completo:</span> Para ver TIR, VPN, Monte Carlo y análisis de sensibilidad, ve a M13 Retorno Financiero y M14 Análisis de Riesgo.
-      </div>
+      <p className="text-[11px] text-[#6B6760] px-1">
+        TIR, VPN y Monte Carlo: M13 · M14
+      </p>
     </div>
   )
 }

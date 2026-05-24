@@ -15,7 +15,6 @@ import type {
   NivelSancion,
 } from '@/types/predios'
 import { ExpedientePDF } from '@/components/simulator/ExpedientePDF'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 const USO_SUELO = ['habitacional', 'comercial', 'industrial', 'baldío', 'otro'] as const
 
@@ -276,16 +275,6 @@ export function InspeccionForm() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Q-016 · Sprint 1</p>
-        <h2 className="mt-1 font-serif text-[22px] text-[#1C1B18]">Inspección de predios</h2>
-        <ScopeAnclaKicker className="mt-2" />
-        <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-          Registro sin mapa catastral: dirección libre y coordenadas opcionales. La escalera UMA y el expediente técnico borrador de este
-          sprint están calibrados únicamente para <span className="font-medium">SLP capital</span> (<span className="font-mono">slp</span>).
-        </p>
-      </div>
-
       {!escaleraSoloSlpCapital && (
         <div className="rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3 text-[12px] text-amber-950">
           Municipio del predio seleccionado: <span className="font-mono">{municipioExpediente}</span>. La API no generará expediente con

@@ -227,9 +227,6 @@ export function CostosProgramaStack() {
 
       {/* S2: Lectura ejecutiva */}
       <div className="bg-[#F1F8EC] border border-[#C9DDB1] rounded-[14px] px-5 py-4">
-        <p className="text-[11px] uppercase tracking-[0.06em] font-semibold text-[#2F6B1F] mb-1">
-          LECTURA EJECUTIVA
-        </p>
         <p className="text-[14px] leading-relaxed text-[#1F2933]">
           {capexBloqueado ? (
             <>
@@ -330,15 +327,8 @@ export function CostosProgramaStack() {
       )}
 
       {/* S3: Gráfica protagonista — CAPEX por fase */}
-      <div className="bg-white border border-[#E7E5DC] rounded-[14px] p-5">
-        <h3 className="font-serif text-[20px] font-semibold text-[#1F2933] mb-1">
-          Inversión por fase de despliegue
-        </h3>
-        <p className="text-[13px] text-[#5F6B5F] mb-4">
-          CAPEX acumulado del sistema (CAs + recicladoras) en millones MXN — 6 fases de escala
-        </p>
-        <ExpandableChart title="CAPEX acumulado por fase de despliegue">
-          <ResponsiveContainer width="100%" height={320}>
+      <ExpandableChart title="Inversión por fase" subtitle="CAPEX acumulado (M MXN) · 6 fases de escala">
+        <ResponsiveContainer width="100%" height={320}>
             <BarChart data={fasesData} margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8E4DC" vertical={false} />
               <XAxis
@@ -375,8 +365,7 @@ export function CostosProgramaStack() {
           </ResponsiveContainer>
         </ExpandableChart>
 
-        {/* Tabla resumen de fases */}
-        <div className="mt-4 overflow-x-auto">
+      <div className="mt-4 overflow-x-auto rounded-[14px] border border-[#E7E5DC] bg-white p-5">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-[#F7F7F2]">
@@ -417,7 +406,6 @@ export function CostosProgramaStack() {
           <p className="mt-2 text-[11px] text-[#8A9286]">
             Fuente: Centros_Acopio_v2.xlsx (modelo CFO ALQUIMIA). Precios verificados mayo 2026.
           </p>
-        </div>
       </div>
 
       {/* S4: Desglose detallado — CapexOpexBreakdown (componente existente con tabs P/M/G) */}

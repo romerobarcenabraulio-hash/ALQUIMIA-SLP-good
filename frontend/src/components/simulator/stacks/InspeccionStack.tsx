@@ -441,35 +441,21 @@ export function InspeccionStack() {
         </div>
       )}
 
-      {/* ── Module header ──────────────────────────────────────────────── */}
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-semibold mb-1">Módulo 7 · Inspección de predios / estrategia administrativa</p>
-          <h2 className="font-serif text-[22px] text-[#1C1B18] leading-tight">
-            Inspección y predios: evidencia ordenada antes de la acción
-          </h2>
-          <p className="text-[12px] text-[#6B6760] mt-1">
-            El predio que elegiste: ¿sirve o no? La evidencia ordenada antes de actuar.
-          </p>
-          <p className="text-[10px] text-[#A8A49C] mt-1">
-            La inspección no sanciona por sí sola. Documenta evidencia, ordena el expediente y lo envía a revisión de la autoridad competente.
-          </p>
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-3">
         <div className={cn(
           'flex items-center gap-2 rounded-[8px] border px-3 py-2',
           gpsActivo ? 'border-[#D7E8C0] bg-[#F4FAEC]' : 'border-[#E8E4DC] bg-[#FAFAF8]',
         )}>
           <div className={cn('w-2 h-2 rounded-full', gpsActivo ? 'bg-[#3B6D11] animate-pulse' : 'bg-[#A8A49C]')} />
           <div>
-            <p className="text-[10px] font-semibold text-[#1A4200]">{gpsActivo === null ? 'GPS — sin datos' : gpsActivo ? 'GPS activo' : 'GPS inactivo'}</p>
+            <p className="text-[10px] font-semibold text-[#1A4200]">{gpsActivo === null ? 'GPS sin datos' : gpsActivo ? 'GPS activo' : 'GPS inactivo'}</p>
             <p className="text-[9px] text-[#5A6347]">
-              {stats?.gps_precision_m != null ? `Precisión ±${stats.gps_precision_m}m · EPSG:4326` : 'Precisión: sin datos del sistema'}
+              {stats?.gps_precision_m != null ? `±${stats.gps_precision_m}m` : '—'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* ── 5-step progress ────────────────────────────────────────────── */}
       <InspectionStepProgress steps={steps} />
 
       {/* ── Main layout: form + right column ───────────────────────────── */}

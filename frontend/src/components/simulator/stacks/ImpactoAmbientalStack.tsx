@@ -2,7 +2,6 @@
 
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
-import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 
 export function ImpactoAmbientalStack() {
@@ -32,14 +31,6 @@ export function ImpactoAmbientalStack() {
 
   return (
     <div className="space-y-5">
-      <ScopeAnclaKicker />
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">M01B · Ambiental</p>
-        <h2 className="font-serif text-[22px] text-[#1C1B18]">Impacto ambiental y sanitario</h2>
-        <p className="mt-2 text-[13px] text-[#6B6760]">
-          Externalidades evitadas al horizonte del programa — visible sin colapsar en acordeones.
-        </p>
-      </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {kpis.map(item => (

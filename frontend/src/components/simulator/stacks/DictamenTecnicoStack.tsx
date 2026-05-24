@@ -109,36 +109,23 @@ export function DictamenTecnicoStack() {
 
   return (
     <div className="space-y-5 pb-6">
-      {/* Hero */}
-      <div className="rounded-[12px] border border-[#D7E8C0] bg-gradient-to-br from-[#F4FAEC] to-white p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#3B6D11] font-semibold mb-1">
-          M03B — Dictamen técnico y social
-        </p>
-        <h2 className="font-serif text-[22px] text-[#1A4200] mb-2">
-          Fundamentación de la reforma reglamentaria
-        </h2>
-        <p className="text-[12px] text-[#5A6347] leading-relaxed max-w-3xl">
-          Este dictamen responde la pregunta que hará cualquier regidor en Cabildo: <em>¿por qué esta propuesta
-          específica?</em> Cada recomendación está respaldada con evidencia técnica, social y comparativa —
-          vinculada a los adendos concretos del reglamento.
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          <button
-            type="button"
-            onClick={() => openReglamento(munId)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D] transition-colors"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-            Ver texto propuesto (adendos)
-          </button>
-          <button
-            type="button"
-            onClick={() => setOpenSection('comparativo')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border border-[#E8E4DC] bg-white text-[11px] font-medium text-[#6B6760] hover:border-[#3B6D11]/30 transition-colors"
-          >
-            Ir a evidencia internacional
-          </button>
-        </div>
+      {/* Acciones — título y lectura en DecisionModuleShell */}
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => openReglamento(munId)}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] bg-[#3B6D11] text-white text-[11px] font-semibold hover:bg-[#2D5A0D] transition-colors"
+        >
+          <ExternalLink className="w-3.5 h-3.5" />
+          Ver adendos propuestos
+        </button>
+        <button
+          type="button"
+          onClick={() => setOpenSection('comparativo')}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] border border-[#E8E4DC] bg-white text-[11px] font-medium text-[#6B6760] hover:border-[#3B6D11]/30 transition-colors"
+        >
+          Evidencia internacional
+        </button>
       </div>
 
       {/* KPI strip */}
