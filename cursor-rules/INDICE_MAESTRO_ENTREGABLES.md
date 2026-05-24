@@ -12,7 +12,7 @@ Innovamos dentro de convenciones que Cabildo, tesorería y firmas tier-1 reconoc
 
 | Elemento | Convención | Implementación ALQUIMIA |
 |----------|------------|-------------------------|
-| Portada | Prepared for / Prepared by · Clasificación · Fecha | Tabla institucional + código doc 00–11 |
+| Portada | Prepared for / Prepared by · Clasificación · Fecha | Tabla institucional + código doc **00–12** |
 | Tipografía | Serif institucional | **Times New Roman** (Times-Roman PDF) |
 | Índice | Títulos de **acción**, no genéricos | Cada § tiene *action title* en blueprint |
 | Marco narrativo | SCQA (McKinsey) o Action (BCG) | Campo `frame` por documento |

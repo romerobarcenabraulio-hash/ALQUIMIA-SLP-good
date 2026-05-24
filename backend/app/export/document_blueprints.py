@@ -337,7 +337,7 @@ def get_blueprint(document_id: str) -> Optional[DocumentBlueprint]:
 
 
 def list_package_blueprints() -> List[DocumentBlueprint]:
-    """Orden canónico 01–11 para índice maestro."""
+    """Orden canónico 01–12 para índice maestro."""
     order = [
         "01_resumen_ejecutivo_municipal",
         "02_modelo_tecnico_financiero",
@@ -350,6 +350,7 @@ def list_package_blueprints() -> List[DocumentBlueprint]:
         "09_dimensionamiento_flota",
         "10_segmentacion_territorial",
         "11_cadena_suministro_comercializacion",
+        "12_expediente_inspeccion",
     ]
     return [BLUEPRINTS[k] for k in order]
 

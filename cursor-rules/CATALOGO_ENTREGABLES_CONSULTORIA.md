@@ -24,13 +24,13 @@ Fuente de verdad para qué documentos entrega la plataforma, a quién van dirigi
 | 01 | Resumen ejecutivo municipal | PDF, DOCX | Alcalde · Cabildo | Profesional | `POST /export/executive-pdf` · ZIP ÁGORA profesional |
 | 02 | Modelo técnico-financiero | XLSX, PDF | Tesorería · Financieros | Profesional | Hub → render profesional → `05_Modelo_Financiero_CFO.xlsx` |
 | 03 | Diagnóstico jurídico | DOCX, MD | Jurídico municipal | Profesional | ZIP ÁGORA base/profesional |
-| 04 | Presentación cabildo | PPTX/PDF | Cabildo | Borrador | ÁGORA (pipeline document_specs 04) |
+| 04 | Coordinación metropolitana | DOCX, MD, PDF borrador | Presidentes ZM | Profesional | ZIP ÁGORA · `document_id=04_coordinacion_metropolitana` |
 | 05 | Manual operativo 90 días | DOCX, PDF | Operaciones · Concesionario | Borrador | ZIP ÁGORA |
 | 06 | Carta ciudadana | DOCX | Comunicación social | Borrador | ZIP ÁGORA |
-| 07 | Matriz de trazabilidad | MD, PDF | Auditor · PMO | Borrador | ZIP ÁGORA · sección PDF ejecutivo |
-| 08–11 | Anexos sectoriales | MD/DOCX | Técnico | Borrador | ZIP ÁGORA |
+| 07 | Matriz de trazabilidad | MD, PDF borrador | Auditor · PMO | Borrador | ZIP ÁGORA · doc 07 vía `executive-pdf` |
+| 08–11 | Anexos logísticos (HERMES) | MD/DOCX, PDF borrador | Técnico | Borrador | ZIP ÁGORA |
+| 12 | Acta inspección / expediente | PDF | Inspección municipal | Borrador técnico | `POST /export/expediente-pdf` |
 | — | Paquete integral | ZIP | Equipo completo | Cabildo | `fetchAgoraPlanZip` + render profesional |
-| — | Acta inspección / expediente sancionatorio | PDF | Inspección municipal | Borrador técnico | `ExpedientePDF` (jsPDF) tras POST expediente |
 
 ---
 
@@ -80,7 +80,8 @@ flowchart LR
 
 ## Referencias cruzadas
 
-- `cursor-rules/INDICE_MAESTRO_ENTREGABLES.md` — **índice maestro + estructura por documento**
+- `cursor-rules/AUDITORIA_ENTREGABLES_PDF_2026-05-22.md` — **auditoría texto/gráficas/PDF**
+- `cursor-rules/INDICE_MAESTRO_ENTREGABLES.md` — índice maestro + estructura por documento
 - `backend/app/export/document_blueprints.py` — blueprints PDF (portada + TOC + §)
 - `backend/app/agents/document_specs.py` — especificaciones 01–11
 - `backend/app/export/pdf_renderer.py` — layout consultoría Times New Roman

@@ -7,7 +7,7 @@ from app.export.router import router
 
 
 def test_all_canonical_blueprints_exist():
-    assert len(list_package_blueprints()) == 11
+    assert len(list_package_blueprints()) == 12
     assert get_blueprint("01_resumen_ejecutivo_municipal") is not None
     assert get_blueprint("03_diagnostico_reforma_slp") is not None
     assert get_blueprint("12_expediente_inspeccion") is not None

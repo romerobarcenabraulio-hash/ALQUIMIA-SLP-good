@@ -37,6 +37,7 @@ DOC_RUTAS             = "08_plan_rutas_recoleccion"
 DOC_FLOTA             = "09_dimensionamiento_flota"
 DOC_TERRITORIO        = "10_segmentacion_territorial"
 DOC_SUPPLY_CHAIN      = "11_cadena_suministro_comercializacion"
+DOC_EXPEDIENTE        = "12_expediente_inspeccion"
 
 
 # ─── Specs estándar ───────────────────────────────────────────────────────────
@@ -530,6 +531,53 @@ def spec_supply_chain(zm: str, municipio: str) -> DocumentSpec:
         tono="técnico-financiero",
         lecturabilidad_objetivo="técnico",
         max_paginas=10,
+    )
+
+
+def spec_expediente_inspeccion(municipio_id: str) -> DocumentSpec:
+    """
+    12 — Acta técnica de inspección predial (on-demand, no en bundle ÁGORA escenario).
+
+    Se genera por POST /predios/expedientes + POST /export/expediente-pdf.
+    """
+    return DocumentSpec(
+        document_id=DOC_EXPEDIENTE,
+        titulo=f"Acta técnica de inspección predial — {municipio_id.replace('-', ' ').title()}",
+        audiencia=[
+            "Inspector municipal",
+            "Jurídico municipal",
+            "Sindicatura",
+        ],
+        decision_que_habilita=(
+            "Integrar borrador al expediente del procedimiento administrativo sancionatorio"
+        ),
+        nivel=DocumentNivel.municipal,
+        secciones_obligatorias=[
+            "1. Aviso de borrador (no acto de autoridad)",
+            "2. Identificación del predio",
+            "3. Acta de inspección y hallazgos",
+            "4. Sanción orientativa UMA/MXN",
+            "5. Cadena probatoria y audiencia",
+            "6. Limitaciones y disclaimer sistémico",
+        ],
+        tablas_obligatorias=[
+            "Tabla predio (dirección, uso, coordenadas)",
+            "Tabla inspección (fecha, infracción, inspector)",
+            "Tabla sanción orientativa (UMA, rango MXN, artículo)",
+        ],
+        figuras_obligatorias=[],
+        anexos_obligatorios=["Evidencia fotográfica (externa al PDF borrador)"],
+        fuentes_minimas=[
+            "POST /predios/expedientes completado",
+            "Escalera UMA municipal verificada (SLP capital en sprint actual)",
+        ],
+        criterios_de_bloqueo=[
+            "Sin inspección registrada",
+            "Sin predio asociado",
+        ],
+        tono="jurídico-técnico",
+        lecturabilidad_objetivo="especialista-jurídico",
+        max_paginas=8,
     )
 
 

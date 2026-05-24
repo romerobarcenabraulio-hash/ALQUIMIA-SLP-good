@@ -122,6 +122,11 @@ export function ExportarSection() {
         </div>
       )}
 
+      <div className="mb-3 rounded-[10px] border border-[#1A5FA8]/25 bg-[#EBF3FB] px-4 py-2.5 text-[10px] leading-relaxed text-[#4A4740]">
+        Los PDF de esta sección son <strong>borradores estructurales</strong> (portada + índice + Times New Roman).
+        Contenido sustantivo completo: ZIP ÁGORA y Hub profesional. Gráficas Exhibit: en XLSX o pendientes en PDF — ver auditoría SUPREME.
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {([
           { label: 'PDF Ejecutivo', icon: '📄', desc: 'Doc 01 · Times New Roman · Cabildo', action: 'executive_pdf' as const, loadingKey: 'executive_pdf' },

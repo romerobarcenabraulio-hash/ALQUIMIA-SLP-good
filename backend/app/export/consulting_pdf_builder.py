@@ -184,6 +184,7 @@ def build_master_index_body(
         "03 Diagnóstico jurídico → ruta normativa",
         "07 Fuentes → auditoría y trazabilidad",
         "05 Manual operativo + 08–11 Logística → ejecución",
+        "12 Acta de inspección → procedimiento sancionatorio (cuando aplique)",
     ]
     for o in orden:
         story.append(Paragraph(f"• {o}", styles["body_bullet"]))
