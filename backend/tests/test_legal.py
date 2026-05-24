@@ -91,6 +91,12 @@ ALL_MUNICIPIOS = (
     ZM_MUNICIPIOS["SLP"] + ZM_MUNICIPIOS["QRO"] + ZM_MUNICIPIOS["MTY"] + ZM_MUNICIPIOS["GDL"]
 )
 
+# Gate ÁGORA (2026-Q2): análisis habilitado cuando hay PDF en plataforma (catálogo estático).
+MUNICIPIOS_CON_PDF = {
+    "slp", "sol", "qro", "cor", "mty", "spg", "gua", "apo", "gar", "gdl", "zap",
+}
+MUNICIPIOS_SIN_PDF = set(ALL_MUNICIPIOS) - MUNICIPIOS_CON_PDF
+
 
 class TestCLCExpositorMunicipal:
 
@@ -144,51 +150,48 @@ class TestDiagnosticoTodos:
 
 class TestGatesAgora:
 
-    # Fuente suficientemente anclada en catálogo municipal → no bloqueada para análisis
-    @pytest.mark.parametrize("m_id", ["qro"])
-    def test_municipios_verificados_no_bloqueados(self, m_id):
+    @pytest.mark.parametrize("m_id", sorted(MUNICIPIOS_CON_PDF))
+    def test_municipios_con_pdf_no_bloqueados(self, m_id):
         d = build_diagnostic(m_id)
-        assert d.agora_bloqueado is False, f"{m_id} debería estar desbloqueado"
+        assert d.agora_bloqueado is False, f"{m_id} tiene PDF en plataforma"
+        assert d.can_enable_simulation is True
 
-    # Sin verificar → bloqueados
-    @pytest.mark.parametrize("m_id", [
-        "slp", "sol", "csp", "vip",          # ZM SLP
-        "cor", "mar", "hui",                   # ZM QRO (menos qro)
-        "mty", "spg", "snl", "gua", "apo", "sca",  # ZM MTY
-        "gar", "esc", "jua",
-    ])
-    def test_municipios_no_verificados_bloqueados(self, m_id):
+    @pytest.mark.parametrize("m_id", sorted(MUNICIPIOS_SIN_PDF))
+    def test_municipios_sin_pdf_bloqueados(self, m_id):
         d = build_diagnostic(m_id)
-        assert d.agora_bloqueado is True, f"{m_id} debería estar bloqueado"
+        assert d.agora_bloqueado is True, f"{m_id} sin PDF debe estar bloqueado"
 
-    def test_verificar_slp_desbloquea_agora(self):
-        repo = get_repo()
-        assert build_diagnostic("slp").agora_bloqueado is True
-        repo.set_verificado("slp", True)
-        assert build_diagnostic("slp").agora_bloqueado is False
+    def test_upload_pdf_desbloquea_municipio_sin_catalogo(self, tmp_path, monkeypatch):
+        """Subir PDF habilita análisis; gate ya no depende de set_verificado."""
+        import app.legal.pdf_storage as pdf_mod
 
-    def test_verificar_sol_no_afecta_slp(self):
-        """Municipios son independientes — verificar uno no afecta al otro."""
-        repo = get_repo()
-        repo.set_verificado("sol", True)
-        assert build_diagnostic("slp").agora_bloqueado is True   # SLP sigue bloqueado
-        assert build_diagnostic("sol").agora_bloqueado is False  # SOL desbloqueado
+        monkeypatch.setattr(pdf_mod, "reglamentos_dir", lambda: tmp_path)
+        assert build_diagnostic("mar").agora_bloqueado is True
+        from app.legal.repository import get_repo
 
-    def test_desverificar_qro(self):
+        get_repo().upload_municipal_pdf("mar", b"%PDF-1.4\nreglamento mar\n")
+        assert build_diagnostic("mar").agora_bloqueado is False
+
+    def test_upload_mar_no_afecta_csp(self):
+        """Municipios independientes — PDF en uno no desbloquea otro."""
+        import app.legal.pdf_storage as pdf_mod
+        from app.legal.repository import get_repo
+
+        # mar sin PDF en catálogo estático
+        assert build_diagnostic("csp").agora_bloqueado is True
+        assert build_diagnostic("mar").agora_bloqueado is True
+
+    def test_set_verificado_no_sustituye_pdf(self):
+        """verificado en registro no reemplaza PDF para gate ÁGORA."""
         repo = get_repo()
-        assert build_diagnostic("qro").agora_bloqueado is False
-        repo.set_verificado("qro", False)
-        assert build_diagnostic("qro").agora_bloqueado is True
+        repo.set_verificado("csp", True)
+        assert build_diagnostic("csp").agora_bloqueado is True
 
     def test_zm_no_es_municipio_gate(self):
-        """
-        El gate no se puede verificar a nivel ZM: verificar 'slp' no
-        desbloquea toda la ZM SLP — cada municipio es independiente.
-        """
+        """Verificar registro de slp no desbloquea municipios sin PDF en la ZM."""
         repo = get_repo()
         repo.set_verificado("slp", True)
-        # sol sigue bloqueado
-        assert build_diagnostic("sol").agora_bloqueado is True
+        assert build_diagnostic("sol").agora_bloqueado is False  # sol tiene PDF estático
         assert build_diagnostic("csp").agora_bloqueado is True
         assert build_diagnostic("vip").agora_bloqueado is True
 
@@ -204,23 +207,24 @@ class TestFase111LegalMunicipal:
         assert d.source_manifest.municipio_id == "slp"
         assert d.source_manifest.zm == "SLP"
         assert d.legal_validation_status == "pendiente_validacion_juridica"
-        assert d.officiality == "fuente_localizada_no_validada"
+        assert d.officiality == "documento_descargado_no_validado"
+        assert d.source_manifest.ingest_status == "descargado"
         assert "dictamen" in d.legal_disclaimer.lower() and "alquimia" in d.legal_disclaimer.lower()
 
-    def test_municipio_sin_fuente_queda_pendiente_y_bloquea_sanciones_no_simulacion(self):
-        d = build_diagnostic("sol")
+    def test_municipio_sin_pdf_queda_bloqueado_y_restringe_sanciones(self):
+        d = build_diagnostic("csp")
         assert d.source_manifest.ingest_status == "no_disponible"
         assert d.legal_validation_status == "no_disponible"
         assert d.can_enable_education is True
-        assert d.can_enable_simulation is True
+        assert d.can_enable_simulation is False
         assert d.can_enable_sanctions is False
         assert d.can_generate_official_document is False
         assert d.sanctions_blocked_reason
         assert d.official_document_blocked_reason
 
-    def test_fuente_localizada_no_habilita_sanciones_sin_validacion_competente(self):
+    def test_pdf_descargado_no_habilita_sanciones_sin_validacion_competente(self):
         d = build_diagnostic("qro")
-        assert d.source_manifest.ingest_status == "localizado"
+        assert d.source_manifest.ingest_status == "descargado"
         assert d.legal_validation_status == "pendiente_validacion_juridica"
         assert d.can_enable_sanctions is False
         assert d.can_generate_official_document is False
@@ -244,11 +248,11 @@ class TestFase111LegalMunicipal:
 
     def test_zm_no_sustituye_contexto_municipal(self):
         slp = build_municipal_legal_context("slp")
-        sol = build_municipal_legal_context("sol")
-        assert slp is not None and sol is not None
+        csp = build_municipal_legal_context("csp")
+        assert slp is not None and csp is not None
         assert slp.source_manifest.municipio_id == "slp"
-        assert sol.source_manifest.municipio_id == "sol"
-        assert slp.source_manifest.ingest_status != sol.source_manifest.ingest_status
+        assert csp.source_manifest.municipio_id == "csp"
+        assert slp.source_manifest.ingest_status != csp.source_manifest.ingest_status
 
     def test_endpoint_zm_context_rechaza_contexto_legal_unico(self):
         from fastapi import FastAPI
@@ -305,11 +309,11 @@ class TestEstrategias:
             assert num.startswith("Art."), f"{m_id}: artículo clave inesperado '{num}'"
 
     def test_spg_estrategia_optima(self):
-        """San Pedro Garza García: base operativa alta, pero fuente SISTEC candidata aún requiere revisión."""
+        """San Pedro Garza García: PDF en plataforma habilita análisis; estrategia A/B."""
         d = build_diagnostic("spg")
         s = select_strategy(d)
         assert s.estrategia in (ReformEstrategia.A, ReformEstrategia.B)
-        assert s.agora_bloqueado is True
+        assert s.agora_bloqueado is False
 
     def test_micro_municipios_estrategia_alta(self):
         """Micro-municipios sin reglamento → estrategia C o D."""
@@ -320,15 +324,15 @@ class TestEstrategias:
                 f"{m_id}: esperado C/D, got {s.estrategia}"
 
     def test_motivo_bloqueo_cuando_bloqueado(self):
-        """Municipios bloqueados deben tener motivo explicado."""
-        for m_id in ["slp", "sol", "csp"]:
+        """Municipios sin PDF deben tener motivo explicado."""
+        for m_id in ["csp", "vip", "mar"]:
             d = build_diagnostic(m_id)
             s = select_strategy(d)
             assert s.motivo_bloqueo is not None, f"{m_id}: falta motivo_bloqueo"
             assert len(s.motivo_bloqueo) > 10
 
-    def test_sin_motivo_cuando_verificado(self):
-        for m_id in ["qro"]:
+    def test_sin_motivo_cuando_tiene_pdf(self):
+        for m_id in ["qro", "slp"]:
             d = build_diagnostic(m_id)
             s = select_strategy(d)
             assert s.motivo_bloqueo is None, f"{m_id}: no debería tener motivo"
@@ -384,12 +388,11 @@ class TestPaqueteMetropolitano:
 
     def test_slp_zm_tiene_bloqueados(self):
         p = build_paquete_metropolitano("SLP", ZM_MUNICIPIOS["SLP"])
-        assert p.municipios_bloqueados == 4  # todos bloqueados en SLP ZM
+        assert p.municipios_bloqueados == 2  # csp, vip sin PDF
 
-    def test_qro_zm_capital_desbloqueado(self):
+    def test_qro_zm_solo_mar_hui_bloqueados(self):
         p = build_paquete_metropolitano("QRO", ZM_MUNICIPIOS["QRO"])
-        # qro está verificado → solo 3 bloqueados (cor, mar, hui)
-        assert p.municipios_bloqueados == 3
+        assert p.municipios_bloqueados == 2  # mar, hui sin PDF
 
     def test_mty_score_mayor_que_slp(self):
         p_mty = build_paquete_metropolitano("MTY", ZM_MUNICIPIOS["MTY"])
@@ -421,10 +424,10 @@ class TestPaqueteMetropolitano:
         assert p.paquete_metropolitano.convenio_marco_zm == "pendiente"
 
     def test_municipios_bloqueados_en_capa_2(self):
-        """La capa metropolitana lista correctamente los municipios bloqueados."""
+        """La capa metropolitana lista correctamente los municipios sin PDF."""
         p = build_paquete_metropolitano("SLP", ZM_MUNICIPIOS["SLP"])
         bloqueados_ids = p.paquete_metropolitano.municipios_bloqueados
-        assert set(bloqueados_ids) == {"slp", "sol", "csp", "vip"}
+        assert set(bloqueados_ids) == {"csp", "vip"}
 
     def test_no_mezcla_convenio_con_reglamento(self):
         """
