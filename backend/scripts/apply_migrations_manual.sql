@@ -239,7 +239,51 @@ CREATE TABLE IF NOT EXISTS model_calibrations (
 );
 CREATE INDEX IF NOT EXISTS ix_calibration_scope ON model_calibrations (scope_id, parametro);
 
+-- ── 0005_user_accounts ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_accounts (
+    id VARCHAR(36) PRIMARY KEY,
+    email VARCHAR(320) NOT NULL UNIQUE,
+    hashed_password VARCHAR(255) NOT NULL,
+    nombre VARCHAR(120) NOT NULL,
+    apellido_paterno VARCHAR(120) NOT NULL,
+    apellido_materno VARCHAR(120),
+    telefono VARCHAR(32),
+    cargo VARCHAR(200) NOT NULL,
+    dependencia VARCHAR(200) NOT NULL,
+    municipio_nombre VARCHAR(200),
+    estado_mx VARCHAR(100),
+    zm VARCHAR(20) NOT NULL DEFAULT 'SLP',
+    rol VARCHAR(40) NOT NULL DEFAULT 'funcionario',
+    activo BOOLEAN NOT NULL DEFAULT TRUE,
+    email_verified_at TIMESTAMPTZ,
+    totp_secret_enc VARCHAR(512),
+    totp_enabled BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
+    last_login_at TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS email_verification_tokens (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    token_hash VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS access_logs (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(36),
+    email VARCHAR(320),
+    event VARCHAR(64) NOT NULL,
+    ip_hash VARCHAR(64),
+    user_agent TEXT,
+    path VARCHAR(512),
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 DELETE FROM alembic_version;
-INSERT INTO alembic_version (version_num) VALUES ('0002_research');
+INSERT INTO alembic_version (version_num) VALUES ('0005_user_accounts');
 
 COMMIT;

@@ -249,7 +249,7 @@ async def register(req: RegisterRequest, db: Session = Depends(get_db)):
         zm=req.zm,
     )
     raw = issue_email_verification(db, user)
-    verify_url = f"{settings.APP_PUBLIC_URL.rstrip('/')}/verify-email?token={raw}"
+    verify_url = f"{settings.app_public_url()}/verify-email?token={raw}"
     await send_verification_email(to_email=user.email, verify_url=verify_url, nombre=user.nombre)
     log_access(db, event="register", user=user)
     return {

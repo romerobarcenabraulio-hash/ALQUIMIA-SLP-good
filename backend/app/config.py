@@ -70,6 +70,16 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "ALQUIMIA <noreply@alquimia.mx>"
     APP_PUBLIC_URL: str = "http://localhost:3000"
 
+    def app_public_url(self) -> str:
+        """URL pública del frontend (enlaces de verificación de correo)."""
+        base = (self.APP_PUBLIC_URL or "").strip().rstrip("/")
+        if base and base not in ("http://localhost:3000", "http://127.0.0.1:3000"):
+            return base
+        if self.ENVIRONMENT == "production":
+            return "https://alquimia-slp.vercel.app"
+        return base or "http://localhost:3000"
+
+
 settings = Settings()
 
 
