@@ -243,6 +243,28 @@ export async function fetchResearchFindings(params: {
   return res.json() as Promise<Record<string, unknown>>
 }
 
+/** GET /research/antecedentes — reportaje histórico RSU por municipio (auto al cambiar ciudad). */
+export async function fetchAntecedentesReportaje(params: {
+  municipio_id: string
+  zm_id: string
+  municipio_nombre: string
+  estado?: string
+  refresh?: boolean
+}): Promise<import('@/lib/antecedentesTypes').AntecedentesReportaje> {
+  const qs = new URLSearchParams({
+    municipio_id: params.municipio_id,
+    zm_id: params.zm_id,
+    municipio_nombre: params.municipio_nombre,
+    estado: params.estado ?? '',
+    refresh: params.refresh ? '1' : '0',
+  })
+  const res = await fetchWithRetry(`${getApiUrl()}/research/antecedentes?${qs}`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Reportaje antecedentes no disponible: ${res.status}`)
+  return res.json() as Promise<import('@/lib/antecedentesTypes').AntecedentesReportaje>
+}
+
 /** POST /api/v1/cities/register — habilita municipio INEGI en repositorio legal. */
 export async function registerMunicipioNacional(row: MunicipioMxApi): Promise<MunicipioMxApi> {
   const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/register`, {

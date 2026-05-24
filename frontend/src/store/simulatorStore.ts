@@ -25,11 +25,39 @@ import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } fro
 import { OPEX_LOGISTICA_DEFAULTS, deriveCostoDisposicionPorTon, deriveDistanciaRelleno, deriveCapacidadRelleno, deriveMermaLogPct, deriveMixCasFromPoblacion } from '@/lib/financeLogisticsCalc'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
-import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch, fetchResearchFindings } from '@/lib/api'
+import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch, fetchResearchFindings, fetchAntecedentesReportaje } from '@/lib/api'
+import type { AntecedentesReportaje } from '@/lib/antecedentesTypes'
 import { ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY } from '@/data/organigramaDiagnostico'
 import { migrateSimulatorPersistedState, propuestaSlotsVacios } from '@/store/simulatorPersistMigrate'
 
 const PRESET_PLAN_FIJADO = 'Realista' as const
+
+function municipioResearchContext(st: {
+  municipiosActivos: string[]
+  zmActiva: string
+  seleccionMunicipioCatalog: SeleccionMunicipioCatalog | null
+}): {
+  municipio_id: string
+  municipio_nombre: string
+  estado: string
+} | null {
+  const mid = st.municipiosActivos[0]
+  if (!mid) return null
+  if (st.seleccionMunicipioCatalog?.municipioSimulatorId === mid) {
+    return {
+      municipio_id: mid,
+      municipio_nombre: st.seleccionMunicipioCatalog.nombre,
+      estado: st.seleccionMunicipioCatalog.estadoNombre ?? '',
+    }
+  }
+  const zm = ZMS.find(z => z.id === st.zmActiva)
+  const m = zm?.municipios.find(x => x.id === mid)
+  return {
+    municipio_id: mid,
+    municipio_nombre: m?.nombre ?? mid,
+    estado: '',
+  }
+}
 
 /** Contrato blueprint 22_0: `localStorage['alquimia.audience']` es la clave literal de audiencia; `alquimia-simulator` sigue siendo el persist Zustand. En conflicto tras reload, gana esta clave y luego se rehidrata el journey. */
 const AUDIENCE_LITERAL_KEY = 'alquimia.audience' as const
@@ -130,6 +158,11 @@ interface SimulatorStore extends SimulatorState {
   /** Hallazgos Investigador (noticias, reglamentos, programas) — no persistido. */
   researchFindings: Record<string, unknown> | null
   researchFindingsLoading: boolean
+  /** Reportaje antecedentes RSU — regenerado al cambiar municipio activo. */
+  antecedentesReportaje: AntecedentesReportaje | null
+  antecedentesLoading: boolean
+  /** Último municipio_id con reportaje cargado (evita refetch redundante). */
+  antecedentesForMunicipioId: string | null
 
   // Actions
   setPortalEntry:      (entry: PortalEntry) => Promise<void>
@@ -139,6 +172,7 @@ interface SimulatorStore extends SimulatorState {
   resetClientSetup:    () => void
   setMunicipioPdfHabilitado: (v: boolean) => void
   refreshResearchFindings: (opts?: { refresh?: boolean }) => Promise<void>
+  refreshAntecedentesReportaje: (opts?: { refresh?: boolean }) => Promise<void>
   fetchCityPortalData: (cityId: string) => Promise<void>
   setZM:               (id: string) => void
   applyMunicipioCatalog: (row: MunicipioMxApi) => void
@@ -317,13 +351,22 @@ export const useSimulatorStore = create<SimulatorStore>()(
         municipioPdfHabilitado: false,
         researchFindings: null,
         researchFindingsLoading: false,
+        antecedentesReportaje: null,
+        antecedentesLoading: false,
+        antecedentesForMunicipioId: null,
 
         completeClientSetup: () => {
           set({ clientSetupComplete: true })
         },
 
         resetClientSetup: () => {
-          set({ clientSetupComplete: false, municipioPdfHabilitado: false, researchFindings: null })
+          set({
+            clientSetupComplete: false,
+            municipioPdfHabilitado: false,
+            researchFindings: null,
+            antecedentesReportaje: null,
+            antecedentesForMunicipioId: null,
+          })
         },
 
         setMunicipioPdfHabilitado: (v) => { set({ municipioPdfHabilitado: v }) },
@@ -350,6 +393,41 @@ export const useSimulatorStore = create<SimulatorStore>()(
             set({ researchFindings: null })
           } finally {
             set({ researchFindingsLoading: false })
+          }
+        },
+
+        refreshAntecedentesReportaje: async (opts) => {
+          const st = get()
+          const ctx = municipioResearchContext(st)
+          if (!ctx) {
+            set({
+              antecedentesReportaje: null,
+              antecedentesForMunicipioId: null,
+            })
+            return
+          }
+          const municipioChanged = st.antecedentesForMunicipioId !== ctx.municipio_id
+          const refresh = opts?.refresh ?? municipioChanged
+          set({ antecedentesLoading: true })
+          try {
+            const data = await fetchAntecedentesReportaje({
+              municipio_id: ctx.municipio_id,
+              zm_id: st.zmActiva,
+              municipio_nombre: ctx.municipio_nombre,
+              estado: ctx.estado,
+              refresh,
+            })
+            set({
+              antecedentesReportaje: data,
+              antecedentesForMunicipioId: ctx.municipio_id,
+            })
+          } catch {
+            set({
+              antecedentesReportaje: null,
+              antecedentesForMunicipioId: null,
+            })
+          } finally {
+            set({ antecedentesLoading: false })
           }
         },
 
@@ -484,8 +562,11 @@ export const useSimulatorStore = create<SimulatorStore>()(
             portalError:         null,
             cityPortalError:     null,
             seleccionMunicipioCatalog: null,
+            antecedentesReportaje: null,
+            antecedentesForMunicipioId: null,
           })
           get().recalcular()
+          void get().refreshAntecedentesReportaje({ refresh: true })
           // Fase 2.5: fetch async del snapshot — hidrata genPercapita y tipoCambio
           // con valores verificados del registry cuando lleguen
           get().fetchSnapshotDatos(id)
@@ -532,9 +613,12 @@ export const useSimulatorStore = create<SimulatorStore>()(
             municipioPdfHabilitado: false,
             agoraLegalBloqueado: true,
             researchFindings: null,
+            antecedentesReportaje: null,
+            antecedentesForMunicipioId: null,
           })
           get().recalcular()
           void get().refreshResearchFindings()
+          void get().refreshAntecedentesReportaje({ refresh: true })
           if (knownZm) {
             get().fetchSnapshotDatos(zmId)
             get().fetchCityPortalData(zmId)
@@ -551,8 +635,11 @@ export const useSimulatorStore = create<SimulatorStore>()(
             seleccionMunicipioCatalog: null,
             municipiosActivos: zm.municipios.map(m => m.id),
             genPercapita: zm.genKgDia,
+            antecedentesReportaje: null,
+            antecedentesForMunicipioId: null,
           })
           get().recalcular()
+          void get().refreshAntecedentesReportaje({ refresh: true })
         },
 
         toggleMunicipio: (id) => {
@@ -560,6 +647,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const next = cur.includes(id) ? cur.filter(m => m !== id) : [...cur, id]
           set({ municipiosActivos: next.length ? next : cur })
           get().recalcular()
+          void get().refreshAntecedentesReportaje()
         },
 
         setMunicipiosPrograma: (municipioIds) => {
@@ -581,6 +669,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
             ...(clearingCatalog ? { genPercapita: zm.genKgDia } : {}),
           })
           get().recalcular()
+          void get().refreshAntecedentesReportaje()
         },
 
         toggleTipoVivienda: (tipo) => {

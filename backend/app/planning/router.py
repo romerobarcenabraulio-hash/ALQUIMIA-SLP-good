@@ -14,11 +14,12 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from pydantic import BaseModel, Field
 
 from app.agents.schemas import GanttPlan, PertPlan, RACIPlan
 from app.planning.builder import build_gantt, build_pert, build_raci
+from app.planning.narrative import get_implementation_narrative
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -44,6 +45,28 @@ class PlanningAllResponse(BaseModel):
 
 
 # ─── Endpoints ────────────────────────────────────────────────────────────────
+
+@router.get("/narrative", summary="Narrativa unificada G1–G5 + actividades + riesgos")
+def planning_narrative(
+    municipio_id: str | None = Query(None),
+    zm: str = Query("SLP"),
+    n_cas_pequeno: int = Query(1, ge=0),
+    n_cas_mediano: int = Query(0, ge=0),
+    n_cas_grande: int = Query(0, ge=0),
+    capex_total_mxn: float = Query(1_500_000.0, ge=0),
+    horizonte_semanas: int = Query(52, ge=12, le=260),
+) -> dict:
+    """Retorna fases institucionales con actividades T01–T15 y riesgos por gate."""
+    return get_implementation_narrative(
+        municipio_id=municipio_id,
+        zm=zm,
+        n_cas_pequeno=n_cas_pequeno,
+        n_cas_mediano=n_cas_mediano,
+        n_cas_grande=n_cas_grande,
+        capex_total=capex_total_mxn,
+        horizonte_semanas=horizonte_semanas,
+    )
+
 
 @router.post("/gantt", response_model=GanttPlan)
 async def planning_gantt(req: PlanningRequest) -> GanttPlan:

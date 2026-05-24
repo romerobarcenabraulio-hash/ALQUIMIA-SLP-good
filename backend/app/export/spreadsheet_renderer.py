@@ -238,35 +238,63 @@ def render_gantt_xlsx(
     resultados: Optional[dict] = None,
     theme_zm: str = "",
     theme_municipio: str = "",
+    gantt_plan: Optional[object] = None,
 ) -> bytes:
     """
-    Genera 06_Plan_De_Implementacion_Gantt.xlsx con hojas:
-      Fases, Hitos, Responsables, Riesgos, Dependencias
+    Genera Gantt XLSX con hojas: Fases, Etapas, Hitos, Responsables, Riesgos, Dependencias.
+    Si gantt_plan (GanttPlan) está presente, usa fases/etapas reales del Gantt Maestro.
     """
     import openpyxl
-    wb = openpyxl.Workbook()
+    from app.export.gantt_hierarchy import build_hierarchy
+    from app.planning.builder import GANTT_PHASES
 
+    wb = openpyxl.Workbook()
     zm = manifest.get("zm") or theme_zm
 
     # ── Hoja: Fases ───────────────────────────────────────────────────────────
     ws = wb.active
     ws.title = "Fases"
     _set_header_row(ws,
-        ["#", "Fase", "Descripción", "Mes inicio", "Mes fin", "Estado", "Responsable"], _GREEN)
-    fases_default = [
-        (1, "Diagnóstico y planificación",       "Marco legal, diagnóstico técnico y financiero", 1,  3,  "Pendiente", "Equipo técnico"),
-        (2, "Acuerdos institucionales",           "Aprobación del cabildo, convenios de coordinación metropolitana", 3, 6, "Pendiente", "Dirección Municipal"),
-        (3, "Diseño de infraestructura",          "Selección de terrenos, diseño de CAs", 6, 9, "Pendiente", "Equipo logístico"),
-        (4, "Licitación y contratación",          "Proceso de adquisición, contratos", 9, 12, "Pendiente", "Tesorería"),
-        (5, "Construcción Fase 1",                "Primer centro de acopio operativo", 12, 18, "Pendiente", "Concesionario"),
-        (6, "Operación piloto",                   "Prueba con municipio líder", 18, 24, "Pendiente", "Operador"),
-        (7, "Expansión metropolitana",            "Incorporar municipios restantes", 24, 36, "Pendiente", "Coordinación ZM"),
-    ]
-    for r, (n, fase, desc, m_ini, m_fin, estado, resp) in enumerate(fases_default, 2):
-        for col, val in enumerate([n, fase, desc, m_ini, m_fin, estado, resp], 1):
-            ws.cell(row=r, column=col, value=val)
-    ws.cell(row=2, column=4).comment = None  # Sin inventar fechas
+        ["#", "Fase ID", "Fase", "Descripción", "Sem inicio", "Sem fin", "Estado"], _GREEN)
+
+    if gantt_plan is not None:
+        hierarchy = build_hierarchy(gantt_plan)
+        for r, fase in enumerate(hierarchy, 2):
+            sem_ini = min((e.inicio_semana for e in fase.etapas), default=1)
+            sem_fin = max((e.inicio_semana + e.duracion_semanas for e in fase.etapas), default=1)
+            for col, val in enumerate(
+                [r - 1, fase.phase_id, fase.nombre, fase.descripcion, sem_ini, sem_fin, "Pendiente"], 1
+            ):
+                ws.cell(row=r, column=col, value=val)
+    else:
+        for r, phase_def in enumerate(GANTT_PHASES, 2):
+            ws.cell(row=r, column=1, value=r - 1)
+            ws.cell(row=r, column=2, value=phase_def["id"])
+            ws.cell(row=r, column=3, value=phase_def["nombre"])
+            ws.cell(row=r, column=4, value=phase_def["descripcion"])
+            ws.cell(row=r, column=5, value="—")
+            ws.cell(row=r, column=6, value="—")
+            ws.cell(row=r, column=7, value="Pendiente")
     _auto_width(ws)
+
+    # ── Hoja: Etapas (Gantt Maestro) ──────────────────────────────────────────
+    ws_etapas = wb.create_sheet("Etapas")
+    _set_header_row(ws_etapas,
+        ["Task ID", "Etapa", "Fase", "Sem inicio", "Duración sem", "Responsable", "Crítica"], _BLUE)
+    if gantt_plan is not None:
+        hierarchy = build_hierarchy(gantt_plan)
+        row = 2
+        for fase in hierarchy:
+            for etapa in fase.etapas:
+                ws_etapas.cell(row=row, column=1, value=etapa.task_id)
+                ws_etapas.cell(row=row, column=2, value=etapa.nombre)
+                ws_etapas.cell(row=row, column=3, value=fase.nombre)
+                ws_etapas.cell(row=row, column=4, value=etapa.inicio_semana)
+                ws_etapas.cell(row=row, column=5, value=etapa.duracion_semanas)
+                ws_etapas.cell(row=row, column=6, value=etapa.responsable)
+                ws_etapas.cell(row=row, column=7, value="Sí" if etapa.es_critica else "No")
+                row += 1
+    _auto_width(ws_etapas)
 
     # ── Hoja: Hitos ───────────────────────────────────────────────────────────
     ws_hitos = wb.create_sheet("Hitos")

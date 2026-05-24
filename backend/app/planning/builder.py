@@ -23,6 +23,62 @@ from app.agents.schemas import (
     RACIPlan,
     RACIRow,
 )
+from app.planning.task_gate_map import TASK_GATE_MAP
+
+
+# ─── Fases canónicas del Gantt Maestro (fuente única para export ZIP) ─────────
+
+GANTT_PHASES: list[dict[str, object]] = [
+    {
+        "id": "F01",
+        "slug": "F01_Diseno_y_Planeacion",
+        "nombre": "Diseño y planeación",
+        "task_ids": ["T01", "T02", "T03"],
+        "descripcion": "Diagnóstico territorial, diseño técnico y licitación",
+    },
+    {
+        "id": "F02",
+        "slug": "F02_Infraestructura",
+        "nombre": "Infraestructura",
+        "task_ids": ["T04", "T05", "T06"],
+        "descripcion": "Construcción de CAs, equipamiento y puntos de recolección",
+    },
+    {
+        "id": "F03",
+        "slug": "F03_Flota",
+        "nombre": "Flota",
+        "task_ids": ["T07", "T08"],
+        "descripcion": "Adquisición de flota y capacitación operativa",
+    },
+    {
+        "id": "F04",
+        "slug": "F04_Sensibilizacion",
+        "nombre": "Sensibilización",
+        "task_ids": ["T09", "T10", "T11"],
+        "descripcion": "Comunicación ciudadana y línea base",
+    },
+    {
+        "id": "F05",
+        "slug": "F05_Tecnologia",
+        "nombre": "Tecnología",
+        "task_ids": ["T12", "T13"],
+        "descripcion": "Sistema ALQUIMIA y prueba piloto de rutas",
+    },
+    {
+        "id": "F06",
+        "slug": "F06_Arranque_Operativo",
+        "nombre": "Arranque operativo",
+        "task_ids": ["T14", "T15"],
+        "descripcion": "Inauguración y comercialización inicial",
+    },
+]
+
+
+def _slugify(text: str, max_len: int = 48) -> str:
+    import re
+    s = re.sub(r"[^a-zA-Z0-9]+", "_", text.strip())
+    s = re.sub(r"_+", "_", s).strip("_")
+    return s[:max_len] or "item"
 
 
 # ─── Templates de tareas por fase ────────────────────────────────────────────
@@ -229,6 +285,8 @@ def _gantt_tasks(
             fuente_costo="n/a",
         ),
     ]
+    for task in tasks:
+        task.fase_gate = TASK_GATE_MAP.get(task.task_id, "G1")
     return tasks
 
 

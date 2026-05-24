@@ -134,3 +134,31 @@ def research_cache_summary(
         precios_recientes=precios,
         mensaje=msg,
     )
+
+
+@router.get("/antecedentes")
+async def antecedentes_reportaje(
+    municipio_id: str = Query(..., min_length=1),
+    zm_id: str = Query(""),
+    municipio_nombre: str = Query(""),
+    estado: str = Query(""),
+    refresh: bool = Query(
+        False,
+        description="Forzar investigación Serper al cambiar municipio",
+    ),
+):
+    """
+    Reportaje de antecedentes RSU — timeline + síntesis por municipio.
+    Se dispara automáticamente desde el simulador al cambiar ciudad.
+    """
+    from app.research.antecedentes_service import generate_antecedentes_reportaje
+
+    nombre = municipio_nombre or municipio_id
+    reportaje = await generate_antecedentes_reportaje(
+        municipio_id=municipio_id,
+        municipio_nombre=nombre,
+        estado=estado,
+        zm_id=zm_id or "ZM",
+        refresh=refresh,
+    )
+    return reportaje.model_dump(mode="json")

@@ -20,6 +20,7 @@ import { enrichFunctionaryModules } from '@/lib/simulator/functionaryJourneyEnri
 import { buildFunctionaryJourney } from '@/lib/simulator/clientModuleRegistry'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
+import { AntecedentesReportajePanel } from '@/components/simulator/AntecedentesReportajePanel'
 
 function SimulatorSimulationRibbon() {
   const [open, setOpen] = useState(false)
@@ -79,12 +80,22 @@ export default function SimulatorPage() {
   const portalError = useSimulatorStore(s => s.portalError)
   const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const refreshAntecedentesReportaje = useSimulatorStore(s => s.refreshAntecedentesReportaje)
+  const antecedentesForMunicipioId = useSimulatorStore(s => s.antecedentesForMunicipioId)
+  const activeMunicipioId = municipiosActivos[0] ?? null
 
   useEffect(() => { recalcular() }, [recalcular])
   useEffect(() => {
     if (!audience) return
     void fetchCityPortalData(zmActiva)
   }, [audience, fetchCityPortalData, zmActiva])
+
+  /** Respaldo: dispara reportaje si el municipio activo cambió sin pasar por applyMunicipioCatalog. */
+  useEffect(() => {
+    if (!activeMunicipioId) return
+    if (antecedentesForMunicipioId === activeMunicipioId) return
+    void refreshAntecedentesReportaje({ refresh: true })
+  }, [activeMunicipioId, antecedentesForMunicipioId, refreshAntecedentesReportaje])
 
   const isOrganizationJourney = portalEntry === 'organization'
 
@@ -167,6 +178,9 @@ export default function SimulatorPage() {
 
         {/* Compact disclaimer ribbon — always visible, outside scroll */}
         <SimulatorSimulationRibbon />
+
+        {/* Reportaje antecedentes — se regenera automáticamente al cambiar municipio */}
+        <AntecedentesReportajePanel />
 
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">

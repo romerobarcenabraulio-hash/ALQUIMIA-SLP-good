@@ -818,6 +818,7 @@ class PlanningTask(BaseModel):
     costo_mxn:    float = 0.0
     fuente_costo: str = ""
     holgura_semanas: int = 0
+    fase_gate: str = ""  # G1–G5 — gate institucional KRONOS
     # 3-point PERT estimates (semanas)
     t_optimista:  Optional[float] = None  # t_o: mejor caso
     t_probable:   Optional[float] = None  # t_m: más probable

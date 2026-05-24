@@ -21,6 +21,7 @@ from app.planning.risk.risk_register import (
 )
 from app.planning.budget.persistence import log_gate_status_change
 from app.planning.scheduling.gate_tracker import (
+    GATE_DEFINITIONS,
     check_gate_alerts,
     get_current_gate,
     load_gate_status,
@@ -92,6 +93,7 @@ def get_gates() -> dict:
     return {
         "gate_actual": current,
         "gates": status,
+        "definitions": GATE_DEFINITIONS,
         "alertas_activas": alerts,
     }
 

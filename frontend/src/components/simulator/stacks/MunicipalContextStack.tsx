@@ -160,7 +160,7 @@ const LEGAL_BY_ZM: Record<string, {
   vaciosJuridicos: number
   adendasPropuestas: number
   cobertura: number
-  faseActual: string
+  etapaReforma: string
   municipios: Array<{ nombre: string; separacion: string; recoleccion: string; sancionatoria: string; vacios: number; cobertura: number }>
   hallazgos: string[]
   acciones: string[]
@@ -168,7 +168,7 @@ const LEGAL_BY_ZM: Record<string, {
   lecturaEjecutiva: string
 }> = {
   SLP: {
-    municipiosPrioritarios: 3, totalMunicipios: 9, vaciosJuridicos: 18, adendasPropuestas: 12, cobertura: 38, faseActual: 'Diagnóstico y reforma',
+    municipiosPrioritarios: 3, totalMunicipios: 9, vaciosJuridicos: 18, adendasPropuestas: 12, cobertura: 38, etapaReforma: 'Diagnóstico y reforma',
     lecturaEjecutiva: 'El marco legal municipal muestra avances relevantes, pero aún presenta vacíos que frenan la implementación efectiva del programa de circularidad. Hoy, el 72% de los municipios tiene vacíos en la separación en origen y solo el 12% cuenta con coberturas normativas completas en elementos clave.\n\nLa regulación actual habilita principios generales de gestión de residuos y facultades operativas básicas; sin embargo, limita la imposición de obligaciones específicas, la recuperación de costos y la coordinación interinstitucional. Reformar es clave para consolidar capacidades jurídicas, dar certeza a los operadores y diseñar incentivos que aseguren sostenibilidad técnica y financiera.',
     municipios: [
       { nombre: 'SLP capital',  separacion: 'Parcial',         recoleccion: 'Parcial',         sancionatoria: 'Débil',  vacios: 3, cobertura: 55 },
@@ -196,7 +196,7 @@ const LEGAL_BY_ZM: Record<string, {
     ],
   },
   MTY: {
-    municipiosPrioritarios: 5, totalMunicipios: 18, vaciosJuridicos: 23, adendasPropuestas: 18, cobertura: 42, faseActual: 'Diagnóstico y reforma',
+    municipiosPrioritarios: 5, totalMunicipios: 18, vaciosJuridicos: 23, adendasPropuestas: 18, cobertura: 42, etapaReforma: 'Diagnóstico y reforma',
     lecturaEjecutiva: 'La Zona Metropolitana de Monterrey presenta el mayor número de vacíos jurídicos en la región norte, con 23 elementos sin cobertura normativa suficiente. La heterogeneidad entre municipios —desde Monterrey con 80% de cobertura hasta Santa Catarina sin cobertura— hace imposible escalar el programa sin una reforma marco metropolitana.\n\nLa regulación actual otorga facultades para operar el servicio de limpia, pero carece de los instrumentos de separación diferenciada, trazabilidad y sanciones proporcionales que exige una estrategia de circularidad formal. Reformar no es un trámite administrativo: es la condición para que el programa sea sostenible, financiable y legalmente defendible.',
     municipios: [
       { nombre: 'Monterrey',      separacion: 'Establecido',    recoleccion: 'Establecido',    sancionatoria: 'Media',  vacios: 2, cobertura: 80 },
@@ -225,7 +225,7 @@ const LEGAL_BY_ZM: Record<string, {
     ],
   },
   QRO: {
-    municipiosPrioritarios: 4, totalMunicipios: 6, vaciosJuridicos: 16, adendasPropuestas: 14, cobertura: 52, faseActual: 'Diagnóstico y reforma',
+    municipiosPrioritarios: 4, totalMunicipios: 6, vaciosJuridicos: 16, adendasPropuestas: 14, cobertura: 52, etapaReforma: 'Diagnóstico y reforma',
     lecturaEjecutiva: 'Querétaro cuenta con la mejor posición normativa de las zonas analizadas, con una cobertura del 52% y una base legal estatal que facilita la reforma coordinada. Sin embargo, la ausencia de diferenciación de fracciones en el municipio central y los vacíos de trazabilidad limitan la capacidad operativa del programa.\n\nEl marco estatal ofrece una ventana estratégica para impulsar una reforma reglamentaria coordinada a nivel ZM sin necesidad de modificaciones legislativas mayores. La prioridad es armonizar los instrumentos de separación diferenciada, trazabilidad y corresponsabilidad del generador, aprovechando la solidez institucional existente.',
     municipios: [
       { nombre: 'Querétaro',    separacion: 'Establecido', recoleccion: 'Establecido', sancionatoria: 'Media',  vacios: 2, cobertura: 80 },
@@ -251,7 +251,7 @@ const LEGAL_BY_ZM: Record<string, {
     ],
   },
   GDL: {
-    municipiosPrioritarios: 4, totalMunicipios: 9, vaciosJuridicos: 21, adendasPropuestas: 16, cobertura: 45, faseActual: 'Diagnóstico y reforma',
+    municipiosPrioritarios: 4, totalMunicipios: 9, vaciosJuridicos: 21, adendasPropuestas: 16, cobertura: 45, etapaReforma: 'Diagnóstico y reforma',
     lecturaEjecutiva: 'La Zona Metropolitana de Guadalajara enfrenta una alta heterogeneidad normativa: Guadalajara lidera con 75% de cobertura, pero los municipios periféricos como Tonalá operan prácticamente sin marco regulatorio para la circularidad. Esta brecha impide las economías de escala que el programa requiere para ser financieramente viable.\n\nEl marco estatal jaliscience ofrece una base legislativa sólida para impulsar una reforma coordinada a nivel ZM. La prioridad es establecer una ordenanza marco metropolitana que homologue obligaciones de separación diferenciada, base sancionatoria y criterios de trazabilidad, sin depender de que cada municipio reforme su reglamento de forma independiente.',
     municipios: [
       { nombre: 'Guadalajara', separacion: 'Establecido',    recoleccion: 'Establecido',    sancionatoria: 'Media',  vacios: 2, cobertura: 75 },
@@ -383,6 +383,7 @@ export function MunicipalContextStack({
   const [tabInternal, setTabInternal] = useState<TabId>('diagnostico')
   const tab = view ?? tabInternal
   const [adendaExpandida, setAdendaExpandida] = useState(false)
+  const [rutaNormativaOpen, setRutaNormativaOpen] = useState(false)
   const legalIsFallback = !LEGAL_BY_ZM[zmActiva]
   const legal = getLegalData(zmActiva)
   const zmKey = zmActiva?.toLowerCase() ?? ''
@@ -414,7 +415,7 @@ export function MunicipalContextStack({
           { icon: Scale,         label: 'Municipios con diagnóstico', value: `${legal.municipiosPrioritarios} / ${legal.totalMunicipios}`, sub: '33% del total',            color: '#1A5FA8' },
           { icon: AlertTriangle, label: 'Vacíos jurídicos',           value: legal.vaciosJuridicos.toString(),                             sub: 'en reglamentos vigentes', color: '#D4881E' },
           { icon: FileText,      label: 'Adendos propuestos',         value: legal.adendasPropuestas.toString(),                           sub: 'artículos o fracciones',  color: '#3B6D11' },
-          { icon: Shield,        label: 'Fase actual',                value: legal.faseActual,                                             sub: 'Etapa 2 de 5',             color: '#5A4A2A' },
+          { icon: Shield,        label: 'Etapa de reforma',           value: legal.etapaReforma,                                           sub: 'Paso 2 de 5 normativos',   color: '#5A4A2A' },
           { icon: CheckCircle,   label: 'Cobertura normativa',        value: `${legal.cobertura}%`,                                        sub: 'Objetivo 2025: 85%',       color: '#3B6D11' },
         ].map(({ icon: Icon, label, value, sub, color }) => (
           <div key={label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
@@ -502,40 +503,60 @@ export function MunicipalContextStack({
 
           {/* C. Ruta de reforma normativa */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-0.5">Ruta de reforma normativa</p>
-            <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Secuencia institucional de reforma</p>
-            <p className="text-[11px] text-[#6B6760] mb-4 max-w-2xl">
-              La reforma jurídica no debe verse como una lista aislada de cambios, sino como una secuencia institucional que alinea facultades, operadores, infraestructura y escalamiento.
-            </p>
+            <button
+              type="button"
+              onClick={() => setRutaNormativaOpen(o => !o)}
+              className="w-full flex items-start justify-between gap-3 text-left"
+            >
+              <div>
+                <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-0.5">Ruta de reforma normativa</p>
+                <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Pasos normativos de la reforma</p>
+                <p className="text-[11px] text-[#6B6760] max-w-2xl leading-relaxed">
+                  Secuencia jurídica — no el calendario de implementación, que se arma en Planificación (Cap. 2).
+                </p>
+              </div>
+              <ChevronDown
+                size={16}
+                className={cn('text-[#A8A49C] shrink-0 mt-1 transition-transform', rutaNormativaOpen && 'rotate-180')}
+              />
+            </button>
 
-            <div className="flex flex-wrap gap-2 lg:gap-0 lg:flex-nowrap">
-              {FASES_INSTITUCIONALES.map((f, idx) => (
-                <div key={f.fase} className="flex items-stretch lg:flex-1">
-                  <div className={cn(
-                    'flex-1 rounded-[10px] border p-3',
-                    f.bloqueante ? 'border-[#D4881E]/50 bg-[#FEF7E7]' : 'border-[#E8E4DC] bg-[#FAFAF8]',
-                  )}>
-                    <div className="flex items-center gap-1.5 mb-1.5">
-                      <span className={cn(
-                        'text-[9px] font-bold px-1.5 py-0.5 rounded font-mono',
-                        f.bloqueante ? 'bg-[#D4881E] text-white' : 'bg-[#3B6D11] text-white',
+            {rutaNormativaOpen && (
+              <>
+                <p className="text-[11px] text-[#6B6760] mb-4 max-w-2xl mt-3">
+                  La reforma jurídica no debe verse como una lista aislada de cambios, sino como una secuencia que alinea facultades, operadores e infraestructura antes de comprometer fechas operativas.
+                </p>
+
+                <div className="flex flex-wrap gap-2 lg:gap-0 lg:flex-nowrap">
+                  {FASES_INSTITUCIONALES.map((f, idx) => (
+                    <div key={f.fase} className="flex items-stretch lg:flex-1">
+                      <div className={cn(
+                        'flex-1 rounded-[10px] border p-3',
+                        f.bloqueante ? 'border-[#D4881E]/50 bg-[#FEF7E7]' : 'border-[#E8E4DC] bg-[#FAFAF8]',
                       )}>
-                        F{f.fase}
-                      </span>
-                      {f.bloqueante && <Lock className="w-2.5 h-2.5 text-[#D4881E]" />}
+                        <div className="flex items-center gap-1.5 mb-1.5">
+                          <span className={cn(
+                            'text-[9px] font-bold px-1.5 py-0.5 rounded font-mono',
+                            f.bloqueante ? 'bg-[#D4881E] text-white' : 'bg-[#3B6D11] text-white',
+                          )}>
+                            P{f.fase}
+                          </span>
+                          {f.bloqueante && <Lock className="w-2.5 h-2.5 text-[#D4881E]" />}
+                        </div>
+                        <p className="text-[10px] font-semibold text-[#1C1B18] leading-snug">{f.nombre}</p>
+                        <p className="text-[9px] text-[#A8A49C] mt-1">{f.meses} meses</p>
+                        <p className="text-[9px] text-[#6B6760] mt-0.5 leading-snug">Hito: {f.gate}</p>
+                      </div>
+                      {idx < FASES_INSTITUCIONALES.length - 1 && (
+                        <div className="hidden lg:flex items-center px-1">
+                          <ChevronRight className="w-3 h-3 text-[#A8A49C]" />
+                        </div>
+                      )}
                     </div>
-                    <p className="text-[10px] font-semibold text-[#1C1B18] leading-snug">{f.nombre}</p>
-                    <p className="text-[9px] text-[#A8A49C] mt-1">{f.meses} meses</p>
-                    <p className="text-[9px] text-[#6B6760] mt-0.5 leading-snug">{f.gate}</p>
-                  </div>
-                  {idx < FASES_INSTITUCIONALES.length - 1 && (
-                    <div className="hidden lg:flex items-center px-1">
-                      <ChevronRight className="w-3 h-3 text-[#A8A49C]" />
-                    </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
+              </>
+            )}
 
             {/* D. Ver adendos jurídicos CTA */}
             <div className="mt-4 pt-4 border-t border-[#F0EDE5] flex items-center justify-between gap-3">

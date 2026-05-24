@@ -121,7 +121,7 @@ function buildRichTransition(
       return {
         kicker: 'La cobertura territorial exige dictamen',
         title: labelFor(nextId),
-        summary: 'Los vacíos metropolitanos deben sustentarse con evidencia técnica y social antes de Cabildo: fracciones, multas graduadas y secuencia de despliegue.',
+        summary: 'Los vacíos metropolitanos deben sustentarse con evidencia técnica y social antes de Cabildo: fracciones, multas graduadas y delimitación de alcance territorial.',
       }
     case 'dictamen_tecnico': {
       const horizonte = resultados?.serieAnual?.length ?? null
@@ -153,9 +153,9 @@ function buildRichTransition(
       const lastAño = resultados?.serieAnual?.[resultados.serieAnual.length - 1]
       const pctCap = lastAño ? pct(lastAño.pctCaptura) : 'la meta definida'
       return {
-        kicker: 'La teoría de cambio abre la planificación',
+        kicker: 'Diagnóstico cerrado · abre Planificación',
         title: labelFor(nextId),
-        summary: `Una tasa de captura objetivo de ${pctCap} al año ${horizStr} requiere metas, Gantt y responsables explícitos antes de dimensionar infraestructura.`,
+        summary: `Con la teoría de cambio armada y una meta de captura de ${pctCap} al año ${horizStr}, el siguiente paso es traducir el diagnóstico en plan: fases de implementación, responsables, calendario y despliegue territorial.`,
       }
     }
     case 'plan_maestro':
