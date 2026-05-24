@@ -98,11 +98,8 @@ def test_package_manifest_zip_y_warnings_persisten():
             zip_path = Path(tmp) / "rc-pkg-001" / "package.zip"
             with zipfile.ZipFile(zip_path) as zf:
                 names = zf.namelist()
-            assert "implementacion/00_Maestro/manifest.json" in names
-            assert all(
-                not name.endswith(".txt") or name == "README.txt" or "/actividades/" in name
-                for name in names
-            )
+            assert "manifest.json" in names
+            assert all(not name.endswith(".txt") for name in names)
 
 
 def test_render_profesional_zip_manifest_render_report_y_bloqueado():
