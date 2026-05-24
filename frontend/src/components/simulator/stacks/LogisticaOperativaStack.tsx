@@ -26,6 +26,7 @@ import { useMapCenter } from '@/hooks/useMapCenter'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { buildRecyclersKpiContract } from '@/lib/recicladorasCatalog'
+import { ResidentialRoutesPanel } from '@/components/simulator/ResidentialRoutesPanel'
 
 const CentrosAcopioMap = dynamic(
   () => import('@/components/simulator/CentrosAcopioMap').then(m => m.CentrosAcopioMap),
@@ -140,7 +141,16 @@ export function LogisticaOperativaStack() {
             ))}
           </div>
 
-          {/* Map */}
+          {/* Rutas residenciales por colonia — trazado + Cabildo */}
+          <ExpandableChart chartId="m08-residential-routes" title="Programación de rutas por colonia" subtitle="Vertical · casa · tiempos · combustible · export Cabildo">
+            <ResidentialRoutesPanel
+              municipioLabel={municipioLabel}
+              rsuDia={rsuDia}
+              hasResultados={hasResultados}
+            />
+          </ExpandableChart>
+
+          {/* Map CAs + recicladoras */}
           <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle="Rutas orgánicas · reciclables · mixtas · zonas cubiertas">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
               <div className="px-5 py-3 border-b border-[#F0EDE5]">

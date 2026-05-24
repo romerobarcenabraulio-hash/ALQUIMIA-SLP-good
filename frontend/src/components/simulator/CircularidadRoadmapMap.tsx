@@ -137,6 +137,25 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
     return () => { cancelled = true }
   }, [zmActiva])
 
+  const coloniaLabels = useMemo(() => {
+    const features = heatmap?.geojson?.features ?? []
+    const seen = new Set<string>()
+    const rows: { colonia: string; municipio: string; color: string }[] = []
+    features.forEach((f, i) => {
+      const props = f.properties ?? {}
+      const colonia = String(props['colonia_label'] ?? props['nombre_municipio'] ?? `Zona ${i + 1}`)
+      const municipio = String(props['nombre_municipio'] ?? '')
+      const key = `${colonia}|${municipio}`
+      if (seen.has(key)) return
+      seen.add(key)
+      const pct = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
+      const adelanto = Math.max(0, 3 - Math.floor(i / 3))
+      const pctLocal = Math.max(0, Math.min(100, pct * (1 + adelanto * 0.15) - i * 2))
+      rows.push({ colonia, municipio, color: FASE_COLORS[faseDesdeCaptura(pctLocal)] })
+    })
+    return rows.slice(0, 24)
+  }, [heatmap, añoSlider, pctCapturaPorAño])
+
   const capturaAñoActual = pctCapturaPorAño[Math.min(añoSlider, pctCapturaPorAño.length - 1)] ?? 0
 
   const geoJsonStyle = useMemo(() => {
@@ -236,6 +255,24 @@ export function CircularidadRoadmapMap({ className = '' }: CircularidadRoadmapMa
         <MapLegend />
         <MapSourceBadge geometrySource={heatmap?.geometry_source} />
       </div>
+
+      {coloniaLabels.length > 0 && (
+        <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-3">
+          <p className="text-[10px] font-semibold text-[#1C1B18] mb-2">Colonias en zonificación (etiqueta legible)</p>
+          <div className="flex flex-wrap gap-2">
+            {coloniaLabels.map(row => (
+              <span
+                key={`${row.colonia}-${row.municipio}`}
+                className="inline-flex items-center gap-1.5 rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1 text-[9px]"
+              >
+                <span className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: row.color }} />
+                <span className="font-semibold text-[#1C1B18]">{row.colonia}</span>
+                <span className="text-[#A8A49C]">{row.municipio}</span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Nota metodológica */}
       <p className="text-[9px] text-[#C4C0B8] leading-relaxed px-1">

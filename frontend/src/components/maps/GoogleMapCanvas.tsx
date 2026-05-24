@@ -12,10 +12,18 @@ export type MapMarker = {
   onClick?: () => void
 }
 
+export type MapPolyline = {
+  id: string
+  path: { lat: number; lon: number }[]
+  color?: string
+  strokeWeight?: number
+}
+
 type Props = {
   center: { lat: number; lon: number }
   zoom?: number
   markers?: MapMarker[]
+  polylines?: MapPolyline[]
   geoJson?: GeoJSON.FeatureCollection | Record<string, unknown>
   geoJsonStyle?: (feature: google.maps.Data.Feature) => google.maps.Data.StyleOptions
   className?: string
@@ -27,6 +35,7 @@ export function GoogleMapCanvas({
   center,
   zoom = 11,
   markers = [],
+  polylines = [],
   geoJson,
   geoJsonStyle,
   className = '',
@@ -36,6 +45,7 @@ export function GoogleMapCanvas({
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
   const markersRef = useRef<google.maps.Marker[]>([])
+  const polylinesRef = useRef<google.maps.Polyline[]>([])
   const token = getGoogleMapsApiKey()
   const [err, setErr] = useState<string | null>(null)
 
@@ -93,6 +103,22 @@ export function GoogleMapCanvas({
         return marker
       })
   }, [markers, token])
+
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !token) return
+
+    polylinesRef.current.forEach(p => p.setMap(null))
+    polylinesRef.current = polylines
+      .filter(pl => pl.path.length >= 2)
+      .map(pl => new google.maps.Polyline({
+        map,
+        path: pl.path.map(p => ({ lat: p.lat, lng: p.lon })),
+        strokeColor: pl.color ?? '#1A5FA8',
+        strokeWeight: pl.strokeWeight ?? 4,
+        strokeOpacity: 0.85,
+      }))
+  }, [polylines, token])
 
   useEffect(() => {
     const map = mapRef.current

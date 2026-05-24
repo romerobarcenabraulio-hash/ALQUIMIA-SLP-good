@@ -13,9 +13,18 @@ import hashlib
 import math
 from typing import Any, Dict, List, Tuple
 
+from app.implementation.territorial import PROPOSED_COLONIES
 from app.legal.repository import MUNICIPIO_NOMBRES
 from app.national.catalog import ESTADOS, get_zm
 from app.national.rsu_demographics_seed import demo_tuple
+
+
+def _colonia_label_for_cell(municipio_id: str, cell_index: int) -> str:
+    """Etiqueta UX por colonia piloto — no clave censal INEGI."""
+    colonias = PROPOSED_COLONIES.get(municipio_id.lower(), [])
+    if not colonias:
+        return "Colonia piloto por validar"
+    return colonias[cell_index % len(colonias)]
 
 
 def _pct_pair(proxy_key: str) -> Tuple[float, float]:
@@ -124,6 +133,7 @@ def build_zm_circularity_grid_features(zm_id: str, municipios: List[str]) -> Lis
                     "circularity_projected_pct": projected,
                     "circularity_delta_pct": round(projected - actual, 2),
                     "poblacion_municipio_aprox": pop,
+                    "colonia_label": _colonia_label_for_cell(mid, cell_global),
                 }
                 features.append(
                     {
