@@ -141,6 +141,17 @@ const DictamenTecnicoStack = dynamic(
   },
 )
 
+const KronosRoadmapStack = dynamic(
+  () =>
+    import('@/components/simulator/stacks/KronosRoadmapStack').then(m => ({
+      default: m.KronosRoadmapStack,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando roadmap de implementación…</p>,
+  },
+)
+
 const KronosEvmDashboardStack = dynamic(
   () =>
     import('@/components/simulator/stacks/KronosEvmDashboardStack').then(m => ({
@@ -257,6 +268,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <EvaluacionSocioeconomicaStack />
     case 'teoria_cambio':
       return <TeoriaCambioStack />
+    case 'roadmap_implementacion':
+      return <KronosRoadmapStack />
     case 'plan_maestro':
       return <FutureGoalsModule notice={<M03Notice />} pageOnly={1} />
     case 'ruta_critica':
