@@ -6,13 +6,14 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
 import {
   downloadExecutivePdf,
+  downloadMasterIndexPdf,
   fetchAgoraPlanZip,
   triggerBrowserDownload,
 } from '@/lib/api'
 import { EXPORT_DISCLAIMER } from '@/lib/consultingDeliverables'
 import { snapshotFuentesUsadas } from '@/lib/snapshotFuentes'
 
-export type ExportAction = 'executive_pdf' | 'full_zip' | 'hub_professional' | 'share_url'
+export type ExportAction = 'executive_pdf' | 'master_index' | 'full_zip' | 'hub_professional' | 'share_url'
 
 export interface ExportOptions {
   moduleLabel?: string
@@ -84,6 +85,23 @@ export function useConsultingExport() {
               co2e_evitadas_anual: r.co2eEvitadasAnualTon,
               ingresos_brutos: r.ingresosBrutos,
             },
+            snapshot_datos: st.snapshotDatos
+              ? {
+                  score_datos: st.snapshotDatos.score_datos,
+                  advertencias: st.snapshotDatos.advertencias?.map(a => a.advertencia) ?? [],
+                  fuentes_usadas: snapshotFuentesUsadas(st.snapshotDatos),
+                }
+              : null,
+          })
+          return
+        }
+
+        if (action === 'master_index') {
+          await downloadMasterIndexPdf({
+            zm: st.zmActiva,
+            municipio_id: st.municipiosActivos[0] ?? st.zmActiva,
+            municipio_nombre:
+              st.seleccionMunicipioCatalog?.nombre ?? st.cityContext?.nombre ?? st.zmActiva,
             snapshot_datos: st.snapshotDatos
               ? {
                   score_datos: st.snapshotDatos.score_datos,

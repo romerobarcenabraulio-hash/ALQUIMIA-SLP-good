@@ -94,7 +94,7 @@ export function Header() {
     !pulseDismissed
 
   return (
-    <header className="sticky top-0 z-50 bg-[#FDFCFA]/95 backdrop-blur-sm border-b border-[#E8E4DC] shadow-sm">
+    <header className="sticky top-0 z-50 bg-surface-base/95 backdrop-blur-sm border-b border-surface-border">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 min-h-14 py-1.5 flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
 
         {/* Left — brand + city */}

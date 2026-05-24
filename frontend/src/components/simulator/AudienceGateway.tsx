@@ -90,7 +90,7 @@ export function AudienceGateway() {
   }
 
   return (
-    <div className="flex flex-col min-h-[calc(100vh-56px)]" style={{ background: '#F4F2ED' }}>
+    <div className="flex flex-col min-h-[calc(100vh-56px)] bg-surface-base">
       {/* Hero */}
       <div className="bg-[#1C2B15] px-6 py-10 lg:px-12">
         <p className="text-[10px] uppercase tracking-[0.15em] text-[#6A9A50] mb-3 font-medium">
@@ -139,7 +139,7 @@ export function AudienceGateway() {
                   <div className="flex items-center gap-3 mb-4">
                     <div
                       className="w-10 h-10 rounded-[10px] flex items-center justify-center"
-                      style={{ background: card.available ? card.bgColor : '#F4F2ED' }}
+                      style={{ background: card.available ? card.bgColor : 'var(--surface-muted)' }}
                     >
                       <Icon className="w-5 h-5" style={{ color: card.available ? card.accentColor : '#C8C4BC' }} strokeWidth={1.75} />
                     </div>
@@ -151,7 +151,7 @@ export function AudienceGateway() {
                         {card.kicker}
                       </span>
                       {!card.available && (
-                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-[#F4F2ED] border border-[#E0DCD6] text-[9px] font-semibold uppercase tracking-[0.08em] text-[#A8A49C]">
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-surface-muted border border-surface-border text-[9px] font-semibold uppercase tracking-[0.08em] text-gray-400c">
                           Próximamente
                         </span>
                       )}
@@ -193,7 +193,7 @@ export function AudienceGateway() {
                     className={cn(
                       'w-full inline-flex items-center justify-between gap-2 rounded-[10px] px-5 py-3 text-[13px] font-medium transition-all',
                       !card.available
-                        ? 'bg-[#F4F2ED] text-[#A8A49C] cursor-not-allowed border border-[#E8E4DC]'
+                        ? 'bg-surface-muted text-gray-400c cursor-not-allowed border border-surface-border'
                         : isLoading
                           ? 'opacity-70 cursor-wait'
                           : 'hover:opacity-90',

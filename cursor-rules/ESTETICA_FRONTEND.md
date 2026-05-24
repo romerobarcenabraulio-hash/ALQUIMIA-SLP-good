@@ -28,19 +28,22 @@ No usar contenido pegado a los bordes.
 
 ## 2. FONDO Y SUPERFICIES
 
-Fondo principal: `#FFFFFF`, `#FAFAF7`, `#F8F7F2`
+Fondo principal (layout): `#FFFFFF` (`surface-base`)
+
+Bloques de dato secundarios: `#F8FAF8` (`surface-muted`) — solo para tips, código y KPIs anidados, nunca como fondo de página.
 
 Cards:
 ```
 background: #FFFFFF;
-border: 1px solid #E7E5DC;
-border-radius: 14px;
-box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+border-left: 3px solid [color capítulo]; /* preferir barra lateral sobre borde completo */
+border-radius: 0;
+padding: 20px 24px;
 ```
 
-Cards importantes: verde claro `#F1F8EC` / `#EEF7E8` o beige `#F7F3EA` / `#FAF6ED`
+Cards importantes: verde claro `#F1F8EC` / `#EEF7E8` para CTAs y alertas positivas
 Alertas: amarillo `#FFF7E6`, rojo `#FDECEC`
 Nunca colores saturados como fondo grande.
+Nunca beige `#F4F2ED` como capa de layout — retirado en favor de blanco homogéneo.
 
 ---
 

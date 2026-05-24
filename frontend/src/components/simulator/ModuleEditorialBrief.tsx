@@ -54,7 +54,7 @@ export function ModuleEditorialBrief({
       <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
         <div className="border-l-2 border-[#3B6D11] pl-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#5A8A3A] mb-1">
-            Observamos
+          Qué muestra el simulador
           </p>
           <p className="text-[12px] leading-[1.55] text-[#2C302A]">
             {brief.observacion_alquimia}
@@ -66,7 +66,7 @@ export function ModuleEditorialBrief({
       <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
         <div className="border-l-2 border-[#1A5FA8] pl-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#1A5FA8] mb-1">
-            Decisión que habilita
+            Qué decide el funcionario aquí
           </p>
           <p className="text-[12px] leading-[1.55] text-[#2C302A]">
             {brief.criterio_decision}
@@ -78,7 +78,7 @@ export function ModuleEditorialBrief({
       <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
         <div className="border-l-2 border-[#D4881E] pl-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#D4881E] mb-1">
-            Qué verificar aún
+            Antes de usar esta cifra en cabildo
           </p>
           <p className="text-[12px] leading-[1.55] text-[#2C302A]">
             {brief.siguiente_accion}

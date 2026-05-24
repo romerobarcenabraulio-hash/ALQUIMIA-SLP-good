@@ -8,6 +8,7 @@ import {
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { InspeccionForm } from '@/components/simulator/InspeccionForm'
+import { EXPEDIENTE_PDF_EVENT } from '@/components/simulator/ExpedientePDF'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import { cn } from '@/lib/utils'
@@ -523,7 +524,17 @@ export function InspeccionStack() {
               disabled={btn.disabled}
               onClick={
                 btn.label === 'Generar PDF'
-                  ? () => document.getElementById('inspeccion-expediente-pdf')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                  ? () => {
+                      const target = document.getElementById('inspeccion-expediente-pdf')
+                      if (target) {
+                        window.dispatchEvent(new CustomEvent(EXPEDIENTE_PDF_EVENT))
+                      } else {
+                        document.getElementById('inspeccion-form-generar')?.scrollIntoView({
+                          behavior: 'smooth',
+                          block: 'center',
+                        })
+                      }
+                    }
                   : undefined
               }
               className={cn(

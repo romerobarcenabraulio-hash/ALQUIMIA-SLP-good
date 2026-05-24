@@ -60,6 +60,23 @@ describe('simulator functionary surface', () => {
     }
   })
 
+  it('guía M00 deriva conteos desde chapterConfig (sin hardcode 16)', () => {
+    const guiaSource = readFrontend('src/components/simulator/stacks/GuiaCircularidadStack.tsx')
+
+    expect(guiaSource).toContain('FUNCTIONARY_MODULE_ORDER')
+    expect(guiaSource).toContain('CHAPTERS')
+    expect(guiaSource).not.toMatch(/16 módulos/)
+    expect(guiaSource).toContain('{MODULE_COUNT} módulos de análisis')
+  })
+
+  it('simulator page usa fondo blanco homogéneo sin wrapper con borde', () => {
+    const pageSource = readFrontend('src/app/simulator/page.tsx')
+
+    expect(pageSource).toContain('bg-surface-base')
+    expect(pageSource).not.toContain("background: '#F4F2ED'")
+    expect(pageSource).not.toMatch(/rounded-\[12px\] border border-\[#E8E4DC\]/)
+  })
+
   it('no presenta composicion RSU como certificacion municipal', () => {
     const compositionSource = readFrontend('src/components/simulator/ComposicionRSU.tsx')
 

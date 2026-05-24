@@ -1,40 +1,35 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, type ReactNode } from 'react'
 import {
   ArrowRight, ChevronDown, Recycle,
   BarChart3, Scale, Target,
-  CheckCircle2, MapPin, DollarSign, Leaf,
+  CheckCircle2, MapPin, Leaf,
 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
+import {
+  CHAPTERS,
+  FUNCTIONARY_MODULE_ORDER,
+  moduleNumber,
+  type ChapterDef,
+} from '@/lib/chapterConfig'
+import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 
 const fmtN = (n: number) =>
   new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 }).format(n)
 const fmtMxn = (n: number) =>
   new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
 
-// ── Steps for Circularity — 5 etapas narrativas ─────────────────────────────
+const MODULE_COUNT = FUNCTIONARY_MODULE_ORDER.length
+const CHAPTER_COUNT = CHAPTERS.length
 
 interface StepModule {
   label: string
   id: string
-}
-
-interface StepDef {
-  num: number
-  icon: typeof MapPin
-  tag: string
-  title: string
-  question: string
-  color: string
-  bgColor: string
-  borderColor: string
-  modules: StepModule[]
-  body: (ctx: NarrativeCtx) => string
-  learns: string[]
 }
 
 interface NarrativeCtx {
@@ -49,102 +44,144 @@ interface NarrativeCtx {
   tir: number
 }
 
-const STEPS: StepDef[] = [
-  {
-    num: 1,
-    icon: MapPin,
-    tag: 'DIAGNÓSTICO',
-    title: '¿Cuál es el punto de partida real?',
-    question: 'Entender el municipio antes de proponer soluciones',
-    color: '#3B6D11', bgColor: '#EAF3DE', borderColor: '#C9DDB1',
-    modules: [
-      { label: 'M01 Línea Base RSU',       id: 'city_baseline' },
-      { label: 'M01B Impacto ambiental',   id: 'impacto_ambiental' },
-      { label: 'M02 Diagnóstico social',   id: 'social_diagnostico' },
-      { label: 'M02D Organigrama actual', id: 'organigrama_diagnostico' },
-      { label: 'M03 Marco legal',          id: 'marco_legal' },
-      { label: 'M04 Costo de la omisión',  id: 'costo_omision' },
-    ],
-    body: (ctx) =>
-      `Todo comienza con un dato simple y contundente: el municipio de ${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de residuos sólidos urbanos al día. De esa cantidad, hoy se recupera menos del 6%. Primero entendemos cuánta basura hay y de qué tipo (M01 — línea base técnica con fuente SEMARNAT/INEGI), luego si la ciudadanía está dispuesta a separar (M02 — diagnóstico social con Índice de Preparación Ciudadana), y solo entonces evaluamos si el marco legal es suficiente para respaldar el programa (M03 — brechas normativas y adendos propuestos).\n\nM04 cierra el diagnóstico con la pregunta que ningún consultor hace: ¿cuánto cuesta NO actuar? El análisis contrafactual cuantifica el pasivo acumulado en 10 años: costo de disposición, daño sanitario, multas PROFEPA y la pérdida de elegibilidad para financiamiento verde.\n\nDiagnosticar la ley sin diagnosticar primero a la sociedad es legislar a ciegas. Este capítulo entrega el punto de partida defendible ante cabildo, financiadores y auditoría técnica.`,
-    learns: [
-      'Cuántas toneladas genera el municipio al día, desglosadas por tipo de material (fuente SEMARNAT)',
-      'El Índice de Preparación Ciudadana (IPC): qué tan lista está la población para separar',
-      'Qué artículos del reglamento actual cubren la separación y cuáles exigen reforma antes de sancionar',
-      'El costo acumulado de no actuar en 10 años — pasivo ambiental, sanitario y financiero',
-    ],
-  },
-  {
-    num: 2,
-    icon: Target,
-    tag: 'PLANIFICACIÓN',
-    title: '¿Qué necesitamos construir?',
-    question: 'Cuánta infraestructura, logística, personal y dinero se requiere',
-    color: '#1A5FA8', bgColor: '#E8F0FA', borderColor: '#BDD7F5',
-    modules: [
-      { label: 'M05 Plan maestro',            id: 'plan_maestro' },
-      { label: 'M06 Infraestructura (CAs)',   id: 'infraestructura' },
-      { label: 'M07 Organigrama objetivo',    id: 'organigrama' },
-      { label: 'M08 Logística operativa',     id: 'logistica' },
-      { label: 'M09 Costos CAPEX / OPEX',     id: 'costos_programa' },
-      { label: 'M10 Mercado de materiales',   id: 'mercado_materiales' },
-    ],
-    body: (ctx) =>
-      `Con el diagnóstico claro, se definen metas con modelo matemático detrás: la curva de captura año por año, cuántos centros de acopio se necesitan y de qué tamaño (M05–M06). M07 define quién hace qué: organigrama, matriz RACI y plantilla de personal por tipo de CA — la pieza que las consultoras olvidan y que el tesorero siempre pregunta. La logística determina rutas, zona piloto y protocolo PER (M08). El módulo de costos presenta la tabla ejecutiva completa: CAPEX y OPEX con desglose de equipos, personal y operación anual (M09). Finalmente, M10 muestra a quién se vende el material recuperado y a qué precio.\n\nSin costos no hay presupuesto. Sin organigrama no hay responsables. Sin mercado no hay ingresos. Este capítulo entrega el número que el director de finanzas pregunta antes de pedir nada más: ¿cuánto cuesta y quién lo opera?`,
-    learns: [
-      'La curva de captura año a año bajo 3 escenarios: ambicioso, moderado y conservador',
-      'El organigrama del programa con roles, RACI y plantilla por tipo de CA (P/M/G)',
-      'El CAPEX total del programa con desglose por equipos, personal y contingencia',
-      'El mercado de compradores por fracción: PET, aluminio, papel, vidrio, composta',
-    ],
-  },
-  {
-    num: 3,
-    icon: Scale,
-    tag: 'MODELO',
-    title: '¿Quién paga, quién opera y es viable?',
-    question: 'Qué le presentamos al cabildo para que vote',
-    color: '#D4881E', bgColor: '#FEF7E7', borderColor: '#F5DCA0',
-    modules: [
-      { label: 'M11 Esquema de concesión',    id: 'esquema_concesion' },
-      { label: 'M12 Escenarios financieros',  id: 'escenarios_financieros' },
-      { label: 'M13 Árbol de financiamiento', id: 'arbol_financiamiento' },
-      { label: 'M14 Riesgos del modelo',      id: 'riesgos_modelo' },
-      { label: 'M15 Expediente cabildo',      id: 'expediente_cabildo' },
-    ],
-    body: (ctx) =>
-      `El cabildo no vota la técnica — vota el modelo de negocio. Aquí es donde la mayoría de los programas municipales se detienen: nadie contestó las tres preguntas que el cabildo realmente necesita. M11 responde quién opera y cómo se distribuyen los ingresos bajo cuatro esquemas: municipal directo, concesionado privado, APP o fideicomiso.\n\nM12 presenta los escenarios financieros (base, optimista, adverso) con análisis Monte Carlo y tornado de sensibilidad. Bajo el escenario base, el programa proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales al municipio y una TIR de ${fmtN(ctx.tir)}%. M13 va un paso más allá: el árbol de financiamiento mapea los 6 caminos reales para conseguir el capital — con criterios de elegibilidad y costo de capital de cada uno. M14 evalúa los riesgos del modelo completo. M15 consolida toda la documentación en el expediente listo para presentar ante el Cabildo.`,
-    learns: [
-      'Los 4 esquemas de concesión: quién pone el capital, quién opera y cómo se divide el ingreso',
-      'Los escenarios P10/P50/P90 de TIR y VPN con distribución de probabilidad',
-      'Los 6 caminos de financiamiento con criterios de elegibilidad y costo de capital',
-      'Los 12 riesgos rankeados por probabilidad × impacto con su plan de mitigación',
-    ],
-  },
-  {
-    num: 4,
-    icon: BarChart3,
-    tag: 'CONTROL',
-    title: '¿Cómo arrancamos y cómo medimos?',
-    question: 'Ya aprobado el programa, cómo se opera y se demuestra que funciona',
-    color: '#4A1C7A', bgColor: '#F5EFF9', borderColor: '#D8C4E8',
-    modules: [
-      { label: 'M16 Inspección y cumplimiento', id: 'inspeccion' },
-      { label: 'M17 Monitoreo operativo',       id: 'monitoreo_operativo' },
-      { label: 'M18 Doble materialidad / ESG',  id: 'doble_materialidad' },
-      { label: 'M19 Trazabilidad de fuentes',   id: 'trazabilidad' },
-    ],
-    body: (ctx) =>
-      `Un programa sin medición no es un programa — es una promesa electoral. M16 implementa la inspección escalonada: educación → advertencia → sanción documentada. No es punitiva; es el mecanismo que garantiza que la infraestructura reciba material de calidad.\n\nM17 compara proyección vs. realidad en un semáforo de desempeño. M18 convierte los resultados en el lenguaje de financiadores: GRI 306 (residuos) y ESRS E5 (economía circular), con reportes listos para BANOBRAS y fondos internacionales. El programa proyecta evitar ${fmtN(ctx.co2e)} t CO₂e/año — una cifra que vale dinero en mercados de carbono. M19 cierra el ciclo: cada número del simulador tiene fórmula, fuente y estado de verificación. Trazabilidad total.`,
-    learns: [
-      'El proceso de inspección escalonado alineado al reglamento municipal vigente',
-      'El dashboard proyectado vs. real con semáforo de desempeño del programa',
-      'El reporte GRI 306 / ESRS E5 con los KPIs del simulador — listo para fondos verdes',
-    ],
-  },
-]
+interface StepDef {
+  num: number
+  icon: LucideIcon
+  tag: string
+  title: string
+  question: string
+  color: string
+  bgColor: string
+  borderColor: string
+  modules: StepModule[]
+  body: (ctx: NarrativeCtx) => string
+  learns: string[]
+}
 
-// ── Component ────────────────────────────────────────────────────────────────
+const CHAPTER_ICONS: Record<number, LucideIcon> = {
+  1: MapPin,
+  2: Target,
+  3: Scale,
+  4: BarChart3,
+}
+
+const CHAPTER_SUBQUESTIONS: Record<number, string> = {
+  1: 'Entender el municipio antes de proponer soluciones',
+  2: 'Cuánta infraestructura, logística, personal y dinero se requiere',
+  3: 'Qué le presentamos al cabildo para que vote',
+  4: 'Cómo se opera y se demuestra que funciona',
+}
+
+const CHAPTER_NARRATIVES: Record<
+  number,
+  { body: (ctx: NarrativeCtx) => string; learns: string[] }
+> = {
+  1: {
+    body: (ctx) =>
+      `${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de RSU al día; hoy se recupera menos del 6%. El Capítulo 1 recorre trece módulos: línea base y composición (SEMARNAT/INEGI), diagnóstico social y encuesta de aceptación, organigrama actual, capacidad institucional, marco legal con brechas normativas, cobertura territorial, dictamen técnico, costo de omisión y evaluación socioeconómica. Cierra con la teoría de cambio.\n\nLa secuencia importa: no conviene reformar el reglamento sin medir disposición ciudadana ni mapear quién opera el servicio hoy. Este capítulo entrega el punto de partida defendible ante cabildo, financiadores y auditoría.`,
+    learns: [
+      'Generación diaria de RSU por material, con fuente SEMARNAT/INEGI',
+      'Índice de Preparación Ciudadana y encuesta de aceptación por tipo de vivienda',
+      'Brechas del reglamento vigente y dictamen técnico de la reforma',
+      'Costo contrafactual de no actuar en 10 años y evaluación socioeconómica',
+      'Teoría de cambio que conecta diagnóstico con planificación',
+    ],
+  },
+  2: {
+    body: (ctx) =>
+      `Con el diagnóstico cerrado, nueve módulos definen la solución operativa: plan maestro con curva de captura, ruta crítica y oleadas territoriales; infraestructura de centros de acopio (${ctx.nCAs} CAs en el escenario activo), organigrama objetivo con RACI, logística y plan educativo; CAPEX/OPEX desglosado y mercado de materiales.\n\nSin costos no hay presupuesto. Sin organigrama no hay responsables. Sin mercado no hay ingresos. Este capítulo responde lo que el director de finanzas pregunta primero: cuánto cuesta, quién opera y a quién se vende el material recuperado.`,
+    learns: [
+      'Curva de captura bajo escenarios ambicioso, moderado y conservador',
+      'Ruta crítica, oleadas territoriales y mix de centros de acopio P/M/G',
+      'Organigrama del programa con roles, RACI y plantilla por tipo de CA',
+      'CAPEX y OPEX con desglose de equipos, personal y contingencia',
+      'Compradores y precios spot por fracción: PET, aluminio, papel, vidrio, composta',
+    ],
+  },
+  3: {
+    body: (ctx) =>
+      `El cabildo no vota la técnica: vota el modelo de negocio. Cinco módulos responden quién opera bajo cuatro esquemas (municipal, concesionado, APP, fideicomiso), presentan escenarios financieros con Monte Carlo — bajo el escenario base el municipio proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales y TIR ${fmtN(ctx.tir)}% —, mapean seis caminos de financiamiento, evalúan riesgos y consolidan el expediente para sesión de cabildo.\n\nAquí se detienen la mayoría de los programas municipales: nadie contestó quién pone el capital, quién asume el riesgo operativo y cómo se reparte el ingreso.`,
+    learns: [
+      'Cuatro esquemas de concesión: capital, operación y reparto de ingresos',
+      'Escenarios P10/P50/P90 de TIR y VPN con tornado de sensibilidad',
+      'Seis caminos de financiamiento con elegibilidad y costo de capital',
+      'Riesgos del modelo rankeados por probabilidad × impacto',
+      'Expediente consolidado listo para presentación ante cabildo',
+    ],
+  },
+  4: {
+    body: (ctx) =>
+      `Ocho módulos cubren la operación y el reporteo: inspección escalonada (educación → advertencia → sanción), monitoreo proyectado vs. real, doble materialidad GRI 306 / ESRS E5, trazabilidad de fuentes, control presupuestal (EVM y conciliación mensual) y tableros de riesgo con gate de cierre.\n\nEl programa proyecta evitar ${fmtN(ctx.co2e)} t CO₂e/año — dato usable ante fondos verdes. Cada cifra del simulador lleva fórmula, fuente y estado de verificación.`,
+    learns: [
+      'Inspección alineada al reglamento municipal vigente',
+      'Semáforo proyectado vs. real del desempeño operativo',
+      'Reporte GRI 306 / ESRS E5 con KPIs del simulador',
+      'Trazabilidad: fórmula, fuente y nivel de certeza por dato',
+      'Control presupuestal EVM y conciliación mensual',
+      'Tablero de riesgos y gate de cierre del expediente',
+    ],
+  },
+}
+
+function chapterModuleRange(ch: ChapterDef): string {
+  const modulos = ch.modulos
+  if (!modulos.length) return ''
+  return `M${moduleNumber(modulos[0]!)} – M${moduleNumber(modulos[modulos.length - 1]!)}`
+}
+
+function moduleLabel(id: string): string {
+  const num = moduleNumber(id)
+  const name = CLIENT_FUNCTIONARY_MODULES[id]?.label ?? id
+  return `M${num} ${name}`
+}
+
+function buildGuideSteps(): StepDef[] {
+  return CHAPTERS.map(ch => {
+    const narrative = CHAPTER_NARRATIVES[ch.num]!
+    return {
+      num: ch.num,
+      icon: CHAPTER_ICONS[ch.num] ?? MapPin,
+      tag: ch.label.toUpperCase(),
+      title: ch.question,
+      question: CHAPTER_SUBQUESTIONS[ch.num] ?? ch.question,
+      color: ch.color,
+      bgColor: ch.bgColor,
+      borderColor: ch.borderColor,
+      modules: ch.modulos.map(id => ({ id, label: moduleLabel(id) })),
+      body: narrative.body,
+      learns: narrative.learns,
+    }
+  })
+}
+
+const GUIDE_STEPS = buildGuideSteps()
+
+function EditorialSection({
+  kicker,
+  title,
+  children,
+  accentColor,
+  className,
+}: {
+  kicker: string
+  title: string
+  children: ReactNode
+  accentColor?: string
+  className?: string
+}) {
+  return (
+    <section
+      className={cn('pl-5 border-l-[3px] py-1', className)}
+      style={{ borderColor: accentColor ?? 'var(--surface-border)' }}
+    >
+      <p className="text-[10px] uppercase tracking-[0.08em] text-gray-400c font-semibold mb-2">
+        {kicker}
+      </p>
+      <h2 className="font-serif text-[20px] font-bold text-gray-900c mb-4">{title}</h2>
+      {children}
+    </section>
+  )
+}
 
 interface GuiaCircularidadProps {
   onNavigate?: (moduleId: string) => void
@@ -177,14 +214,27 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
   const [expandedStep, setExpandedStep] = useState<number | null>(1)
 
+  const chapterCards = useMemo(
+    () =>
+      CHAPTERS.map(ch => ({
+        icon: CHAPTER_ICONS[ch.num] ?? MapPin,
+        label: ch.label,
+        sub: chapterModuleRange(ch),
+        desc: CHAPTER_SUBQUESTIONS[ch.num] ?? ch.question,
+        color: ch.color,
+        firstId: ch.firstModuleId,
+      })),
+    [],
+  )
+
   return (
-    <div className="space-y-8">
-      {/* ── Hero / Intro ───────────────────────────────────────────────────── */}
-      <section className="rounded-[14px] bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white p-8 relative overflow-hidden">
+    <div className="space-y-10">
+      {/* Hero — full bleed dentro del content area */}
+      <section className="-mx-6 bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white px-6 py-8 relative overflow-hidden">
         <div className="absolute top-4 right-4 opacity-10">
           <Recycle size={120} strokeWidth={0.8} />
         </div>
-        <div className="relative z-10">
+        <div className="relative z-10 max-w-3xl">
           <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8D78A] font-semibold mb-3">
             Guía de lectura · ALQUIMIA Platform
           </p>
@@ -192,21 +242,19 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             Steps for Circularity
           </h1>
           <p className="text-[15px] leading-[1.75] text-white/90 max-w-2xl">
-            ALQUIMIA es una plataforma de consultoría automatizada para la gestión circular de
-            residuos sólidos urbanos en municipios mexicanos. Lo que verás a continuación no es un
-            dashboard genérico — es un argumento completo, construido paso a paso, que responde
-            una sola pregunta:{' '}
+            ALQUIMIA apoya la planeación circular de RSU en municipios mexicanos. Esta guía explica
+            cómo leer el simulador antes de presentar cifras a cabildo. La pregunta central:{' '}
             <strong className="text-white">
-              ¿puede este municipio convertir su basura en valor económico, empleos y calidad de
-              vida?
+              ¿puede {municipio || 'este municipio'} convertir su basura en valor económico, empleos
+              y calidad de vida?
             </strong>
           </p>
-          <div className="flex items-center gap-2 mt-5">
+          <div className="flex flex-wrap items-center gap-2 mt-5">
             <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              16 módulos de análisis
+              {MODULE_COUNT} módulos de análisis
             </span>
             <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              4 capítulos consultivos
+              {CHAPTER_COUNT} capítulos consultivos
             </span>
             <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
               0 datos inventados
@@ -215,75 +263,57 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </div>
       </section>
 
-      {/* ── Intro por audiencia — NarrativaIntroBridge ───────────────────── */}
       <NarrativaIntroBridge />
 
-      {/* ── El Problema ────────────────────────────────────────────────────── */}
-      <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-6">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] font-semibold mb-2">
-          El contexto
-        </p>
-        <h2 className="font-serif text-[20px] font-bold text-[#1C1B18] mb-4">
-          ¿Por qué la basura es un problema de política pública?
-        </h2>
-        <div className="text-[13px] leading-[1.85] text-[#4A4740] space-y-4">
+      <EditorialSection
+        kicker="El contexto"
+        title="¿Por qué la basura es un problema de política pública?"
+        accentColor="#3B6D11"
+      >
+        <div className="text-[13px] leading-[1.85] text-gray-600c space-y-4">
           <p>
-            México genera más de <strong>120,000 toneladas de residuos sólidos urbanos al día</strong>.
-            De ese total, menos del 6% se recicla formalmente. El resto se entierra en rellenos
-            sanitarios que se agotan, en tiraderos a cielo abierto que contaminan acuíferos, o en
-            cauces de ríos que terminan en el mar. El costo ambiental es medible en emisiones de
-            metano (CH₄), en casos de enfermedades respiratorias y en pérdida de suelo productivo.
-            El costo económico es un mercado de reciclaje de miles de millones de pesos al año que
-            se deja en la mesa.
+            México genera más de <strong>120,000 toneladas de RSU al día</strong>. Menos del 6% se
+            recicla formalmente. El resto va a rellenos saturados, tiraderos abiertos o cauces que
+            terminan en el mar.
           </p>
           <p>
-            Pero el problema no es técnico. Las tecnologías de separación, compostaje y
-            valorización existen hace décadas. El problema es <strong>institucional</strong>: los
-            municipios — responsables del manejo de RSU (Art. 115) — carecen de herramientas de
-            diagnóstico, planeación financiera y seguimiento operativo para diseñar programas
-            sostenibles.
+            Las tecnologías de separación existen desde hace décadas. El cuello de botella es{' '}
+            <strong>institucional</strong>: los municipios — responsables del RSU (Art. 115) —
+            carecen de diagnóstico, planeación financiera y seguimiento operativo integrados.
           </p>
         </div>
-      </section>
+      </EditorialSection>
 
-      {/* ── Cómo funciona el sistema ───────────────────────────────────────── */}
-      <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-6">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] font-semibold mb-2">
-          Cómo leer esta plataforma
-        </p>
-        <h2 className="font-serif text-[20px] font-bold text-[#1C1B18] mb-3">
-          El sistema funciona como un consultor senior
-        </h2>
-        <p className="text-[13px] leading-[1.85] text-[#4A4740] mb-5">
-          Cada módulo que verás después de esta guía sigue la misma lógica que un equipo de
-          consultoría aplicaría en un proyecto real de residuos sólidos: primero se diagnostica,
-          luego se planea, después se ejecuta y finalmente se mide. La diferencia es que aquí
-          el análisis es instantáneo, transparente y reproducible — cada cifra muestra su
-          fórmula, su fuente y su nivel de certeza.
+      <EditorialSection
+        kicker="Cómo leer esta plataforma"
+        title="La misma lógica que un consultor senior"
+        accentColor="#1A5FA8"
+      >
+        <p className="text-[13px] leading-[1.85] text-gray-600c mb-5">
+          Tras esta guía encontrarás {MODULE_COUNT} módulos en cuatro capítulos: diagnóstico,
+          planificación, modelo de negocio y control. Cada cifra muestra fórmula, fuente y nivel de
+          certeza. El panel lateral derecho detalla la metodología de cada pantalla.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-          {[
-            { icon: MapPin,     label: 'Diagnóstico',   sub: 'M01 – M04', desc: 'Entender el municipio',    color: '#3B6D11', firstId: 'city_baseline' },
-            { icon: Target,     label: 'Planificación', sub: 'M05 – M10', desc: 'Diseñar la solución',      color: '#1A5FA8', firstId: 'plan_maestro' },
-            { icon: Scale,      label: 'Modelo',        sub: 'M11 – M15', desc: 'Quién paga, quién opera',  color: '#D4881E', firstId: 'esquema_concesion' },
-            { icon: BarChart3,  label: 'Control',       sub: 'M16 – M19', desc: 'Operar y demostrar',       color: '#4A1C7A', firstId: 'inspeccion' },
-          ].map(e => (
+          {chapterCards.map(e => (
             <button
               key={e.label}
               type="button"
               onClick={() => onNavigate?.(e.firstId)}
               className={cn(
-                'rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 text-center transition-all',
-                onNavigate ? 'hover:border-[#C9DDB1] hover:bg-[#F1F8EC] hover:shadow-[0_2px_8px_rgba(59,109,17,0.08)] cursor-pointer' : 'cursor-default',
+                'rounded-[10px] bg-surface-muted p-4 text-center transition-all',
+                onNavigate
+                  ? 'hover:bg-green-50a hover:shadow-sm cursor-pointer'
+                  : 'cursor-default',
               )}
             >
               <e.icon size={22} className="mx-auto mb-2" style={{ color: e.color }} />
-              <p className="text-[12px] font-bold text-[#1C1B18]">{e.label}</p>
-              <p className="text-[10px] font-mono text-[#A8A49C] mb-1">{e.sub}</p>
-              <p className="text-[11px] text-[#6B6760]">{e.desc}</p>
+              <p className="text-[12px] font-bold text-gray-900c">{e.label}</p>
+              <p className="text-[10px] font-mono text-gray-400c mb-1">{e.sub}</p>
+              <p className="text-[11px] text-gray-600c">{e.desc}</p>
               {onNavigate && (
-                <p className="text-[10px] text-[#3B6D11] mt-1.5 flex items-center justify-center gap-0.5">
+                <p className="text-[10px] text-green-500a mt-1.5 flex items-center justify-center gap-0.5">
                   Ir <ArrowRight size={9} />
                 </p>
               )}
@@ -291,36 +321,33 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           ))}
         </div>
 
-        <div className="rounded-[10px] bg-[#F4F2ED] px-4 py-3">
-          <p className="text-[11px] text-[#6B6760] leading-[1.7]">
-            <strong className="text-[#1C1B18]">Consejo de navegación:</strong> Cada módulo incluye
-            una barra lateral con las consideraciones metodológicas — cómo se calcula, de dónde
-            vienen los datos, por qué se usa ese enfoque y cuál supuesto mueve más el resultado.
-            Si en algún momento dudas de un número, ahí está la explicación completa.
+        <div className="rounded-[10px] bg-surface-muted px-4 py-3">
+          <p className="text-[11px] text-gray-600c leading-[1.7]">
+            <strong className="text-gray-900c">Consejo:</strong> si dudas de un número, abre el
+            panel de consideraciones (icono del libro a la derecha). Ahí está el origen del dato y
+            el supuesto que más lo mueve.
           </p>
         </div>
-      </section>
+      </EditorialSection>
 
-      {/* ── Steps Accordion — 4 capítulos ──────────────────────────────────── */}
       <section>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] font-semibold mb-3 px-1">
-          4 capítulos consultivos · {municipio}
+        <p className="text-[10px] uppercase tracking-[0.08em] text-gray-400c font-semibold mb-3 px-1">
+          {CHAPTER_COUNT} capítulos consultivos · {municipio}
         </p>
 
         <div className="space-y-3">
-          {STEPS.map(step => {
+          {GUIDE_STEPS.map(step => {
             const isOpen = expandedStep === step.num
             const Icon = step.icon
             return (
               <div
                 key={step.num}
                 className={cn(
-                  'rounded-[12px] border transition-all',
-                  isOpen ? `bg-white shadow-[0_2px_12px_rgba(28,27,24,0.06)]` : 'bg-[#FDFCFA]',
+                  'rounded-[12px] transition-all border-l-[3px]',
+                  isOpen ? 'bg-surface-base shadow-sm' : 'bg-surface-base hover:bg-surface-muted',
                 )}
-                style={{ borderColor: isOpen ? step.borderColor : '#E8E4DC' }}
+                style={{ borderLeftColor: step.color }}
               >
-                {/* Header */}
                 <button
                   type="button"
                   onClick={() => setExpandedStep(isOpen ? null : step.num)}
@@ -340,28 +367,28 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
                       >
                         Cap. {step.num} · {step.tag}
                       </span>
+                      <span className="text-[9px] text-gray-400c font-mono">
+                        {step.modules.length} módulos
+                      </span>
                     </div>
-                    <p className="text-[14px] font-semibold text-[#1C1B18]">{step.title}</p>
-                    <p className="text-[11px] text-[#8A9286] mt-0.5">{step.question}</p>
+                    <p className="text-[14px] font-semibold text-gray-900c">{step.title}</p>
+                    <p className="text-[11px] text-gray-400c mt-0.5">{step.question}</p>
                   </div>
                   <ChevronDown
                     size={18}
                     className={cn(
-                      'shrink-0 text-[#A8A49C] transition-transform',
+                      'shrink-0 text-gray-400c transition-transform',
                       isOpen && 'rotate-180',
                     )}
                   />
                 </button>
 
-                {/* Body */}
                 {isOpen && (
                   <div className="px-5 pb-5 space-y-4">
-                    {/* Narrative text */}
-                    <div className="text-[13px] leading-[1.85] text-[#4A4740] whitespace-pre-line">
+                    <div className="text-[13px] leading-[1.85] text-gray-600c whitespace-pre-line">
                       {step.body(ctx)}
                     </div>
 
-                    {/* Modules covered — clickable when onNavigate provided */}
                     <div className="flex flex-wrap gap-1.5">
                       {step.modules.map(m => (
                         <button
@@ -384,14 +411,13 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
                       ))}
                     </div>
 
-                    {/* What you'll learn */}
-                    <div className="rounded-[10px] bg-[#FAFAF8] border border-[#F0EDE5] p-4">
-                      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] font-semibold mb-2">
+                    <div className="rounded-[10px] bg-surface-muted p-4">
+                      <p className="text-[10px] uppercase tracking-[0.06em] text-gray-400c font-semibold mb-2">
                         Lo que encontrarás en estos módulos
                       </p>
                       <ul className="space-y-1.5">
                         {step.learns.map((l, i) => (
-                          <li key={i} className="flex items-start gap-2 text-[12px] text-[#4A4740]">
+                          <li key={i} className="flex items-start gap-2 text-[12px] text-gray-600c">
                             <CheckCircle2 size={13} className="shrink-0 mt-0.5" style={{ color: step.color }} />
                             <span>{l}</span>
                           </li>
@@ -406,43 +432,38 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </div>
       </section>
 
-      {/* ── Qué NO es ALQUIMIA ────────────────────────────────────────────── */}
-      <section className="rounded-[12px] border border-[#FDE8E8] bg-[#FFF8F8] p-6">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#7A1212] font-semibold mb-2">
+      <section className="pl-5 border-l-[3px] border-red-500a/40 py-1">
+        <p className="text-[10px] uppercase tracking-[0.08em] text-red-500a font-semibold mb-2">
           Nota importante
         </p>
-        <h2 className="font-serif text-[16px] font-bold text-[#1C1B18] mb-3">
+        <h2 className="font-serif text-[16px] font-bold text-gray-900c mb-3">
           Lo que ALQUIMIA no es
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px] text-[#4A4740]">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px] text-gray-600c">
           {[
-            { no: 'No es un dictamen oficial', si: 'Es un análisis prospectivo que requiere validación con el equipo jurídico y técnico del municipio.' },
-            { no: 'No sustituye al consultor humano', si: 'Complementa al consultor con datos, fórmulas y escenarios que tomarían semanas calcular manualmente.' },
-            { no: 'No inventa datos', si: 'Cada cifra tiene fuente documentada. Cuando no hay dato, se marca como supuesto editable con rango de incertidumbre.' },
-            { no: 'No garantiza resultados', si: 'Proyecta escenarios. El resultado real depende de la ejecución, el compromiso político y la participación ciudadana.' },
+            { no: 'No es un dictamen oficial', si: 'Requiere validación del equipo jurídico y técnico del municipio.' },
+            { no: 'No sustituye al consultor humano', si: 'Acelera cálculos y escenarios que tomarían semanas en hoja de cálculo.' },
+            { no: 'No inventa datos', si: 'Cada cifra tiene fuente. Sin dato, el supuesto queda editable con rango de incertidumbre.' },
+            { no: 'No garantiza resultados', si: 'Proyecta escenarios; el resultado real depende de ejecución y voluntad política.' },
           ].map(item => (
-            <div key={item.no} className="rounded-[8px] bg-white p-3 border border-[#F5C4C4]/30">
-              <p className="font-semibold text-[#7A1212] mb-1">✕ {item.no}</p>
-              <p className="text-[#6B6760] leading-relaxed">{item.si}</p>
+            <div key={item.no} className="rounded-[8px] bg-surface-muted p-3">
+              <p className="font-semibold text-red-500a mb-1">✕ {item.no}</p>
+              <p className="text-gray-600c leading-relaxed">{item.si}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── Mapa del Proyecto — ProjectMapView ──────────────────────────── */}
-      <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-6">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] font-semibold mb-2">
-          Mapa del proyecto
-        </p>
-        <h2 className="font-serif text-[18px] font-bold text-[#1C1B18] mb-4">
-          Los 16 módulos, de un vistazo
-        </h2>
+      <EditorialSection
+        kicker="Mapa del proyecto"
+        title={`Los ${MODULE_COUNT} módulos, de un vistazo`}
+        accentColor="#4A1C7A"
+      >
         <div className="space-y-3">
-          {STEPS.map((step, si) => (
-            <div key={step.num} className="rounded-[10px] border border-[#E8E4DC] overflow-hidden">
-              {/* Chapter header */}
+          {GUIDE_STEPS.map((step, si) => (
+            <div key={step.num} className="rounded-[10px] overflow-hidden border border-surface-border">
               <div
-                className="px-4 py-2.5 flex items-center gap-3"
+                className="px-4 py-2.5 flex items-center gap-3 flex-wrap"
                 style={{ backgroundColor: step.bgColor }}
               >
                 <step.icon size={14} style={{ color: step.color }} />
@@ -452,21 +473,18 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
                 >
                   Cap. {step.num} — {step.tag}
                 </span>
-                <span className="text-[11px] text-[#6B6760]">{step.question}</span>
+                <span className="text-[11px] text-gray-600c">{step.question}</span>
               </div>
-              {/* Module pills */}
-              <div className="px-4 py-3 bg-white flex flex-wrap gap-2 items-center">
+              <div className="px-4 py-3 bg-surface-base flex flex-wrap gap-2 items-center">
                 {step.modules.map((m, mi) => (
                   <div key={m.id} className="flex items-center gap-1">
-                    {mi > 0 && <span className="text-[#C8C4BC] text-[10px]">→</span>}
+                    {mi > 0 && <span className="text-gray-400c text-[10px]">→</span>}
                     <button
                       type="button"
                       onClick={() => onNavigate?.(m.id)}
                       className={cn(
                         'text-[11px] px-2.5 py-1 rounded-full border font-medium transition-all',
-                        onNavigate
-                          ? 'hover:shadow-[0_1px_4px_rgba(0,0,0,0.1)] cursor-pointer'
-                          : 'cursor-default',
+                        onNavigate ? 'hover:shadow-sm cursor-pointer' : 'cursor-default',
                       )}
                       style={{
                         borderColor: step.borderColor,
@@ -478,8 +496,8 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
                     </button>
                   </div>
                 ))}
-                {si < STEPS.length - 1 && (
-                  <span className="ml-auto text-[10px] text-[#A8A49C] flex items-center gap-1">
+                {si < GUIDE_STEPS.length - 1 && (
+                  <span className="ml-auto text-[10px] text-gray-400c flex items-center gap-1">
                     continúa <ArrowRight size={10} />
                   </span>
                 )}
@@ -487,33 +505,32 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             </div>
           ))}
         </div>
-        <p className="mt-3 text-[11px] text-[#8A9286]">
-          Haz clic en cualquier módulo para ir directamente — o navega secuencialmente con los botones de abajo.
+        <p className="mt-3 text-[11px] text-gray-400c">
+          Haz clic en cualquier módulo para ir directo, o avanza secuencialmente con los botones inferiores.
         </p>
-      </section>
+      </EditorialSection>
 
-      {/* ── CTA Final ──────────────────────────────────────────────────────── */}
-      <section className="rounded-[12px] border border-[#C9DDB1] bg-[#EAF3DE] p-6 text-center">
-        <Leaf size={28} className="mx-auto mb-3 text-[#3B6D11]" />
-        <h2 className="font-serif text-[18px] font-bold text-[#23470A] mb-2">
+      <section className="rounded-[12px] bg-green-50a p-6 text-center border-l-[3px] border-green-500a">
+        <Leaf size={28} className="mx-auto mb-3 text-green-500a" />
+        <h2 className="font-serif text-[18px] font-bold text-green-700a mb-2">
           Comienza el diagnóstico
         </h2>
-        <p className="text-[13px] text-[#3B6D11] mb-4 max-w-lg mx-auto">
-          Navega al siguiente módulo para explorar la línea base de {municipio}.
+        <p className="text-[13px] text-green-600a mb-4 max-w-lg mx-auto">
+          Abre el M01 para ver la línea base de {municipio || 'tu municipio'}.
         </p>
         {onNavigate ? (
           <button
             type="button"
             onClick={() => onNavigate('city_baseline')}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-[#3B6D11] text-white text-[13px] font-semibold hover:bg-[#2D5409] transition-colors mx-auto"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-green-500a text-white text-[13px] font-semibold hover:bg-green-600a transition-colors mx-auto"
           >
             <ArrowRight size={15} />
-            Ir a M01 — Línea Base
+            Ir a M01 — Línea base
           </button>
         ) : (
-          <div className="flex items-center justify-center gap-2 text-[12px] font-semibold text-[#3B6D11]">
+          <div className="flex items-center justify-center gap-2 text-[12px] font-semibold text-green-500a">
             <ArrowRight size={16} />
-            <span>Siguiente: M01 — Línea Base y Resumen Ejecutivo</span>
+            <span>Siguiente: M01 — Línea base territorial y RSU</span>
           </div>
         )}
       </section>

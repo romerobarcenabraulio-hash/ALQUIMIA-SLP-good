@@ -125,7 +125,7 @@ export default function SimulatorPage() {
 
   if (needsClientOnboarding) {
     return (
-      <div className="h-screen flex flex-col overflow-hidden" style={{ background: '#F4F2ED' }}>
+      <div className="h-screen flex flex-col overflow-hidden bg-surface-base">
         <Header />
         <div className="flex-1 overflow-y-auto">
           <ClientOnboardingGate />
@@ -136,7 +136,7 @@ export default function SimulatorPage() {
 
   if (!audience) {
     return (
-      <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
+      <div className="h-screen flex overflow-hidden bg-surface-base">
         <Sidebar />
         <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           <Header />
@@ -158,7 +158,7 @@ export default function SimulatorPage() {
   ) : undefined
 
   return (
-    <div className="h-screen flex overflow-hidden" style={{ background: '#F4F2ED' }}>
+    <div className="h-screen flex overflow-hidden bg-surface-base">
       <Sidebar moduleSection={moduleNav} />
 
       {/* Right: header + compact ribbon + scrollable content */}
@@ -170,30 +170,30 @@ export default function SimulatorPage() {
 
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">
-          <main className="px-4 sm:px-6 py-4 w-full">
-            {audience === 'citizen' && <PlanGlobalControlsBar />}
-
-            <div className="mt-3 space-y-3">
-              <div className="rounded-[12px] border border-[#E8E4DC] overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
-                <DecisionModuleShell
-                  modules={filteredModules}
-                  activeModule={activeModule}
-                  onModuleChange={setActiveModuleId}
-                  loading={portalJourneyLoading}
-                  error={portalError}
-                  audience={portalEntry}
-                  renderModule={module =>
-                    renderDecisionModule({
-                      module,
-                      audience,
-                      isOrganizationJourney,
-                      sociodemographicBlock,
-                      onNavigate: setActiveModuleId,
-                    })
-                  }
-                />
+          <main className="w-full">
+            {audience === 'citizen' && (
+              <div className="px-4 sm:px-6 pt-4">
+                <PlanGlobalControlsBar />
               </div>
-            </div>
+            )}
+
+            <DecisionModuleShell
+              modules={filteredModules}
+              activeModule={activeModule}
+              onModuleChange={setActiveModuleId}
+              loading={portalJourneyLoading}
+              error={portalError}
+              audience={portalEntry}
+              renderModule={module =>
+                renderDecisionModule({
+                  module,
+                  audience,
+                  isOrganizationJourney,
+                  sociodemographicBlock,
+                  onNavigate: setActiveModuleId,
+                })
+              }
+            />
           </main>
         </div>
       </div>

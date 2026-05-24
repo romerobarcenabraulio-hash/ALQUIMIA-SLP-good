@@ -369,6 +369,7 @@ export interface ExecutivePdfPayload {
   zm: string
   municipio_id: string
   municipio_nombre: string
+  document_id?: string
   resultados?: Record<string, number>
   snapshot_datos?: {
     score_datos?: number
@@ -378,12 +379,15 @@ export interface ExecutivePdfPayload {
   module_label?: string
 }
 
-/** PDF ejecutivo Times New Roman — consultoría ALQUIMIA desde simulador. */
+/** PDF consultoría con portada + índice — blueprint document_id (default 01). */
 export async function downloadExecutivePdf(payload: ExecutivePdfPayload): Promise<void> {
   const res = await fetchWithRetry(`${getApiUrl()}/export/executive-pdf`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    body: JSON.stringify({
+      document_id: '01_resumen_ejecutivo_municipal',
+      ...payload,
+    }),
   })
   if (!res.ok) {
     let msg = `Error ${res.status}`
@@ -401,6 +405,54 @@ export async function downloadExecutivePdf(payload: ExecutivePdfPayload): Promis
   const m = cd?.match(/filename="([^"]+)"/i)
   const filename = m?.[1] ?? `ALQUIMIA_ejecutivo_${payload.municipio_id}.pdf`
   triggerBrowserDownload(blob, filename)
+}
+
+/** Índice maestro del paquete (documento 00). */
+export async function downloadMasterIndexPdf(payload: {
+  zm: string
+  municipio_id: string
+  municipio_nombre: string
+  snapshot_datos?: ExecutivePdfPayload['snapshot_datos']
+}): Promise<void> {
+  const res = await fetchWithRetry(`${getApiUrl()}/export/index-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`Error ${res.status}`)
+  const blob = await res.blob()
+  const cd = res.headers.get('Content-Disposition')
+  const m = cd?.match(/filename="([^"]+)"/i)
+  triggerBrowserDownload(blob, m?.[1] ?? `ALQUIMIA_00_indice_${payload.municipio_id}.pdf`)
+}
+
+/** Acta de inspección predial — doc 12 · consultoría Times New Roman. */
+export async function downloadExpedientePdf(payload: {
+  zm: string
+  predio: Record<string, unknown>
+  inspeccion: Record<string, unknown>
+  expediente: Record<string, unknown>
+}): Promise<void> {
+  const res = await fetchWithRetry(`${getApiUrl()}/export/expediente-pdf`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) {
+    let msg = `Error ${res.status}`
+    try {
+      const j = JSON.parse(await res.text()) as { detail?: unknown }
+      if (typeof j.detail === 'string') msg = j.detail
+    } catch {
+      /* ignore */
+    }
+    throw new Error(msg)
+  }
+  const blob = await res.blob()
+  const cd = res.headers.get('Content-Disposition')
+  const m = cd?.match(/filename="([^"]+)"/i)
+  const eid = String(payload.expediente.expediente_id ?? 'expediente')
+  triggerBrowserDownload(blob, m?.[1] ?? `ALQUIMIA_12_expediente_${eid}.pdf`)
 }
 
 export async function getDashboardSummary(payload: object): Promise<DashboardResponse> {

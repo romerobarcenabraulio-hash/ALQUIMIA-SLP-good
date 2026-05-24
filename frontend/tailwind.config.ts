@@ -9,11 +9,15 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Fondo marfil
-        'ivory-base':   '#F8F6F1',
-        'ivory-card':   '#FDFCFA',
-        'ivory-border': '#E8E4DC',
-        'ivory-hover':  '#F0EDE5',
+        // Superficies (layout canónico: blanco)
+        'surface-base':   '#FFFFFF',
+        'surface-muted':  '#F8FAF8',
+        'surface-border': '#ECEAE6',
+        // Fondo marfil (legacy — preferir surface-*)
+        'ivory-base':   '#FFFFFF',
+        'ivory-card':   '#FFFFFF',
+        'ivory-border': '#ECEAE6',
+        'ivory-hover':  '#F8FAF8',
         // Grises cálidos
         'gray-200c':  '#E2DED6',
         'gray-400c':  '#A8A49C',
@@ -48,8 +52,8 @@ const config: Config = {
         'mat-otros':     '#A8A49C',
       },
       fontFamily: {
-        serif:   ['Crimson Pro', 'Georgia', 'serif'],
-        sans:    ['Inter', 'system-ui', 'sans-serif'],
+        serif:   ['var(--font-literata)', 'Georgia', 'serif'],
+        sans:    ['var(--font-source-sans)', 'system-ui', 'sans-serif'],
         mono:    ['JetBrains Mono', 'Consolas', 'monospace'],
       },
       fontSize: {

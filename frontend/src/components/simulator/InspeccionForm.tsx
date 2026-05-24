@@ -527,6 +527,7 @@ export function InspeccionForm() {
 
       <div className="flex flex-wrap gap-3">
         <button
+          id="inspeccion-form-generar"
           type="button"
           disabled={loading || direccion.trim().length < 3 || hallazgo.trim().length < 10}
           onClick={() => void generarExpediente()}

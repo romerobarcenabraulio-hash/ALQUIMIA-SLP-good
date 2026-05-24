@@ -464,7 +464,7 @@ function ModuleContextHeader({
 
   return (
     <header
-      className="mb-5 pb-5 border-b border-[#E8E4DC]"
+      className="mb-5 pb-5 border-b border-surface-border"
       data-testid="module-context-header"
     >
       <div className="flex items-center justify-between gap-3">
@@ -764,7 +764,7 @@ function GuidancePanel({
   }
 
   return (
-    <aside className="hidden xl:block w-[280px] shrink-0 border-l border-[#E8E4DC] bg-white overflow-y-auto">
+    <aside className="hidden xl:block w-[280px] shrink-0 border-l border-surface-border bg-surface-base overflow-y-auto">
       {/* ── Header — always visible ───────────────────────────────────────── */}
       <div className="px-4 py-4 border-b border-[#E8E4DC]">
         <div className="flex items-center justify-between">
@@ -1174,7 +1174,7 @@ export function DecisionModuleShell({
         /* Two-column body: content | guidance */
         <div className="flex">
           {/* Center content */}
-          <div className="flex-1 flex flex-col min-w-0 bg-white border-l border-[#E8E4DC]">
+          <div className="flex-1 flex flex-col min-w-0 bg-surface-base">
             {/* Content area — flows naturally, page scrolls */}
             <div ref={contentRef} className="px-6 py-6 transition-opacity duration-200" key={activeModule.module_id}>
               <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />

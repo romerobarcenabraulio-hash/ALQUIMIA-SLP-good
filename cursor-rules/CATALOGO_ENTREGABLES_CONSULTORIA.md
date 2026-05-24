@@ -80,6 +80,8 @@ flowchart LR
 
 ## Referencias cruzadas
 
+- `cursor-rules/INDICE_MAESTRO_ENTREGABLES.md` — **índice maestro + estructura por documento**
+- `backend/app/export/document_blueprints.py` — blueprints PDF (portada + TOC + §)
 - `backend/app/agents/document_specs.py` — especificaciones 01–11
 - `backend/app/export/pdf_renderer.py` — layout consultoría Times New Roman
 - `frontend/src/lib/consultingDeliverables.ts` — catálogo tipado frontend

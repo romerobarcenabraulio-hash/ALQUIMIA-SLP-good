@@ -140,6 +140,23 @@ class ExecutivePdfRequest(BaseModel):
     zm: str = "ZM"
     municipio_id: str
     municipio_nombre: str = ""
+    document_id: str = "01_resumen_ejecutivo_municipal"
     resultados: Optional[Dict[str, float]] = None
     snapshot_datos: Optional[Dict[str, object]] = None
     module_label: Optional[str] = None
+
+
+class IndexPdfRequest(BaseModel):
+    """Índice maestro del paquete documental (doc 00)."""
+    zm: str = "ZM"
+    municipio_id: str
+    municipio_nombre: str = ""
+    snapshot_datos: Optional[Dict[str, object]] = None
+
+
+class ExpedientePdfRequest(BaseModel):
+    """Acta técnica de inspección predial (doc 12)."""
+    zm: str = "ZM"
+    predio: Dict[str, object]
+    inspeccion: Dict[str, object]
+    expediente: Dict[str, object]

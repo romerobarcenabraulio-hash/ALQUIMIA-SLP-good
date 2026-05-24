@@ -122,11 +122,12 @@ export function ExportarSection() {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
         {([
-          { label: 'PDF Ejecutivo', icon: '📄', desc: 'Reporte consultoría Times New Roman para cabildo', action: 'executive_pdf' as const },
-          { label: 'Excel CFO', icon: '📊', desc: 'Modelo financiero XLSX vía Hub profesional', action: 'hub_professional' as const },
-          { label: 'Compartir URL', icon: '🔗', desc: 'Enlace permanente a este escenario', action: 'share_url' as const },
+          { label: 'PDF Ejecutivo', icon: '📄', desc: 'Doc 01 · Times New Roman · Cabildo', action: 'executive_pdf' as const, loadingKey: 'executive_pdf' },
+          { label: 'Índice maestro', icon: '📑', desc: 'Doc 00 · Inventario completo 01–11', action: 'master_index' as const, loadingKey: 'master_index' },
+          { label: 'Excel CFO', icon: '📊', desc: 'Doc 02 · Modelo vía Hub profesional', action: 'hub_professional' as const, loadingKey: null },
+          { label: 'Compartir URL', icon: '🔗', desc: 'Enlace permanente a este escenario', action: 'share_url' as const, loadingKey: null },
         ]).map(item => (
           <button
             key={item.action}
@@ -138,7 +139,7 @@ export function ExportarSection() {
             <span className="text-[24px] mb-2 block">{item.icon}</span>
             <p className="text-[13px] font-medium text-[#1C1B18]">{item.label}</p>
             <p className="text-[11px] text-[#6B6760] mt-1">{item.desc}</p>
-            {exportLoading && item.action === 'executive_pdf' && (
+            {exportLoading && item.loadingKey && (
               <p className="text-[10px] text-[#3B6D11] mt-2">Generando PDF…</p>
             )}
           </button>

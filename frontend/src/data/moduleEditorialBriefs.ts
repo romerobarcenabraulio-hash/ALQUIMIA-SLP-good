@@ -1,4 +1,7 @@
 import type { MunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
+import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
+
+const MODULE_COUNT = FUNCTIONARY_MODULE_ORDER.length
 
 /** Metodología estructurada en 4 secciones. Cada campo: 2–4 oraciones, sin punto y coma encadenados. */
 export type MetodologiaEditorial = {
@@ -78,19 +81,19 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId,
         title: 'Steps for Circularity — Guía de lectura',
-        pregunta_guia: '¿Entiendo cómo leer el simulador antes de tomar decisiones?',
-        subtitulo_catchy: 'Un recorrido editorial que explica el simulador antes de interpretar los datos.',
-        situacion_actual: `${territorio} genera residuos que podrían convertirse en valor económico, empleos y calidad de vida. Esta guía explica paso a paso cómo el simulador construye ese argumento — desde el diagnóstico territorial hasta el monitoreo de resultados.`,
-        observacion_alquimia: 'ALQUIMIA sigue la filosofía Analizar → Diagnosticar → Planear → Ejecutar → Monitorear. Este módulo introductorio no contiene gráficas ni cálculos; es contexto narrativo para que cualquier lector entienda el propósito de cada sección antes de verla.',
-        criterio_decision: 'No aplica — este módulo es de lectura obligatoria, no de decisión.',
-        que_no_significa: 'No sustituye los módulos técnicos. Es el mapa de ruta para leerlos con criterio.',
-        siguiente_accion: 'Leer la guía completa y navegar al Módulo 01 — Línea Base.',
-        fuente_o_evidencia: 'Filosofía de consultoría ALQUIMIA, marco PMBOK 7ª ed., estándares GRI 306 y ESRS E5.',
+        pregunta_guia: '¿Sé leer el simulador antes de usar sus cifras?',
+        subtitulo_catchy: `Mapa de los ${MODULE_COUNT} módulos antes de entrar al diagnóstico técnico.`,
+        situacion_actual: `${territorio} puede convertir parte de su RSU en valor económico, empleo y servicios públicos. Esta guía ordena los ${MODULE_COUNT} módulos del recorrido funcionario en cuatro capítulos.`,
+        observacion_alquimia: 'No hay gráficas ni cálculos aquí. El texto usa datos del simulador solo para dar contexto territorial. Cada módulo posterior trae su metodología en el panel lateral.',
+        criterio_decision: 'Lectura obligatoria antes del M01. No requiere decisión técnica.',
+        que_no_significa: 'No sustituye los módulos técnicos. Es el índice del expediente.',
+        siguiente_accion: 'Leer la guía y abrir M01 — Línea base territorial y RSU.',
+        fuente_o_evidencia: 'Estructura modular ALQUIMIA (chapterConfig), estándares GRI 306 y ESRS E5.',
         metodologia_editorial: {
-          como_se_calcula: 'No hay cálculos en este módulo. La narrativa se construye interpolando datos del simulador para dar contexto.',
-          origen_datos: 'Los datos mostrados (RSU, empleos, ingresos) provienen de los módulos M01–M13 en tiempo real.',
-          por_que_este_enfoque: 'Un simulador sin contexto narrativo es ilegible para stakeholders no técnicos. La guía reduce la curva de aprendizaje.',
-          supuesto_critico: 'Ninguno — todos los supuestos se documentan en los módulos que contienen los cálculos.',
+          como_se_calcula: 'Sin cálculos. Los números del hero (RSU, ingresos, CO₂e) se leen del estado actual del simulador.',
+          origen_datos: 'Datos en tiempo real de los módulos M01–M21B según territorio y escenario activo.',
+          por_que_este_enfoque: 'Sin esta guía, las cifras del M01 carecen de marco para cabildo y financiadores.',
+          supuesto_critico: 'Ninguno en este módulo. Los supuestos viven en cada módulo de cálculo.',
         },
         chart_briefs: [],
       }
@@ -101,7 +104,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Cuánto RSU genera el municipio y cuánto valor se pierde hoy?',
         subtitulo_catchy: '¿Cuántos kilos genera este municipio y cuánto dinero está dejando ir?',
         situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
-        observacion_alquimia: `${scope} ALQUIMIA ordena vivienda, generación per cápita, composición, precios y costo por tonelada enterrada para que el problema se lea con supuestos explícitos.`,
+        observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación per cápita SEMARNAT, composición, precios spot y costo de disposición. Cada supuesto es editable y visible.`,
         criterio_decision: 'Antes de hablar de metas, el equipo debe ajustar generación, vivienda, captura, merma y precios para que la conversación empiece desde un escenario defendible.',
         que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo; es una lectura inicial con fuentes y supuestos visibles.',
         siguiente_accion: 'Ajustar los supuestos principales y revisar la matriz de fuentes antes de usar cualquier cifra en presentación pública.',
@@ -580,7 +583,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Qué externalidades evita el programa y con qué supuestos?',
         subtitulo_catchy: 'CO₂e, salud pública y vida útil del relleno — sin mezclar con ingresos de mercado',
         situacion_actual: `En ${territorio}, las externalidades del RSU (emisiones, salud, saturación de relleno) suelen quedar fuera del expediente de cabildo si solo se presentan ingresos por material.`,
-        observacion_alquimia: `${scope} Los KPIs provienen del motor del simulador con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI municipal.`,
+        observacion_alquimia: `${scope} Los KPIs salen del motor con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI.`,
         criterio_decision: 'Separar beneficio ambiental de ingreso directo antes de presentar el programa a finanzas o financiadores verdes.',
         que_no_significa: 'No es inventario GEI oficial, ni aval de PROFEPA o SEMARNAT sobre emisiones evitadas.',
         siguiente_accion: 'Revisar factores de emisión y contrafactual sin programa antes de anexar cifras a un informe ESG.',
@@ -602,7 +605,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Quiénes son las personas que deben participar y qué barreras enfrentan?',
         subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
         situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
-        observacion_alquimia: `${scope} Los indicadores de este módulo son referencias estadísticas trazables (INEGI Censo 2020, CONEVAL 2022, ENOE 2024), no diagnósticos municipales validados por instituto. Cada cifra citada aquí debe declararse como "estimación con supuestos explícitos" en comunicación pública.`,
+        observacion_alquimia: `${scope} Los indicadores son referencias INEGI/CONEVAL/ENOE, no diagnóstico municipal validado. Decláralos como estimación con supuestos explícitos en comunicación pública.`,
         criterio_decision: 'Identificar grupos prioritarios, colonias de rezago, pepenadores a integrar y riesgos de reputación antes de cerrar el diseño de la estrategia de participación ciudadana.',
         que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico validado por instituto ni padrón de beneficiarios.',
         siguiente_accion: 'Revisar la matriz de riesgos sociales, documentar supuestos en la bitácora y cerrar brechas con evidencia de campo antes de presentar el programa a Cabildo.',
@@ -887,7 +890,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Cuánto le cuesta al municipio cada año que pasa sin un programa de RSU?',
         subtitulo_catchy: 'La omisión tiene precio — y crece con la inflación sin fecha de fin',
         situacion_actual: `Sin programa de separación, ${territorio} seguirá pagando la tarifa de disposición sobre el 100% del RSU generado, con inflación compuesta y sin recuperar valor de los materiales.`,
-        observacion_alquimia: `${scope} La pérdida acumulada incluye: disposición en relleno, daño a la salud pública, multas PROFEPA por incumplimiento de LGPGIR Art. 10, y pérdida de elegibilidad para financiamiento verde (BID, BANOBRAS).`,
+        observacion_alquimia: `${scope} La pérdida acumulada suma disposición en relleno, daño sanitario, multas LGPGIR y pérdida de elegibilidad para financiamiento verde.`,
         criterio_decision: 'Reencuadrar la conversación presupuestal: el programa no es un gasto, es el mecanismo para evitar un costo mayor y creciente.',
         que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, construido con las mismas fuentes del simulador.',
         siguiente_accion: 'Presentar el análisis contrafactual como el primer argumento ante el Cabildo antes de mostrar el CAPEX del programa.',
@@ -895,7 +898,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Costo acumulado = Σ(RSU_año × costo_disposición × factor_INPC^año) + daño_salud. Daño salud = fracción_orgánica × costo_OPS_ton. Saturación relleno = capacidad_residual ÷ ritmo_disposición.',
           origen_datos: 'RSU generado del M01. Tarifas de disposición: SEMARNAT DBGIR. Costo salud: OPS/INSP México 2021. Inflación: BANXICO proyección media 2024–2026.',
-          por_que_este_enfoque: 'La pérdida aversión es más persuasiva que la promesa de ganancia con los tomadores de decisión municipales. Mostrar lo que se pierde cada año sin actuar es la forma más efectiva de justificar el CAPEX.',
+          por_que_este_enfoque: 'Mostrar lo que se pierde cada año sin actuar suele convencer al cabildo antes que la promesa de ingresos futuros.',
           supuesto_critico: 'Tarifa de disposición local puede diferir de la media nacional. Solicitar al municipio la tarifa contractual con el operador del relleno para recalibrar.',
         },
         chart_briefs: [],
