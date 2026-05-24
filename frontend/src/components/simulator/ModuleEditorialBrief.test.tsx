@@ -3,6 +3,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { getRailActionLabel } from '@/lib/editorialRailLabels'
 import { SIMULATOR_STATE_DEFAULT, useSimulatorStore } from '@/store/simulatorStore'
 
 const FUNCTIONARY_MODULES = [
@@ -14,13 +15,13 @@ const FUNCTIONARY_MODULES = [
   'ruta_critica',
   'oleadas_territoriales',
   'plan_educativo',
-  'municipal_context',
-  'future_goals',
-  'infrastructure_operations',
-  'market_traceability',
-  'inspeccion_predios',
-  'scenarios_export',
-  'source_traceability',
+  'marco_legal',
+  'plan_maestro',
+  'infraestructura',
+  'mercado_materiales',
+  'inspeccion',
+  'escenarios_financieros',
+  'trazabilidad',
 ]
 
 describe('ModuleEditorialBrief', () => {
@@ -41,9 +42,9 @@ describe('ModuleEditorialBrief', () => {
 
       expect(screen.getByTestId(`module-editorial-brief-${moduleId}`)).toBeTruthy()
       expect(screen.getByText(/Contexto del módulo/)).toBeTruthy()
-      expect(screen.getByText(/Observamos/)).toBeTruthy()
-      expect(screen.getByText(/Decisión que habilita/)).toBeTruthy()
-      expect(screen.getByText(/Qué verificar aún/)).toBeTruthy()
+      expect(screen.getByText(/Qué muestra el simulador/)).toBeTruthy()
+      expect(screen.getByText(/Qué decide el funcionario aquí/)).toBeTruthy()
+      expect(screen.getByText(getRailActionLabel(moduleId))).toBeTruthy()
 
       unmount()
     }
@@ -66,13 +67,13 @@ describe('ModuleEditorialBrief', () => {
   })
 
   it('marco juridico distingue municipio de ZM', () => {
-    const single = getModuleEditorialBrief('municipal_context', {
+    const single = getModuleEditorialBrief('marco_legal', {
       territorio: 'San Luis Potosí',
       scope: 'municipio',
       municipio: null,
       municipiosCount: 1,
     })
-    const zm = getModuleEditorialBrief('municipal_context', {
+    const zm = getModuleEditorialBrief('marco_legal', {
       territorio: 'Zona Metropolitana de San Luis Potosí',
       scope: 'zm',
       municipio: null,
@@ -84,7 +85,7 @@ describe('ModuleEditorialBrief', () => {
   })
 
   it('inspeccion no presenta multa ni sancion firme como conclusion', () => {
-    const brief = getModuleEditorialBrief('inspeccion_predios', {
+    const brief = getModuleEditorialBrief('inspeccion', {
       territorio: 'San Luis Potosí',
       scope: 'municipio',
       municipio: null,
@@ -98,7 +99,7 @@ describe('ModuleEditorialBrief', () => {
   })
 
   it('escenarios separa derrama base, ahorro publico y externalidades', () => {
-    const brief = getModuleEditorialBrief('scenarios_export', {
+    const brief = getModuleEditorialBrief('escenarios_financieros', {
       territorio: 'San Luis Potosí',
       scope: 'municipio',
       municipio: null,
@@ -112,7 +113,7 @@ describe('ModuleEditorialBrief', () => {
   })
 
   it('bibliografia se presenta como matriz de trazabilidad', () => {
-    const brief = getModuleEditorialBrief('source_traceability', {
+    const brief = getModuleEditorialBrief('trazabilidad', {
       territorio: 'San Luis Potosí',
       scope: 'municipio',
       municipio: null,

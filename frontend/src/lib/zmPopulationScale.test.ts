@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { calcular } from '@/lib/calculator'
+import { ZMS } from '@/lib/constants'
 import { getProgramPopulationShare } from '@/lib/zmPopulationScale'
 import { SIMULATOR_STATE_DEFAULT } from '@/store/simulatorStore'
 
@@ -19,6 +20,10 @@ describe('Q-024 · ámbito municipal vs ZM', () => {
   })
 
   it('participación poblacional Soledad / total ZM (constants)', () => {
-    expect(getProgramPopulationShare('SLP', ['sol'])).toBeCloseTo(323409 / 1243980, 5)
+    const zm = ZMS.find(z => z.id === 'SLP')
+    const sol = zm?.municipios.find(m => m.id === 'sol')
+    expect(zm).toBeTruthy()
+    expect(sol).toBeTruthy()
+    expect(getProgramPopulationShare('SLP', ['sol'])).toBeCloseTo(sol!.pop / zm!.totalPop, 5)
   })
 })

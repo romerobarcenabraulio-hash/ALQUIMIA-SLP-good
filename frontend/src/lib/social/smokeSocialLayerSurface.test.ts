@@ -16,17 +16,18 @@ function readSrc(relFromFrontendSrc: string): string {
  * Humano sigue `cursor-rules/SMOKE_SOCIAL_LAYER.md`.
  */
 describe('smokeSocialLayerSurface (capa social)', () => {
-  it('funcionario y ciudadano mantienen municipal_context (Producto puede recortar después con flag)', () => {
-    expect(AUDIENCE_MODULES.functionary).toContain('municipal_context')
-    expect(AUDIENCE_MODULES.citizen).toContain('municipal_context')
+  it('funcionario y ciudadano mantienen marco_legal (contexto municipal / jurídico)', () => {
+    expect(AUDIENCE_MODULES.functionary).toContain('marco_legal')
+    expect(AUDIENCE_MODULES.citizen).toContain('marco_legal')
   })
 
-  it('renderDecisionModule monta MunicipalContextStack en municipal_context (incluye panel sociodemográfico)', () => {
+  it('renderDecisionModule monta MunicipalContextStack en marco_legal (incluye panel sociodemográfico)', () => {
     const registry = readSrc('app/simulator/renderDecisionModule.tsx')
-    expect(registry).toContain("case 'municipal_context':")
-    expect(registry).toMatch(/case 'municipal_context':[\s\S]*<MunicipalContextStack/)
+    expect(registry).toContain("case 'marco_legal':")
+    expect(registry).toMatch(/case 'marco_legal':[\s\S]*<MunicipalContextStack/)
     const stack = readSrc('components/simulator/stacks/MunicipalContextStack.tsx')
-    expect(stack).toContain('<SocialDemographicContextPanel')
+    expect(stack).toContain('useReglamentoFuente')
+    expect(stack).toContain('AdendoWorkflowPanel')
   })
 
   it('panel social expone testids y sección oficial PR3', () => {

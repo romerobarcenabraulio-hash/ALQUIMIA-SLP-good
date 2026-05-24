@@ -12,7 +12,7 @@ const baseBlock: SociodemographicDisplayBlock = {
   geo_scope: 'municipio_cve',
   dato: 'no_disponible',
   fuente_declarada: '',
-  screen_anchor: 'municipal_context',
+  screen_anchor: 'marco_legal',
 }
 
 function queryInRender(ui: ReactNode) {
@@ -25,26 +25,24 @@ function queryInRender(ui: ReactNode) {
 describe('SocialDemographicContextPanel · PR1 andamiaje', () => {
   it('renderiza raíz y declara geo_scope / dato', () => {
     const root = queryInRender(
-      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="municipal_context" />,
+      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="marco_legal" />,
     )
-    expect(
-      root.querySelector('[data-testid="social-context-geo-scope"]')?.getAttribute('data-geo-scope'),
-    ).toBe('municipio_cve')
-    expect(
-      root.querySelector('[data-testid="social-context-dato-estado"]')?.getAttribute('data-dato'),
-    ).toBe('no_disponible')
+    const geo = root.querySelector('[data-testid="social-context-geo-scope"]')
+    expect(geo?.textContent).toContain('Municipio (clave')
+    const dato = root.querySelector('[data-testid="social-context-dato-estado"]')
+    expect(dato?.textContent).toContain('Sin dato integrado')
   })
 
   it('muestra estado vacío cuando no hay dato ni fuente', () => {
     const root = queryInRender(
-      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="municipal_context" />,
+      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="marco_legal" />,
     )
     expect(root.querySelector('[data-testid="social-context-empty"]')).toBeTruthy()
   })
 
   it('muestra disclaimer de Auditoría y cuerpo literal exportado', () => {
     const root = queryInRender(
-      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="municipal_context" />,
+      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="marco_legal" />,
     )
     const disc = root.querySelector('[data-testid="social-context-disclaimer"]')
     expect(disc).toBeTruthy()
@@ -59,7 +57,7 @@ describe('SocialDemographicContextPanel · PR1 andamiaje', () => {
 
   it('incluye marco de lectura INEGI/CONEVAL (disclosure oficial)', () => {
     const root = queryInRender(
-      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="municipal_context" />,
+      <SocialDemographicContextPanel block={baseBlock} moduleAnchor="marco_legal" />,
     )
     expect(root.querySelector('[data-testid="official-sources-reading-disclosure"]')).toBeTruthy()
     expect(root.textContent).toMatch(/Lectura de fuentes oficiales/)
