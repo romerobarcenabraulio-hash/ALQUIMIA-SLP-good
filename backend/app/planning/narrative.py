@@ -67,7 +67,7 @@ def get_implementation_narrative(
 
     risks = load_risk_register()
     risks_by_gate: dict[str, list[dict[str, Any]]] = {g: [] for g in GATE_DEFINITIONS}
-    for risk in risks:
+    for risk in risks.values():
         gate_id = risk.get("gate_afectado", "")
         if gate_id in risks_by_gate:
             risks_by_gate[gate_id].append({

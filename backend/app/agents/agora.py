@@ -676,7 +676,7 @@ async def _run_ghostwriter_pass(
         return
 
     use_llm = _anthropic_available()
-    targets = pending if use_llm else pending[:1]
+    targets = pending
 
     for spec in targets:
         await _call_agent_with_context(
@@ -702,7 +702,7 @@ async def _run_humanizador_pass(
         return
 
     use_llm = _anthropic_available()
-    targets = populated if use_llm else populated[:1]
+    targets = populated
 
     for doc in targets:
         await _call_agent_with_context(
