@@ -184,3 +184,6 @@ export const ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY: OrganigramaDiagnosticoPersis
 export function cadenaContactoId(orden: number): string {
   return `cadena-${orden}`
 }
+
+/** @deprecated Usar ORGANIGRAMA_MUNICIPAL_JERARQUICO en organigramaMunicipalCanon.ts */
+export const ORGANIGRAMA_MUNICIPAL_AS_IS_LEGACY = ORGANIGRAMA_MUNICIPAL_AS_IS

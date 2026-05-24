@@ -4,10 +4,11 @@ import { useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend,
 } from 'recharts'
-import { Users, ChevronDown, Shield, CheckCircle } from 'lucide-react'
+import { Users, ChevronDown, Shield, CheckCircle, Building2 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { CA_CONFIG } from '@/lib/constants'
+import { ANCLA_PROGRAMA_RSU, ORGANIGRAMA_BASE_LEGAL } from '@/data/organigramaMunicipalCanon'
 
 // ── Staff data per CA type ────────────────────────────────────────────────────
 
@@ -165,14 +166,34 @@ export function OrganigramaStack() {
             ))}
           </div>
 
-          {/* Org chart visual */}
+          {/* Ancla al ejecutivo municipal (M02D → M07) */}
+          <div className="rounded-[12px] border border-[#BDD7F5] bg-[#EBF3FB]/50 px-5 py-4">
+            <div className="flex items-start gap-3">
+              <Building2 className="w-5 h-5 text-[#1A5FA8] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[11px] font-bold uppercase tracking-[0.06em] text-[#1A5FA8] mb-1">
+                  Ancla institucional — Poder ejecutivo
+                </p>
+                <p className="text-[12px] text-[#1C1B18] leading-relaxed">
+                  El programa RSU <strong>reporta a</strong> {ANCLA_PROGRAMA_RSU.titulo} (o, si aplica en campo, a{' '}
+                  {ANCLA_PROGRAMA_RSU.alternativaTitulo}). {ANCLA_PROGRAMA_RSU.nota}
+                </p>
+                <p className="text-[10px] text-[#6B6760] mt-2">{ORGANIGRAMA_BASE_LEGAL}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Org chart visual — programa (to-be) */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-4">Estructura orgánica del programa</p>
+            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Estructura orgánica del programa (objetivo)</p>
+            <p className="text-[10px] text-[#A8A49C] mb-4">
+              Cuelga del ejecutivo municipal · ver organigrama as-is en M02D
+            </p>
             <div className="flex flex-col items-center gap-0">
-              {/* Level 0 — Program coordinator */}
+              {/* Level 0 — Program coordinator (reporta a Dir. Medio Ambiente / Serv. Públicos) */}
               <div className="rounded-[10px] border-2 border-[#3B6D11] bg-[#EAF3DE] px-5 py-3 text-center min-w-[200px]">
-                <p className="text-[10px] font-bold text-[#23470A] uppercase tracking-wide">Coordinador del Programa</p>
-                <p className="text-[9px] text-[#5A7A3A]">Dirección Municipal / Dir. Medio Ambiente</p>
+                <p className="text-[10px] font-bold text-[#23470A] uppercase tracking-wide">Coordinador del Programa RSU</p>
+                <p className="text-[9px] text-[#5A7A3A]">Reporta a {ANCLA_PROGRAMA_RSU.titulo}</p>
               </div>
               <div className="w-px h-5 bg-[#C9DDB1]" />
 
@@ -415,7 +436,7 @@ export function OrganigramaStack() {
             <p>Aprobar la estructura de personal y el presupuesto de nómina antes de la autorización de inversión en infraestructura. El cabildo requiere saber quién es responsable.</p>
           </RailSection>
           <RailSection title="Módulos relacionados">
-            <p>M02D: Organigrama as-is (gobierno y concesionario hoy). M03: Capacidad institucional. M06: Cuántos centros se operarán. M09: CAPEX total del programa.</p>
+            <p>M02D: Organigrama municipal as-is (legislativo, ejecutivo, concesionario). M03: Capacidad institucional. M06: Cuántos centros se operarán. M09: CAPEX total del programa.</p>
           </RailSection>
           <RailSection title="Qué verificar aún">
             <ul className="space-y-1">
