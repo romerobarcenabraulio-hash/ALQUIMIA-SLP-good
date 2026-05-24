@@ -390,7 +390,7 @@ function CierreSimulador({ onNavigate }: { onNavigate?: (id: string) => void }) 
           )}
         </div>
         <p className="mt-5 text-[11px] text-white/50">
-          ALQUIMIA Platform · Residuos Sólidos Urbanos · Análisis prospectivo — no dictamen oficial
+          Plataforma ALQUIMIA · Residuos Sólidos Urbanos · Análisis prospectivo — no dictamen oficial
         </p>
       </div>
     </section>

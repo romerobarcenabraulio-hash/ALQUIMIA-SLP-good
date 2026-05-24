@@ -198,7 +198,7 @@ const INTRO_CITIZEN_P2 =
   'Separar en origen arrima empleo formal —recolección diferenciada y operación de centros— y baja la factura municipal por tonelada enterrada. Menos residuo al relleno significa menos exposición sanitaria en colonias colindantes y menos subsidio encubierto al destino final.'
 
 const INTRO_FUNCTIONARY_P1 =
-  'Este recorrido entrega números defendibles: captura por fracción, derrama por valorización, VPN y TIR bajo supuestos explícitos. El diagnóstico jurídico —S4.6— aísla qué puede hacer hoy tu reglamento de limpia y qué exige reforma antes de multar o contratar.'
+  'Este recorrido entrega números defendibles: captura por fracción, derrama por valorización, VPN y TIR bajo supuestos explícitos. El módulo M03B · Marco legal aísla qué puede hacer hoy su reglamento de limpia y qué exige reforma antes de multar o contratar.'
 const INTRO_FUNCTIONARY_P2 =
   'Verás el roadmap reglamentario hasta Periódico Oficial, el plan de implementación por oleadas y los entregables tipo Cabildo. Nada se presenta como dictamen cerrado: cada cifra lleva trazabilidad para que Jurídico y Obras la defiendan en sesión.'
 

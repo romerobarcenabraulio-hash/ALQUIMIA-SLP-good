@@ -170,7 +170,7 @@ export function ArbolFinanciamientoStack() {
               El CAPEX requerido es de <strong>{fmt(capexTotal)}</strong>.
               La diferencia entre el camino más caro (banca comercial, ~22%) y el más barato (BID concesional, ~6%)
               puede representar hasta <strong>{fmt(capexTotal * 0.16 * 10)}</strong> en intereses a 10 años.
-              Este módulo te ayuda a identificar cuál camino es viable para tu municipio antes de comprometerte.
+              Este módulo ayuda a identificar cuál camino es viable para el municipio antes de comprometer recursos.
             </p>
           </div>
 

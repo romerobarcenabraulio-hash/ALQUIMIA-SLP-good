@@ -59,7 +59,7 @@ export function DobleMaterialidadStack() {
     const fecha = new Date().toLocaleDateString('es-MX')
     const md = `# REPORTE DE SOSTENIBILIDAD — ${municipio.toUpperCase()}
 Estándar: GRI 306: Residuos 2020 + ESRS E5 (Economía Circular)
-Preparado por: ALQUIMIA Platform | Fecha: ${fecha}
+Preparado por: Plataforma ALQUIMIA | Fecha: ${fecha}
 
 ## RESUMEN EJECUTIVO
 El programa de separación en origen del municipio de ${municipio} proyecta desviar
@@ -79,7 +79,7 @@ equivalente a una tasa de desvío del ${tasaDesvio.toFixed(1)}%, evitando ${fmt.
 - E5-4: Tasa de circularidad de residuos = ${tasaDesvio.toFixed(1)}%
 - E5-5: Intensidad residuos/unidad económica = ${fmt.num(rsuHabDia)} kg/hab/día
 
-_Fuente: ALQUIMIA Platform — datos proyectados del simulador. No representan mediciones reales._`
+_Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan mediciones reales._`
     navigator.clipboard.writeText(md).catch(() => {})
   }
 
@@ -272,7 +272,7 @@ _Fuente: ALQUIMIA Platform — datos proyectados del simulador. No representan m
               <div>
                 <p className="font-bold text-[12px] tracking-wide">REPORTE DE SOSTENIBILIDAD — {municipio.toUpperCase()}</p>
                 <p className="text-[#6B6760]">Estándar: GRI 306: Residuos 2020 + ESRS E5 (Economía Circular)</p>
-                <p className="text-[#6B6760]">Preparado por: ALQUIMIA Platform | Fecha: {new Date().toLocaleDateString('es-MX')}</p>
+                <p className="text-[#6B6760]">Preparado por: Plataforma ALQUIMIA | Fecha: {new Date().toLocaleDateString('es-MX')}</p>
               </div>
 
               {/* Resumen */}

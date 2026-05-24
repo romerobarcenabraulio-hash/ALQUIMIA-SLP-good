@@ -1,14 +1,31 @@
 import type { MunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
-import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
+import {
+  FUNCTIONARY_MODULE_ORDER,
+  moduleNumber,
+  resolveModuleId,
+} from '@/lib/chapterConfig'
+import { M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
 
+/**
+ * Guía de estilo editorial (simulador funcionario):
+ * - Cabildo = órgano colegiado; cabildo = sesión donde se presenta el expediente.
+ * - Español institucional (usted); inglés solo en siglas normativas con glosa.
+ * - Máx. 2 oraciones por párrafo en rail; evitar punto y coma encadenado.
+ */
 const MODULE_COUNT = FUNCTIONARY_MODULE_ORDER.length
 
-/** Metodología estructurada en 4 secciones. Cada campo: 2–4 oraciones, sin punto y coma encadenados. */
+function moduleRangeLabel(): string {
+  const first = moduleNumber(FUNCTIONARY_MODULE_ORDER[0]!)
+  const last = moduleNumber(FUNCTIONARY_MODULE_ORDER[MODULE_COUNT - 1]!)
+  return `M${first}–M${last}`
+}
+
+/** Metodología estructurada en 4 secciones. Cada campo: 2–4 oraciones completas. */
 export type MetodologiaEditorial = {
-  como_se_calcula: string        // "¿Cómo?" — la fórmula o proceso paso a paso
-  origen_datos: string           // "¿De dónde?" — fuentes oficiales usadas
-  por_que_este_enfoque: string   // "¿Por qué?" — justificación metodológica
-  supuesto_critico: string       // "¿Qué mueve más el resultado?"
+  como_se_calcula: string
+  origen_datos: string
+  por_que_este_enfoque: string
+  supuesto_critico: string
 }
 
 /** Referencia académica o institucional que sustenta un cálculo específico. */
@@ -71,42 +88,43 @@ export function getChartBrief(
 }
 
 export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialContext): ModuleEditorialBrief | null {
+  const resolvedId = resolveModuleId(moduleId)
   const territorio = ctx.territorio
   const scope = scopeText(ctx)
   const normativa = ctx.municipio?.lineaNormativa
   const operativa = ctx.municipio?.lineaOperativa
 
-  switch (moduleId) {
+  switch (resolvedId) {
     case 'guia_circularidad':
       return {
-        moduleId,
-        title: 'Steps for Circularity — Guía de lectura',
+        moduleId: resolvedId,
+        title: 'Pasos hacia la circularidad — Guía de lectura',
         pregunta_guia: '¿Sé leer el simulador antes de usar sus cifras?',
         subtitulo_catchy: `Mapa de los ${MODULE_COUNT} módulos antes de entrar al diagnóstico técnico.`,
-        situacion_actual: `${territorio} puede convertir parte de su RSU en valor económico, empleo y servicios públicos. Esta guía ordena los ${MODULE_COUNT} módulos del recorrido funcionario en cuatro capítulos.`,
+        situacion_actual: `${territorio} puede convertir parte de su RSU en valor económico, empleo y servicios públicos. Esta guía presenta los ${MODULE_COUNT} módulos del recorrido funcionario en cuatro capítulos.`,
         observacion_alquimia: 'No hay gráficas ni cálculos aquí. El texto usa datos del simulador solo para dar contexto territorial. Cada módulo posterior trae su metodología en el panel lateral.',
-        criterio_decision: 'Lectura obligatoria antes del M01. No requiere decisión técnica.',
+        criterio_decision: 'Lectura recomendada antes del M01. No requiere decisión técnica.',
         que_no_significa: 'No sustituye los módulos técnicos. Es el índice del expediente.',
-        siguiente_accion: 'Leer la guía y abrir M01 — Línea base territorial y RSU.',
+        siguiente_accion: M01_NEXT_ACTION,
         fuente_o_evidencia: 'Estructura modular ALQUIMIA (chapterConfig), estándares GRI 306 y ESRS E5.',
         metodologia_editorial: {
           como_se_calcula: 'Sin cálculos. Los números del hero (RSU, ingresos, CO₂e) se leen del estado actual del simulador.',
-          origen_datos: 'Datos en tiempo real de los módulos M01–M21B según territorio y escenario activo.',
-          por_que_este_enfoque: 'Sin esta guía, las cifras del M01 carecen de marco para cabildo y financiadores.',
+          origen_datos: `Datos en tiempo real de los módulos ${moduleRangeLabel()} según territorio y escenario activo.`,
+          por_que_este_enfoque: 'Sin esta guía, las cifras del M01 carecen de marco para Cabildo y financiadores.',
           supuesto_critico: 'Ninguno en este módulo. Los supuestos viven en cada módulo de cálculo.',
         },
         chart_briefs: [],
       }
     case 'city_baseline':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El problema en números: cuánto generamos y cuánto perdemos',
         pregunta_guia: '¿Cuánto RSU genera el municipio y cuánto valor se pierde hoy?',
-        subtitulo_catchy: '¿Cuántos kilos genera este municipio y cuánto dinero está dejando ir?',
+        subtitulo_catchy: '¿Cuántos kilos genera este municipio y qué valor deja de capturarse hoy?',
         situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
         observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación per cápita SEMARNAT, composición, precios spot y costo de disposición. Cada supuesto es editable y visible.`,
         criterio_decision: 'Antes de hablar de metas, el equipo debe ajustar generación, vivienda, captura, merma y precios para que la conversación empiece desde un escenario defendible.',
-        que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo; es una lectura inicial con fuentes y supuestos visibles.',
+        que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo. Es una lectura inicial con fuentes y supuestos visibles.',
         siguiente_accion: 'Ajustar los supuestos principales y revisar la matriz de fuentes antes de usar cualquier cifra en presentación pública.',
         fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del simulador.',
         metodologia_editorial: {
@@ -137,7 +155,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
               como_se_calcula: 'La curva muestra el % de captura por año del horizonte seleccionado. Cada punto = pctCapturaPorAño[año] configurado en el plan. La línea sube gradualmente porque los programas municipales requieren tiempo para instalación, sensibilización y hábito ciudadano.',
               origen_datos: 'Curva de adopción basada en análisis comparativo de programas RSU en ciudades medias de México documentados por SEMARNAT 2018–2023.',
               por_que_este_enfoque: 'Un arranque lineal (mismo % cada año) sobreestima resultados tempranos y subestima el efecto de masa crítica en años 3–4. La curva en S refleja mejor la realidad operativa municipal.',
-              supuesto_critico: 'El porcentaje de captura al final del horizonte. Los primeros años son lentos; el salto ocurre cuando la separación en origen ya es hábito en la colonia piloto.',
+              supuesto_critico: 'El porcentaje de captura al final del horizonte. Los primeros años son lentos. El salto ocurre cuando la separación en origen ya es hábito en la colonia piloto.',
             },
           },
           {
@@ -173,13 +191,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'social_encuesta':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Encuesta de aceptación y preparación ciudadana',
         pregunta_guia: '¿La ciudadanía está lista para separar y en qué colonias no?',
         subtitulo_catchy: 'IPC y barreras reales — con o sin datos de campo del municipio',
         situacion_actual: `El diseño de participación en ${territorio} requiere medir disposición a separar, no asumirla homogénea en toda la ZM.`,
         observacion_alquimia: `${scope} Sin encuesta local, el IPC usa benchmark nacional documentado. Con encuesta, los valores de campo sustituyen el proxy con trazabilidad explícita.`,
-        criterio_decision: 'Priorizar colonias y mensajes según IPC segmentado antes de fijar metas de captura en cabildo.',
+        criterio_decision: 'Priorizar colonias y mensajes según IPC segmentado antes de fijar metas de captura ante Cabildo.',
         que_no_significa: 'No es consulta ciudadana vinculante ni padrón de beneficiarios del programa.',
         siguiente_accion: 'Cargar resultados de campo o documentar que se usa benchmark hasta tener n≥30 respuestas.',
         fuente_o_evidencia: 'Endpoint encuesta ALQUIMIA, SEMARNAT 2022, matriz de riesgos sociales.',
@@ -194,14 +212,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'mapeo_actores':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Mapa de actores y legitimidad política',
         pregunta_guia: '¿Quién debe estar en la mesa antes de comprometer el programa?',
-        subtitulo_catchy: 'Pepenadores, concesionario, cabildo y sociedad civil — sin mapa no hay arranque',
+        subtitulo_catchy: 'Pepenadores, concesionario, Cabildo y sociedad civil — mapa previo al arranque',
         situacion_actual: `En ${territorio}, los programas RSU fracasan con frecuencia por actores ausentes o en conflicto, no por falta de tecnología.`,
         observacion_alquimia: `${scope} El mapeo es cualitativo y editable. No sustituye análisis político ni convenios formales.`,
         criterio_decision: 'Identificar bloqueadores y aliados con estrategia de incorporación antes de licitar o reformar reglamento.',
-        que_no_significa: 'No es registro de partidos, ni diagnóstico electoral oficial, ni acta de cabildo.',
+        que_no_significa: 'No es registro de partidos, ni diagnóstico electoral oficial, ni acta de Cabildo.',
         siguiente_accion: 'Completar fichas de actores críticos y definir primer encuentro facilitado.',
         fuente_o_evidencia: 'Proyecto Vivo ALQUIMIA, literatura de programas RSU LATAM 2010–2024.',
         metodologia_editorial: {
@@ -215,19 +233,19 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'organigrama_diagnostico':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Organigrama actual — gobernanza operativa as-is',
-        pregunta_guia: '¿Quién decide hoy desde la queja ciudadana hasta cabildo?',
+        pregunta_guia: '¿Quién decide hoy desde la queja ciudadana hasta Cabildo?',
         subtitulo_catchy: 'Municipio y concesionario sin suposiciones — checklist de campo persistido',
         situacion_actual: `Antes de diseñar el organigrama objetivo (M07), ${territorio} debe documentar titularidades reales de limpia, ecología, tesorería y operador.`,
         observacion_alquimia: `${scope} Las verificaciones y checklist se guardan en el simulador. Hasta validar en campo, la plantilla es referencia metodológica, no organigrama oficial.`,
         criterio_decision: 'Cerrar vacíos de titular y de interfaz municipio–operador antes de comprometer CAPEX o reforma reglamentaria.',
         que_no_significa: 'No es el organigrama aprobado por RH ni la estructura objetivo del programa.',
-        siguiente_accion: 'Completar checklist de campo y marcar nodos confirmados; luego abrir M07 Planificación.',
+        siguiente_accion: 'Completar checklist de campo y marcar nodos confirmados. Luego abrir M07 Planificación.',
         fuente_o_evidencia: 'Plantilla ALQUIMIA M02D, organigramas PDF municipio/concesionario, contrato de limpia.',
         metodologia_editorial: {
           como_se_calcula: 'KPI % confirmados = nodos con estatus confirmado / total nodos mapeados. Checklist = ítems marcados por el equipo.',
-          origen_datos: 'Validación en campo; persistencia local del simulador.',
+          origen_datos: 'Validación en campo. Persistencia local del simulador.',
           por_que_este_enfoque: 'Sin dueño operativo identificado, el programa no tiene quién firme bitácora PER ni reportes GRI.',
           supuesto_critico: 'Actualización del contrato de concesión — define si el operador puede o no ejecutar separación.',
         },
@@ -236,13 +254,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'capacidad_institucional':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Capacidad institucional y habilitación ÁGORA',
         pregunta_guia: '¿El municipio puede ejecutar y generar plan hoy?',
         subtitulo_catchy: 'Fase institucional, diagnóstico jurídico y bloqueos antes de planear',
         situacion_actual: `${territorio} puede tener diagnóstico técnico sólido y aun así carecer de capacidad administrativa o marco habilitante para operar.`,
         observacion_alquimia: `${scope} El semáforo ÁGORA refleja el diagnóstico jurídico cargado — no es dictamen de autoridad.`,
-        criterio_decision: 'Desbloquear requisitos jurídicos mínimos antes de prometer fechas de arranque en cabildo.',
+        criterio_decision: 'Desbloquear requisitos jurídicos mínimos antes de prometer fechas de arranque ante Cabildo.',
         que_no_significa: 'No certifica madurez institucional ni autoriza erogaciones.',
         siguiente_accion: 'Completar diagnóstico jurídico y revisar fase institucional documentada.',
         fuente_o_evidencia: 'DiagnosticoJuridico, reglamento municipal, LGPGIR.',
@@ -258,7 +276,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'marco_legal':
     case 'municipal_context':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El reglamento que habilita o bloquea el programa',
         pregunta_guia: '¿El reglamento actual permite operar el programa o necesita reforma?',
         subtitulo_catchy: 'El marco legal que lo frena o lo habilita todo — qué dice el reglamento hoy',
@@ -300,20 +318,20 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'cobertura_territorial':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Cobertura territorial y alcance del programa',
         pregunta_guia: '¿Dónde aplica el programa y con qué delimitación oficial?',
         subtitulo_catchy: 'Municipio propio vs ZM — sin mezclar jurisdicciones en una sola decisión',
         situacion_actual: `La lectura territorial de ${territorio} debe usar límites y fuentes oficiales antes de fijar colonias piloto o inversión.`,
-        observacion_alquimia: `${scope} INEGI MGN es referencia para límites; OSM no sustituye documentos oficiales. Métricas de área en SLP/NL/QRO usan EPSG:6369, no 3857.`,
-        criterio_decision: 'Fijar alcance municipal explícito para sanción y operación; usar ZM solo para coordinación, no para mezclar reglamentos.',
+        observacion_alquimia: `${scope} INEGI MGN es referencia para límites. OSM no sustituye documentos oficiales. Métricas de área en SLP/NL/QRO usan EPSG:6369, no 3857.`,
+        criterio_decision: 'Fijar alcance municipal explícito para sanción y operación. Usar ZM solo para coordinación, no para mezclar reglamentos.',
         que_no_significa: 'No redefine límites municipales ni sustituye plan de desarrollo urbano.',
         siguiente_accion: 'Confirmar municipio ancla y colonias dentro del polígono oficial antes de oleadas territoriales.',
         fuente_o_evidencia: 'INEGI Marco Geoestadístico, CONAPO ZM, capas ALQUIMIA.',
         metodologia_editorial: {
           como_se_calcula: 'Superposición de polígonos municipales y capas de cobertura de servicio documentadas.',
           origen_datos: 'INEGI MGN, selección municipio catálogo ALQUIMIA.',
-          por_que_este_enfoque: 'Navigator veta decisiones que mezclan Municipio y ZM sin etiquetar alcance.',
+          por_que_este_enfoque: 'El simulador marca incoherencia cuando se mezclan decisiones de Municipio y ZM sin etiquetar alcance.',
           supuesto_critico: 'Municipio activo en el selector — sin ancla, los supuestos son proxy ZM.',
         },
         chart_briefs: [],
@@ -321,21 +339,21 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'dictamen_tecnico':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Por qué esta reforma y no otra',
         pregunta_guia: '¿Por qué 5 fracciones, multas graduadas y condominios primero — y no alternativas más simples?',
         subtitulo_catchy: 'El dictamen que convierte propuesta en evidencia — lo que el regidor preguntará en Cabildo',
-        situacion_actual: `${territorio} propone adendos concretos al reglamento; sin dictamen técnico la reforma carece de sustento formal ante Cabildo.`,
-        observacion_alquimia: `${scope} Cada adendo tiene un "por qué" documentado: contaminación del stream, economía del material, proporcionalidad constitucional y precedentes internacionales.`,
+        situacion_actual: `${territorio} propone adendos concretos al reglamento. Sin dictamen técnico la reforma carece de sustento formal ante Cabildo.`,
+        observacion_alquimia: `${scope} Cada adendo tiene un "por qué" documentado: contaminación de la corriente, economía del material, proporcionalidad constitucional y precedentes internacionales.`,
         criterio_decision: 'El síndico y la Dirección de Ecología deben poder defender cada artículo propuesto con al menos una fuente verificable y una objeción anticipada respondida.',
         que_no_significa: 'No es resolución administrativa, dictamen jurídico vinculante ni pronunciamiento de autoridad competente.',
-        siguiente_accion: 'Anexar al punto de acuerdo de Cabildo junto con los textos de adendo del M03.',
+        siguiente_accion: 'Anexar al punto de acuerdo de Cabildo junto con los textos de adendo del M03B.',
         fuente_o_evidencia: 'NOM-161, WRAP/ISWA, Kahneman, Lally et al., benchmarks Ljubljana/SF/Bogotá/CDMX, materialPriceResearch.ts.',
         metodologia_editorial: {
           como_se_calcula: 'Cada sección vincula un adendo (1–6) con evidencia técnica o social. El delta económico 5 vs. 3 fracciones = volumen capturable × precio por material × (1 − tasa de contaminación) × 365 días.',
           origen_datos: 'Precios de materialPriceResearch.ts; volúmenes del escenario activo (resultados.volCapturablePorMat); benchmarks de dictamenTecnicoEvidence.ts.',
-          por_que_este_enfoque: 'Un regidor no vota texto legal sin saber por qué 5 fracciones y no 3. El dictamen anticipa objeciones y las responde con fuente — esto es lo que separa consultoría creíble de opinión.',
-          supuesto_critico: 'La calidad del escenario activo. Sin cálculo en M01, el argumento económico queda genérico; con escenario, se personaliza por composición RSU del municipio.',
+          por_que_este_enfoque: 'Un regidor no vota texto legal sin saber por qué 5 fracciones y no 3. El dictamen anticipa objeciones y las responde con fuente documentada.',
+          supuesto_critico: 'La calidad del escenario activo. Sin cálculo en M01, el argumento económico queda genérico. Con escenario, se personaliza por composición RSU del municipio.',
         },
         chart_briefs: [
           {
@@ -364,13 +382,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'future_goals':
+    case 'plan_maestro':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El calendario que convierte las metas en acciones concretas',
         pregunta_guia: '¿Cuándo arranca cada fase y cuáles hitos son críticos para el programa?',
         subtitulo_catchy: 'Del diagnóstico al calendario: cuándo, quién y cuánto cuesta arrancar',
-        situacion_actual: `Las metas de ${territorio} solo sirven si se vuelven calendario, dependencias y capacidad; una meta sin tiempo ni responsable se queda en aspiración.`,
+        situacion_actual: `Las metas de ${territorio} solo sirven si se vuelven calendario, dependencias y capacidad. Una meta sin tiempo ni responsable se queda en aspiración.`,
         observacion_alquimia: `${scope} El Gantt/PERT traduce captura, centros de acopio, empleos y emisiones a meses, hitos y riesgo de atraso.`,
         criterio_decision: 'Decidir si el horizonte elegido es compatible con capacidad instalada, colonias piloto, municipios activos y curva de captura.',
         que_no_significa: 'No es calendario de Cabildo, contrato de obra ni programa de inversión autorizado.',
@@ -406,9 +424,9 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'infrastructure_operations':
+    case 'infraestructura':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Infraestructura y operación: dónde, con qué y con quién',
         pregunta_guia: '¿Cuántos centros de acopio se necesitan y dónde deben ubicarse?',
         subtitulo_catchy: 'Dónde van los centros, qué flota los mueve y quién responde por cada colonia',
@@ -429,7 +447,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             chart_id: 'mapa-centros-acopio',
             chart_label: 'Mapa de centros de acopio',
             metodologia: {
-              como_se_calcula: 'Cada punto en el mapa = un centro de acopio con coordenadas lat/lon. El radio de influencia = sqrt(toneladas_por_dia / (densidad_poblacional × tasa_captura × π)). Los puntos con datos reales vienen de Google Places o DENUE; los demás son propuestas del modelo.',
+              como_se_calcula: 'Cada punto en el mapa = un centro de acopio con coordenadas lat/lon. El radio de influencia = sqrt(toneladas_por_dia / (densidad_poblacional × tasa_captura × π)). Los puntos con datos reales vienen de Google Places o DENUE. Los demás son propuestas del modelo.',
               origen_datos: 'Google Places API (fuente=places_api) o INEGI DENUE (fuente=denue) para centros existentes. Coordenadas propuestas calculadas por el motor de optimización ALQUIMIA.',
               por_que_este_enfoque: 'La ubicación geográfica afecta la tasa de captura directamente: un CA a más de 2km de la zona de generación reduce la participación ciudadana hasta un 40% según estudios de accesibilidad.',
               supuesto_critico: 'La fuente de los puntos del mapa. Los puntos de propuesta son simulación —no predios confirmados. La leyenda indica qué es verificado y qué es simulado.',
@@ -438,15 +456,15 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'market_traceability':
+    case 'mercado_materiales':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El mercado secundario: compradores, precios y riesgo documentado',
         pregunta_guia: '¿A quién se le vende el material recuperado y a qué precio documentado?',
         subtitulo_catchy: 'A quién le vendemos, a qué precio real y con qué riesgo de mercado',
-        situacion_actual: `Los resultados numéricos de ${territorio} solo tienen valor operativo si entiendes qué variable los empuja y qué supuestos de mercado los sostienen.`,
+        situacion_actual: `Los resultados numéricos de ${territorio} requieren identificar qué variable los mueve y qué supuestos de mercado los sostienen.`,
         observacion_alquimia: `${scope} El grafo causal enlaza KPIs, fórmulas y fuentes: permite ver riesgo de interpretación antes de presentar el escenario como lectura única.`,
-        criterio_decision: 'Validar que compradores, precios y volúmenes sean coherentes con el baseline; reconstruir el grafo tras cambiar supuestos sensibles.',
+        criterio_decision: 'Validar que compradores, precios y volúmenes sean coherentes con el baseline. Reconstruir el grafo tras cambiar supuestos sensibles.',
         que_no_significa: 'No constituye valoración vinculante de mercado, contrato con offtakers ni garantía de demanda.',
         siguiente_accion: 'Construir o reconstruir el grafo causal y cerrar warnings de mercado antes del módulo de escenarios y exportación.',
         fuente_o_evidencia: 'Motor del simulador, resúmenes de mercado, DataProvenance y nodos del razonamiento trazado.',
@@ -480,21 +498,21 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'risk_trends':
+    case 'riesgos_modelo':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Los cuatro riesgos que determinan si el programa llega al Cabildo',
         pregunta_guia: '¿Qué puede salir mal y cómo se mitiga cada riesgo crítico?',
         subtitulo_catchy: 'Los riesgos que pueden hundir el programa — y cómo medimos cada uno',
         situacion_actual: `${territorio} enfrenta cuatro dimensiones de riesgo que deben medirse antes de comprometer inversión o presentar el programa al Cabildo.`,
         observacion_alquimia: `${scope} El score de riesgo no es una opinión — es una fórmula documentada con cuatro dimensiones ponderadas por relevancia política en el contexto municipal mexicano.`,
         criterio_decision: 'Identificar qué dimensión de riesgo es más alta y diseñar mitigaciones específicas antes de avanzar a la fase de implementación.',
-        que_no_significa: 'No es una garantía de éxito ni un análisis exhaustivo de riesgos empresariales; es un diagnóstico de los riesgos específicos de programas RSU municipales en México.',
+        que_no_significa: 'No es una garantía de éxito ni un análisis exhaustivo de riesgos empresariales. Es un diagnóstico de los riesgos específicos de programas RSU municipales en México.',
         siguiente_accion: 'Priorizar la dimensión con score más alto y definir al menos una acción de mitigación concreta con responsable y fecha.',
         fuente_o_evidencia: 'Datos de placement (riesgo mercado), mapa de actores (riesgo político), PERT slack (riesgo operativo), compliance LGPGIR (riesgo regulatorio).',
         metodologia_editorial: {
           como_se_calcula: 'Score total = 0.30·R_mercado + 0.40·R_político + 0.20·R_operativo + 0.10·R_regulatorio. Cada dimensión se calcula con su propia fórmula documentada. El score va de 0 (sin riesgo) a 100 (riesgo crítico).',
-          origen_datos: 'R_mercado: datos de placement del M05. R_político: mapa de actores del módulo Proyecto Vivo. R_operativo: slack del PERT del M03. R_regulatorio: checklist LGPGIR del M02.',
+          origen_datos: 'R_mercado: datos del M10. R_político: mapa de actores (M02C). R_operativo: holgura PERT del M05. R_regulatorio: checklist LGPGIR del M03B.',
           por_que_este_enfoque: 'ALQUIMIA pondera el riesgo político al 40% —la ponderación más alta— porque históricamente es el factor que más cancela programas municipales exitosos técnicamente. Los proyectos públicos no mueren por falta de tecnología sino por falta de stakeholders en la mesa correcta.',
           supuesto_critico: 'La tasa de colocación del mercado secundario (R_mercado). Es la variable más volátil y la que más rápido puede cambiar el score total de un trimestre a otro.',
         },
@@ -512,12 +530,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'inspeccion_predios':
+    case 'inspeccion':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Inspección y predios: evidencia ordenada antes de la acción',
         pregunta_guia: '¿Qué predios cumplen condiciones para operar y cuáles necesitan intervención?',
-        subtitulo_catchy: 'El predio que elegiste: ¿sirve o no? La evidencia ordenada antes de actuar',
+        subtitulo_catchy: 'Evidencia del predio seleccionado antes de la acción administrativa',
         situacion_actual: `En ${territorio}, la inspección debe empezar como evidencia ordenada: predio, situación observada, actor, fecha, hallazgo y acción siguiente.`,
         observacion_alquimia: `${scope} La inspección útil no castiga por intuición: documenta hechos, distingue educación de visita técnica y deja trazabilidad para revisión municipal.`,
         criterio_decision: 'Decidir qué casos ameritan educación, seguimiento, regularización administrativa o escalamiento a revisión competente.',
@@ -528,7 +546,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
           como_se_calcula: 'El semáforo de clasificación cruza el tipo de situación observada con los artículos habilitantes del reglamento cargado en M02. Cada combinación produce una de cuatro rutas: educación, seguimiento, regularización o escalamiento.',
           origen_datos: 'Tipología de situaciones: marco de inspección municipal LGPGIR. Artículos locales: reglamento municipal específico cargado en el módulo.',
           por_que_este_enfoque: 'ALQUIMIA clasifica antes de recomendar acción porque el error más frecuente es tratar una visita educativa como inicio de procedimiento sancionatorio. Esa confusión erosiona la legitimidad del programa en las primeras semanas.',
-          supuesto_critico: 'La existencia y calidad del reglamento cargado en M02. Sin él, el semáforo es orientativo; con él, cada decisión queda anclada al artículo que la habilita.',
+          supuesto_critico: 'La existencia y calidad del reglamento cargado en M03B. Sin él, el semáforo es orientativo. Con él, cada decisión queda anclada al artículo que la habilita.',
         },
         chart_briefs: [
           {
@@ -544,14 +562,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'scenarios_export':
+    case 'escenarios_financieros':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El expediente de Cabildo: escenarios, derrama y sustento',
         pregunta_guia: '¿Qué escenario financiero es viable para llevar a sesión de Cabildo?',
         subtitulo_catchy: 'El expediente listo para el Cabildo — números, supuestos y sensibilidad',
         situacion_actual: `El valor económico de ${territorio} debe separarse: venta base de materiales, pago evitable por entierro, efectos ambientales y sensibilidad financiera.`,
-        observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario; las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
+        observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario. Las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
         criterio_decision: 'Comparar escenarios por captura, precio, merma, costo de disposición, sensibilidad y riesgo antes de exportar un borrador de trabajo.',
         que_no_significa: 'No es garantía de ingreso, cifra autorizada, licitación ni autorización financiera.',
         siguiente_accion: 'Revisar Monte Carlo, waterfall, tornado y matriz de fuentes antes de presentar el escenario a terceros.',
@@ -578,11 +596,11 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'impacto_ambiental':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Impacto ambiental y sanitario del programa',
         pregunta_guia: '¿Qué externalidades evita el programa y con qué supuestos?',
         subtitulo_catchy: 'CO₂e, salud pública y vida útil del relleno — sin mezclar con ingresos de mercado',
-        situacion_actual: `En ${territorio}, las externalidades del RSU (emisiones, salud, saturación de relleno) suelen quedar fuera del expediente de cabildo si solo se presentan ingresos por material.`,
+        situacion_actual: `En ${territorio}, las externalidades del RSU (emisiones, salud, saturación de relleno) suelen quedar fuera del expediente para Cabildo si solo se presentan ingresos por material.`,
         observacion_alquimia: `${scope} Los KPIs salen del motor con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI.`,
         criterio_decision: 'Separar beneficio ambiental de ingreso directo antes de presentar el programa a finanzas o financiadores verdes.',
         que_no_significa: 'No es inventario GEI oficial, ni aval de PROFEPA o SEMARNAT sobre emisiones evitadas.',
@@ -591,7 +609,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'CO₂e = toneladas desviadas × factor emisión relleno × GWP. Salud = funciones documentadas sobre fracción orgánica y clima local.',
           origen_datos: 'Factores INECC 2024, parámetros del escenario activo (M01).',
-          por_que_este_enfoque: 'El cabildo necesita ver el costo sanitario y climático de la omisión, no solo la derrama de venta de material.',
+          por_que_este_enfoque: 'El Cabildo necesita ver el costo sanitario y climático de la omisión, no solo la derrama de venta de material.',
           supuesto_critico: 'Factor de captura de biogás en el relleno local — cambia el CO₂e evitado hasta en 60%.',
         },
         chart_briefs: [],
@@ -600,18 +618,18 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'social_diagnostico':
     case 'social_study':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Estudio demográfico y contexto social',
         pregunta_guia: '¿Quiénes son las personas que deben participar y qué barreras enfrentan?',
         subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
         situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
-        observacion_alquimia: `${scope} Los indicadores son referencias INEGI/CONEVAL/ENOE, no diagnóstico municipal validado. Decláralos como estimación con supuestos explícitos en comunicación pública.`,
+        observacion_alquimia: `${scope} Los indicadores son referencias INEGI/CONEVAL/ENOE, no diagnóstico municipal validado. Deben declararse como estimación con supuestos explícitos en comunicación pública.`,
         criterio_decision: 'Identificar grupos prioritarios, colonias de rezago, pepenadores a integrar y riesgos de reputación antes de cerrar el diseño de la estrategia de participación ciudadana.',
         que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico validado por instituto ni padrón de beneficiarios.',
         siguiente_accion: 'Revisar la matriz de riesgos sociales, documentar supuestos en la bitácora y cerrar brechas con evidencia de campo antes de presentar el programa a Cabildo.',
         fuente_o_evidencia: 'INEGI Censo de Población y Vivienda 2020; CONEVAL Índice de Rezago Social 2022; INEGI ENOE T1 2024 (sector informal); INEGI ENIGH 2022; INE calendario electoral 2024–2027.',
         metodologia_editorial: {
-          como_se_calcula: 'Los indicadores cuantitativos (población, viviendas, ocupantes, rezago social) se leen directamente de los tabulados INEGI cargados en el sistema. Los indicadores de riesgo social son heurísticas documentadas; no provienen de fórmulas de campo sino de estudios nacionales escalados.',
+          como_se_calcula: 'Los indicadores cuantitativos (población, viviendas, ocupantes, rezago social) se leen directamente de los tabulados INEGI cargados en el sistema. Los indicadores de riesgo social son heurísticas documentadas. No provienen de fórmulas de campo sino de estudios nacionales escalados.',
           origen_datos: 'INEGI Censo 2020: variables de vivienda, población y ocupantes. CONEVAL 2022: Índice de Rezago Social por municipio. ENOE T1 2024: estimación del sector informal de recuperación. ENIGH 2022: porcentaje de hogares sin espacio para contenedores.',
           por_que_este_enfoque: 'Un programa de separación sin lectura sociodemográfica diseña para la población promedio, no para la real. El error más frecuente es planear la misma estrategia para colonias con rezago IV y colonias residenciales — eso garantiza baja adopción en los segmentos más vulnerables.',
           supuesto_critico: 'El ciclo de actualización decenal del Censo INEGI. En municipios con alta movilidad poblacional (periferia metropolitana), los datos 2020 pueden subestimar densidad, rezago o sector informal hasta en un 15-20%.',
@@ -630,14 +648,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
-    case 'logistica_operativa':
+    case 'logistica':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Logística operativa: del papel a la ruta real',
         pregunta_guia: '¿Cuántas rutas, vehículos y turnos se necesitan para cubrir las colonias piloto?',
         subtitulo_catchy: '¿Cómo se organizan los camiones, rutas y colonias para que el material llegue al CA?',
         situacion_actual: `La implementación del programa en ${territorio} exige diseñar rutas de recolección diferenciada antes del primer arranque. Sin un piloto bien definido, el riesgo operativo del primer mes puede comprometer la credibilidad del programa.`,
-        observacion_alquimia: `${scope} La logística no es el módulo técnico aburrido — es donde la mayoría de los programas municipales fracasan. Rutas mal diseñadas generan quejas ciudadanas, sobrecoste de combustible y colapso de operación en el primer mes de diciembre.`,
+        observacion_alquimia: `${scope} La logística define si el programa opera o colapsa en temporada alta. Rutas mal diseñadas elevan costo de combustible y quejas ciudadanas.`,
         criterio_decision: 'Definir la zona piloto con criterios objetivos (no políticos), dimensionar la flota necesaria y establecer el protocolo operativo antes del primer arranque.',
         que_no_significa: 'Este módulo no sustituye un estudio VRP completo (Vehicle Routing Problem). Para municipios de +50,000 hab. con topografía compleja, se recomienda contratar especialista SIG con Google OR-Tools o ArcGIS Network Analyst.',
         siguiente_accion: 'Validar zona piloto con el equipo de campo, confirmar disponibilidad de camiones y establecer protocolo de bitácora desde el día 1.',
@@ -664,12 +682,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'esquema_concesion':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Quién opera y cuánto recibe el municipio: el núcleo del modelo de negocio',
         pregunta_guia: '¿Quién debe operar el servicio: el municipio, un concesionario privado o una APP?',
         subtitulo_catchy: '¿Cuánto entra al municipio y quién carga con el riesgo operativo?',
-        situacion_actual: `La pregunta que el cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, el simulador no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
-        observacion_alquimia: `${scope} El Artículo 78 LOM-SLP (Art. 23 en NL, Art. 91 en QRO) permite al ayuntamiento concesionar servicios públicos por acuerdo de cabildo. El adendo que crea la obligación de separar en origen es el instrumento que hace viable la inversión privada en el CA. Sin adendo, no hay certeza jurídica → sin certeza, ningún privado invierte.`,
+        situacion_actual: `La pregunta que el Cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, el simulador no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
+        observacion_alquimia: `${scope} El Artículo 78 LOM-SLP (Art. 23 en NL, Art. 91 en QRO) permite al ayuntamiento concesionar servicios públicos por acuerdo de Cabildo. El adendo que crea la obligación de separar en origen es el instrumento que hace viable la inversión privada en el CA. Sin adendo, no hay certeza jurídica. Sin certeza, ningún privado invierte.`,
         criterio_decision: 'Seleccionar el esquema que maximice el valor al municipio según su capacidad presupuestal. Si no hay presupuesto, el esquema B (concesionado) permite arrancar sin capital municipal.',
         que_no_significa: 'El esquema de concesión no define automáticamente los términos del contrato. El instrumento legal específico (concesión, contrato de servicios, APP) requiere revisión por el síndico municipal y asesor legal externo.',
         siguiente_accion: 'Presentar el árbol de decisión a presidencia y síndico municipal. Seleccionar esquema. Iniciar borrador de instrumento legal con asesoría jurídica especializada en servicios municipales.',
@@ -677,7 +695,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Esquema A: ingresos_municipio = ingresos_brutos × 100%. Esquema B: ingresos_operativo = ingresos_brutos × pct_cuota (5-15%). ISN = empleos × salario_bruto × tasa_ISN_estado. Derechos = n_CAs × $15,000/año.',
           origen_datos: 'Tasas ISN: Leyes de Hacienda estatales 2025 (SLP 2%, NL 3%, QRO 2%). Derechos operación: SEMARNAT Guía Técnica CAs 2022 §7.3. Empleo acerero: CANACERO 2023. Empleo agrícola: SIAP 2023.',
-          por_que_este_enfoque: 'El multiplicador flat (16%) legacy del sistema era indefendible ante el síndico. El modelo diferenciado por esquema permite una justificación artículo por artículo del cálculo de beneficios al municipio.',
+          por_que_este_enfoque: 'El multiplicador plano (16%) del modelo anterior era indefendible ante el síndico. El modelo diferenciado por esquema permite una justificación artículo por artículo del cálculo de beneficios al municipio.',
           supuesto_critico: 'El porcentaje de cuota de concesión (default 10%). En licitaciones reales, este porcentaje se negocia según el riesgo del mercado local y la competitividad del proceso. Un operador con mercado asegurado puede ofrecer hasta 15%; en mercados incipientes, 5% puede ser el techo.',
         },
         chart_briefs: [],
@@ -685,13 +703,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'doble_materialidad':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Doble materialidad: de programa municipal a activo ESG reportable',
         pregunta_guia: '¿El programa es reportable bajo estándares ESG y cuáles brechas tiene?',
         subtitulo_catchy: '¿Cómo le digo a un banco verde o al BID cuánto vale el programa?',
-        situacion_actual: `Los resultados del programa en ${territorio} — toneladas desviadas, CO₂e evitadas, empleos creados — son exactamente lo que los instrumentos de financiamiento verde exigen cuantificado y certificado. Sin este módulo, el municipio deja dinero sobre la mesa: BANOBRAS CCA, BID FOMIN, Fondo Verde del Clima y bonos municipales ESG requieren todos este formato.`,
+        situacion_actual: `Los resultados del programa en ${territorio} — toneladas desviadas, CO₂e evitadas, empleos creados — deben reportarse en formato GRI 306 y ESRS E5 para fondos verdes (BANOBRAS, BID, FVC).`,
         observacion_alquimia: `${scope} La "doble materialidad" es el estándar europeo CSRD/ESRS E5 y está siendo adoptado en México por BANOBRAS y la CNBV como requisito de reporte para deuda verde. Un municipio que reporta GRI 306 con datos reales tiene acceso a tasas preferenciales que pueden reducir el costo de deuda en 200-400 pb.`,
-        criterio_decision: 'Generar el informe GRI 306 con datos reales (no proyectados) tan pronto como el módulo de Monitoreo Real (M14) tenga datos de campo. Hasta entonces, los datos proyectados del simulador sirven como benchmark de referencia.',
+        criterio_decision: 'Generar el informe GRI 306 con datos reales cuando el M17 tenga datos de campo. Hasta entonces, usar proyecciones del simulador como referencia.',
         que_no_significa: 'Este módulo no reemplaza una auditoría de sostenibilidad externa. Para solicitudes de crédito verde formales, los datos del GRI 306 deben ser verificados por un tercero acreditado (ej. Bureau Veritas, KPMG Sustentabilidad).',
         siguiente_accion: 'Enviar el reporte GRI 306 proyectado a BANOBRAS como primer contacto para el Programa CCA. Mientras se acumula data real, el simulador sirve como pre-evaluación de elegibilidad.',
         fuente_o_evidencia: 'GRI 306: Residuos 2020. ESRS E5 — Uso de Recursos y Economía Circular (EFRAG 2023). PNPGIR 2022-2024 — meta 30% desvío de relleno. BANOBRAS Programa CCA 2024. CNBV Taxonomía Verde México 2022.',
@@ -717,13 +735,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'costos_programa':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Costos del programa — CAPEX y OPEX',
         pregunta_guia: '¿Cuánto cuesta arrancar (CAPEX) y cuánto sostener (OPEX) el programa mensualmente?',
         subtitulo_catchy: 'Cada peso de inversión tiene nombre, precio verificado y plazo de recuperación.',
         situacion_actual: `El programa para ${territorio} requiere una inversión inicial (CAPEX) en centros de acopio, equipos y capital de trabajo, más un costo operativo mensual (OPEX) que incluye nómina, energía, renta e insumos. Este módulo desglosa cada línea con trazabilidad de fuente.`,
         observacion_alquimia: 'Los precios de equipamiento fueron verificados contra mercado mexicano en mayo 2026 (grupozuma.com.mx, reciclamas.com.mx, losmontacargas.mx, rte.mx, cocoisa.mx). Los salarios siguen tabulador IMSS Rama 37 con factor de prestaciones de 1.35×. La contingencia del 10% sigue estándar AACE International Class 4.',
-        criterio_decision: 'El tesorero municipal necesita saber exactamente cuánto cuesta el programa por fase, qué equipos se compran, cuántas personas se contratan y en cuánto tiempo se recupera la inversión antes de llevar el presupuesto a cabildo.',
+        criterio_decision: 'El tesorero municipal necesita saber exactamente cuánto cuesta el programa por fase, qué equipos se compran, cuántas personas se contratan y en cuánto tiempo se recupera la inversión antes de llevar el presupuesto al Cabildo.',
         que_no_significa: 'No es una cotización formal. Es un modelo parametrizado que debe validarse con proveedores locales antes de comprometer presupuesto público.',
         siguiente_accion: 'Solicitar cotizaciones formales a proveedores locales para los 3–5 equipos de mayor impacto en el CAPEX.',
         fuente_o_evidencia: 'Centros_Acopio_v2.xlsx (modelo CFO ALQUIMIA). Precios de mercado verificados mayo 2026. Salarios: INEGI ENOE T1 2025, Computrabajo 2025. Factor prestaciones: IMSS Rama 37.',
@@ -736,35 +754,35 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         chart_briefs: [],
       }
 
-    case 'monitoreo_real':
+    case 'monitoreo_operativo':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Monitoreo — proyectado vs. real',
         pregunta_guia: '¿El programa está cumpliendo las metas proyectadas o requiere ajuste?',
-        subtitulo_catchy: 'Lo que no se mide no se mejora. Lo que se mide mal, destruye programas.',
+        subtitulo_catchy: 'Proyección vs. real — semáforo de desempeño operativo',
         situacion_actual: `Una vez en operación, ${territorio} necesita comparar las proyecciones del simulador con los datos reales de campo para detectar desviaciones y corregir el rumbo antes de que se conviertan en pérdidas.`,
         observacion_alquimia: 'Este módulo está diseñado para recibir datos de campo una vez que el programa esté operando. Hasta entonces, muestra las métricas proyectadas como línea base de referencia para el equipo de campo.',
-        criterio_decision: 'El director de servicios públicos necesita un semáforo claro: verde si la operación está dentro de las proyecciones, amarillo si hay desviaciones moderadas, rojo si se requiere intervención directiva.',
+        criterio_decision: 'El director de servicios públicos necesita un semáforo claro: verde si la operación está dentro de las proyecciones, amarillo si hay desviaciones moderadas, rojo (alerta crítica) si se requiere intervención directiva.',
         que_no_significa: 'No sustituye un sistema de monitoreo en tiempo real. Es una herramienta de comparación periódica (mensual/trimestral) entre lo proyectado y lo medido.',
         siguiente_accion: 'Definir el protocolo de captura de datos de campo (frecuencia, responsable, formato) antes del arranque del piloto.',
-        fuente_o_evidencia: 'Proyecciones: motor del simulador ALQUIMIA (módulos M01–M11). Datos reales: captura manual o integración con sistema de pesaje en CAs.',
+        fuente_o_evidencia: `Proyecciones: motor del simulador ALQUIMIA (módulos ${moduleRangeLabel()}). Datos reales: captura manual o integración con sistema de pesaje en CAs.`,
         metodologia_editorial: {
           como_se_calcula: 'Desviación = (valor_real − valor_proyectado) / valor_proyectado × 100. Semáforo: verde ≤10%, amarillo 10–25%, rojo >25%.',
           origen_datos: 'Proyecciones: motor del simulador. Datos reales: captura de campo (pendiente de implementación en campo).',
-          por_que_este_enfoque: 'La Teoría de Cambio (Theory of Change) requiere verificación empírica. Sin monitoreo, el programa pierde credibilidad ante financiadores y cabildo en la evaluación de medio término.',
+          por_que_este_enfoque: 'La Teoría de Cambio (Theory of Change) requiere verificación empírica. Sin monitoreo, el programa pierde credibilidad ante financiadores y Cabildo en la evaluación de medio término.',
           supuesto_critico: 'Los datos de campo deben capturarse con la misma metodología y frecuencia que las proyecciones para que la comparación sea válida y auditable.',
         },
         chart_briefs: [],
       }
 
-    case 'source_traceability':
+    case 'trazabilidad':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Cadena de evidencia: de dónde viene cada número',
         pregunta_guia: '¿Cada cifra del análisis tiene fuente, fórmula y nivel de certeza documentados?',
         subtitulo_catchy: 'De dónde vienen todos los números — la cadena completa de cada cifra',
         situacion_actual: `Toda cifra visible sobre ${territorio} necesita una cadena clara: afirmación, fórmula, fuente, estado de verificación y responsable.`,
-        observacion_alquimia: `${scope} La matriz no decora el reporte; obliga a cerrar pendientes y evita que una cita general se use como prueba de una cifra específica.`,
+        observacion_alquimia: `${scope} La matriz no decora el reporte. Obliga a cerrar pendientes y evita que una cita general se use como prueba de una cifra específica.`,
         criterio_decision: 'Identificar qué datos están verificados, cuáles son supuestos editables y cuáles requieren acción correctiva antes de usarse públicamente.',
         que_no_significa: 'No convierte una fuente localizada en dato confirmado ni una estimación en medición municipal.',
         siguiente_accion: 'Cerrar filas pendientes, sustituir fuentes débiles y documentar responsable antes de salida institucional.',
@@ -780,7 +798,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'evaluacion_socioeconomica':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Evaluación socioeconómica y alivio fiscal estatal',
         pregunta_guia: '¿Cuántos empleos se traducen en reducción de pobreza y alivio fiscal proxy?',
         subtitulo_catchy: 'CONEVAL/SHCP como referencia — no certificación estatal',
@@ -801,11 +819,11 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'teoria_cambio':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Teoría de cambio — cierre del diagnóstico',
         pregunta_guia: '¿Cómo se conectan insumos, actividades y resultados del capítulo 1?',
         subtitulo_catchy: 'Del problema a la hipótesis de intervención antes de planificar',
-        situacion_actual: `El diagnóstico de ${territorio} dispersa hallazgos en seis rubros; la teoría de cambio los ordena en una cadena verificable.`,
+        situacion_actual: `El diagnóstico de ${territorio} dispersa hallazgos en seis rubros. La teoría de cambio los articula en una cadena verificable.`,
         observacion_alquimia: `${scope} Es síntesis narrativa de módulos anteriores — no introduce cifras nuevas sin fuente.`,
         criterio_decision: 'Validar que cada outcome tenga indicador y responsable antes de pasar a Planificación.',
         que_no_significa: 'No sustituye evaluación de impacto ex post ni M&E operativo (M17).',
@@ -822,12 +840,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'ruta_critica':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Ruta crítica y holgura del programa',
         pregunta_guia: '¿Qué tareas no pueden retrasarse sin mover todo el calendario?',
         subtitulo_catchy: 'PERT con varianza — dónde concentrar supervisión',
-        situacion_actual: `El calendario de ${territorio} solo es creíble si identifica la cadena de tareas sin holgura.`,
-        observacion_alquimia: `${scope} La ruta crítica sale del PERT del plan maestro; no es fecha de cabildo ni de licitación cerrada.`,
+        situacion_actual: `El calendario de ${territorio} solo es defendible si identifica la cadena de tareas sin holgura.`,
+        observacion_alquimia: `${scope} La ruta crítica sale del PERT del plan maestro. No es fecha de sesión de cabildo ni de licitación cerrada.`,
         criterio_decision: 'Asignar recursos y supervisión a tareas con holgura cero antes de comprometer fechas públicas.',
         que_no_significa: 'No es cronograma de obra autorizado ni programa de inversión federal.',
         siguiente_accion: 'Revisar tareas críticas y validar estimados optimista/probable/pesimista con área operativa.',
@@ -843,7 +861,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'oleadas_territoriales':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Oleadas territoriales de despliegue',
         pregunta_guia: '¿En qué colonias y en qué orden arranca el piloto?',
         subtitulo_catchy: 'Secuencia territorial — no todo el municipio el día uno',
@@ -864,14 +882,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'plan_educativo':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'Plan educativo y sensibilización ciudadana',
         pregunta_guia: '¿Cuánto cuesta enseñar a separar y en qué segmentos?',
         subtitulo_catchy: 'IPC, condominios y vía pública — costos distintos',
-        situacion_actual: `La captura en ${territorio} depende de hábitos; el costo educativo no es uniforme por tipo de vivienda.`,
-        observacion_alquimia: `${scope} El módulo usa IPC del store (encuesta o benchmark SEMARNAT) y factor vía pública del M02.`,
+        situacion_actual: `La captura en ${territorio} depende de hábitos. El costo educativo no es uniforme por tipo de vivienda.`,
+        observacion_alquimia: `${scope} El módulo usa IPC del store (encuesta o benchmark SEMARNAT) y factor vía pública del M02B.`,
         criterio_decision: 'Dimensionar brigadas y presupuesto de comunicación antes de fijar meta de captura año 1.',
-        que_no_significa: 'No sustituye campaña de comunicación social aprobada por cabildo.',
+        que_no_significa: 'No sustituye campaña de comunicación social aprobada por Cabildo.',
         siguiente_accion: 'Cargar IPC de encuesta o documentar uso de benchmark 70 con ProvenanceBadge.',
         fuente_o_evidencia: 'SEMARNAT 2022, ENIGH vivienda, calculator costoComSocial.',
         metodologia_editorial: {
@@ -885,32 +903,32 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'costo_omision':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El costo acumulado de no hacer nada en los próximos 10 años',
         pregunta_guia: '¿Cuánto le cuesta al municipio cada año que pasa sin un programa de RSU?',
         subtitulo_catchy: 'La omisión tiene precio — y crece con la inflación sin fecha de fin',
         situacion_actual: `Sin programa de separación, ${territorio} seguirá pagando la tarifa de disposición sobre el 100% del RSU generado, con inflación compuesta y sin recuperar valor de los materiales.`,
         observacion_alquimia: `${scope} La pérdida acumulada suma disposición en relleno, daño sanitario, multas LGPGIR y pérdida de elegibilidad para financiamiento verde.`,
         criterio_decision: 'Reencuadrar la conversación presupuestal: el programa no es un gasto, es el mecanismo para evitar un costo mayor y creciente.',
-        que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, construido con las mismas fuentes del simulador.',
+        que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, calculado con las mismas fuentes del simulador.',
         siguiente_accion: 'Presentar el análisis contrafactual como el primer argumento ante el Cabildo antes de mostrar el CAPEX del programa.',
         fuente_o_evidencia: 'Tarifa media relleno sanitario nacional (SEMARNAT). Costo salud OPS/INSP México. INPC BANXICO. LGPGIR sanciones Art. 10.',
         metodologia_editorial: {
           como_se_calcula: 'Costo acumulado = Σ(RSU_año × costo_disposición × factor_INPC^año) + daño_salud. Daño salud = fracción_orgánica × costo_OPS_ton. Saturación relleno = capacidad_residual ÷ ritmo_disposición.',
           origen_datos: 'RSU generado del M01. Tarifas de disposición: SEMARNAT DBGIR. Costo salud: OPS/INSP México 2021. Inflación: BANXICO proyección media 2024–2026.',
-          por_que_este_enfoque: 'Mostrar lo que se pierde cada año sin actuar suele convencer al cabildo antes que la promesa de ingresos futuros.',
+          por_que_este_enfoque: 'Mostrar lo que se pierde cada año sin actuar suele convencer al Cabildo antes que la promesa de ingresos futuros.',
           supuesto_critico: 'Tarifa de disposición local puede diferir de la media nacional. Solicitar al municipio la tarifa contractual con el operador del relleno para recalibrar.',
         },
         chart_briefs: [],
       }
 
-    case 'organigrama_programa':
+    case 'organigrama':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'La estructura de quién es responsable de cada decisión en el programa',
         pregunta_guia: '¿Quién opera cada centro, quién firma la bitácora y quién aprueba el gasto?',
         subtitulo_catchy: 'Sin estructura orgánica aprobada, el programa no tiene responsable — y sin responsable, no hay programa',
-        situacion_actual: `${territorio} necesita definir la estructura de personal antes de aprobar el CAPEX. El cabildo siempre pregunta: "¿quién es el responsable?" antes de votar.`,
+        situacion_actual: `${territorio} necesita definir la estructura de personal antes de aprobar el CAPEX. El Cabildo siempre pregunta: "¿quién es el responsable?" antes de votar.`,
         observacion_alquimia: `${scope} La plantilla está parametrizada por tipo de CA (P/M/G) con datos de referencia ANIPAC e IMSS. El RACI asigna un único Aprobador por actividad, eliminando ambigüedad de responsabilidades.`,
         criterio_decision: 'Aprobar la estructura de personal y el presupuesto mensual de nómina antes de comprometer inversión en infraestructura.',
         que_no_significa: 'No es el organigrama de la dirección municipal. Es el organigrama específico del Programa de CAs dentro de la estructura municipal existente.',
@@ -927,7 +945,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'arbol_financiamiento':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El camino viable para financiar el programa — siempre existe uno',
         pregunta_guia: '¿Cómo financiamos el programa si el municipio no tiene presupuesto disponible?',
         subtitulo_catchy: '"No tenemos presupuesto" no es el fin del análisis — es el inicio del árbol de decisión',
@@ -948,21 +966,105 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
 
     case 'expediente_cabildo':
       return {
-        moduleId,
+        moduleId: resolvedId,
         title: 'El paquete completo para la sesión de Cabildo que autoriza la inversión',
         pregunta_guia: '¿El expediente tiene todo lo que el Cabildo necesita para votar con información?',
         subtitulo_catchy: 'Del simulador al salón de sesiones — el expediente que convierte el análisis en decisión',
-        situacion_actual: `El análisis de ${territorio} está completo. Este módulo genera el paquete institucional que condensa los 19 módulos anteriores en un expediente presentable ante Cabildo, Contraloría y eventuales financiadores.`,
-        observacion_alquimia: `${scope} El expediente incluye: análisis financiero auditado, cotización recomendada, plan de gobernanza, checklist de arranque y los documentos exportables (PDF, Excel, URL). Cada documento tiene trazabilidad a su fuente en el simulador.`,
+        situacion_actual: `El análisis de ${territorio} está completo. Este módulo genera el paquete institucional que condensa los ${MODULE_COUNT} módulos anteriores en un expediente presentable ante Cabildo, Contraloría y financiadores.`,
+        observacion_alquimia: `${scope} El expediente incluye análisis financiero documentado, cotización recomendada, plan de gobernanza, checklist de arranque y documentos exportables (PDF, Excel, URL). Cada documento tiene trazabilidad a su fuente en el simulador.`,
         criterio_decision: 'Confirmar que el expediente responde las 6 preguntas que todo regidor hace: ¿cuánto cuesta?, ¿quién paga?, ¿quién opera?, ¿cuál es el riesgo?, ¿cuál es el beneficio?, ¿cuándo empezamos?',
         que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
         siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
-        fuente_o_evidencia: 'Todos los módulos del simulador M01–M18. Documentos generados por AGORA pipeline.',
+        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por pipeline AGORA.`,
         metodologia_editorial: {
-          como_se_calcula: 'No aplica — este módulo consolida y exporta, no calcula.',
-          origen_datos: 'Store del simulador (Zustand) + pipeline AGORA para generación de documentos.',
-          por_que_este_enfoque: 'El último paso de cualquier proceso de consultoría es la entrega. Sin un expediente ordenado, el análisis más riguroso pierde frente a una presentación PowerPoint con números más simples.',
-          supuesto_critico: 'La completitud del expediente depende de que todos los módulos anteriores hayan sido configurados con datos del municipio específico.',
+          como_se_calcula: 'No aplica. Este módulo consolida y exporta, no calcula.',
+          origen_datos: 'Store del simulador (Zustand) y pipeline AGORA para generación de documentos.',
+          por_que_este_enfoque: 'Sin un expediente ordenado, el análisis pierde frente a resúmenes simplificados en sesión de Cabildo.',
+          supuesto_critico: 'La completitud depende de que los módulos anteriores estén configurados con datos del municipio.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'gate_status':
+      return {
+        moduleId: resolvedId,
+        title: 'Estado de gates G1–G5 — cierre del expediente',
+        pregunta_guia: '¿Puede el proyecto avanzar al siguiente gate?',
+        subtitulo_catchy: 'Prerequisitos verificados contra el estado real de cada módulo.',
+        situacion_actual: `${territorio} debe confirmar que los gates G1–G5 tienen sus prerequisitos cerrados antes de declarar el expediente listo.`,
+        observacion_alquimia: `${scope} Cada gate valida un bloque del recorrido: diagnóstico, planificación, modelo, operación y cierre documental.`,
+        criterio_decision: 'No avanzar de gate con prerequisitos abiertos que afecten la validez del expediente.',
+        que_no_significa: 'No sustituye la resolución de Cabildo ni la autorización presupuestal.',
+        siguiente_accion: 'Revisar prerequisitos del gate actual y cerrar los pendientes antes de la fecha límite.',
+        fuente_o_evidencia: 'Estado de módulos en el simulador y checklist de gates KRONOS.',
+        metodologia_editorial: {
+          como_se_calcula: 'Cada gate evalúa booleanos de completitud por módulo prerequisito.',
+          origen_datos: 'Store del simulador y reglas de gate definidas en chapterConfig.',
+          por_que_este_enfoque: 'Evita presentar un expediente incompleto ante Cabildo o financiadores.',
+          supuesto_critico: 'Los prerequisitos deben coincidir con la normativa interna del municipio.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'evm_dashboard':
+      return {
+        moduleId: resolvedId,
+        title: 'Valor ganado (EVM) — control presupuestal',
+        pregunta_guia: '¿El avance físico corresponde al presupuesto ejercido?',
+        subtitulo_catchy: 'CPI, SPI y proyección de costo al cierre desde el CAPEX del simulador.',
+        situacion_actual: `${territorio} necesita comparar planificado vs. real en el CAPEX del programa de RSU.`,
+        observacion_alquimia: `${scope} El tablero calcula índices de valor ganado (EVM) a partir del CAPEX configurado y los costos reales ingresados.`,
+        criterio_decision: 'Corregir desviaciones antes de solicitar ampliaciones presupuestales.',
+        que_no_significa: 'No reemplaza la contabilidad municipal ni la conciliación con tesorería.',
+        siguiente_accion: 'Ingresar porcentaje de avance real y costos acumulados para actualizar el semáforo.',
+        fuente_o_evidencia: 'CAPEX del simulador, PMBOK 6.ª ed. (EVM), partidas presupuestales municipales.',
+        metodologia_editorial: {
+          como_se_calcula: 'CPI = EV/AC. SPI = EV/PV. EAC proyectado según desempeño actual.',
+          origen_datos: 'CAPEX del M09 y avance reportado por el PMO.',
+          por_que_este_enfoque: 'Cabildo y financiadores piden evidencia de control presupuestal, no solo proyecciones.',
+          supuesto_critico: 'La calidad del PV depende de que el CAPEX esté validado con cotizaciones locales.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'conciliacion_mensual':
+      return {
+        moduleId: resolvedId,
+        title: 'Conciliación mensual de presupuesto',
+        pregunta_guia: '¿El ejercicio del mes coincide con el avance físico?',
+        subtitulo_catchy: 'Partidas presupuestales vs. costos reales del PMO.',
+        situacion_actual: `${territorio} debe conciliar mensualmente el presupuesto ejercido con el avance del programa.`,
+        observacion_alquimia: `${scope} La tabla compara partidas del presupuesto autorizado contra costos capturados en el simulador.`,
+        criterio_decision: 'Documentar desviaciones antes del cierre contable mensual.',
+        que_no_significa: 'No es dictamen de la Contraloría ni acta de tesorería.',
+        siguiente_accion: 'Cargar costos del mes en curso y comparar contra el PV del cronograma PERT.',
+        fuente_o_evidencia: 'Partidas presupuestales, bitácora PMO, cronograma del M05.',
+        metodologia_editorial: {
+          como_se_calcula: 'Variación = costo real − presupuesto devengado del periodo.',
+          origen_datos: 'Captura mensual del PMO y PV del plan maestro.',
+          por_que_este_enfoque: 'La conciliación mensual detecta desvíos antes de que afecten el gate de cierre.',
+          supuesto_critico: 'Las partidas deben mapearse 1:1 con categorías del CAPEX del simulador.',
+        },
+        chart_briefs: [],
+      }
+
+    case 'risk_dashboard':
+      return {
+        moduleId: resolvedId,
+        title: 'Registro de riesgos del programa',
+        pregunta_guia: '¿Cuáles riesgos pueden comprometer la viabilidad del programa?',
+        subtitulo_catchy: 'Probabilidad × impacto con responsable y plan de mitigación.',
+        situacion_actual: `${territorio} debe mantener visible el registro de riesgos críticos del programa RSU.`,
+        observacion_alquimia: `${scope} El tablero muestra riesgos R01–R06 con score derivado de probabilidad e impacto (matriz PMBOK).`,
+        criterio_decision: 'Asignar responsable y mitigación a riesgos en semáforo rojo.',
+        que_no_significa: 'No es auditoría externa ni dictamen de PROFEPA.',
+        siguiente_accion: 'Documentar plan de mitigación para cada riesgo en rojo.',
+        fuente_o_evidencia: 'Registro de riesgos, M14 riesgos del modelo, actas de seguimiento.',
+        metodologia_editorial: {
+          como_se_calcula: 'Score = probabilidad × impacto en escala 1–5.',
+          origen_datos: 'Evaluación del M14 (riesgos del modelo) y actualizaciones del PMO.',
+          por_que_este_enfoque: 'Financiadores y Cabildo exigen registro vivo de riesgos, no solo análisis inicial.',
+          supuesto_critico: 'La probabilidad debe revisarse cada trimestre con datos de operación.',
         },
         chart_briefs: [],
       }

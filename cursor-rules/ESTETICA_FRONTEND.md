@@ -259,3 +259,35 @@ Evitar: apariencia Excel, demasiados bordes, colores saturados, cards gigantes v
 13. Diseño limpio, serio y catchy
 14. Entender qué se ve en menos de 10 segundos
 15. Herramienta real de implementación, no simulador bonito
+
+---
+
+## 26. COPY EDITORIAL (SIMULADOR FUNCIONARIO)
+
+**Idioma canónico:** español institucional. Reservar inglés para siglas normativas (GRI, ESRS, EVM) con glosa en español en la primera mención.
+
+**Un módulo = un nombre:** nav, header, guía M00, rail y export PDF deben usar el mismo `label` del registry y el mismo `title` del brief.
+
+**Fuentes de copy:**
+
+| Campo | Fuente |
+|-------|--------|
+| `label`, `decision`, `evidence`, `next_action` | `clientModuleRegistry.ts` |
+| `title`, metodología, consideraciones | `moduleEditorialBriefs.ts` |
+| Narrativa M00 | `GuiaCircularidadStack.tsx` |
+
+**Lista negra (prohibido en copy usuario):**
+
+| Prohibido | Sustituir por |
+|-----------|---------------|
+| Steps for Circularity / ALQUIMIA Platform (H1) | Pasos hacia la circularidad / Plataforma ALQUIMIA |
+| consultor senior / deja dinero sobre la mesa | equipo técnico / pierde elegibilidad |
+| Lo que no se mide no se mejora | El monitoreo comparará proyección vs. real |
+| tú / Decláralos / elegiste | usted / Deben declararse / seleccionado |
+| basura (contexto técnico) | RSU / residuos sólidos urbanos |
+| Narrativa en 5 pasos | 4 capítulos · 35 módulos |
+| Referencias M obsoletas (M04 infra, S4.6) | Derivar de `MODULE_NUMBERS` en `chapterConfig.ts` |
+
+**Rail derecho:** la etiqueta del bloque «siguiente acción» se deriva de `getRailActionLabel()` — financiero (Cabildo), jurídico (Periódico Oficial), operativo, recorrido (M00).
+
+**Tests CI:** `editorialInventory.test.ts` valida briefs completos, strings prohibidos y ausencia de overrides en enrichment.

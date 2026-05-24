@@ -321,7 +321,7 @@ type LecturaItem = { header: string; color: string; bullets: string[] }
 type LecturaEjecutiva = { title: string; items: LecturaItem[] }
 
 function getLecturaEjecutiva(moduleId: string): LecturaEjecutiva | null {
-  if (moduleId === 'M04') {
+  if (moduleId === 'infraestructura') {
     return {
       title: 'Infraestructura y operación',
       items: [
@@ -827,11 +827,11 @@ function GuidancePanel({
             <div className="flex flex-wrap items-center gap-1">
               {([
                 { label: 'Supuestos', desc: 'P1–P4', active: true },
-                { label: 'Trayectoria', desc: 'M01', active: true },
+                { label: 'Trayectoria', desc: `M${moduleNumber('city_baseline')}`, active: true },
                 { label: 'Toneladas', desc: 'capturadas', active: false },
-                { label: 'Impactos', desc: 'M01–M02', active: false },
-                { label: 'Infraestr.', desc: 'M04', active: false },
-                { label: 'Resultados', desc: 'M06', active: false },
+                { label: 'Impactos', desc: `M${moduleNumber('impacto_ambiental')}`, active: false },
+                { label: 'Infraestr.', desc: `M${moduleNumber('infraestructura')}`, active: false },
+                { label: 'Resultados', desc: `M${moduleNumber('monitoreo_operativo')}`, active: false },
               ]).map((step, i, arr) => (
                 <span key={step.label} className="flex items-center gap-1">
                   <span className={cn(
@@ -866,7 +866,7 @@ function GuidancePanel({
               <div>
                 <p className="text-[9px] font-semibold text-[#A8A49C] uppercase tracking-[0.06em] mb-1.5">No se ajusta aquí</p>
                 <ul className="space-y-1">
-                  {['Composición base RSU (SEMARNAT · fija)', 'Factores de emisión CO₂e (IPCC AR6)', 'Supuestos macro (inflación, población)', 'Estructura de centros de acopio (M04)'].map(item => (
+                  {['Composición base RSU (SEMARNAT · fija)', 'Factores de emisión CO₂e (IPCC AR6)', 'Supuestos macro (inflación, población)', `Estructura de centros de acopio (M${moduleNumber('infraestructura')})`].map(item => (
                     <li key={item} className="flex items-start gap-1.5 text-[#A8A49C]">
                       <Lock size={9} className="shrink-0 mt-0.5" />
                       <span className="leading-snug">{item}</span>

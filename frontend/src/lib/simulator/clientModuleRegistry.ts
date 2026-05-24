@@ -5,6 +5,7 @@
 
 import type { DecisionModule } from '@/types'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
+import { CHAPTERS, FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
 
 const base = (
   m: Pick<DecisionModule, 'module_id' | 'label' | 'decision' | 'evidence' | 'next_action'> &
@@ -18,10 +19,10 @@ const base = (
 export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   guia_circularidad: base({
     module_id: 'guia_circularidad',
-    label: 'Guía de circularidad — Cómo navegar ALQUIMIA',
-    decision: 'Entender qué es ALQUIMIA, el problema de RSU y cómo navegar el simulador.',
-    evidence: 'Narrativa en 5 pasos: Analizar, Diagnosticar, Planear, Ejecutar, Monitorear.',
-    next_action: 'Leer la guía y navegar a M01 — Línea base RSU.',
+    label: 'Pasos hacia la circularidad — Guía de lectura',
+    decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador.',
+    evidence: `${CHAPTERS.length} capítulos consultivos · ${FUNCTIONARY_MODULE_ORDER.length} módulos de análisis con fuentes documentadas.`,
+    next_action: 'Abrir M01 — Línea base territorial y RSU',
   }),
   city_baseline: base({
     module_id: 'city_baseline',

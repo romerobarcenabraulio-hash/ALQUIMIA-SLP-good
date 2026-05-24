@@ -86,7 +86,7 @@ export function GovernancePanel() {
       <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 text-[12px] text-[#1C1B18]">
         <p className="font-semibold">Alcance jurídico del simulador —estado en vivo</p>
         <p className="mt-1 text-[#6B6760]">
-          S4.6 marca, por cada municipio activo, el nivel de fuente y revisión aplicable a propuestas, sanciones y documentos oficiales.
+          M03B · Marco legal marca, por cada municipio activo, el nivel de fuente y revisión aplicable a propuestas, sanciones y documentos oficiales.
         </p>
         <p className="mt-2">
           Hoy el simulador está{' '}

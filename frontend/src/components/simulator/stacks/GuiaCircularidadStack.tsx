@@ -17,6 +17,7 @@ import {
   moduleNumber,
   type ChapterDef,
 } from '@/lib/chapterConfig'
+import { M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
 import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 
 const fmtN = (n: number) =>
@@ -67,8 +68,8 @@ const CHAPTER_ICONS: Record<number, LucideIcon> = {
 
 const CHAPTER_SUBQUESTIONS: Record<number, string> = {
   1: 'Entender el municipio antes de proponer soluciones',
-  2: 'Cuánta infraestructura, logística, personal y dinero se requiere',
-  3: 'Qué le presentamos al cabildo para que vote',
+  2: '¿Cuánta infraestructura, logística, personal y dinero se requiere?',
+  3: 'Qué le presentamos al Cabildo para que vote',
   4: 'Cómo se opera y se demuestra que funciona',
 }
 
@@ -78,7 +79,7 @@ const CHAPTER_NARRATIVES: Record<
 > = {
   1: {
     body: (ctx) =>
-      `${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de RSU al día; hoy se recupera menos del 6%. El Capítulo 1 recorre trece módulos: línea base y composición (SEMARNAT/INEGI), diagnóstico social y encuesta de aceptación, organigrama actual, capacidad institucional, marco legal con brechas normativas, cobertura territorial, dictamen técnico, costo de omisión y evaluación socioeconómica. Cierra con la teoría de cambio.\n\nLa secuencia importa: no conviene reformar el reglamento sin medir disposición ciudadana ni mapear quién opera el servicio hoy. Este capítulo entrega el punto de partida defendible ante cabildo, financiadores y auditoría.`,
+      `${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de RSU al día; hoy se recupera menos del 6%. El Capítulo 1 recorre trece módulos: línea base e impacto ambiental (M01–M01B), diagnóstico social, encuesta de aceptación y mapeo de actores (M02–M02C), organigrama actual, capacidad institucional, marco legal con brechas normativas, cobertura territorial, dictamen técnico, costo de omisión, evaluación socioeconómica y teoría de cambio.\n\nLa secuencia importa: no conviene reformar el reglamento sin medir disposición ciudadana ni mapear quién opera el servicio hoy. Este capítulo entrega el punto de partida defendible ante Cabildo, financiadores y auditoría.`,
     learns: [
       'Generación diaria de RSU por material, con fuente SEMARNAT/INEGI',
       'Índice de Preparación Ciudadana y encuesta de aceptación por tipo de vivienda',
@@ -100,13 +101,13 @@ const CHAPTER_NARRATIVES: Record<
   },
   3: {
     body: (ctx) =>
-      `El cabildo no vota la técnica: vota el modelo de negocio. Cinco módulos responden quién opera bajo cuatro esquemas (municipal, concesionado, APP, fideicomiso), presentan escenarios financieros con Monte Carlo — bajo el escenario base el municipio proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales y TIR ${fmtN(ctx.tir)}% —, mapean seis caminos de financiamiento, evalúan riesgos y consolidan el expediente para sesión de cabildo.\n\nAquí se detienen la mayoría de los programas municipales: nadie contestó quién pone el capital, quién asume el riesgo operativo y cómo se reparte el ingreso.`,
+      `El Cabildo no vota la técnica: vota el modelo de negocio. Cinco módulos responden quién opera bajo cuatro esquemas (municipal, concesionado, APP, fideicomiso), presentan escenarios financieros con Monte Carlo — bajo el escenario base el municipio proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales y TIR ${fmtN(ctx.tir)}% —, mapean seis caminos de financiamiento, evalúan riesgos y consolidan el expediente para sesión de Cabildo.\n\nAquí se detienen muchos programas municipales: nadie contestó quién pone el capital, quién asume el riesgo operativo y cómo se reparte el ingreso.`,
     learns: [
       'Cuatro esquemas de concesión: capital, operación y reparto de ingresos',
       'Escenarios P10/P50/P90 de TIR y VPN con tornado de sensibilidad',
       'Seis caminos de financiamiento con elegibilidad y costo de capital',
       'Riesgos del modelo rankeados por probabilidad × impacto',
-      'Expediente consolidado listo para presentación ante cabildo',
+      'Expediente consolidado listo para presentación ante Cabildo',
     ],
   },
   4: {
@@ -236,17 +237,17 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </div>
         <div className="relative z-10 max-w-3xl">
           <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8D78A] font-semibold mb-3">
-            Guía de lectura · ALQUIMIA Platform
+            Guía de lectura · Plataforma ALQUIMIA
           </p>
           <h1 className="font-serif text-[28px] leading-[1.2] font-bold mb-4">
-            Steps for Circularity
+            Pasos hacia la circularidad
           </h1>
           <p className="text-[15px] leading-[1.75] text-white/90 max-w-2xl">
             ALQUIMIA apoya la planeación circular de RSU en municipios mexicanos. Esta guía explica
-            cómo leer el simulador antes de presentar cifras a cabildo. La pregunta central:{' '}
+            cómo leer el simulador antes de presentar cifras al Cabildo. La pregunta central:{' '}
             <strong className="text-white">
-              ¿puede {municipio || 'este municipio'} convertir su basura en valor económico, empleos
-              y calidad de vida?
+              ¿puede {municipio || 'este municipio'} convertir sus residuos sólidos urbanos en valor
+              económico, empleos y calidad de vida?
             </strong>
           </p>
           <div className="flex flex-wrap items-center gap-2 mt-5">
@@ -257,7 +258,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
               {CHAPTER_COUNT} capítulos consultivos
             </span>
             <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              0 datos inventados
+              Fuentes documentadas por módulo
             </span>
           </div>
         </div>
@@ -267,7 +268,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
       <EditorialSection
         kicker="El contexto"
-        title="¿Por qué la basura es un problema de política pública?"
+        title="¿Por qué el RSU es un problema de política pública?"
         accentColor="#3B6D11"
       >
         <div className="text-[13px] leading-[1.85] text-gray-600c space-y-4">
@@ -286,7 +287,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
       <EditorialSection
         kicker="Cómo leer esta plataforma"
-        title="La misma lógica que un consultor senior"
+        title="Cómo leer el simulador por capítulos"
         accentColor="#1A5FA8"
       >
         <p className="text-[13px] leading-[1.85] text-gray-600c mb-5">
@@ -516,7 +517,8 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           Comienza el diagnóstico
         </h2>
         <p className="text-[13px] text-green-600a mb-4 max-w-lg mx-auto">
-          Abre el M01 para ver la línea base de {municipio || 'tu municipio'}.
+          {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} para ver la línea base de{' '}
+          {municipio || 'su municipio'}.
         </p>
         {onNavigate ? (
           <button
@@ -525,12 +527,12 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-[10px] bg-green-500a text-white text-[13px] font-semibold hover:bg-green-600a transition-colors mx-auto"
           >
             <ArrowRight size={15} />
-            Ir a M01 — Línea base
+            {M01_NEXT_ACTION}
           </button>
         ) : (
           <div className="flex items-center justify-center gap-2 text-[12px] font-semibold text-green-500a">
             <ArrowRight size={16} />
-            <span>Siguiente: M01 — Línea base territorial y RSU</span>
+            <span>Siguiente: {M01_NEXT_ACTION.replace('Abrir ', '')}</span>
           </div>
         )}
       </section>

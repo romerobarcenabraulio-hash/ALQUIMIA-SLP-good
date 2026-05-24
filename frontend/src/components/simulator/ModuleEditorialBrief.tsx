@@ -1,6 +1,7 @@
 'use client'
 
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { getRailActionLabel } from '@/lib/editorialRailLabels'
 import {
   getEtiquetaNarrativaCiudad,
   getMunicipioMadurezVista,
@@ -27,6 +28,8 @@ export function ModuleEditorialBrief({
   })
 
   if (!brief) return null
+
+  const railLabel = getRailActionLabel(moduleId)
 
   return (
     <div
@@ -78,7 +81,7 @@ export function ModuleEditorialBrief({
       <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
         <div className="border-l-2 border-[#D4881E] pl-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#D4881E] mb-1">
-            Antes de usar esta cifra en cabildo
+            {railLabel}
           </p>
           <p className="text-[12px] leading-[1.55] text-[#2C302A]">
             {brief.siguiente_accion}

@@ -91,7 +91,7 @@ export const CHAPTERS: ChapterDef[] = [
   },
   {
     num: 3,
-    label: 'Modelo',
+    label: 'Modelo de negocio',
     question: '¿Quién paga, quién opera y es viable?',
     color: '#D4881E',
     bgColor: '#FEF7E7',

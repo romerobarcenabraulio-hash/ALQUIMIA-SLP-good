@@ -27,7 +27,7 @@ export function FloatingCTA({ interaccionesRef }: { interaccionesRef: RefObject<
         <div className="bg-[#F3EAF5] border border-[#7B3FA0]/30 rounded-[10px] px-3 py-2 max-w-[260px] shadow-md">
           <p className="text-[11px] text-[#7B3FA0] font-medium">🔒 Verificación del reglamento pendiente</p>
           <p className="text-[10px] text-[#6B6760] mt-0.5">
-            Revisa la fuente del reglamento en S4.6 antes de generar el plan.
+            Revisa la fuente del reglamento en M03B · Marco legal antes de generar el plan.
           </p>
         </div>
       )}
@@ -41,7 +41,7 @@ export function FloatingCTA({ interaccionesRef }: { interaccionesRef: RefObject<
           }
         }}
         disabled={agoraLegalBloqueado}
-        title={agoraLegalBloqueado ? 'Reglamento sin verificar — completa la revisión en S4.6' : undefined}
+        title={agoraLegalBloqueado ? 'Reglamento sin verificar — complete la revisión en M03B · Marco legal' : undefined}
         className={
           agoraLegalBloqueado
             ? 'bg-[#A8A49C] text-white text-[13px] font-medium px-5 py-3 rounded-[12px] shadow-lg cursor-not-allowed opacity-60 flex items-center gap-2'

@@ -1,0 +1,94 @@
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { describe, expect, it } from 'vitest'
+import { AUDIENCE_MODULES } from '@/lib/audienceModules'
+import {
+  FUNCTIONARY_MODULE_ORDER,
+  LEGACY_MODULE_ALIASES,
+  MODULE_NUMBERS,
+  resolveModuleId,
+} from '@/lib/chapterConfig'
+import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
+import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+
+const readFrontend = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
+
+const BASE_CTX = {
+  territorio: 'ZM San Luis Potosí',
+  scope: 'zm' as const,
+  municipiosCount: 3,
+}
+
+const JOURNEY_IDS = AUDIENCE_MODULES.functionary
+
+describe('editorial inventory', () => {
+  it('cada módulo del recorrido funcionario tiene brief editorial', () => {
+    const missing: string[] = []
+    for (const id of JOURNEY_IDS) {
+      const brief = getModuleEditorialBrief(id, BASE_CTX)
+      if (!brief) missing.push(id)
+    }
+    expect(missing, `Sin brief: ${missing.join(', ')}`).toEqual([])
+  })
+
+  it('resolveModuleId cubre todos los IDs canónicos del journey', () => {
+    for (const id of FUNCTIONARY_MODULE_ORDER) {
+      expect(resolveModuleId(id)).toBe(id)
+    }
+    for (const [legacy, canonical] of Object.entries(LEGACY_MODULE_ALIASES)) {
+      expect(resolveModuleId(legacy)).toBe(canonical)
+    }
+  })
+
+  it('registry incluye todos los módulos del journey excepto guía', () => {
+    for (const id of FUNCTIONARY_MODULE_ORDER) {
+      expect(CLIENT_FUNCTIONARY_MODULES[id], `Falta registry: ${id}`).toBeDefined()
+    }
+  })
+
+  it('no contiene strings editoriales prohibidos en simulador', () => {
+    const paths = [
+      'src/components/simulator/stacks/GuiaCircularidadStack.tsx',
+      'src/components/simulator/stacks/DobleMaterialidadStack.tsx',
+      'src/components/simulator/FloatingCTA.tsx',
+      'src/components/simulator/GovernancePanel.tsx',
+      'src/components/simulator/NarrativeBridge.tsx',
+      'src/app/simulator/renderDecisionModule.tsx',
+      'src/lib/simulator/clientModuleRegistry.ts',
+      'src/lib/simulator/functionaryJourneyEnrichment.ts',
+      'src/data/moduleEditorialBriefs.ts',
+    ]
+    const forbidden = [
+      /Steps for Circularity/,
+      /ALQUIMIA Platform/,
+      /\bS4\.6\b/,
+      /16 módulos/,
+      /19 módulos anteriores/,
+      /Narrativa en 5 pasos/,
+      /consultor senior/,
+      /deja dinero sobre la mesa/,
+      /FUNCTIONARY_MODULE_LABELS/,
+    ]
+    for (const p of paths) {
+      const src = readFrontend(p)
+      for (const pattern of forbidden) {
+        expect(src, `${p} contiene ${pattern}`).not.toMatch(pattern)
+      }
+    }
+  })
+
+  it('enrichment no sobrescribe labels del registry', () => {
+    const src = readFrontend('src/lib/simulator/functionaryJourneyEnrichment.ts')
+    expect(src).toContain('enrichFunctionaryModules')
+    expect(src).not.toMatch(/FUNCTIONARY_MODULE_LABELS\[.*\].*label/)
+    expect(src).not.toContain('FUNCTIONARY_MODULE_LABELS')
+  })
+
+  it('referencias M en briefs coinciden con MODULE_NUMBERS', () => {
+    const briefSrc = readFrontend('src/data/moduleEditorialBriefs.ts')
+    const refs = [...briefSrc.matchAll(/\bM(\d+[A-Z]?)\b/g)].map(m => m[1]!)
+    const valid = new Set(Object.values(MODULE_NUMBERS))
+    const invalid = refs.filter(r => !valid.has(r))
+    expect(invalid, `Referencias M inválidas: ${[...new Set(invalid)].join(', ')}`).toEqual([])
+  })
+})

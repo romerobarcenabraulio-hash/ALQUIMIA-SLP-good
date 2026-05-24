@@ -1,6 +1,6 @@
 'use client'
 /**
- * S4.6 — Diagnóstico Jurídico Municipal
+ * M03B · Marco legal — Diagnóstico Jurídico Municipal
  *
  * Principio: Una ZM no es un municipio.
  * Flujo principal: municipios activos primero (capa municipal).
@@ -126,7 +126,7 @@ function diagnosticoTituloTeaser() {
   return (
     <div className="mb-4">
       <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
-        S4.6 — Diagnóstico jurídico municipal
+        M03B · Marco legal — Diagnóstico jurídico municipal
       </p>
     </div>
   )
