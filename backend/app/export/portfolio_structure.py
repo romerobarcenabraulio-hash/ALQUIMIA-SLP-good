@@ -18,7 +18,7 @@ ANALISIS_DOC_PATTERNS: list[str] = [
 
 # task_id → stems de DOCX en entregables/ de la etapa
 ETAPA_ENTREGABLES: dict[str, list[str]] = {
-    "T01": ["10_", "02_"],
+    "T01": ["10_", "02_", "03b_"],
     "T02": [],
     "T03": ["03_", "04_"],
     "T04": [],

@@ -382,6 +382,27 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         ],
       }
 
+    case 'roadmap_implementacion':
+      return {
+        moduleId: resolvedId,
+        title: 'Las 5 fases que gobiernan la implementación municipal',
+        pregunta_guia: '¿En qué fase institucional estamos y qué actividades y prerequisitos corresponden?',
+        subtitulo_catchy: 'G1–G5: de Cabildo a cobertura total en 24 meses',
+        situacion_actual: `Sin una narrativa de fases clara, ${territorio} mezcla hitos políticos (Cabildo, concesión) con tareas operativas (obra, rutas) y pierde el hilo de control.`,
+        observacion_alquimia: `${scope} KRONOS unifica gates G1–G5 con actividades T01–T15 y riesgos R01–R06 por fase.`,
+        criterio_decision: 'Confirmar gate actual, prerequisitos abiertos y actividades de la fase antes de avanzar al detalle Gantt o a operación.',
+        que_no_significa: 'No sustituye el acta de Cabildo, contrato de concesión ni reporte EVM — es la brújula de implementación.',
+        siguiente_accion: 'Revisar prerequisitos de la fase seleccionada y validar en M21B antes de cerrar el gate.',
+        fuente_o_evidencia: 'GATE_DEFINITIONS KRONOS, Gantt builder T01–T15, registro de riesgos R01–R06.',
+        metodologia_editorial: {
+          como_se_calcula: 'Cada fase G1–G5 merge definiciones institucionales con actividades T01–T15 (campo fase_gate) y riesgos por gate_afectado.',
+          origen_datos: 'backend/app/planning/narrative.py, gate_tracker.py, builder.py, risk_register.py.',
+          por_que_este_enfoque: 'Una sola vista evita confundir gates institucionales (G1–G5) con actividades Gantt (G01–G14).',
+          supuesto_critico: 'El gate actual se infiere del primer gate no cruzado; en Fase 0–1 todos pueden estar NO_INICIADO.',
+        },
+        chart_briefs: [],
+      }
+
     case 'plan_maestro':
       return {
         moduleId: resolvedId,

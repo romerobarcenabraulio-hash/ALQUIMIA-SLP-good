@@ -28,6 +28,7 @@ logger = logging.getLogger(__name__)
 DOC_EJECUTIVO         = "01_resumen_ejecutivo_municipal"
 DOC_TECNICO_FINANCIERO = "02_modelo_tecnico_financiero"
 DOC_JURIDICO_PREFIX   = "03_diagnostico_reforma"   # + _{municipio_id}
+DOC_RIESGO            = "03b_matriz_riesgos_municipales"
 DOC_METROPOLITANO     = "04_coordinacion_metropolitana"
 DOC_OPERATIVO         = "05_manual_operativo_90_dias"
 DOC_CIUDADANO         = "06_guia_ciudadana_separacion"
@@ -199,6 +200,40 @@ def spec_juridico_municipal(municipio_id: str) -> DocumentSpec:
         tono="jurídico-técnico",
         lecturabilidad_objetivo="especialista-jurídico",
         max_paginas=25,
+    )
+
+
+def spec_riesgo_municipal(municipio_id: str, zm: str) -> DocumentSpec:
+    """03b — Matriz de riesgos municipal (semáforo determinístico)."""
+    return DocumentSpec(
+        document_id=f"{DOC_RIESGO}_{municipio_id}",
+        titulo=f"Matriz de Riesgos — {municipio_id.replace('-', ' ').title()} / {zm}",
+        audiencia=[
+            "Presidencia Municipal",
+            "Tesorería",
+            "Contraloría",
+            "Dirección de Servicios Públicos",
+        ],
+        decision_que_habilita=(
+            "Identificar riesgos críticos antes de autorizar inversión y operación del programa"
+        ),
+        nivel=DocumentNivel.tecnico,
+        secciones_obligatorias=[
+            "1. Resumen semáforo (4 dimensiones)",
+            "2. Riesgo de mercado / colocación",
+            "3. Riesgo operativo",
+            "4. Riesgo político-institucional",
+            "5. Riesgo jurídico-regulatorio",
+            "6. Mitigaciones prioritarias",
+        ],
+        tablas_obligatorias=[
+            "Matriz de riesgos: dimensión, score, semáforo, mitigación",
+        ],
+        fuentes_minimas=["KPIs del simulador", "Diagnóstico jurídico municipal"],
+        criterios_de_bloqueo=["Sin KPIs ni contexto municipal"],
+        tono="técnico-ejecutivo",
+        lecturabilidad_objetivo="especialista",
+        max_paginas=8,
     )
 
 
@@ -622,6 +657,7 @@ def build_document_plan(bundle: ScenarioBundle) -> DocumentPlan:
     for municipio_id in bundle.municipios_activos:
         if bundle.tiene_legal_para_municipio(municipio_id):
             specs.append(spec_juridico_municipal(municipio_id))
+            specs.append(spec_riesgo_municipal(municipio_id, bundle.zm))
         else:
             municipios_sin_legal.append(municipio_id)
             warnings.append(

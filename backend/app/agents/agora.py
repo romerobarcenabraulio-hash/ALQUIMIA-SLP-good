@@ -293,6 +293,7 @@ async def run_agora(
         "flota":         DocumentNivel.operativo,
         "territorio":    DocumentNivel.operativo,
         "supply_chain":  DocumentNivel.operativo,
+        "riesgo":        DocumentNivel.tecnico,
     }
 
     await report(18, f"Arquitecto Jurídico — Diagnosticando reglamentos ({', '.join(bundle.municipios_activos[:2])})...")
@@ -306,6 +307,7 @@ async def run_agora(
     flota_prompt       = _load_prompt("flota")
     territorio_prompt  = _load_prompt("territorio")
     supply_chain_prompt = _load_prompt("supply_chain")
+    riesgo_prompt       = _load_prompt("riesgo")
 
     def _spec_by_doc_id(plan: DocumentPlan, doc_id: str):
         """Retorna el spec con ese document_id exacto, o fallback al primero."""
@@ -315,7 +317,7 @@ async def run_agora(
         return plan.specs[0] if plan.specs else _default_spec()
 
     from app.agents.document_specs import (
-        DOC_RUTAS, DOC_FLOTA, DOC_TERRITORIO, DOC_SUPPLY_CHAIN,
+        DOC_RIESGO, DOC_RUTAS, DOC_FLOTA, DOC_TERRITORIO, DOC_SUPPLY_CHAIN,
         DOC_TECNICO_FINANCIERO,
     )
 
@@ -370,6 +372,16 @@ async def run_agora(
                          _spec_by_doc_id(document_plan, DOC_SUPPLY_CHAIN),
                          draft_bundle),
             supply_chain_prompt, plan_input, output,
+        ),
+        _call_agent_with_context(
+            AgentContext("riesgo", bundle,
+                         next(
+                             (s for s in document_plan.specs
+                              if s.document_id.startswith(DOC_RIESGO)),
+                             _get_spec_for_nivel(document_plan, DocumentNivel.tecnico),
+                         ),
+                         draft_bundle),
+            riesgo_prompt, plan_input, output,
         ),
         return_exceptions=True,
     )
@@ -1003,7 +1015,7 @@ def _store_agent_output(agent_name: str, content: str, output: PlanOutput) -> No
         output.reporte_ejecutivo = content
     elif agent_name == "director":
         output.plan_impl = content
-    elif agent_name in ("rutas", "flota", "territorio", "supply_chain"):
+    elif agent_name in ("rutas", "flota", "territorio", "supply_chain", "riesgo"):
         # Almacenar en operations_summary como sub-clave
         if output.modelo_cfo is None:
             output.modelo_cfo = {}
@@ -1013,6 +1025,9 @@ def _store_agent_output(agent_name: str, content: str, output: PlanOutput) -> No
 def _get_template_text(agent_name: str, p: PlanInput) -> str:
     """Retorna el texto de template para un agente dado."""
     kpis = p.kpis_json or {}
+    legal = (p.scenario_json or {}).get("legal_municipal") or {}
+    brecha = legal.get("brecha_critica") or legal.get("brecha") or "pendiente de diagnóstico verificable"
+    score_legal = legal.get("score_legal") or kpis.get("score_legal") or "N/D"
     templates = {
         "arquitecto": f"""# DIAGNÓSTICO REGLAMENTARIO — {p.municipio.upper()}
 
@@ -1022,9 +1037,10 @@ instrumento equivalente antes de proponer obligaciones, sanciones o reformas.
 La ZM {p.zm} sólo sirve como lectura territorial y no sustituye al municipio.
 
 ## 2. Brechas identificadas
+- Brecha crítica: {brecha}
+- Score legal municipal: {score_legal}
 - Reglamento municipal: pendiente de fuente verificable en este fallback.
 - Sancionalidad: pendiente de validación jurídica municipal.
-- Operación, bitácora, inspección y capacidad: pendientes de evidencia municipal.
 
 ## 3. Marco legal de referencia
 - LGPGIR y NOM aplicables sólo como marco general de referencia.
@@ -1054,9 +1070,23 @@ evidencia operativa suficiente.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 
-        "comparador": f"""# BENCHMARK LATAM — {p.municipio.upper()}
+        "comparador": f"""# MODELO TÉCNICO-FINANCIERO — {p.municipio.upper()}
 
-## Comparables
+## Indicadores del simulador (escenario base)
+
+| KPI | Valor | Nota |
+|-----|-------|------|
+| TIR | {kpis.get('tir', 'N/D')}% | calculado_modelo |
+| VPN | ${kpis.get('vpn', 0):,.0f} MXN | calculado_modelo |
+| CAPEX total | ${kpis.get('capex_total', 0):,.0f} MXN | calculado_modelo |
+| Payback | {kpis.get('payback_meses', 'N/D')} meses | calculado_modelo |
+| EBITDA | ${kpis.get('ebitda', 0):,.0f} MXN | calculado_modelo |
+
+## Contexto jurídico-financiero
+- Brecha crítica municipal: {brecha}
+- Score legal: {score_legal}
+
+## Comparables LATAM
 
 | Caso comparable | Condición habilitante | Diferencia crítica | Fuente |
 |------------------|-----------------------|--------------------|--------|
@@ -1064,8 +1094,7 @@ Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 
 ## Posicionamiento de {p.municipio}
 No se puede posicionar al municipio frente a ciudades latinoamericanas sin
-fuentes comparables, metodología y condición habilitante. Este fallback conserva
-la comparación como pendiente, no como conclusión.
+fuentes comparables. Los KPIs anteriores provienen del simulador ALQUIMIA.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
 
@@ -1239,6 +1268,23 @@ con composición RSU municipal, (c) comprador confirmado por material.
 
 ## 5. Riesgo de no-colocación
 Materiales sin comprador: vidrio, orgánicos — identificar mercado antes de arrancar.
+
+Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
+
+        "riesgo": f"""# MATRIZ DE RIESGOS — {p.municipio.upper()}
+
+## Semáforo ejecutivo (fallback determinístico)
+
+| Dimensión | Score | Semáforo | Mitigación prioritaria |
+|-----------|-------|---------|------------------------|
+| Mercado / colocación | {min(100, max(0, int(100 - float(kpis.get('tir') or 15))))} | {'🔴' if float(kpis.get('tir') or 0) < 12 else '🟡' if float(kpis.get('tir') or 0) < 18 else '🟢'} | Diversificar compradores antes de arranque |
+| Operativo | 35 | 🟡 | Capacitación y piloto en zona acotada |
+| Político-institucional | {kpis.get('score_politico', 50)} | {'🔴' if int(kpis.get('score_politico') or 50) < 50 else '🟡'} | Acuerdo de cabildo y comunicación temprana |
+| Jurídico-regulatorio | {score_legal} | {'🔴' if str(score_legal).replace('%','').isdigit() and float(str(score_legal).replace('%','')) < 60 else '🟡'} | {brecha} |
+
+## Nota metodológica
+Scores calculados con reglas determinísticas del fallback ÁGORA. Validar con
+diagnóstico jurídico y estudio de mercado antes de decisión de inversión.
 
 Generado por ÁGORA GOV · Plataforma ALQUIMIA""",
     }

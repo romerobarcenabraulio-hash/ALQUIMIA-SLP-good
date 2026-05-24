@@ -155,9 +155,15 @@ function buildRichTransition(
       return {
         kicker: 'Diagnóstico cerrado · abre Planificación',
         title: labelFor(nextId),
-        summary: `Con la teoría de cambio armada y una meta de captura de ${pctCap} al año ${horizStr}, el siguiente paso es traducir el diagnóstico en plan: fases de implementación, responsables, calendario y despliegue territorial.`,
+        summary: `Con la teoría de cambio armada y una meta de captura de ${pctCap} al año ${horizStr}, el siguiente paso es el roadmap G1–G5: fases institucionales, actividades y gates antes del detalle operativo.`,
       }
     }
+    case 'roadmap_implementacion':
+      return {
+        kicker: 'El roadmap traduce la teoría en fases',
+        title: labelFor(nextId),
+        summary: 'Las 5 fases institucionales (G1–G5) agrupan actividades T01–T15, prerequisitos y riesgos. Confirma la fase actual antes del plan maestro detallado.',
+      }
     case 'plan_maestro':
       return {
         kicker: 'Las metas requieren ruta crítica',
