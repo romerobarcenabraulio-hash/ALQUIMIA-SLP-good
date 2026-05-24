@@ -4,7 +4,7 @@ import { useState, useMemo, type ReactNode } from 'react'
 import {
   ArrowRight, ChevronDown, Recycle,
   BarChart3, Scale, Target,
-  CheckCircle2, MapPin, Leaf,
+  CheckCircle2, MapPin,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -158,13 +158,11 @@ function buildGuideSteps(): StepDef[] {
 const GUIDE_STEPS = buildGuideSteps()
 
 function EditorialSection({
-  kicker,
   title,
   children,
   accentColor,
   className,
 }: {
-  kicker: string
   title: string
   children: ReactNode
   accentColor?: string
@@ -175,10 +173,7 @@ function EditorialSection({
       className={cn('pl-5 border-l-[3px] py-1', className)}
       style={{ borderColor: accentColor ?? 'var(--surface-border)' }}
     >
-      <p className="text-[10px] uppercase tracking-[0.08em] text-gray-400c font-semibold mb-2">
-        {kicker}
-      </p>
-      <h2 className="font-serif text-[20px] font-bold text-gray-900c mb-4">{title}</h2>
+      <p className="text-[14px] font-semibold text-gray-900c mb-3">{title}</p>
       {children}
     </section>
   )
@@ -232,44 +227,26 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
   return (
     <div className="space-y-10">
-      {/* Hero — full bleed dentro del content area */}
-      <section className="-mx-6 bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white px-6 py-8 relative overflow-hidden">
+      <section className="-mx-6 bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white px-6 py-7 relative overflow-hidden">
         <div className="absolute top-4 right-4 opacity-10">
           <Recycle size={120} strokeWidth={0.8} />
         </div>
         <div className="relative z-10 max-w-3xl">
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8D78A] font-semibold mb-3">
-            Guía de lectura · Plataforma ALQUIMIA
-          </p>
-          <h1 className="font-serif text-[28px] leading-[1.2] font-bold mb-4">
+          <h1 className="text-[22px] leading-[1.25] font-bold mb-3">
             Pasos hacia la circularidad
           </h1>
-          <p className="text-[15px] leading-[1.75] text-white/90 max-w-2xl">
-            ALQUIMIA apoya la planeación circular de RSU en municipios mexicanos. Esta guía explica
-            cómo leer el simulador antes de presentar cifras al Cabildo. La pregunta central:{' '}
-            <strong className="text-white">
-              ¿puede {municipiosActivos.length === 1 ? municipioNarrativa : 'un municipio mexicano'} convertir sus residuos sólidos urbanos en valor
-              económico, empleos y calidad de vida?
-            </strong>
+          <p className="text-[14px] leading-[1.7] text-white/90 max-w-2xl">
+            Guía de lectura del simulador — {MODULE_COUNT} módulos en {CHAPTER_COUNT} capítulos.
+            Pregunta central: ¿puede{' '}
+            {municipiosActivos.length === 1 ? municipioNarrativa : 'un municipio mexicano'}{' '}
+            convertir RSU en valor económico, empleos y calidad de vida?
           </p>
-          <div className="flex flex-wrap items-center gap-2 mt-5">
-            <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              {MODULE_COUNT} módulos de análisis
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              {CHAPTER_COUNT} capítulos consultivos
-            </span>
-            <span className="px-3 py-1 rounded-full bg-white/15 text-[11px] font-semibold">
-              Fuentes documentadas por módulo
-            </span>
-          </div>
         </div>
       </section>
 
       <NarrativaIntroBridge />
 
       <EditorialSection
-        kicker="El contexto"
         title="¿Por qué el RSU es un problema de política pública?"
         accentColor="#3B6D11"
       >
@@ -288,14 +265,12 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
       </EditorialSection>
 
       <EditorialSection
-        kicker="Cómo leer esta plataforma"
         title="Cómo leer el simulador por capítulos"
         accentColor="#1A5FA8"
       >
-        <p className="text-[13px] leading-[1.85] text-gray-600c mb-5">
-          Tras esta guía encontrarás {MODULE_COUNT} módulos en cuatro capítulos: diagnóstico,
-          planificación, modelo de negocio y control. Cada cifra muestra fórmula, fuente y nivel de
-          certeza. El panel lateral derecho detalla la metodología de cada pantalla.
+        <p className="text-[13px] leading-[1.75] text-gray-600c mb-5">
+          {MODULE_COUNT} módulos en cuatro capítulos. Cada cifra muestra fórmula, fuente y certeza.
+          Metodología en el panel derecho (icono del libro).
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
@@ -323,22 +298,9 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             </button>
           ))}
         </div>
-
-        <div className="rounded-[10px] bg-surface-muted px-4 py-3">
-          <p className="text-[11px] text-gray-600c leading-[1.7]">
-            <strong className="text-gray-900c">Consejo:</strong> si dudas de un número, abre el
-            panel de consideraciones (icono del libro a la derecha). Ahí está el origen del dato y
-            el supuesto que más lo mueve.
-          </p>
-        </div>
       </EditorialSection>
 
-      <section>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-gray-400c font-semibold mb-3 px-1">
-          {CHAPTER_COUNT} capítulos consultivos · {municipioNarrativa}
-        </p>
-
-        <div className="space-y-3">
+      <div className="space-y-3">
           {GUIDE_STEPS.map(step => {
             const isOpen = expandedStep === step.num
             const Icon = step.icon
@@ -415,9 +377,6 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
                     </div>
 
                     <div className="rounded-[10px] bg-surface-muted p-4">
-                      <p className="text-[10px] uppercase tracking-[0.06em] text-gray-400c font-semibold mb-2">
-                        Lo que encontrarás en estos módulos
-                      </p>
                       <ul className="space-y-1.5">
                         {step.learns.map((l, i) => (
                           <li key={i} className="flex items-start gap-2 text-[12px] text-gray-600c">
@@ -432,16 +391,10 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
               </div>
             )
           })}
-        </div>
-      </section>
+      </div>
 
       <section className="pl-5 border-l-[3px] border-red-500a/40 py-1">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-red-500a font-semibold mb-2">
-          Nota importante
-        </p>
-        <h2 className="font-serif text-[16px] font-bold text-gray-900c mb-3">
-          Lo que ALQUIMIA no es
-        </h2>
+        <p className="text-[14px] font-semibold text-gray-900c mb-3">Lo que ALQUIMIA no es</p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px] text-gray-600c">
           {[
             { no: 'No es un dictamen oficial', si: 'Requiere validación del equipo jurídico y técnico del municipio.' },
@@ -457,69 +410,9 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </div>
       </section>
 
-      <EditorialSection
-        kicker="Mapa del proyecto"
-        title={`Los ${MODULE_COUNT} módulos, de un vistazo`}
-        accentColor="#4A1C7A"
-      >
-        <div className="space-y-3">
-          {GUIDE_STEPS.map((step, si) => (
-            <div key={step.num} className="rounded-[10px] overflow-hidden border border-surface-border">
-              <div
-                className="px-4 py-2.5 flex items-center gap-3 flex-wrap"
-                style={{ backgroundColor: step.bgColor }}
-              >
-                <step.icon size={14} style={{ color: step.color }} />
-                <span
-                  className="text-[10px] font-bold uppercase tracking-[0.08em]"
-                  style={{ color: step.color }}
-                >
-                  Cap. {step.num} — {step.tag}
-                </span>
-                <span className="text-[11px] text-gray-600c">{step.question}</span>
-              </div>
-              <div className="px-4 py-3 bg-surface-base flex flex-wrap gap-2 items-center">
-                {step.modules.map((m, mi) => (
-                  <div key={m.id} className="flex items-center gap-1">
-                    {mi > 0 && <span className="text-gray-400c text-[10px]">→</span>}
-                    <button
-                      type="button"
-                      onClick={() => onNavigate?.(m.id)}
-                      className={cn(
-                        'text-[11px] px-2.5 py-1 rounded-full border font-medium transition-all',
-                        onNavigate ? 'hover:shadow-sm cursor-pointer' : 'cursor-default',
-                      )}
-                      style={{
-                        borderColor: step.borderColor,
-                        backgroundColor: `${step.bgColor}80`,
-                        color: step.color,
-                      }}
-                    >
-                      {m.label}
-                    </button>
-                  </div>
-                ))}
-                {si < GUIDE_STEPS.length - 1 && (
-                  <span className="ml-auto text-[10px] text-gray-400c flex items-center gap-1">
-                    continúa <ArrowRight size={10} />
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-        <p className="mt-3 text-[11px] text-gray-400c">
-          Haz clic en cualquier módulo para ir directo, o avanza secuencialmente con los botones inferiores.
-        </p>
-      </EditorialSection>
-
-      <section className="rounded-[12px] bg-green-50a p-6 text-center border-l-[3px] border-green-500a">
-        <Leaf size={28} className="mx-auto mb-3 text-green-500a" />
-        <h2 className="font-serif text-[18px] font-bold text-green-700a mb-2">
-          Comienza el diagnóstico
-        </h2>
+      <section className="rounded-[12px] bg-green-50a p-5 text-center border-l-[3px] border-green-500a">
         <p className="text-[13px] text-green-600a mb-4 max-w-lg mx-auto">
-          {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} para ver la línea base de{' '}
+          {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} — línea base de{' '}
           {municipiosActivos.length === 1 ? municipioNarrativa : 'su municipio'}.
         </p>
         {onNavigate ? (
