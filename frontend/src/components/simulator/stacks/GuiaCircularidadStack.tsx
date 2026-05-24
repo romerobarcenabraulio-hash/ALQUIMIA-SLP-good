@@ -196,13 +196,15 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
   const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
   const mixCAs = useSimulatorStore(s => s.mixCAs)
 
-  const municipio = useMemo(
-    () => getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva),
-    [municipiosActivos, zmActiva],
-  )
+  const municipioNarrativa = useMemo(() => {
+    if (municipiosActivos.length === 1) {
+      return getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
+    }
+    return 'Un municipio mexicano'
+  }, [municipiosActivos, zmActiva])
 
   const ctx: NarrativeCtx = useMemo(() => ({
-    municipio,
+    municipio: municipioNarrativa,
     rsuTonDia: resultados?.rsuTotalTonDia ?? 0,
     pctCaptura: pctCapturaPorAño[horizonte - 1] ?? 70,
     empleos: resultados?.empleosTotalesDirectos ?? 0,
@@ -211,7 +213,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
     horizonte,
     nCAs: (mixCAs.P ?? 0) + (mixCAs.M ?? 0) + (mixCAs.G ?? 0),
     tir: resultados?.tir ?? 0,
-  }), [municipio, resultados, horizonte, pctCapturaPorAño, mixCAs])
+  }), [municipioNarrativa, resultados, horizonte, pctCapturaPorAño, mixCAs])
 
   const [expandedStep, setExpandedStep] = useState<number | null>(1)
 
@@ -246,7 +248,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             ALQUIMIA apoya la planeación circular de RSU en municipios mexicanos. Esta guía explica
             cómo leer el simulador antes de presentar cifras al Cabildo. La pregunta central:{' '}
             <strong className="text-white">
-              ¿puede {municipio || 'este municipio'} convertir sus residuos sólidos urbanos en valor
+              ¿puede {municipiosActivos.length === 1 ? municipioNarrativa : 'un municipio mexicano'} convertir sus residuos sólidos urbanos en valor
               económico, empleos y calidad de vida?
             </strong>
           </p>
@@ -333,7 +335,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
       <section>
         <p className="text-[10px] uppercase tracking-[0.08em] text-gray-400c font-semibold mb-3 px-1">
-          {CHAPTER_COUNT} capítulos consultivos · {municipio}
+          {CHAPTER_COUNT} capítulos consultivos · {municipioNarrativa}
         </p>
 
         <div className="space-y-3">
@@ -518,7 +520,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </h2>
         <p className="text-[13px] text-green-600a mb-4 max-w-lg mx-auto">
           {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} para ver la línea base de{' '}
-          {municipio || 'su municipio'}.
+          {municipiosActivos.length === 1 ? municipioNarrativa : 'su municipio'}.
         </p>
         {onNavigate ? (
           <button

@@ -84,6 +84,15 @@ describe('editorial inventory', () => {
     expect(src).not.toContain('FUNCTIONARY_MODULE_LABELS')
   })
 
+  it('guía M00 no ancla copy a un territorio concreto', () => {
+    const brief = getModuleEditorialBrief('guia_circularidad', {
+      ...BASE_CTX,
+      territorio: 'ZM San Luis Potosí',
+    })
+    expect(brief?.situacion_actual).not.toContain('ZM San Luis Potosí')
+    expect(brief?.situacion_actual).toMatch(/cualquier municipio de México/i)
+  })
+
   it('referencias M en briefs coinciden con MODULE_NUMBERS', () => {
     const briefSrc = readFrontend('src/data/moduleEditorialBriefs.ts')
     const refs = [...briefSrc.matchAll(/\bM(\d+[A-Z]?)\b/g)].map(m => m[1]!)

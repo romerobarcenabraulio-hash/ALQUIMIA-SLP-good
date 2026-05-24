@@ -462,6 +462,8 @@ function ModuleContextHeader({
   const activeTrajectoryLabel = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
   const isRecommended = presetTrayectoria === horizonHint.presetId
 
+  const isNationalGuide = moduleId === 'guia_circularidad'
+
   return (
     <header
       className="mb-5 pb-5 border-b border-surface-border"
@@ -525,8 +527,8 @@ function ModuleContextHeader({
         )
       )}
 
-      {/* Escenario activo — una línea bajo el subtítulo */}
-      {moduleId !== 'city_baseline' && (
+      {/* Escenario activo — una línea bajo el subtítulo (omitido en guía nacional M00) */}
+      {moduleId !== 'city_baseline' && !isNationalGuide && (
         <p className="mt-2 text-[12px] text-[#6B6760] leading-snug">
           <span className="inline-flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
@@ -552,7 +554,7 @@ function ModuleContextHeader({
         </p>
       )}
 
-      {territorio && moduleId !== 'city_baseline' && (
+      {territorio && moduleId !== 'city_baseline' && !isNationalGuide && (
         <p className="mt-2.5 text-[12px] text-[#6B6760]">
           Territorio de lectura:{' '}
           <span className="font-medium text-[#1C1B18]">{territorio}</span>
