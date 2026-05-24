@@ -10,8 +10,10 @@ import {
   fetchAgoraPlanZip,
   triggerBrowserDownload,
 } from '@/lib/api'
+import { isPlatformDeveloper } from '@/lib/authSession'
 import { EXPORT_DISCLAIMER } from '@/lib/consultingDeliverables'
 import { snapshotFuentesUsadas } from '@/lib/snapshotFuentes'
+import { buildExecutivePdfContext } from '@/lib/executivePdfContext'
 
 export type ExportAction = 'executive_pdf' | 'master_index' | 'full_zip' | 'hub_professional' | 'share_url'
 
@@ -38,6 +40,7 @@ export function useConsultingExport() {
         st.presetTrayectoria,
         st.snapshotDatos,
         r,
+        st.seleccionMunicipioCatalog,
       ),
     }
   }, [])
@@ -61,6 +64,12 @@ export function useConsultingExport() {
         return
       }
 
+      const stGate = useSimulatorStore.getState()
+      if (!isPlatformDeveloper() && !stGate.municipioPdfHabilitado) {
+        setError('Suba el PDF del reglamento municipal para habilitar exportaciones.')
+        return
+      }
+
       if (!payload) {
         setError('Complete la línea base (M01) antes de generar documentos.')
         return
@@ -70,12 +79,15 @@ export function useConsultingExport() {
       setLoading(true)
       try {
         if (action === 'executive_pdf') {
+          await useSimulatorStore.getState().refreshResearchFindings()
+          const stFresh = useSimulatorStore.getState()
           await downloadExecutivePdf({
-            zm: st.zmActiva,
-            municipio_id: st.municipiosActivos[0] ?? st.zmActiva,
+            zm: stFresh.zmActiva,
+            municipio_id: stFresh.municipiosActivos[0] ?? stFresh.zmActiva,
             municipio_nombre:
-              st.seleccionMunicipioCatalog?.nombre ?? st.cityContext?.nombre ?? st.zmActiva,
+              stFresh.seleccionMunicipioCatalog?.nombre ?? stFresh.cityContext?.nombre ?? stFresh.zmActiva,
             module_label: options?.moduleLabel,
+            contexto_municipal: buildExecutivePdfContext(stFresh),
             resultados: {
               tir: r.tir,
               vpn: r.vpn,
@@ -85,11 +97,11 @@ export function useConsultingExport() {
               co2e_evitadas_anual: r.co2eEvitadasAnualTon,
               ingresos_brutos: r.ingresosBrutos,
             },
-            snapshot_datos: st.snapshotDatos
+            snapshot_datos: stFresh.snapshotDatos
               ? {
-                  score_datos: st.snapshotDatos.score_datos,
-                  advertencias: st.snapshotDatos.advertencias?.map(a => a.advertencia) ?? [],
-                  fuentes_usadas: snapshotFuentesUsadas(st.snapshotDatos),
+                  score_datos: stFresh.snapshotDatos.score_datos,
+                  advertencias: stFresh.snapshotDatos.advertencias?.map(a => a.advertencia) ?? [],
+                  fuentes_usadas: snapshotFuentesUsadas(stFresh.snapshotDatos),
                 }
               : null,
           })

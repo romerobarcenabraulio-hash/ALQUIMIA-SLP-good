@@ -1,6 +1,7 @@
 'use client'
 
 import { DiagnosticoJuridico } from '@/components/simulator/DiagnosticoJuridico'
+import { ReglamentoCargaCiudadPanel } from '@/components/simulator/ReglamentoCargaCiudadPanel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
@@ -28,6 +29,9 @@ export function CapacidadInstitucionalStack() {
             ÁGORA: {agoraLegalBloqueado ? 'Bloqueado — complete diagnóstico jurídico' : 'Habilitado'}
           </span>
         </div>
+      </div>
+      <div id="panel-reglamento-ciudad">
+        <ReglamentoCargaCiudadPanel />
       </div>
       <DiagnosticoJuridico />
     </div>

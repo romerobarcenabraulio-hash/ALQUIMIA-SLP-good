@@ -176,6 +176,13 @@ def validate_document(
             code="CAPEX_SIN_COMPLIANCE",
         ))
 
+    # EIDOS — terminología y registro (solo warnings, no bloquea)
+    try:
+        from app.agents.eidos_linter import lint_draft_document
+        issues.extend(lint_draft_document(draft))
+    except Exception as exc:
+        logger.debug("EIDOS linter omitido: %s", exc)
+
     # Claims sin evidencia
     if draft.claim_ledger:
         sin_evidencia = draft.claim_ledger.claims_sin_evidencia()

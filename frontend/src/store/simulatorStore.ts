@@ -25,7 +25,7 @@ import { PRECIOS_DEFAULTS, PRESETS_TRAYECTORIA, ZMS, alquimiaHideGdlFromUi } fro
 import { OPEX_LOGISTICA_DEFAULTS, deriveCostoDisposicionPorTon, deriveDistanciaRelleno, deriveCapacidadRelleno, deriveMermaLogPct, deriveMixCasFromPoblacion } from '@/lib/financeLogisticsCalc'
 import { calcular, calcularEscenarioSinPrograma } from '@/lib/calculator'
 import { deriveMixCasFromHorizonte } from '@/lib/despliegueOperativoSeries'
-import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch } from '@/lib/api'
+import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, apiFetch, fetchResearchFindings } from '@/lib/api'
 import { ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY } from '@/data/organigramaDiagnostico'
 import { migrateSimulatorPersistedState, propuestaSlotsVacios } from '@/store/simulatorPersistMigrate'
 
@@ -125,6 +125,11 @@ interface SimulatorStore extends SimulatorState {
   propuestaActivaIdx: number | null
   /** Onboarding obligatorio cliente: territorio + PDF antes del simulador. */
   clientSetupComplete: boolean
+  /** PDF del reglamento cargado para municipio activo (gate exportación). */
+  municipioPdfHabilitado: boolean
+  /** Hallazgos Investigador (noticias, reglamentos, programas) — no persistido. */
+  researchFindings: Record<string, unknown> | null
+  researchFindingsLoading: boolean
 
   // Actions
   setPortalEntry:      (entry: PortalEntry) => Promise<void>
@@ -132,6 +137,8 @@ interface SimulatorStore extends SimulatorState {
   resetAudience:       () => void
   completeClientSetup: () => void
   resetClientSetup:    () => void
+  setMunicipioPdfHabilitado: (v: boolean) => void
+  refreshResearchFindings: (opts?: { refresh?: boolean }) => Promise<void>
   fetchCityPortalData: (cityId: string) => Promise<void>
   setZM:               (id: string) => void
   applyMunicipioCatalog: (row: MunicipioMxApi) => void
@@ -307,13 +314,43 @@ export const useSimulatorStore = create<SimulatorStore>()(
         activeDecisionModuleId: null,
         propuestaActivaIdx: null,
         clientSetupComplete: false,
+        municipioPdfHabilitado: false,
+        researchFindings: null,
+        researchFindingsLoading: false,
 
         completeClientSetup: () => {
           set({ clientSetupComplete: true })
         },
 
         resetClientSetup: () => {
-          set({ clientSetupComplete: false })
+          set({ clientSetupComplete: false, municipioPdfHabilitado: false, researchFindings: null })
+        },
+
+        setMunicipioPdfHabilitado: (v) => { set({ municipioPdfHabilitado: v }) },
+
+        refreshResearchFindings: async (opts) => {
+          const st = get()
+          const mid = st.municipiosActivos[0]
+          if (!mid) {
+            set({ researchFindings: null })
+            return
+          }
+          const sel = st.seleccionMunicipioCatalog
+          set({ researchFindingsLoading: true })
+          try {
+            const data = await fetchResearchFindings({
+              municipio_id: mid,
+              zm_id: st.zmActiva,
+              municipio_nombre: sel?.nombre ?? mid,
+              estado: sel?.estadoNombre ?? '',
+              refresh: opts?.refresh ?? false,
+            })
+            set({ researchFindings: data })
+          } catch {
+            set({ researchFindings: null })
+          } finally {
+            set({ researchFindingsLoading: false })
+          }
         },
 
         setActiveDecisionModuleId: moduleId => {
@@ -466,8 +503,21 @@ export const useSimulatorStore = create<SimulatorStore>()(
           const distRelleno = deriveDistanciaRelleno(row.poblacion)
           const capRelleno = deriveCapacidadRelleno(row.poblacion, row.generacion_rsu_dia)
           const mermaLog = deriveMermaLogPct(row.poblacion)
-          if (get().zmActiva.toUpperCase() !== zmId.toUpperCase()) {
-            get().setZM(zmId)
+          const knownZm = ZMS.find(z => z.id.toUpperCase() === zmId.toUpperCase())
+          if (knownZm) {
+            if (get().zmActiva.toUpperCase() !== zmId.toUpperCase()) {
+              get().setZM(zmId)
+            }
+          } else {
+            set({
+              zmActiva: zmId,
+              snapshotDatos: null,
+              marketSummary: null,
+              macroImpactSummary: null,
+              reasoningGraph: null,
+              cityContext: null,
+              circularityBaseline: null,
+            })
           }
           set({
             municipiosActivos: [mid],
@@ -479,8 +529,16 @@ export const useSimulatorStore = create<SimulatorStore>()(
             distanciaRelleno: distRelleno,
             capacidadRelleno: capRelleno,
             mermaLogPct: mermaLog,
+            municipioPdfHabilitado: false,
+            agoraLegalBloqueado: true,
+            researchFindings: null,
           })
           get().recalcular()
+          void get().refreshResearchFindings()
+          if (knownZm) {
+            get().fetchSnapshotDatos(zmId)
+            get().fetchCityPortalData(zmId)
+          }
         },
 
         clearMunicipioSeleccion: () => {

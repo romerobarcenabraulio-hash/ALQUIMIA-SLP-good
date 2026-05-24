@@ -221,6 +221,52 @@ export async function getMunicipiosMx(estadoId?: string): Promise<MunicipioMxApi
   return res.json()
 }
 
+/** GET /research/findings — Investigador (caché Postgres o Serper con refresh). */
+export async function fetchResearchFindings(params: {
+  municipio_id: string
+  zm_id: string
+  municipio_nombre: string
+  estado?: string
+  refresh?: boolean
+}): Promise<Record<string, unknown>> {
+  const qs = new URLSearchParams({
+    municipio_id: params.municipio_id,
+    zm_id: params.zm_id,
+    municipio_nombre: params.municipio_nombre,
+    estado: params.estado ?? '',
+    refresh: params.refresh ? '1' : '0',
+  })
+  const res = await fetchWithRetry(`${getApiUrl()}/research/findings?${qs}`, {
+    headers: { 'Content-Type': 'application/json' },
+  })
+  if (!res.ok) throw new Error(`Investigador no disponible: ${res.status}`)
+  return res.json() as Promise<Record<string, unknown>>
+}
+
+/** POST /api/v1/cities/register — habilita municipio INEGI en repositorio legal. */
+export async function registerMunicipioNacional(row: MunicipioMxApi): Promise<MunicipioMxApi> {
+  const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/register`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...authHeaders() },
+    body: JSON.stringify({
+      clave_inegi: row.clave_inegi,
+      nombre: row.nombre,
+      estado: row.estado,
+      estado_id: row.estado_id,
+      municipio_simulator_id: row.municipio_simulator_id,
+    }),
+  })
+  if (!res.ok) {
+    let detail = `HTTP ${res.status}`
+    try {
+      const j = (await res.json()) as { detail?: unknown }
+      if (typeof j.detail === 'string') detail = j.detail
+    } catch { /* ignore */ }
+    throw new Error(`Registro municipal: ${detail}`)
+  }
+  return res.json() as Promise<MunicipioMxApi>
+}
+
 export async function getInegiMunicipalSourceAudit(claveInegi: string): Promise<InegiMunicipalSourceAudit> {
   const res = await fetchWithRetry(`${getApiUrl()}/api/v1/cities/${encodeURIComponent(claveInegi)}/inegi-source`, {
     headers: { 'Content-Type': 'application/json' },
@@ -377,6 +423,8 @@ export interface ExecutivePdfPayload {
     fuentes_usadas?: string[]
   } | null
   module_label?: string
+  /** Árbol de decisión, noticias, programas y grafo — varía por municipio. */
+  contexto_municipal?: Record<string, unknown> | null
 }
 
 /** PDF consultoría con portada + índice — blueprint document_id (default 01). */

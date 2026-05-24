@@ -426,13 +426,10 @@ export function DiagnosticoJuridico() {
         setPaquete(p)
         const faltaReglamentoOCatalogo = municipiosActivos.some((mid) => {
           const dm = p.paquete_municipal.find(x => x.municipio_id === mid)
-          return !dm || !pdfListoParaAnalisis(dm.diagnostic.source_manifest)
+          return !dm || !pdfListoParaAnalisis(dm.diagnostic.source_manifest) || dm.diagnostic.agora_bloqueado
         })
-        const activosBloqueadosRevision = p.paquete_municipal.some(
-          dm => municipiosActivos.includes(dm.municipio_id)
-            && (!dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document),
-        )
-        setAgoraLegalBloqueado(faltaReglamentoOCatalogo || activosBloqueadosRevision)
+        setAgoraLegalBloqueado(faltaReglamentoOCatalogo)
+        useSimulatorStore.getState().setMunicipioPdfHabilitado(!faltaReglamentoOCatalogo)
       })
       .catch(() => {
         // Sin API legal no hay fuente municipal validada: restringir sanciones/documentos oficiales.

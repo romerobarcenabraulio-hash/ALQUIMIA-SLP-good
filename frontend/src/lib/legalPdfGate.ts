@@ -2,7 +2,8 @@ import type { MunicipalLegalSourceManifest } from '@/types'
 
 /** True cuando hay PDF en plataforma y el municipio puede analizarse. */
 export function pdfListoParaAnalisis(manifest: MunicipalLegalSourceManifest | null | undefined): boolean {
-  return manifest?.ingest_status === 'descargado'
+  const status = manifest?.ingest_status
+  return status === 'descargado' || status === 'verified'
 }
 
 export const LEGAL_PDF_UPLOADED_EVENT = 'alquimia:legal-pdf-uploaded'

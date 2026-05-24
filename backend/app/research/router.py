@@ -20,6 +20,47 @@ class ResearchCacheSummary(BaseModel):
     mensaje: str
 
 
+@router.get("/findings")
+async def research_findings(
+    municipio_id: str = Query(..., min_length=1),
+    zm_id: str = Query(""),
+    municipio_nombre: str = Query(""),
+    estado: str = Query(""),
+    refresh: bool = Query(False, description="Disparar Investigador (Serper) si caché insuficiente"),
+):
+    """
+    ResearchFindings para PDF y simulador — caché Postgres o Serper bajo demanda.
+    """
+    from app.agents.schemas import ResearchFindings
+    from app.export.municipal_context import resolve_research_findings
+
+    zm = zm_id or "ZM"
+    nombre = municipio_nombre or municipio_id
+
+    if refresh and municipio_nombre:
+        try:
+            from app.agents.research_service import investigate_municipio
+
+            findings = await investigate_municipio(municipio_nombre, estado, zm)
+            return findings.model_dump(mode="json")
+        except Exception as exc:
+            return ResearchFindings(
+                zm=zm,
+                municipio=nombre,
+                advertencias=[f"Investigador no disponible: {exc}"],
+            ).model_dump(mode="json")
+
+    data = resolve_research_findings(municipio_id, zm, nombre, None)
+    if data:
+        return data
+
+    return ResearchFindings(
+        zm=zm,
+        municipio=nombre,
+        advertencias=["Sin hallazgos en caché — use refresh=1 o configure SERPER_API_KEY."],
+    ).model_dump(mode="json")
+
+
 @router.get("/cache/summary", response_model=ResearchCacheSummary)
 def research_cache_summary(
     municipio_id: Optional[str] = Query(None),

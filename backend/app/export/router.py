@@ -61,6 +61,16 @@ def export_executive_pdf(req: ExecutivePdfRequest):
     snap = req.snapshot_datos or {}
     manifest = _manifest_from_request(req.zm, req.municipio_id, req.municipio_nombre, snap)
     package_id = f"sim-{uuid.uuid4().hex[:12]}"
+
+    from app.export.municipal_context import merge_municipal_context
+
+    ctx = merge_municipal_context(
+        req.municipio_id,
+        req.contexto_municipal,
+        zm=req.zm,
+        municipio_nombre=req.municipio_nombre,
+    )
+
     pdf_bytes, reason = render_consulting_document_pdf(
         document_id=doc_id,
         manifest=manifest,
@@ -69,6 +79,7 @@ def export_executive_pdf(req: ExecutivePdfRequest):
         theme_municipio=req.municipio_nombre or req.municipio_id,
         package_id=package_id,
         module_label=req.module_label or "",
+        contexto_municipal=ctx,
     )
     if not pdf_bytes:
         raise HTTPException(status_code=503, detail=reason or "PDF no disponible")

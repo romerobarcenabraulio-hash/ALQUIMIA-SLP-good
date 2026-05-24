@@ -14,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+from app.agents.eidos_glossary import compact_glossary_for_prompt
 from app.agents.schemas import DocumentSpec, EvidencePack, ScenarioBundle
 
 
@@ -245,6 +246,7 @@ def build_agent_prompt(
         "  - Primera frase de cada sección explica POR QUÉ importa.",
         "  - Cada sección técnica cierra con 'Implicación para la decisión'.",
     ]
+    system_lines.append("\n" + compact_glossary_for_prompt(getattr(spec, "tono", None)))
     system_lines.extend(_format_municipal_intelligence_block(bundle))
 
     # ── User context ──────────────────────────────────────────────────────────

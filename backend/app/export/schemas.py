@@ -136,7 +136,11 @@ class ExportResponse(BaseModel):
 
 
 class ExecutivePdfRequest(BaseModel):
-    """Payload para PDF ejecutivo desde simulador (sin paquete ÁGORA previo)."""
+    """Payload para PDF ejecutivo desde simulador (sin paquete ÁGORA previo).
+
+    contexto_municipal: árbol de decisión, noticias, programas y grafo causal —
+    varía por municipio; el backend enriquece con diagnóstico jurídico del PDF cargado.
+    """
     zm: str = "ZM"
     municipio_id: str
     municipio_nombre: str = ""
@@ -144,6 +148,7 @@ class ExecutivePdfRequest(BaseModel):
     resultados: Optional[Dict[str, float]] = None
     snapshot_datos: Optional[Dict[str, object]] = None
     module_label: Optional[str] = None
+    contexto_municipal: Optional[Dict[str, object]] = None
 
 
 class IndexPdfRequest(BaseModel):

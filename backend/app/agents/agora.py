@@ -89,6 +89,8 @@ class AgentContext:
     spec:         object    # DocumentSpec — evita import circular en type hint
     draft_bundle: DraftBundle
     evidence_pack: Optional[object] = field(default=None)   # EvidencePack opcional
+    populate_draft: bool = True   # False: solo PlanOutput legacy (ej. Mapeador JSON)
+    overwrite_draft: bool = False  # True: Humanizador puede reescribir secciones existentes
 
 
 @dataclass
@@ -314,7 +316,12 @@ async def run_agora(
 
     from app.agents.document_specs import (
         DOC_RUTAS, DOC_FLOTA, DOC_TERRITORIO, DOC_SUPPLY_CHAIN,
+        DOC_TECNICO_FINANCIERO,
     )
+
+    _LOGISTICS_DOC_IDS = frozenset({
+        DOC_RUTAS, DOC_FLOTA, DOC_TERRITORIO, DOC_SUPPLY_CHAIN,
+    })
 
     await asyncio.gather(
         # ── Agentes existentes ───────────────────────────────────────────────
@@ -326,14 +333,17 @@ async def run_agora(
         ),
         _call_agent_with_context(
             AgentContext("comparador", bundle,
-                         _get_spec_for_nivel(document_plan, DocumentNivel.financiero),
+                         _spec_by_doc_id(document_plan, DOC_TECNICO_FINANCIERO)
+                         if any(s.document_id == DOC_TECNICO_FINANCIERO for s in document_plan.specs)
+                         else _get_spec_for_nivel(document_plan, DocumentNivel.financiero),
                          draft_bundle),
             comparador_prompt, plan_input, output,
         ),
         _call_agent_with_context(
             AgentContext("mapeador", bundle,
                          _get_spec_for_nivel(document_plan, DocumentNivel.ejecutivo),
-                         draft_bundle),
+                         draft_bundle,
+                         populate_draft=False),
             mapeador_prompt, plan_input, output,
         ),
         # ── Agentes logísticos Wave 1 (paralelo con los anteriores) ─────────
@@ -366,29 +376,25 @@ async def run_agora(
 
     await report(60, f"Redactor — Redactando paquete para {plan_input.municipio}...")
     ghostwriter_prompt = _load_prompt("ghostwriter")
-    await _call_agent_with_context(
-        AgentContext("ghostwriter", bundle,
-                     _get_spec_for_nivel(document_plan, DocumentNivel.ejecutivo),
-                     draft_bundle),
-        ghostwriter_prompt, plan_input, output,
+    await _run_ghostwriter_pass(
+        bundle, document_plan, draft_bundle, ghostwriter_prompt,
+        plan_input, output, _LOGISTICS_DOC_IDS,
     )
 
-    await report(72, "Validador — Verificando consistencia, fuentes y lenguaje...")
+    await report(72, "Humanizador — Claridad institucional, no maquillaje...")
+    humanizador_prompt = _load_prompt("humanizador")
+    await _run_humanizador_pass(
+        bundle, draft_bundle, humanizador_prompt, plan_input, output,
+    )
+
+    await report(80, "Validador — Verificando consistencia, fuentes y lenguaje...")
     validador_prompt = _load_prompt("validador")
     await _call_agent_with_context(
         AgentContext("validador", bundle,
                      _get_spec_for_nivel(document_plan, DocumentNivel.tecnico),
-                     draft_bundle),
+                     draft_bundle,
+                     populate_draft=False),
         validador_prompt, plan_input, output,
-    )
-
-    await report(84, "Humanizador — Claridad institucional, no maquillaje...")
-    humanizador_prompt = _load_prompt("humanizador")
-    await _call_agent_with_context(
-        AgentContext("humanizador", bundle,
-                     _get_spec_for_nivel(document_plan, DocumentNivel.ejecutivo),
-                     draft_bundle),
-        humanizador_prompt, plan_input, output,
     )
 
     # ── 4. ClaimLedger desde KPIs del bundle ─────────────────────────────────
@@ -402,6 +408,11 @@ async def run_agora(
             doc.claim_ledger = _build_claim_ledger_from_bundle(bundle, doc.document_id)
 
     # ── 5. ValidationReport por documento ─────────────────────────────────────
+    await report(88, "Director — Auditoría de coherencia del paquete...")
+    await _run_director_audit(
+        bundle, document_plan, draft_bundle, plan_input, output,
+    )
+
     await report(90, "Validador — Evaluando estado de cada documento...")
     validation_summary = validate_bundle(draft_bundle, bundle)
     output.validation_summary = validation_summary
@@ -585,11 +596,7 @@ async def _call_agent_with_context(
     )
 
     try:
-        from app.config import settings
-        use_llm = (
-            settings.ANTHROPIC_API_KEY
-            and settings.ANTHROPIC_API_KEY != "tu_anthropic_api_key_aqui"
-        )
+        use_llm = _anthropic_available()
     except Exception:
         use_llm = False
 
@@ -622,14 +629,12 @@ def _store_in_draft_bundle(
     is_fallback: bool,
 ) -> None:
     """Almacena el texto del agente en el DraftDocument correspondiente del DraftBundle."""
-    if not text:
+    if not context.populate_draft or not text:
         return
 
     sections = _text_to_sections(text, context.spec)
-    # Buscar el DraftDocument que corresponde al spec del agente
     doc = context.draft_bundle.documento_por_id(context.spec.document_id)
     if doc is None:
-        # Si no existe, tomar el primero no poblado
         for d in context.draft_bundle.documentos:
             if not d.secciones:
                 doc = d
@@ -638,10 +643,137 @@ def _store_in_draft_bundle(
     if doc is None:
         return
 
-    # Solo poblar si no tiene secciones aún (el primero que llega gana)
-    if not doc.secciones:
-        doc.secciones = sections
-        doc.is_fallback = is_fallback
+    if doc.secciones and not context.overwrite_draft:
+        return
+
+    doc.secciones = sections
+    doc.is_fallback = is_fallback
+
+
+async def _run_ghostwriter_pass(
+    bundle: ScenarioBundle,
+    document_plan: DocumentPlan,
+    draft_bundle: DraftBundle,
+    ghostwriter_prompt: str,
+    plan_input: PlanInput,
+    output: PlanOutput,
+    logistics_doc_ids: frozenset[str],
+) -> None:
+    """
+    Redacta cada documento del plan que aún no tiene contenido.
+    Los docs logísticos (08–11) los cubren agentes especializados.
+    Sin LLM: conserva comportamiento legacy (solo primer doc vacío).
+    """
+    from app.agents.document_specs import DOC_EXPEDIENTE
+
+    skip_ids = logistics_doc_ids | {DOC_EXPEDIENTE}
+    pending = [
+        spec for spec in document_plan.specs
+        if spec.document_id not in skip_ids
+        and not _draft_has_content(draft_bundle, spec.document_id)
+    ]
+    if not pending:
+        return
+
+    use_llm = _anthropic_available()
+    targets = pending if use_llm else pending[:1]
+
+    for spec in targets:
+        await _call_agent_with_context(
+            AgentContext(
+                "ghostwriter", bundle, spec, draft_bundle,
+            ),
+            ghostwriter_prompt,
+            plan_input,
+            output,
+        )
+
+
+async def _run_humanizador_pass(
+    bundle: ScenarioBundle,
+    draft_bundle: DraftBundle,
+    humanizador_prompt: str,
+    plan_input: PlanInput,
+    output: PlanOutput,
+) -> None:
+    """Humaniza documentos con contenido. Sin LLM: solo el primero (legacy)."""
+    populated = [d for d in draft_bundle.documentos if d.secciones]
+    if not populated:
+        return
+
+    use_llm = _anthropic_available()
+    targets = populated if use_llm else populated[:1]
+
+    for doc in targets:
+        await _call_agent_with_context(
+            AgentContext(
+                "humanizador", bundle, doc.spec, draft_bundle,
+                overwrite_draft=True,
+            ),
+            humanizador_prompt,
+            plan_input,
+            output,
+        )
+
+
+async def _run_director_audit(
+    bundle: ScenarioBundle,
+    document_plan: DocumentPlan,
+    draft_bundle: DraftBundle,
+    plan_input: PlanInput,
+    output: PlanOutput,
+) -> None:
+    """Auditoría de coherencia; no modifica borradores."""
+    director_prompt = _load_prompt("director")
+    spec = document_plan.specs[0] if document_plan.specs else _default_spec()
+    await _call_agent_with_context(
+        AgentContext("director", bundle, spec, draft_bundle, populate_draft=False),
+        director_prompt,
+        plan_input,
+        output,
+    )
+    if not output.plan_impl:
+        output.plan_impl = _format_director_coherence_summary(document_plan, draft_bundle)
+
+
+def _draft_has_content(draft_bundle: DraftBundle, document_id: str) -> bool:
+    doc = draft_bundle.documento_por_id(document_id)
+    return bool(doc and doc.secciones)
+
+
+def _anthropic_available() -> bool:
+    try:
+        from app.config import settings
+        key = settings.ANTHROPIC_API_KEY
+        return bool(key and key != "tu_anthropic_api_key_aqui")
+    except Exception:
+        return False
+
+
+def _format_director_coherence_summary(
+    document_plan: DocumentPlan,
+    draft_bundle: DraftBundle,
+) -> str:
+    """Resumen determinístico cuando Director no usa LLM."""
+    lines = [
+        "# AUDITORÍA DE PAQUETE — Director ÁGORA",
+        "",
+        f"ZM: {document_plan.zm} · Documentos en plan: {len(document_plan.specs)}",
+        "",
+    ]
+    for spec in document_plan.specs:
+        doc = draft_bundle.documento_por_id(spec.document_id)
+        if doc and doc.secciones:
+            estado = "borrador (template)" if doc.is_fallback else "con contenido"
+        else:
+            estado = "pendiente"
+        lines.append(f"- {spec.document_id}: {estado} · audiencia: {', '.join(spec.audiencia[:2])}")
+    if document_plan.warnings:
+        lines.extend(["", "## Advertencias del plan", ""])
+        for w in document_plan.warnings[:6]:
+            lines.append(f"- {w}")
+    lines.append("\nGenerado por Director ÁGORA · Plataforma ALQUIMIA")
+    return "\n".join(lines)
 
 
 # ─── Anthropic call (texto puro) ─────────────────────────────────────────────

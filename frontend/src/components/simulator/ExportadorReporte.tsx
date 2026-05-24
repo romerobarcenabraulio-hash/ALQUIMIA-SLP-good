@@ -2,6 +2,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import { getApiUrl, downloadExecutivePdf } from '@/lib/api'
+import { buildExecutivePdfContext } from '@/lib/executivePdfContext'
 import { withRequestId } from '@/lib/requestId'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
@@ -94,11 +95,13 @@ export function ExportadorReporte() {
         sortedSections.length > 0
           ? sortedSections.map(s => SECTION_LABELS[s]).join(' · ')
           : 'Reporte ejecutivo integrado'
+      await useSimulatorStore.getState().refreshResearchFindings()
       await downloadExecutivePdf({
         zm: zmActiva,
         municipio_id: municipioId || zmActiva,
         municipio_nombre: municipioNombre || seleccion?.nombre || zmActiva,
         module_label: `Expediente cabildo — ${seccionTxt}`,
+        contexto_municipal: buildExecutivePdfContext(useSimulatorStore.getState()),
         resultados: {
           tir: resultados.tir,
           vpn: resultados.vpn,

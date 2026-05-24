@@ -67,6 +67,7 @@ def render_consulting_document_pdf(
     theme_municipio: str = "",
     package_id: str = "",
     module_label: str = "",
+    contexto_municipal: Optional[dict] = None,
 ) -> tuple[Optional[bytes], Optional[str]]:
     """
     Genera PDF con portada + índice + estructura del blueprint indicado.
@@ -89,6 +90,9 @@ def render_consulting_document_pdf(
     build_toc_page(story, bp)
 
     if bp.document_id == "01_resumen_ejecutivo_municipal":
+        if contexto_municipal:
+            from app.export.consulting_pdf_builder import build_municipal_context_narrative
+            build_municipal_context_narrative(story, contexto_municipal)
         build_kpi_section(story, res, manifest)
     elif bp.document_id == "00_indice_maestro_paquete":
         build_master_index_body(story, zm=zm, municipio=municipio, manifest=manifest)

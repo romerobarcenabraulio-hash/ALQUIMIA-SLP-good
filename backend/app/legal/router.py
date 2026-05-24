@@ -85,7 +85,14 @@ async def get_hub() -> list[LegalStatusHub]:
 
 @router.get("/{municipio}/source-manifest", response_model=MunicipalLegalSourceManifest)
 async def get_source_manifest(municipio: str) -> MunicipalLegalSourceManifest:
-    manifest = locate_municipal_legal_source(municipio.lower())
+    from app.legal.dynamic_municipio import ensure_municipio_registered
+
+    mid = municipio.lower()
+    manifest = locate_municipal_legal_source(mid)
+    if manifest is None:
+        ensured = ensure_municipio_registered(municipio_id=mid)
+        if ensured:
+            manifest = locate_municipal_legal_source(ensured)
     if manifest is None:
         raise HTTPException(status_code=404, detail=f"Municipio '{municipio}' no encontrado")
     return manifest
@@ -122,6 +129,9 @@ async def upload_municipio_pdf(
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="El archivo PDF está vacío.")
+    from app.legal.dynamic_municipio import ensure_municipio_registered
+
+    ensure_municipio_registered(municipio_id=municipio.lower())
     try:
         manifest = upload_municipal_pdf_bytes(
             municipio.lower(),

@@ -639,6 +639,19 @@ class ReglamentoRepository:
     def upsert_reglamento(self, reg: Reglamento) -> None:
         self._reglamentos[reg.municipio_id.lower()] = reg
 
+    def set_articulos(self, municipio_id: str, articulos: list[ArticuloMatriz]) -> None:
+        self._articulos[municipio_id.lower()] = articulos
+
+    def register_in_zm(self, zm: str, municipio_id: str) -> None:
+        key = zm.upper()
+        bucket = ZM_MUNICIPIOS.setdefault(key, [])
+        mid = municipio_id.lower()
+        if mid not in bucket:
+            bucket.append(mid)
+
+    def register_municipio_nombre(self, municipio_id: str, nombre: str) -> None:
+        MUNICIPIO_NOMBRES[municipio_id.lower()] = nombre
+
     def set_verificado(self, municipio_id: str, verificado: bool) -> bool:
         """Actualiza banderas en memoria; no escribe libro de auditoría persistente ni prueba per se.
 

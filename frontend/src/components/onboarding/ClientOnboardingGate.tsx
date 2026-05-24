@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { ArrowRight, FileUp, MapPin } from 'lucide-react'
-import { getEstadosMx, getLegalSourceManifest, getMunicipiosMx, uploadLegalReglamentoPdf } from '@/lib/api'
+import { getEstadosMx, getLegalSourceManifest, getMunicipiosMx, registerMunicipioNacional, uploadLegalReglamentoPdf } from '@/lib/api'
 import { isPlatformDeveloper } from '@/lib/authSession'
 import { notifyLegalPdfUploaded, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
 import { ZMS } from '@/lib/constants'
@@ -17,6 +17,8 @@ export function ClientOnboardingGate() {
     seleccionMunicipioCatalog,
     applyMunicipioCatalog,
     completeClientSetup,
+    setMunicipioPdfHabilitado,
+    refreshResearchFindings,
   } = useSimulatorStore()
 
   const [estados, setEstados] = useState<EstadoMxOption[]>([])
@@ -84,7 +86,16 @@ export function ClientOnboardingGate() {
     setUploadError(null)
     setUploadMessage(null)
     const row = municipiosApi.find(m => m.clave_inegi === cve)
-    if (row) applyMunicipioCatalog(row)
+    if (!row) return
+    void (async () => {
+      try {
+        const registered = await registerMunicipioNacional(row)
+        applyMunicipioCatalog(registered)
+      }
+      catch {
+        applyMunicipioCatalog(row)
+      }
+    })()
   }
 
   const handleUpload = async (file: File) => {
@@ -95,8 +106,10 @@ export function ClientOnboardingGate() {
     try {
       const res = await uploadLegalReglamentoPdf(activeMid, file)
       setPdfReady(res.analysis_ready)
+      setMunicipioPdfHabilitado(res.analysis_ready)
       setUploadMessage(res.message)
       notifyLegalPdfUploaded(activeMid)
+      void refreshResearchFindings({ refresh: true })
     }
     catch (e) {
       setUploadError(e instanceof Error ? e.message : 'No se pudo subir el PDF')

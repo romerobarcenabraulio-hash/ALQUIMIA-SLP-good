@@ -99,6 +99,7 @@ export function ReglamentoCargaCiudadPanel() {
     )))
     try {
       const res = await uploadLegalReglamentoPdf(mid, file)
+      useSimulatorStore.getState().setMunicipioPdfHabilitado(res.analysis_ready)
       setRows(prev => prev.map(r => (
         r.mid === mid
           ? {

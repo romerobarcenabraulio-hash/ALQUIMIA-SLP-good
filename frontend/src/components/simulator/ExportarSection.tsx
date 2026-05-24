@@ -42,6 +42,7 @@ export function ExportarSection() {
             st.presetTrayectoria,
             st.snapshotDatos,
             r,
+            st.seleccionMunicipioCatalog,
           )
           const { blob, filename } = await fetchAgoraPlanZip(body)
           triggerBrowserDownload(blob, filename)

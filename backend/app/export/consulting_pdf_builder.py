@@ -190,6 +190,31 @@ def build_master_index_body(
         story.append(Paragraph(f"• {o}", styles["body_bullet"]))
 
 
+def build_municipal_context_narrative(story: list, ctx: dict) -> None:
+    """Narrativa municipal exclusiva — antes de KPIs genéricos en doc 01."""
+    from reportlab.platypus import Paragraph, Spacer
+
+    from app.export.municipal_context import narrative_blocks
+
+    styles = consulting_styles()
+    MARGINS = margins()
+
+    story.append(Paragraph("0. Lectura municipal (caso único)", styles["section_h1"]))
+    story.append(Paragraph(
+        "El enfoque de este PDF deriva del árbol de decisión, el estudio de noticias "
+        "y programas locales, y el reglamento cargado — no de una plantilla nacional.",
+        styles["body"],
+    ))
+    story.append(Spacer(1, 0.12 * MARGINS["top"]))
+
+    for title, lines in narrative_blocks(ctx):
+        story.append(Paragraph(title, styles["section_h2"]))
+        for line in lines:
+            style = styles["body_bullet"] if line.strip().startswith(("•", "–", "⚠")) else styles["body"]
+            story.append(Paragraph(line, style))
+        story.append(Spacer(1, 0.08 * MARGINS["top"]))
+
+
 def build_kpi_section(story: list, resultados: dict, manifest: dict) -> None:
     """Sección KPI para documento 01 — contenido productivo."""
     from reportlab.platypus import Paragraph, Spacer, Table

@@ -68,7 +68,7 @@ class MunicipioMxApi(BaseModel):
     poblacion: int = Field(..., ge=0)
     generacion_rsu_dia: float = Field(..., ge=0, description="Toneladas RSU/día modelo")
     zm_simulator_id: str = Field(..., description="ID de ZM en simulador ALQUIMIA")
-    municipio_simulator_id: str = Field(..., min_length=2, max_length=8)
+    municipio_simulator_id: str = Field(..., min_length=2, max_length=12)
     datos_estimados: bool = Field(
         default=True,
         description="True si población/RSU son estimaciones; Navigator valida CVE y cifras.",
@@ -78,6 +78,14 @@ class MunicipioMxApi(BaseModel):
 class EstadoMxOption(BaseModel):
     estado_id: str
     nombre: str
+
+
+class MunicipioRegisterRequest(BaseModel):
+    clave_inegi: str = Field(..., min_length=5, max_length=5)
+    nombre: str = Field(..., min_length=2)
+    estado: str = Field(..., min_length=2)
+    estado_id: str = Field(..., min_length=2, max_length=2)
+    municipio_simulator_id: str | None = None
 
 
 class InegiMunicipalSourceAudit(BaseModel):

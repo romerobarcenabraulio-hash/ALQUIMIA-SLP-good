@@ -1,5 +1,5 @@
 import { getZmRecord, resolveSimulationGeography } from '@/lib/zmPopulationScale'
-import type { ResultadosCalculados, SimulatorState, SnapshotDatos } from '@/types'
+import type { ResultadosCalculados, SeleccionMunicipioCatalog, SimulatorState, SnapshotDatos } from '@/types'
 import { SIMULATOR_STATE_DEFAULT } from '@/store/simulatorStore'
 
 /** Cuerpo alineado a `backend/app/agora/schemas.py` PlanRequest. */
@@ -21,6 +21,23 @@ export function mapPresetToEscenario(preset: string): EscenarioPlan {
   return 'moderado'
 }
 
+function resolveMunicipioNombre(
+  catalog: SeleccionMunicipioCatalog | null,
+  zmActiva: string,
+): string {
+  if (catalog?.nombre) return catalog.nombre
+  const zm = getZmRecord(zmActiva)
+  return zm.nombre.replace(/^ZM\s+/i, '').trim()
+}
+
+function resolveEstadoNombre(
+  catalog: SeleccionMunicipioCatalog | null,
+  zmActiva: string,
+): string {
+  if (catalog?.estadoNombre) return catalog.estadoNombre
+  return getZmRecord(zmActiva).estado
+}
+
 /**
  * Une simulador (ZM, trayectoria, snapshot) + resultados del motor para solicitar ZIP ÁGORA.
  */
@@ -31,8 +48,8 @@ export function buildAgoraPlanPayload(
   presetTrayectoria: string,
   snapshotDatos: SnapshotDatos | null,
   resultados: ResultadosCalculados,
+  seleccionMunicipioCatalog: SeleccionMunicipioCatalog | null = null,
 ): AgoraPlanGenerateBody {
-  const zm = getZmRecord(zmActiva)
   const state: SimulatorState & { snapshotDatos?: SnapshotDatos | null } = {
     ...SIMULATOR_STATE_DEFAULT,
     zmActiva,
@@ -40,12 +57,13 @@ export function buildAgoraPlanPayload(
     horizonte,
     presetTrayectoria,
     snapshotDatos: snapshotDatos ?? undefined,
+    seleccionMunicipioCatalog: seleccionMunicipioCatalog ?? null,
   }
   const geo = resolveSimulationGeography(state)
   const ingresoAnual = resultados.ingresosBrutos / Math.max(1, horizonte)
   return {
-    municipio: zm.nombre.replace(/^ZM\s+/i, '').trim(),
-    estado: zm.estado,
+    municipio: resolveMunicipioNombre(seleccionMunicipioCatalog, zmActiva),
+    estado: resolveEstadoNombre(seleccionMunicipioCatalog, zmActiva),
     poblacion: Math.round(geo.popActiva),
     generacion_rsu_dia: resultados.rsuTotalTonDia,
     ingreso_estimado_anual_mxn: ingresoAnual,

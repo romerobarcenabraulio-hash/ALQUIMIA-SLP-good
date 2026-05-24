@@ -28,7 +28,7 @@ def _client() -> TestClient:
     return TestClient(app)
 
 
-def test_executive_pdf_returns_pdf_bytes():
+def test_executive_pdf_with_research_findings():
     client = _client()
     res = client.post(
         "/export/executive-pdf",
@@ -37,20 +37,68 @@ def test_executive_pdf_returns_pdf_bytes():
             "municipio_id": "28028",
             "municipio_nombre": "San Luis Potosí",
             "document_id": "01_resumen_ejecutivo_municipal",
-            "resultados": {"tir": 12.5, "vpn": 1_500_000, "capex_total": 80_000_000},
-            "snapshot_datos": {
-                "score_datos": 78,
-                "advertencias": ["Dato manual en cobertura"],
-                "fuentes_usadas": ["INEGI 2020", "Reglamento SLP"],
+            "resultados": {"tir": 12.5, "vpn": 1_500_000},
+            "contexto_municipal": {
+                "municipio_nombre": "San Luis Potosí",
+                "research_findings": {
+                    "noticias_locales": [
+                        {"titulo": "Programa de reciclaje", "domain": "eluniversal.com.mx", "snippet": "cabildo"},
+                    ],
+                    "reglamentos": [
+                        {"titulo": "Programa municipal de separación 2025", "domain": "gob.mx", "snippet": "vigente"},
+                    ],
+                    "queries_con_resultado": 2,
+                },
             },
         },
     )
     assert res.status_code == 200
     assert res.content[:4] == b"%PDF"
-    assert len(res.content) > 3_000
+    assert len(res.content) > 4_000
 
 
-def test_index_pdf_returns_pdf_bytes():
+def test_executive_pdf_with_municipal_context():
+    client = _client()
+    res = client.post(
+        "/export/executive-pdf",
+        json={
+            "zm": "ZM_SLPS",
+            "municipio_id": "28028",
+            "municipio_nombre": "San Luis Potosí",
+            "document_id": "01_resumen_ejecutivo_municipal",
+            "resultados": {"tir": 12.5, "vpn": 1_500_000},
+            "contexto_municipal": {
+                "municipio_nombre": "San Luis Potosí",
+                "estado_nombre": "San Luis Potosí",
+                "arbol_decision": {
+                    "tienepresupuesto": True,
+                    "camino_recomendado": "Esquema A — operación municipal directa.",
+                },
+                "noticias_locales": [{"titulo": "Programa de reciclaje", "domain": "eluniversal.com.mx"}],
+            },
+        },
+    )
+    assert res.status_code == 200
+    assert res.content[:4] == b"%PDF"
+    assert len(res.content) > 4_000
+
+
+def test_municipal_context_narrative_blocks():
+    from app.export.municipal_context import narrative_blocks
+
+    blocks = narrative_blocks({
+        "municipio_nombre": "Querétaro",
+        "estado_nombre": "Querétaro",
+        "arbol_decision": {"tienepresupuesto": False, "existeConcesionario": False},
+        "legal": {"reglamento_nombre": "Reglamento RSU", "score_legal": 45, "brecha_critica": 2},
+    })
+    titles = [b[0] for b in blocks]
+    assert any("Querétaro" in t for t in titles)
+    assert "Árbol de decisión institucional" in titles
+    assert "Reglamento y brechas normativas" in titles
+
+
+def test_executive_pdf_returns_pdf_bytes():
     client = _client()
     res = client.post(
         "/export/index-pdf",

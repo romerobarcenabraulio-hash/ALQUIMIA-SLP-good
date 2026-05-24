@@ -834,7 +834,7 @@ export type EstadoArticulo =
 export type Criticidad = 'alta' | 'media' | 'baja'
 
 export type ReformEstrategia = 'A' | 'B' | 'C' | 'D'
-export type LegalSourceIngestStatus = 'no_disponible' | 'localizado' | 'descargado'
+export type LegalSourceIngestStatus = 'no_disponible' | 'localizado' | 'descargado' | 'verified'
 export type LegalSourceValidationStatus =
   | 'no_disponible'
   | 'pendiente_validacion_juridica'
