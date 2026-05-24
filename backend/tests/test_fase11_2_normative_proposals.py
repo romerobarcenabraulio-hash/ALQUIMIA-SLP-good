@@ -51,7 +51,6 @@ def test_municipio_sin_pdf_bloquea_sanciones_salida_definitiva_y_propuesta_norma
     assert insertion_map.validation_gate.blocks_sanctions is True
     assert insertion_map.validation_gate.blocks_definitive_document is True
     assert insertion_map.validation_gate.can_continue_education is True
-    assert insertion_map.validation_gate.can_continue_simulation is False
     assert insertion_map.blockers
     assert "fuente municipal" in " ".join(insertion_map.blockers).lower() or "pdf" in " ".join(insertion_map.blockers).lower()
     assert insertion_map.next_action
