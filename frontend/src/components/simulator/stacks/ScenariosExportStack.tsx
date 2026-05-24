@@ -19,6 +19,8 @@ import { ExportarSection } from '@/components/simulator/ExportarSection'
 import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
 import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
+import { MonteCarloVpnChart } from '@/components/charts/MonteCarloVpnChart'
+import { TornadoChart } from '@/components/charts/TornadoChart'
 import { FASES_INVERSION } from '@/lib/capexOpexData'
 import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
@@ -48,18 +50,6 @@ const CAPEX_PROPS = [
   { label: 'Contingencia y capital trabajo', pct: 0.05, color: '#E8E4DC' },
 ]
 
-// Tornado sensitivity — relative impact of ±20% change in each variable on VPN
-// These are methodology-defined fractions, not absolute amounts.
-const TORNADO_VARS = [
-  { label: 'Precio de PET (MXN/kg)',       positivo: 0.24, negativo: -0.24 },
-  { label: 'Precio Aluminio (MXN/kg)',      positivo: 0.21, negativo: -0.21 },
-  { label: 'Captura efectiva (%)',          positivo: 0.155, negativo: -0.155 },
-  { label: 'WACC (%)',                      positivo: 0.12, negativo: -0.12 },
-  { label: 'Gastos de operación (%)',       positivo: 0.085, negativo: -0.09 },
-  { label: 'Precio de carbono (MXN/tCO₂e)', positivo: 0.079, negativo: -0.042 },
-  { label: 'Eficiencia operativa (%)',      positivo: 0.058, negativo: -0.058 },
-]
-
 // Route deployment derived from FASES_INVERSION
 const RUTA_FASES = FASES_INVERSION.slice(0, 5).map(f => ({
   fase:        `F${f.fase}`,
@@ -79,97 +69,6 @@ function RailSection({ title, children, open = false }: { title: string; childre
         <ChevronDown className={cn('w-3.5 h-3.5 text-[#A8A49C] transition-transform', isOpen && 'rotate-180')} />
       </button>
       {isOpen && <div className="pb-3 px-1 text-[11px] leading-relaxed text-[#6B6760] space-y-1.5">{children}</div>}
-    </div>
-  )
-}
-
-// ─── MonteCarloChart ──────────────────────────────────────────────────────────
-// Derives distribution from base VPN — no hardcoded values.
-// Uses triangular approximation: spread = ±50% of base VPN driven by risk vars.
-
-function MonteCarloChart({ vpnBase }: { vpnBase: number }) {
-  const bars = useMemo(() => {
-    if (vpnBase <= 0) return []
-    const spread = Math.abs(vpnBase) * 0.55
-    const nBins = 20
-    const min = vpnBase - spread
-    const max = vpnBase + spread * 0.8
-    const step = (max - min) / nBins
-    // Triangular-ish distribution peaked at P50 = vpnBase
-    return Array.from({ length: nBins }, (_, i) => {
-      const midVal = min + i * step + step / 2
-      const distFromMode = Math.abs(midVal - vpnBase) / spread
-      const freq = Math.max(2, Math.round(100 * (1 - distFromMode * distFromMode)))
-      return { bin: `$${(midVal / 1_000_000).toFixed(0)}M`, freq, val: midVal }
-    })
-  }, [vpnBase])
-
-  const p10 = useMemo(() => bars[Math.floor(bars.length * 0.10)]?.val ?? 0, [bars])
-  const p50 = vpnBase
-  const p90 = useMemo(() => bars[Math.floor(bars.length * 0.90)]?.val ?? 0, [bars])
-
-  if (!bars.length) return <p className="text-[11px] text-[#A8A49C] p-4">Configura el simulador para ver la distribución Monte Carlo.</p>
-
-  return (
-    <div>
-      <div className="grid grid-cols-3 gap-2 mb-3">
-        {[
-          { label: 'P10 (escenario bajista)', value: fmt.mxnM(p10), color: '#C0392B' },
-          { label: 'P50 (mediana)',            value: fmt.mxnM(p50), color: '#1A5FA8' },
-          { label: 'P90 (escenario optimista)',value: fmt.mxnM(p90), color: '#3B6D11' },
-        ].map(k => (
-          <div key={k.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-2.5">
-            <p className="text-[9px] uppercase text-[#A8A49C] mb-0.5">{k.label}</p>
-            <p className="font-mono text-[14px] font-semibold" style={{ color: k.color }}>{k.value}</p>
-          </div>
-        ))}
-      </div>
-      <ResponsiveContainer width="100%" height={160}>
-        <BarChart data={bars} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-          <XAxis dataKey="bin" tick={{ fontSize: 8 }} interval={3} />
-          <YAxis hide />
-          <Tooltip contentStyle={{ fontSize: 10 }} formatter={(v: number) => [v, 'Simulaciones']} />
-          <Bar dataKey="freq" radius={[2, 2, 0, 0]}>
-            {bars.map((b, i) => (
-              <Cell key={i} fill={b.val < 0 ? '#F5B7B1' : b.val >= p90 ? '#A5C97A' : '#B0D0F5'} />
-            ))}
-          </Bar>
-          <ReferenceLine x={`$${(vpnBase / 1_000_000).toFixed(0)}M`} stroke="#1A5FA8" strokeDasharray="4 2" label={{ value: 'P50', position: 'top', style: { fontSize: 9, fill: '#1A5FA8' } }} />
-        </BarChart>
-      </ResponsiveContainer>
-      <p className="text-[9px] text-[#A8A49C] mt-1">
-        Distribución triangular aprox. 500 iteraciones · Variables: precio materiales ±30%, captura efectiva −40%/+20%, WACC ±20%.
-        No constituye garantía de resultados.
-      </p>
-    </div>
-  )
-}
-
-// ─── TornadoChart ─────────────────────────────────────────────────────────────
-// Impact expressed as % of base VPN — multiplied by actual VPN at render time.
-
-function TornadoChart({ vpnBase }: { vpnBase: number }) {
-  const data = useMemo(() => TORNADO_VARS.map(v => ({
-    label:     v.label,
-    positivo:  +(v.positivo * vpnBase / 1_000_000).toFixed(1),
-    negativo:  +(v.negativo * vpnBase / 1_000_000).toFixed(1),
-  })), [vpnBase])
-
-  return (
-    <div>
-      <ResponsiveContainer width="100%" height={240}>
-        <BarChart data={data} layout="vertical" margin={{ top: 4, right: 32, left: 0, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-          <XAxis type="number" tick={{ fontSize: 9 }} tickFormatter={v => `$${v}M`} />
-          <YAxis type="category" dataKey="label" tick={{ fontSize: 9 }} width={160} />
-          <Tooltip formatter={(v: number, name: string) => [`$${v}M`, name === 'positivo' ? 'Impacto positivo (+20%)' : 'Impacto negativo (−20%)']} />
-          <Bar dataKey="negativo" name="negativo" fill="#F5B7B1" radius={[0, 2, 2, 0]} />
-          <Bar dataKey="positivo" name="positivo" fill="#A5C97A" radius={[0, 2, 2, 0]} />
-          <ReferenceLine x={0} stroke="#1C1B18" strokeWidth={1.5} />
-        </BarChart>
-      </ResponsiveContainer>
-      <p className="text-[9px] text-[#A8A49C] mt-1">Impacto en VPN (M MXN) por variación ±20% en cada variable · respecto al caso base. Metodología: análisis OAT (One-At-a-Time).</p>
     </div>
   )
 }
@@ -571,17 +470,17 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
               <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Distribución Monte Carlo del VPN (20 años)</p>
-              <p className="text-[10px] text-[#A8A49C] mb-3">~500 iteraciones · distribución triangular aprox.</p>
-              <MonteCarloChart vpnBase={metrics?.vpn ?? 0} />
+              <p className="text-[10px] text-[#A8A49C] mb-3">2 000 iteraciones · motor calcular() · distribución triangular</p>
+              <MonteCarloVpnChart />
             </div>
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
               <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Análisis de sensibilidad (tornado) — Impacto en el VPN</p>
-              <p className="text-[10px] text-[#A8A49C] mb-1">Variación del VPN respecto al caso base por variable · ±20%</p>
+              <p className="text-[10px] text-[#A8A49C] mb-1">Variación del VPN respecto al caso base por variable · ±20% · OAT</p>
               <p className="text-[9px] text-[#1A5FA8] mb-3">
                 Este tornado mide sensibilidad del <strong>VPN del proyecto</strong>.
                 Ver también: sensibilidad del <strong>ingreso por materiales</strong> en M10 · Trazabilidad de Mercado.
               </p>
-              <TornadoChart vpnBase={metrics?.vpn ?? 0} />
+              <TornadoChart />
             </div>
           </div>
 

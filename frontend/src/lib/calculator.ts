@@ -489,37 +489,65 @@ function triangularSample(lo: number, mode: number, hi: number): number {
  *   - Merma logística: (−25%, base, +25%) — rango bibliográfico SLP 2021.
  * Fuente: Saez & Urdaneta (2014), Bing et al. (2016) — factores de perturbación.
  */
-export function monteCarloTriangular(state: SimulatorState, n = 2000): MonteCarloPercentiles {
-  const tirs: number[] = []
 
-  for (let i = 0; i < n; i++) {
-    const precioFactor = triangularSample(0.70, 1.00, 1.30)
-    const pct0 = state.pctCapturaPorAño[0] ?? 20
-    const pctFactor = triangularSample(0.60, 1.00, 1.20)
-    const mermaFactor = triangularSample(0.75, 1.00, 1.25)
+/** Perturbación canónica Monte Carlo — precios, captura y merma (triangular). */
+export function perturbStateMonteCarlo(state: SimulatorState): SimulatorState {
+  const precioFactor = triangularSample(0.70, 1.00, 1.30)
+  const pct0 = state.pctCapturaPorAño[0] ?? 20
+  const pctFactor = triangularSample(0.60, 1.00, 1.20)
+  const mermaFactor = triangularSample(0.75, 1.00, 1.25)
 
-    const perturbed: SimulatorState = {
-      ...state,
-      precios: {
-        pet:      clamp(state.precios.pet      * precioFactor, 0.5, 50),
-        hdpe:     clamp(state.precios.hdpe     * precioFactor, 0.5, 50),
-        papel:    clamp(state.precios.papel    * precioFactor, 0.3, 20),
-        vidrio:   clamp(state.precios.vidrio   * precioFactor, 0.1, 10),
-        aluminio: clamp(state.precios.aluminio * precioFactor, 5,  300),
-        organico: clamp(state.precios.organico * precioFactor, 0.1, 10),
-      },
-      pctCapturaPorAño: state.pctCapturaPorAño.map(p =>
-        clamp(p * (pctFactor * pct0 / Math.max(0.01, pct0)), 1, 100)
-      ),
-      mermaLogPct: clamp(state.mermaLogPct * mermaFactor, 2, 40),
-    }
-    tirs.push(calcular(perturbed).tir)
+  return {
+    ...state,
+    precios: {
+      pet:      clamp(state.precios.pet      * precioFactor, 0.5, 50),
+      hdpe:     clamp(state.precios.hdpe     * precioFactor, 0.5, 50),
+      papel:    clamp(state.precios.papel    * precioFactor, 0.3, 20),
+      vidrio:   clamp(state.precios.vidrio   * precioFactor, 0.1, 10),
+      aluminio: clamp(state.precios.aluminio * precioFactor, 5,  300),
+      organico: clamp(state.precios.organico * precioFactor, 0.1, 10),
+    },
+    pctCapturaPorAño: state.pctCapturaPorAño.map(p =>
+      clamp(p * (pctFactor * pct0 / Math.max(0.01, pct0)), 1, 100),
+    ),
+    mermaLogPct: clamp(state.mermaLogPct * mermaFactor, 2, 40),
   }
+}
 
-  tirs.sort((a, b) => a - b)
-  const p10 = tirs[Math.floor(n * 0.10)] ?? 0
-  const p50 = tirs[Math.floor(n * 0.50)] ?? 0
-  const p90 = tirs[Math.floor(n * 0.90)] ?? 0
+export const MONTE_CARLO_SPEC = {
+  iterationsDefault: 2000,
+  variables: [
+    { name: 'Precios materiales', range: '70%–130% del escenario base (triangular)' },
+    { name: 'Captura por año', range: '60%–120% del escenario base' },
+    { name: 'Merma logística', range: '75%–125% del escenario base' },
+  ],
+  method: 'Muestreo triangular · cada iteración ejecuta calcular() completo',
+} as const
+
+export function monteCarloTriangularSamples(
+  state: SimulatorState,
+  n = 2000,
+  metric: 'tir' | 'vpn' = 'tir',
+): number[] {
+  const samples: number[] = []
+  for (let i = 0; i < n; i++) {
+    const r = calcular(perturbStateMonteCarlo(state))
+    samples.push(metric === 'tir' ? r.tir : r.vpn)
+  }
+  samples.sort((a, b) => a - b)
+  return samples
+}
+
+export function percentileFromSorted(sorted: number[], p: number): number {
+  if (!sorted.length) return 0
+  return sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * p))] ?? 0
+}
+
+export function monteCarloTriangular(state: SimulatorState, n = 2000): MonteCarloPercentiles {
+  const tirs = monteCarloTriangularSamples(state, n, 'tir')
+  const p10 = percentileFromSorted(tirs, 0.10)
+  const p50 = percentileFromSorted(tirs, 0.50)
+  const p90 = percentileFromSorted(tirs, 0.90)
 
   const base = calcular(state)
   const bcr_p50 = base.capexTotal > 0
@@ -529,10 +557,9 @@ export function monteCarloTriangular(state: SimulatorState, n = 2000): MonteCarl
   return { p10, p50, p90, bcr_p50 }
 }
 
-/** @deprecated Usar monteCarloTriangular() — distribución gaussiana reemplazada. */
+/** @deprecated Usar monteCarloTriangular() o monteCarloTriangularSamples(). */
 export function monteCarlo(state: SimulatorState, n = 2000): number[] {
-  const { p10, p50, p90 } = monteCarloTriangular(state, n)
-  return [p10, p50, p90]
+  return monteCarloTriangularSamples(state, n, 'tir')
 }
 
 // ─── Motor de Riesgo ─────────────────────────────────────────────────────────
