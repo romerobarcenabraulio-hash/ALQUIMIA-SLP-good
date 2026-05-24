@@ -34,7 +34,7 @@ class CreateUserRequest(BaseModel):
 @router.get("/users", response_model=List[UserInfo])
 async def list_users(_: UserInfo = Depends(require_admin)):
     return [
-        UserInfo(id=u["id"], nombre=u["nombre"], email=u["email"], rol=u["rol"], zm=u["zm"])
+        UserInfo(id=str(u["id"]), nombre=u["nombre"], email=u["email"], rol=u["rol"], zm=u["zm"])
         for u in DEMO_USERS.values()
     ]
 
@@ -43,7 +43,7 @@ async def list_users(_: UserInfo = Depends(require_admin)):
 async def create_user(req: CreateUserRequest, _: UserInfo = Depends(require_admin)):
     if req.email in DEMO_USERS:
         raise HTTPException(status_code=409, detail="Usuario ya existe")
-    new_id = max(u["id"] for u in DEMO_USERS.values()) + 1
+    new_id = str(max(int(u["id"]) for u in DEMO_USERS.values()) + 1)
     DEMO_USERS[req.email] = {
         "id": new_id,
         "nombre": req.nombre,

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PROTECTED = ['/simulator', '/hub', '/ca-studio']
-const COOKIE_NAME = 'alquimia_access'
+const PROTECTED = ['/simulator', '/hub', '/ca-studio', '/gobierno/rsu']
+const LEGACY_COOKIE = 'alquimia_access'
+const SESSION_COOKIE = 'alquimia_session'
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
@@ -16,17 +17,18 @@ export function middleware(request: NextRequest) {
     return response
   }
 
-  const cookie = request.cookies.get(COOKIE_NAME)
-  if (cookie?.value === 'granted') {
+  const session = request.cookies.get(SESSION_COOKIE)
+  const legacy = request.cookies.get(LEGACY_COOKIE)
+  if (session?.value === '1' || legacy?.value === 'granted') {
     const response = NextResponse.next()
     response.headers.set('X-Robots-Tag', 'noindex, nofollow')
     return response
   }
 
-  const acceso = request.nextUrl.clone()
-  acceso.pathname = '/acceso'
-  acceso.searchParams.set('next', pathname)
-  const response = NextResponse.redirect(acceso)
+  const login = request.nextUrl.clone()
+  login.pathname = '/login'
+  login.searchParams.set('next', pathname)
+  const response = NextResponse.redirect(login)
   response.headers.set('X-Robots-Tag', 'noindex, nofollow')
   return response
 }

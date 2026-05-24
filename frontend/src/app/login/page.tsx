@@ -1,8 +1,8 @@
 'use client'
 import { Suspense, useState } from 'react'
+import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { getApiUrl } from '@/lib/api'
-import { withRequestId } from '@/lib/requestId'
+import { authLogin, authLoginTotp, isPendingTotp, persistSession } from '@/lib/authApi'
 import { isPlatformDeveloper } from '@/lib/authSession'
 
 function loginDestination(next?: string | null): string {
@@ -26,37 +26,60 @@ export default function LoginPage() {
 }
 
 function LoginForm() {
-  const [email, setEmail]     = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading]  = useState(false)
-  const [error, setError]     = useState('')
+  const [totpCode, setTotpCode] = useState('')
+  const [pendingToken, setPendingToken] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const router = useRouter()
   const searchParams = useSearchParams()
   const next = searchParams.get('next')
+
+  const finishLogin = (accessToken: string) => {
+    persistSession(accessToken)
+    router.push(loginDestination(next))
+  }
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
     try {
-      const res = await fetch(`${getApiUrl()}/auth/login`, withRequestId({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password }),
-      }))
-      if (!res.ok) throw new Error('Credenciales inválidas')
-      const { access_token } = await res.json()
-      localStorage.setItem('alquimia_token', access_token)
-      router.push(loginDestination(next))
-    } catch (err: unknown) {
-      // Demo fallback
-      if (email === 'demo@alquimia.mx' && password === 'demo2025') {
-        localStorage.setItem('alquimia_token', 'demo-token')
-        router.push(loginDestination(next))
-      } else {
-        setError('Credenciales inválidas. Usa demo@alquimia.mx / demo2025')
+      const data = await authLogin(email, password)
+      if (isPendingTotp(data)) {
+        setPendingToken(data.pending_token)
+        return
       }
-    } finally {
+      finishLogin(data.access_token)
+    }
+    catch (err: unknown) {
+      if (email === 'demo@alquimia.mx' && password === 'demo2025') {
+        persistSession('demo-token')
+        router.push(loginDestination(next))
+      }
+      else {
+        setError(err instanceof Error ? err.message : 'Credenciales inválidas')
+      }
+    }
+    finally {
+      setLoading(false)
+    }
+  }
+
+  const handleTotp = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pendingToken) return
+    setLoading(true)
+    setError('')
+    try {
+      const data = await authLoginTotp(pendingToken, totpCode)
+      finishLogin(data.access_token)
+    }
+    catch (err) {
+      setError(err instanceof Error ? err.message : 'Código TOTP incorrecto')
+    }
+    finally {
       setLoading(false)
     }
   }
@@ -69,38 +92,74 @@ function LoginForm() {
           <p className="text-[13px] text-[#6B6760] mt-1">Consultoría integral de gestión pública</p>
         </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-4">
-          <div>
-            <label className="text-[12px] font-medium text-[#6B6760] block mb-1">Correo electrónico</label>
+        {!pendingToken ? (
+          <form onSubmit={handleLogin} className="flex flex-col gap-4">
+            <div>
+              <label className="text-[12px] font-medium text-[#6B6760] block mb-1">Correo electrónico</label>
+              <input
+                type="email" value={email} onChange={e => setEmail(e.target.value)}
+                placeholder="usuario@municipio.gob.mx"
+                className="w-full border border-[#E8E4DC] rounded-[8px] px-3 py-2.5 text-[13px] bg-transparent focus:outline-none focus:border-[#3B6D11] transition-colors"
+                required
+              />
+            </div>
+            <div>
+              <label className="text-[12px] font-medium text-[#6B6760] block mb-1">Contraseña</label>
+              <input
+                type="password" value={password} onChange={e => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full border border-[#E8E4DC] rounded-[8px] px-3 py-2.5 text-[13px] bg-transparent focus:outline-none focus:border-[#3B6D11] transition-colors"
+                required
+              />
+            </div>
+
+            {error && (
+              <p className="text-[12px] text-[#C0392B] bg-[#FBEAEA] px-3 py-2 rounded-[6px]">{error}</p>
+            )}
+
+            <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
+              {loading ? 'Ingresando...' : 'Ingresar'}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleTotp} className="flex flex-col gap-4">
+            <p className="text-[13px] text-[#4A4740] leading-relaxed">
+              Ingresa el código de 6 dígitos de tu aplicación autenticadora.
+            </p>
             <input
-              type="email" value={email} onChange={e => setEmail(e.target.value)}
-              placeholder="usuario@municipio.gob.mx"
-              className="w-full border border-[#E8E4DC] rounded-[8px] px-3 py-2.5 text-[13px] bg-transparent focus:outline-none focus:border-[#3B6D11] transition-colors"
+              inputMode="numeric"
+              pattern="[0-9]{6}"
+              maxLength={6}
+              value={totpCode}
+              onChange={e => setTotpCode(e.target.value.replace(/\D/g, ''))}
+              className="w-full border border-[#E8E4DC] rounded-[8px] px-3 py-2.5 text-[15px] tracking-[0.3em] text-center font-mono"
               required
+              autoFocus
             />
-          </div>
-          <div>
-            <label className="text-[12px] font-medium text-[#6B6760] block mb-1">Contraseña</label>
-            <input
-              type="password" value={password} onChange={e => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full border border-[#E8E4DC] rounded-[8px] px-3 py-2.5 text-[13px] bg-transparent focus:outline-none focus:border-[#3B6D11] transition-colors"
-              required
-            />
-          </div>
+            {error && (
+              <p className="text-[12px] text-[#C0392B] bg-[#FBEAEA] px-3 py-2 rounded-[6px]">{error}</p>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary w-full">
+              {loading ? 'Verificando…' : 'Confirmar código'}
+            </button>
+            <button
+              type="button"
+              className="text-[12px] text-[#A8A49C] hover:text-[#3B6D11]"
+              onClick={() => { setPendingToken(null); setTotpCode(''); setError('') }}
+            >
+              ← Volver a contraseña
+            </button>
+          </form>
+        )}
 
-          {error && (
-            <p className="text-[12px] text-[#C0392B] bg-[#FBEAEA] px-3 py-2 rounded-[6px]">{error}</p>
-          )}
-
-          <button type="submit" disabled={loading} className="btn-primary w-full mt-2">
-            {loading ? 'Ingresando...' : 'Ingresar'}
-          </button>
-        </form>
-
-        <div className="mt-6 pt-6 border-t border-[#E8E4DC]">
+        <div className="mt-6 pt-6 border-t border-[#E8E4DC] space-y-3">
+          <p className="text-[12px] text-center text-[#6B6760]">
+            ¿Primera vez?{' '}
+            <Link href="/register" className="text-[#3B6D11] font-medium hover:underline">Crear cuenta institucional</Link>
+          </p>
           <p className="text-[11px] text-[#A8A49C] text-center mb-2">Acceso de demostración</p>
           <button
+            type="button"
             onClick={() => { setEmail('demo@alquimia.mx'); setPassword('demo2025') }}
             className="w-full text-[12px] text-[#3B6D11] border border-[#3B6D11]/30 rounded-[8px] py-2 hover:bg-[#EAF3DE] transition-colors"
           >

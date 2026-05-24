@@ -63,6 +63,13 @@ class Settings(BaseSettings):
 
     GOOGLE_SERVICE_ACCOUNT_FILE: Optional[str] = None
 
+    # Cuentas institucionales — registro, correo y TOTP
+    REGISTRATION_ENABLED: bool = True
+    EMAIL_PROVIDER: str = "console"  # console | resend
+    RESEND_API_KEY: Optional[str] = None
+    EMAIL_FROM: str = "ALQUIMIA <noreply@alquimia.mx>"
+    APP_PUBLIC_URL: str = "http://localhost:3000"
+
 settings = Settings()
 
 
