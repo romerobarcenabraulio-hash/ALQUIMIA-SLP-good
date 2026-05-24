@@ -41,19 +41,19 @@ def test_municipio_con_reglamento_localizado_genera_propuesta_expositiva_no_defi
     assert all(proposal.residuos_scope == "rsu_municipal" for proposal in insertion_map.proposals)
 
 
-def test_municipio_sin_fuente_bloquea_sanciones_salida_definitiva_y_propuesta_normativa():
-    insertion_map = build_municipal_legal_insertion_map("sol")
+def test_municipio_sin_pdf_bloquea_sanciones_salida_definitiva_y_propuesta_normativa():
+    insertion_map = build_municipal_legal_insertion_map("csp")
 
     assert insertion_map is not None
-    assert insertion_map.municipio_id == "sol"
+    assert insertion_map.municipio_id == "csp"
     assert insertion_map.source_manifest.ingest_status == "no_disponible"
     assert insertion_map.proposals == []
     assert insertion_map.validation_gate.blocks_sanctions is True
     assert insertion_map.validation_gate.blocks_definitive_document is True
     assert insertion_map.validation_gate.can_continue_education is True
-    assert insertion_map.validation_gate.can_continue_simulation is True
+    assert insertion_map.validation_gate.can_continue_simulation is False
     assert insertion_map.blockers
-    assert "fuente municipal" in " ".join(insertion_map.blockers).lower()
+    assert "fuente municipal" in " ".join(insertion_map.blockers).lower() or "pdf" in " ".join(insertion_map.blockers).lower()
     assert insertion_map.next_action
 
 

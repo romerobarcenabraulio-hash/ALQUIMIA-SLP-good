@@ -103,15 +103,14 @@ def test_inspeccion_con_evidencia_se_registra():
 
 def test_multa_sin_legalsource_verificado_se_bloquea():
     client = _client()
-    get_repo().set_verificado("cor", False)
     _evidence(client)
-    _inspection(client, municipio_id="cor")
-    source = legal_source_for_municipio("cor")
+    _inspection(client, municipio_id="mar")
+    source = legal_source_for_municipio("mar")
 
     r = client.post("/operations/violations", json={
-        "violation_id": "v-cor",
-        "inspection_id": "ins-cor",
-        "municipio_id": "cor",
+        "violation_id": "v-mar",
+        "inspection_id": "ins-mar",
+        "municipio_id": "mar",
         "legal_source_id": source.legal_source_id,
         "article_id": "Art. 11",
         "tipo_infraccion": "separacion_incorrecta",

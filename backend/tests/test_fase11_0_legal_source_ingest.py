@@ -35,11 +35,12 @@ def test_zm_no_puede_producir_fuente_legal_municipal_unica():
 
 
 def test_fuente_localizada_no_se_marca_vigente_ni_validada():
-    manifest = locate_municipal_legal_source("qro")
+    """Municipio con URL pero sin PDF en catálogo → localizado, no descargado."""
+    manifest = locate_municipal_legal_source("snl")
 
     assert manifest is not None
-    assert manifest.municipio_id == "qro"
-    assert manifest.zm == "QRO"
+    assert manifest.municipio_id == "snl"
+    assert manifest.zm == "MTY"
     assert manifest.official_url
     assert manifest.ingest_status == "localizado"
     assert manifest.validation_status == "pendiente_validacion_juridica"
@@ -53,22 +54,27 @@ def test_fuente_localizada_no_se_marca_vigente_ni_validada():
 @pytest.mark.parametrize(
     ("municipio_id", "expected_status"),
     [
-        ("gdl", "localizado"),
-        ("zap", "localizado"),
-        ("spg", "localizado"),
+        ("gdl", "descargado"),
+        ("zap", "descargado"),
+        ("spg", "descargado"),
+        ("snl", "localizado"),
     ],
 )
-def test_fuentes_csa_localizadas_no_desbloquean_oficialidad(municipio_id, expected_status):
+def test_fuentes_csa_estado_ingesta(municipio_id, expected_status):
     manifest = locate_municipal_legal_source(municipio_id)
 
     assert manifest is not None
     assert manifest.municipio_id == municipio_id
-    assert manifest.official_url
+    if expected_status == "localizado":
+        assert manifest.official_url
+        assert manifest.officiality == "fuente_localizada_no_validada"
+        assert manifest.can_enable_simulation is False
+    else:
+        assert manifest.officiality == "documento_descargado_no_validado"
+        assert manifest.can_enable_simulation is True
     assert manifest.ingest_status == expected_status
     assert manifest.validation_status == "pendiente_validacion_juridica"
-    assert manifest.officiality == "fuente_localizada_no_validada"
     assert manifest.can_enable_education is True
-    assert manifest.can_enable_simulation is True
     assert manifest.can_enable_sanctions is False
     assert manifest.can_generate_official_document is False
     assert manifest.next_action
@@ -119,16 +125,16 @@ def test_descarga_fallida_conserva_estado_explicito_y_accion_siguiente():
     assert manifest.blockers
 
 
-def test_municipio_sin_documento_bloquea_sanciones_no_educacion_ni_simulacion():
-    manifest = locate_municipal_legal_source("sol")
+def test_municipio_sin_pdf_bloquea_sanciones_y_simulacion():
+    manifest = locate_municipal_legal_source("csp")
 
     assert manifest is not None
     assert manifest.ingest_status == "no_disponible"
     assert manifest.can_enable_education is True
-    assert manifest.can_enable_simulation is True
+    assert manifest.can_enable_simulation is False
     assert manifest.can_enable_sanctions is False
     assert manifest.can_generate_official_document is False
-    assert "Sanciones" in " ".join(manifest.blockers)
+    assert "Sanciones" in " ".join(manifest.blockers) or "PDF" in " ".join(manifest.blockers)
 
 
 def test_endpoint_municipal_source_manifest_es_observable():

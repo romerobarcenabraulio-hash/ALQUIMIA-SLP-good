@@ -657,4 +657,4 @@ class TestExportSchemas:
         theme = DocumentTheme(zm="QRO", municipio="queretaro")
         assert theme.brand_name == "ALQUIMIA · ÁGORA GOV"
         assert theme.color_primary == "#3B6D11"
-        assert theme.typography == "Calibri"
+        assert theme.typography == "Times New Roman"

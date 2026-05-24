@@ -26,33 +26,27 @@ def test_una_zm_no_desbloquea_legal_para_todos():
     statuses = {c.municipio_id: c.legal for c in coverage}
 
     assert statuses["qro"] == SourceStatus.verificado
-    assert statuses["cor"] != SourceStatus.verificado
-    assert any(c.agora_bloqueado for c in coverage if c.municipio_id != "qro")
+    assert statuses["cor"] == SourceStatus.verificado
+    assert statuses["mar"] != SourceStatus.verificado
+    assert any(c.agora_bloqueado for c in coverage if c.municipio_id == "mar")
 
 
-def test_verificar_queretaro_no_verifica_corregidora():
-    repo = get_repo()
-    repo.set_verificado("qro", True)
-    repo.set_verificado("cor", False)
-
+def test_pdf_en_un_municipio_no_desbloquea_otro_en_zm():
     qro = coverage_for_municipio("qro")
-    cor = coverage_for_municipio("cor")
+    mar = coverage_for_municipio("mar")
 
     assert qro.legal == SourceStatus.verificado
-    assert cor.legal != SourceStatus.verificado
-    assert cor.agora_bloqueado
+    assert mar.legal != SourceStatus.verificado
+    assert mar.agora_bloqueado
 
 
-def test_verificar_monterrey_no_verifica_san_pedro():
-    repo = get_repo()
-    repo.set_verificado("mty", True)
-    repo.set_verificado("spg", False)
-
+def test_pdf_monterrey_no_desbloquea_san_nicolas_sin_catalogo():
     mty = coverage_for_municipio("mty")
-    spg = coverage_for_municipio("spg")
+    snl = coverage_for_municipio("snl")
 
     assert mty.legal == SourceStatus.verificado
-    assert spg.legal != SourceStatus.verificado
+    assert snl.legal != SourceStatus.verificado
+    assert snl.agora_bloqueado
 
 
 def test_documento_juridico_requiere_municipio_especifico():

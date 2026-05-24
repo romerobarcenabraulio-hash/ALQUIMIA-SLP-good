@@ -4,6 +4,8 @@ from __future__ import annotations
 import hashlib
 from typing import List
 
+from app.legal.diagnostic import build_diagnostic
+from app.legal.repository import get_repo
 from app.legal.source_ingest import locate_municipal_legal_source, pdf_ingested_for_analysis
 from app.legal.schemas import LegalSourceIngestStatus
 from app.national.catalog import get_profile, list_zm_municipios
