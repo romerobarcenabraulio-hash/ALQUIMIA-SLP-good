@@ -314,13 +314,13 @@ class TestSpreadsheetRenderer:
         assert "N/D" in str(tir_row[1]), "Sin resultados, TIR debe ser N/D"
 
     def test_gantt_xlsx_tiene_hojas_requeridas(self):
-        """XLSX Gantt debe tener Fases, Hitos, Responsables, Riesgos, Dependencias."""
+        """XLSX Gantt debe tener Fases, Etapas, Hitos, Responsables, Riesgos, Dependencias."""
         from app.export.spreadsheet_renderer import render_gantt_xlsx
         import openpyxl
 
         result = render_gantt_xlsx(MANIFEST_BASICO, theme_zm="SLP")
         wb = openpyxl.load_workbook(io.BytesIO(result))
-        for requerida in ["Fases", "Hitos", "Responsables", "Riesgos", "Dependencias"]:
+        for requerida in ["Fases", "Etapas", "Hitos", "Responsables", "Riesgos", "Dependencias"]:
             assert requerida in wb.sheetnames, f"Hoja '{requerida}' faltante en XLSX Gantt"
 
     def test_gantt_xlsx_no_esta_vacio(self):
@@ -449,7 +449,7 @@ class TestPackageRenderer:
                 assert len(xlsx_files) == 2, f"Esperados 2 XLSX, generados {len(xlsx_files)}"
 
     def test_render_package_genera_professional_zip(self):
-        """professional_package.zip debe existir y contener manifest + render_report."""
+        """professional_package.zip debe existir con analisis/ e implementacion/."""
         with tempfile.TemporaryDirectory() as tmp:
             with patch.dict(os.environ, {"ALQUIMIA_PACKAGES_DIR": tmp}):
                 import importlib
@@ -466,34 +466,32 @@ class TestPackageRenderer:
 
                 with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
                     names = zf.namelist()
-                assert "manifest.json"     in names, "manifest.json no en ZIP profesional"
-                assert "render_report.json" in names, "render_report.json no en ZIP"
+                assert "README.txt" in names, "README.txt no en ZIP"
+                assert any(n.startswith("analisis/") for n in names), "carpeta analisis/ ausente"
+                assert any(n.startswith("implementacion/") for n in names), "carpeta implementacion/ ausente"
+                assert "implementacion/00_Maestro/render_report.json" in names
 
-    def test_render_package_no_genera_txt(self):
-        """Ningún archivo .txt en el ZIP profesional ni en disco."""
+    def test_render_package_incluye_readme_y_actividades(self):
+        """ZIP portafolio incluye README raíz y actividades del Gantt."""
         with tempfile.TemporaryDirectory() as tmp:
             with patch.dict(os.environ, {"ALQUIMIA_PACKAGES_DIR": tmp}):
                 import importlib
                 import app.export.package_renderer as pkg_mod
                 importlib.reload(pkg_mod)
 
-                pkg_id = "pkg-f4-notxt-001"
+                pkg_id = "pkg-f4-portfolio-001"
                 self._setup_package(tmp, pkg_id)
 
                 pkg_mod.render_package(pkg_id, resultados=RESULTADOS_BASICOS)
 
-                # Verificar en disco
-                txt_files = list(Path(tmp).rglob("*.txt"))
-                assert len(txt_files) == 0, (
-                    f"Archivos .txt encontrados: {[f.name for f in txt_files]}"
-                )
-
-                # Verificar en ZIP
                 zip_bytes = pkg_mod.get_professional_zip_bytes(pkg_id)
-                if zip_bytes:
-                    with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
-                        txt_in_zip = [n for n in zf.namelist() if n.endswith(".txt")]
-                    assert len(txt_in_zip) == 0, f"TXT en ZIP: {txt_in_zip}"
+                assert zip_bytes is not None
+                with zipfile.ZipFile(io.BytesIO(zip_bytes)) as zf:
+                    names = zf.namelist()
+                assert any("actividades/" in n and n.endswith("README.txt") for n in names), (
+                    "Actividades con README.txt no encontradas"
+                )
+                assert "implementacion/00_Maestro/Gantt_ClickUp_Import.csv" in names
 
     def test_render_package_assets_tienen_checksum(self):
         """Cada RenderedAsset debe tener checksum SHA-256."""

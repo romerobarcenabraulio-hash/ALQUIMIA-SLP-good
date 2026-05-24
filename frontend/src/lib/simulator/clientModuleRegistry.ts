@@ -122,6 +122,13 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     evidence: 'Curva de captura, horizonte, calendario maestro Gantt.',
     next_action: 'Confirmar metas con capacidad e infraestructura disponible.',
   }),
+  roadmap_implementacion: base({
+    module_id: 'roadmap_implementacion',
+    label: 'Roadmap de implementación (24 meses)',
+    decision: 'Entender las 5 fases institucionales G1–G5, sus actividades y gates antes de dimensionar operación.',
+    evidence: 'Timeline G1–G5, actividades T01–T15 por fase, prerequisitos y riesgos asociados.',
+    next_action: 'Revisar la fase actual y confirmar prerequisitos en M21B antes de avanzar.',
+  }),
   ruta_critica: base({
     module_id: 'ruta_critica',
     label: 'Ruta crítica PERT-RACI',

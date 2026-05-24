@@ -1044,6 +1044,64 @@ export async function buildPlanningAll(payload: PlanningRequest): Promise<Planni
   return res.json()
 }
 
+export interface PlanningNarrativeFase {
+  gate_id: string
+  fase: string
+  periodo: string
+  descripcion: string
+  riesgo_si_no_se_cruza: string
+  prerequisitos: string[]
+  status: string
+  fecha_objetivo: string | null
+  actividades: {
+    task_id: string
+    nombre: string
+    responsable: string
+    inicio_semana: number
+    duracion_semanas: number
+    es_critica: boolean
+    fase_gate: string
+  }[]
+  riesgos: {
+    id: string
+    descripcion: string
+    status: string
+    score: number
+    categoria: string
+  }[]
+  alertas: { gate_id: string; nivel_alerta: string; accion_requerida: string }[]
+}
+
+export interface PlanningNarrativeResponse {
+  ontology: string
+  municipio_id: string | null
+  gate_actual: string | null
+  fases: PlanningNarrativeFase[]
+  alertas_activas: unknown[]
+}
+
+export async function fetchPlanningNarrative(params: {
+  municipio_id?: string
+  zm?: string
+  n_cas_pequeno?: number
+  n_cas_mediano?: number
+  n_cas_grande?: number
+  capex_total_mxn?: number
+  horizonte_semanas?: number
+}): Promise<PlanningNarrativeResponse> {
+  const q = new URLSearchParams()
+  if (params.municipio_id) q.set('municipio_id', params.municipio_id)
+  if (params.zm) q.set('zm', params.zm)
+  if (params.n_cas_pequeno != null) q.set('n_cas_pequeno', String(params.n_cas_pequeno))
+  if (params.n_cas_mediano != null) q.set('n_cas_mediano', String(params.n_cas_mediano))
+  if (params.n_cas_grande != null) q.set('n_cas_grande', String(params.n_cas_grande))
+  if (params.capex_total_mxn != null) q.set('capex_total_mxn', String(params.capex_total_mxn))
+  if (params.horizonte_semanas != null) q.set('horizonte_semanas', String(params.horizonte_semanas))
+  const res = await fetchWithRetry(`${getApiUrl()}/api/planning/narrative?${q.toString()}`)
+  if (!res.ok) throw new Error(`Narrativa no disponible: ${res.status}`)
+  return res.json()
+}
+
 // ─── Wave 1: Centros de Acopio ───────────────────────────────────────────────
 
 export interface CentroAcopio {

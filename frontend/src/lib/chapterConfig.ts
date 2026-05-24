@@ -71,6 +71,11 @@ export const CHAPTERS: ChapterDef[] = [
     borderColor: '#BDD7F5',
     rubros: [
       {
+        id: 'implementacion',
+        label: 'Implementación',
+        modulos: ['roadmap_implementacion'],
+      },
+      {
         id: 'estrategico',
         label: 'Estratégico',
         modulos: ['plan_maestro', 'ruta_critica', 'oleadas_territoriales'],
@@ -87,7 +92,7 @@ export const CHAPTERS: ChapterDef[] = [
       },
     ],
     modulos: [] as string[],
-    firstModuleId: 'plan_maestro',
+    firstModuleId: 'roadmap_implementacion',
   },
   {
     num: 3,
@@ -211,6 +216,7 @@ export const MODULE_NUMBERS: Record<string, string> = {
   costo_omision: '04',
   evaluacion_socioeconomica: '04B',
   teoria_cambio: '04C',
+  roadmap_implementacion: '05D',
   plan_maestro: '05',
   ruta_critica: '05B',
   oleadas_territoriales: '05C',
