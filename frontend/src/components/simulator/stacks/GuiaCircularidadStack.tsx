@@ -15,35 +15,25 @@ import {
   CHAPTERS,
   FUNCTIONARY_MODULE_ORDER,
   moduleNumber,
-  type ChapterDef,
 } from '@/lib/chapterConfig'
+import {
+  CHAPTER_COUNT,
+  CHAPTER_NARRATIVES,
+  CHAPTER_SUBQUESTIONS,
+  chapterModuleRange,
+  type ChapterNarrativeContext,
+} from '@/lib/chapterNarratives'
 import { M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
 import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 
-const fmtN = (n: number) =>
-  new Intl.NumberFormat('es-MX', { maximumFractionDigits: 1 }).format(n)
-const fmtMxn = (n: number) =>
-  new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN', maximumFractionDigits: 0 }).format(n)
-
 const MODULE_COUNT = FUNCTIONARY_MODULE_ORDER.length
-const CHAPTER_COUNT = CHAPTERS.length
 
 interface StepModule {
   label: string
   id: string
 }
 
-interface NarrativeCtx {
-  municipio: string
-  rsuTonDia: number
-  pctCaptura: number
-  empleos: number
-  ingresosMunicipio: number
-  co2e: number
-  horizonte: number
-  nCAs: number
-  tir: number
-}
+interface NarrativeCtx extends ChapterNarrativeContext {}
 
 interface StepDef {
   num: number
@@ -64,70 +54,6 @@ const CHAPTER_ICONS: Record<number, LucideIcon> = {
   2: Target,
   3: Scale,
   4: BarChart3,
-}
-
-const CHAPTER_SUBQUESTIONS: Record<number, string> = {
-  1: 'Entender el municipio antes de proponer soluciones',
-  2: '¿Cuánta infraestructura, logística, personal y dinero se requiere?',
-  3: 'Qué le presentamos al Cabildo para que vote',
-  4: 'Cómo se opera y se demuestra que funciona',
-}
-
-const CHAPTER_NARRATIVES: Record<
-  number,
-  { body: (ctx: NarrativeCtx) => string; learns: string[] }
-> = {
-  1: {
-    body: (ctx) =>
-      `${ctx.municipio} genera aproximadamente ${fmtN(ctx.rsuTonDia)} toneladas de RSU al día; hoy se recupera menos del 6%. El Capítulo 1 recorre trece módulos: línea base e impacto ambiental (M01–M01B), diagnóstico social, encuesta de aceptación y mapeo de actores (M02–M02C), organigrama actual, capacidad institucional, marco legal con brechas normativas, cobertura territorial, dictamen técnico, costo de omisión, evaluación socioeconómica y teoría de cambio.\n\nLa secuencia importa: no conviene reformar el reglamento sin medir disposición ciudadana ni mapear quién opera el servicio hoy. Este capítulo entrega el punto de partida defendible ante Cabildo, financiadores y auditoría.`,
-    learns: [
-      'Generación diaria de RSU por material, con fuente SEMARNAT/INEGI',
-      'Índice de Preparación Ciudadana y encuesta de aceptación por tipo de vivienda',
-      'Brechas del reglamento vigente y dictamen técnico de la reforma',
-      'Costo contrafactual de no actuar en 10 años y evaluación socioeconómica',
-      'Teoría de cambio que conecta diagnóstico con planificación',
-    ],
-  },
-  2: {
-    body: (ctx) =>
-      `Con el diagnóstico cerrado, nueve módulos definen la solución operativa: plan maestro con curva de captura, ruta crítica y oleadas territoriales; infraestructura de centros de acopio (${ctx.nCAs} CAs en el escenario activo), organigrama objetivo con RACI, logística y plan educativo; CAPEX/OPEX desglosado y mercado de materiales.\n\nSin costos no hay presupuesto. Sin organigrama no hay responsables. Sin mercado no hay ingresos. Este capítulo responde lo que el director de finanzas pregunta primero: cuánto cuesta, quién opera y a quién se vende el material recuperado.`,
-    learns: [
-      'Curva de captura bajo escenarios ambicioso, moderado y conservador',
-      'Ruta crítica, oleadas territoriales y mix de centros de acopio P/M/G',
-      'Organigrama del programa con roles, RACI y plantilla por tipo de CA',
-      'CAPEX y OPEX con desglose de equipos, personal y contingencia',
-      'Compradores y precios spot por fracción: PET, aluminio, papel, vidrio, composta',
-    ],
-  },
-  3: {
-    body: (ctx) =>
-      `El Cabildo no vota la técnica: vota el modelo de negocio. Cinco módulos responden quién opera bajo cuatro esquemas (municipal, concesionado, APP, fideicomiso), presentan escenarios financieros con Monte Carlo — bajo el escenario base el municipio proyecta ${fmtMxn(ctx.ingresosMunicipio)} anuales y TIR ${fmtN(ctx.tir)}% —, mapean seis caminos de financiamiento, evalúan riesgos y consolidan el expediente para sesión de Cabildo.\n\nAquí se detienen muchos programas municipales: nadie contestó quién pone el capital, quién asume el riesgo operativo y cómo se reparte el ingreso.`,
-    learns: [
-      'Cuatro esquemas de concesión: capital, operación y reparto de ingresos',
-      'Escenarios P10/P50/P90 de TIR y VPN con tornado de sensibilidad',
-      'Seis caminos de financiamiento con elegibilidad y costo de capital',
-      'Riesgos del modelo rankeados por probabilidad × impacto',
-      'Expediente consolidado listo para presentación ante Cabildo',
-    ],
-  },
-  4: {
-    body: (ctx) =>
-      `Ocho módulos cubren la operación y el reporteo: inspección escalonada (educación → advertencia → sanción), monitoreo proyectado vs. real, doble materialidad GRI 306 / ESRS E5, trazabilidad de fuentes, control presupuestal (EVM y conciliación mensual) y tableros de riesgo con gate de cierre.\n\nEl programa proyecta evitar ${fmtN(ctx.co2e)} t CO₂e/año — dato usable ante fondos verdes. Cada cifra del simulador lleva fórmula, fuente y estado de verificación.`,
-    learns: [
-      'Inspección alineada al reglamento municipal vigente',
-      'Semáforo proyectado vs. real del desempeño operativo',
-      'Reporte GRI 306 / ESRS E5 con KPIs del simulador',
-      'Trazabilidad: fórmula, fuente y nivel de certeza por dato',
-      'Control presupuestal EVM y conciliación mensual',
-      'Tablero de riesgos y gate de cierre del expediente',
-    ],
-  },
-}
-
-function chapterModuleRange(ch: ChapterDef): string {
-  const modulos = ch.modulos
-  if (!modulos.length) return ''
-  return `M${moduleNumber(modulos[0]!)} – M${moduleNumber(modulos[modulos.length - 1]!)}`
 }
 
 function moduleLabel(id: string): string {

@@ -259,6 +259,15 @@ export const MODULE_NUMBERS: Record<string, string> = {
   organization_report: 'E3',
 }
 
+export function getChapterModuleOrdinal(chapter: ChapterDef, moduleId: string): number {
+  const idx = chapter.modulos.indexOf(moduleId)
+  return idx >= 0 ? idx + 1 : 0
+}
+
+export function getChapterIndexAnchor(moduleId: string): string | null {
+  return getChapterForModule(moduleId)?.firstModuleId ?? null
+}
+
 export function moduleNumber(id: string): string {
   return MODULE_NUMBERS[id] ?? '??'
 }

@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Lock,
+  ListTree,
   PanelRightClose,
   PanelRightOpen,
   Share2,
@@ -35,10 +36,13 @@ import {
 import type { DecisionModule, PortalEntry } from '@/types'
 import { generarTransicion, type ModuloId } from '@/lib/narrativaSpine'
 import { ChapterSeparator } from '@/components/simulator/ChapterSeparator'
+import { ChapterIndex } from '@/components/simulator/ChapterIndex'
 import {
   CHAPTERS, MODULE_CHAPTER, MODULE_NUMBERS, moduleNumber,
   getChapterForModule,
+  getChapterIndexAnchor,
 } from '@/lib/chapterConfig'
+import { shouldOfferChapterIndex } from '@/lib/chapterNarratives'
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
@@ -429,9 +433,11 @@ function CityInlineBar() {
 function ModuleContextHeader({
   module,
   moduleId,
+  onOpenChapterIndex,
 }: {
   module: DecisionModule
   moduleId: string
+  onOpenChapterIndex?: () => void
 }) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -480,6 +486,17 @@ function ModuleContextHeader({
           M{num} · {module.label}
         </p>
         <div className="flex items-center gap-2 shrink-0">
+          {chapter && onOpenChapterIndex && (
+            <button
+              type="button"
+              onClick={onOpenChapterIndex}
+              className="inline-flex items-center gap-1 rounded-full border border-[#E8E4DC] bg-white px-2 py-1 text-[10px] font-semibold text-[#6B6760] transition-colors hover:border-[#D7E8C0] hover:text-[#3B6D11]"
+              title={`Índice del capítulo ${chapter.num}: ${chapter.label}`}
+            >
+              <ListTree size={11} aria-hidden />
+              Índice
+            </button>
+          )}
           {conf && (
             <span
               className="text-[10px] font-medium px-1.5 py-0.5 rounded-full shrink-0"
@@ -1054,8 +1071,14 @@ export function DecisionModuleShell({
   const contentRef = useRef<HTMLDivElement>(null)
   const activeChartId = useChartSectionObserver(contentRef, activeModule?.module_id ?? null)
 
-  // Chapter separator state — shows interstitial screen on chapter transitions
+  // Capítulo: separador al cruzar límites; índice al entrar o al solicitarlo
   const [chapterSep, setChapterSep] = useState<{ fromId: string; toId: string } | null>(null)
+  const [chapterIndex, setChapterIndex] = useState<{
+    anchorId: string
+    mode: 'entry' | 'review'
+    highlightId?: string
+  } | null>(null)
+  const initialCoverChecked = useRef(false)
   const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
 
   useEffect(() => {
@@ -1091,24 +1114,53 @@ export function DecisionModuleShell({
     return () => window.removeEventListener('keydown', handler)
   }, [toggleGuidance])
 
-  /** Intercepts navigation: shows ChapterSeparator when crossing chapter boundaries */
+  const openChapterIndex = useCallback((moduleId: string, mode: 'entry' | 'review' = 'review') => {
+    const anchor = getChapterIndexAnchor(moduleId)
+    if (!anchor) return
+    setChapterIndex({
+      anchorId: anchor,
+      mode,
+      highlightId: mode === 'review' ? moduleId : undefined,
+    })
+  }, [])
+
+  const navigateOrCover = useCallback((toId: string) => {
+    if (shouldOfferChapterIndex(toId)) {
+      setChapterIndex({ anchorId: toId, mode: 'entry' })
+      return
+    }
+    onModuleChange(toId)
+  }, [onModuleChange])
+
+  /** Intercepts navigation: separator on chapter cross, cover at chapter entry */
   const handleModuleChange = useCallback((toId: string) => {
     const fromId = activeModule?.module_id
-    if (!fromId) { onModuleChange(toId); return }
+    if (!fromId) {
+      navigateOrCover(toId)
+      return
+    }
     const fromChap = MODULE_CHAPTER[fromId]
     const toChap   = MODULE_CHAPTER[toId]
-    // Only show separator when both modules have chapters and they differ
     if (fromChap && toChap && fromChap !== toChap) {
+      setChapterIndex(null)
       setChapterSep({ fromId, toId })
     } else {
-      onModuleChange(toId)
+      navigateOrCover(toId)
     }
-  }, [activeModule?.module_id, onModuleChange])
+  }, [activeModule?.module_id, navigateOrCover])
 
   useEffect(() => {
     // Clear chapter separator when activeModule changes externally (e.g. sidebar click)
     setChapterSep(null)
   }, [activeModule?.module_id])
+
+  useEffect(() => {
+    if (initialCoverChecked.current || !activeModule || chapterSep || chapterIndex) return
+    initialCoverChecked.current = true
+    if (shouldOfferChapterIndex(activeModule.module_id)) {
+      setChapterIndex({ anchorId: activeModule.module_id, mode: 'entry' })
+    }
+  }, [activeModule, chapterSep, chapterIndex])
 
   useEffect(() => {
     setActiveDecisionModuleId(activeModule?.module_id ?? null)
@@ -1159,7 +1211,7 @@ export function DecisionModuleShell({
         />
       )}
 
-      {/* Chapter Separator — interstitial when crossing chapter boundaries */}
+      {/* Chapter interstitials */}
       {chapterSep ? (
         <ChapterSeparator
           fromModuleId={chapterSep.fromId}
@@ -1167,9 +1219,41 @@ export function DecisionModuleShell({
           onContinue={() => {
             const toId = chapterSep.toId
             setChapterSep(null)
-            onModuleChange(toId)
+            navigateOrCover(toId)
           }}
           onBack={() => setChapterSep(null)}
+        />
+      ) : chapterIndex ? (
+        <ChapterIndex
+          chapterAnchorId={chapterIndex.anchorId}
+          highlightModuleId={chapterIndex.highlightId ?? activeModule?.module_id}
+          mode={chapterIndex.mode}
+          onSelectModule={moduleId => {
+            setChapterIndex(null)
+            onModuleChange(moduleId)
+          }}
+          onBeginFromStart={() => {
+            const anchor = chapterIndex.anchorId
+            setChapterIndex(null)
+            if (activeModule?.module_id !== anchor) {
+              onModuleChange(anchor)
+            }
+          }}
+          onBack={() => {
+            if (chapterIndex.mode === 'review') {
+              setChapterIndex(null)
+              return
+            }
+            const pending = chapterIndex.anchorId !== activeModule?.module_id
+            setChapterIndex(null)
+            if (!pending && activeModule?.module_id) {
+              const onFirstModule =
+                getChapterForModule(activeModule.module_id)?.firstModuleId === activeModule.module_id
+              if (onFirstModule) {
+                onModuleChange('guia_circularidad')
+              }
+            }
+          }}
         />
       ) : (
         /* Two-column body: content | guidance */
@@ -1178,7 +1262,15 @@ export function DecisionModuleShell({
           <div className="flex-1 flex flex-col min-w-0 bg-surface-base">
             {/* Content area — flows naturally, page scrolls */}
             <div ref={contentRef} className="px-6 py-6 transition-opacity duration-200" key={activeModule.module_id}>
-              <ModuleContextHeader module={activeModule} moduleId={activeModule.module_id} />
+              <ModuleContextHeader
+                module={activeModule}
+                moduleId={activeModule.module_id}
+                onOpenChapterIndex={
+                  getChapterIndexAnchor(activeModule.module_id)
+                    ? () => openChapterIndex(activeModule.module_id, 'review')
+                    : undefined
+                }
+              />
               {activeModule.status === 'blocked' ? (
                 <div className="rounded-[10px] border border-amber-300 bg-amber-50 p-5">
                   <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
