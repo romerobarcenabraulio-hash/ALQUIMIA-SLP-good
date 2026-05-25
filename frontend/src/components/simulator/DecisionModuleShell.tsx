@@ -154,10 +154,16 @@ export function ModuleNav({
                   return (
                     <details
                       key={rubro.id}
-                      open={isActiveRubro || isActiveChapter}
+                      open={isActiveRubro}
                       className="group/rubro border-t border-[#E8E4DC]/60 first:border-t-0"
                     >
                       <summary
+                        onClick={(e) => {
+                          e.preventDefault()
+                          if (!isActiveRubro && rubroModules[0]) {
+                            onChange(rubroModules[0].module_id)
+                          }
+                        }}
                         className={cn(
                           'flex items-center gap-2 px-4 py-1.5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden text-[9px] font-semibold uppercase tracking-[0.06em]',
                           isDark ? 'text-[#6A9A50] hover:bg-[#243320]' : 'text-[#8A8680] hover:bg-[#E4E2DD]',
