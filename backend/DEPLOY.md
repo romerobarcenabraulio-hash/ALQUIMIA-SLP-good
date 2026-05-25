@@ -15,10 +15,23 @@
 
 ## Render
 
+### Opción A — Docker (recomendado)
+
 1. **New → Web Service**, conectar repo GitHub.
-2. **Root Directory:** dejar **vacío** (raíz del repo, no `backend/`).
-3. **Dockerfile Path:** `Dockerfile` (raíz del repo; incluye `modules/`, `config/`, `data/`).
-4. Variables: ver `.env.example` + `CRON_SECRET` para el Cron Job.
+2. **Environment:** Docker
+3. **Root Directory:** vacío (raíz del repo)
+4. **Dockerfile Path:** `Dockerfile`
+5. Variables: ver `.env.example` + `CRON_SECRET` para el Cron Job.
+
+### Opción B — Native Python (si Docker falla en el plan)
+
+1. **Root Directory:** vacío
+2. **Build Command:** `./render-build.sh`
+3. **Start Command:** `backend/scripts/start.sh`
+4. Mismas variables de entorno que Docker.
+
+> Si **Root Directory = `backend`**, el build rompe HERMES/KRONOS (`modules/` no entra al contexto Docker). Déjalo vacío o usa la opción B con build/start de arriba desde la raíz.
+
 5. Tras deploy, verificar:
 
 ```bash
