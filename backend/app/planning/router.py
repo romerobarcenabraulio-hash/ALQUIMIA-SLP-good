@@ -14,12 +14,20 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
+from sqlalchemy.orm import Session
+
+from app.db.session import get_db
 
 from app.agents.schemas import GanttPlan, PertPlan, RACIPlan
 from app.planning.builder import build_gantt, build_pert, build_raci
 from app.planning.narrative import get_implementation_narrative
+from app.planning.weekly_status import (
+    build_weekly_status,
+    load_latest_weekly_status,
+    persist_weekly_status,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -66,6 +74,26 @@ def planning_narrative(
         capex_total=capex_total_mxn,
         horizonte_semanas=horizonte_semanas,
     )
+
+
+@router.get("/weekly-status", summary="Reporte semanal KRONOS (último generado)")
+def get_weekly_status_cached() -> dict:
+    """Retorna el último weekly_status persistido, o 404 si no existe."""
+    latest = load_latest_weekly_status()
+    if latest is None:
+        return {"available": False, "message": "Ejecutar POST /weekly-status/generate primero"}
+    return {"available": True, "report": latest}
+
+
+@router.post("/weekly-status/generate", summary="Generar y persistir reporte semanal")
+def post_weekly_status_generate(
+    municipio_id: str | None = Query(None),
+    db: Session | None = Depends(get_db),
+) -> dict:
+    """Genera CPI/SPI/EAC, gates, riesgos y precios; persiste en data/planning/."""
+    report = build_weekly_status(municipio_id=municipio_id, db=db)
+    path = persist_weekly_status(report)
+    return {"ok": True, "path": str(path), "report": report}
 
 
 @router.post("/gantt", response_model=GanttPlan)

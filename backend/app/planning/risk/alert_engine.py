@@ -70,4 +70,23 @@ def get_all_active_alerts() -> List[dict]:
     except Exception as exc:
         logger.error(f"alert_engine stale_risk_failed: {exc}")
 
+    try:
+        from app.planning.financial_model.material_prices import check_all_precios, get_precio_ancla
+
+        precios = {}
+        for material in ("PET", "papel_carton", "vidrio", "aluminio"):
+            precio, _ = get_precio_ancla(material)
+            precios[material] = precio
+        for r in check_all_precios(precios):
+            if r["alerta"]:
+                alerts.append({
+                    "tipo": "precio_material",
+                    "severidad": "ROJO" if abs(r["desviacion_pct"]) > 20 else "AMARILLO",
+                    "mensaje": r["mensaje"],
+                    "referencia": r["material"],
+                    "desviacion_pct": r["desviacion_pct"],
+                })
+    except Exception as exc:
+        logger.error(f"alert_engine material_prices_failed: {exc}")
+
     return alerts

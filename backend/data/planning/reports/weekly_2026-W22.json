@@ -1,0 +1,123 @@
+{
+  "week": "2026-W22",
+  "generated_at": "2026-05-25",
+  "municipio_id": "slp",
+  "gate_actual": "G1",
+  "gate_estado": "NO_INICIADO",
+  "dias_proximo_gate": null,
+  "cpi": 0.9211,
+  "spi": 0.9333,
+  "eac": 1628571.43,
+  "tcpi": 1.0268,
+  "vac": -128571.43,
+  "semaforo": "AMARILLO",
+  "evm_fuente": "sintetico_fase_0_1",
+  "evm_detalle": {
+    "bac": 1500000.0,
+    "pv": 375000.0,
+    "ev": 350000.0,
+    "ac": 380000.0,
+    "cpi": 0.9211,
+    "spi": 0.9333,
+    "tcpi": 1.0268,
+    "eac": 1628571.43,
+    "vac": -128571.43,
+    "vac_pct": -8.57,
+    "semaforo": "AMARILLO"
+  },
+  "riesgos_rojos": [
+    "R01",
+    "R02"
+  ],
+  "riesgos_total": 9,
+  "gate_alertas": [],
+  "precios_alertas": [],
+  "precios_check": [
+    {
+      "material": "PET",
+      "precio_ancla": 5.5,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 5.5,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: PET en $5.50/kg (+0.0% vs ancla $5.50 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "papel_carton",
+      "precio_ancla": 2.5,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 2.5,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: papel_carton en $2.50/kg (+0.0% vs ancla $2.50 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "vidrio",
+      "precio_ancla": 2.3,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 2.3,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: vidrio en $2.30/kg (+0.0% vs ancla $2.30 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "aluminio",
+      "precio_ancla": 15.1,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 15.1,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: aluminio en $15.10/kg (+0.0% vs ancla $15.10 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    }
+  ],
+  "alertas_consolidadas": [
+    {
+      "tipo": "riesgo_rojo",
+      "severidad": "ROJO",
+      "mensaje": "Riesgo R01 (score 9) en ROJO: Cabildo no aprueba reforma reglamentaria — SIN OWNER ASIGNADO",
+      "referencia": "R01"
+    },
+    {
+      "tipo": "riesgo_rojo",
+      "severidad": "ROJO",
+      "mensaje": "Riesgo R02 (score 9) en ROJO: Concesionario bloquea implementación de separación — SIN OWNER ASIGNADO",
+      "referencia": "R02"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R01 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R01"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R02 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R02"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R07 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R07"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R08 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R08"
+    }
+  ],
+  "datos_faltantes": [
+    "Sin snapshot EVM en PostgreSQL — ingresar PV/EV/AC vía POST /api/planning/budget/evm",
+    "AC real de operación logística (HERMES daily_summary) aún no cableado a EVM"
+  ]
+}

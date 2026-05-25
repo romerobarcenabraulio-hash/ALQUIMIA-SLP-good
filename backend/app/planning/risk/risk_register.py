@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 _THIS_DIR = Path(__file__).resolve().parent
 RISK_REGISTER_PATH = _THIS_DIR.parent.parent.parent / "data" / "risk" / "risk_register.json"
 
-RiskId = Literal["R01", "R02", "R03", "R04", "R05", "R06"]
+RiskId = Literal["R01", "R02", "R03", "R04", "R05", "R06", "R07", "R08", "R09"]
 RiskStatus = Literal["ROJO", "AMARILLO", "VERDE", "CERRADO"]
 
 # ── Matriz de scoring — PMBOK 6th ed. Tabla 11-5 ─────────────────────────────
@@ -96,6 +96,30 @@ _BASE_RISK_DEFS: List[dict] = [
         "categoria": "Político",
         "gate_afectado": "G4",
     },
+    {
+        "id": "R07",
+        "descripcion": "Score legal bajo en municipio — reforma insuficiente",
+        "probabilidad": "Alta",
+        "impacto": "Alto",
+        "categoria": "Jurídico",
+        "gate_afectado": "G1",
+    },
+    {
+        "id": "R08",
+        "descripcion": "Reglamentos no homologados entre municipios de la ZM",
+        "probabilidad": "Alta",
+        "impacto": "Alto",
+        "categoria": "Jurídico",
+        "gate_afectado": "G2",
+    },
+    {
+        "id": "R09",
+        "descripcion": "OPEX logístico excede presupuesto aprobado (feed HERMES)",
+        "probabilidad": "Media",
+        "impacto": "Alto",
+        "categoria": "Financiero-operativo",
+        "gate_afectado": "G3",
+    },
 ]
 
 
@@ -136,13 +160,27 @@ def _write_json(path: Path, data: dict) -> None:
         json.dump(data, f, ensure_ascii=False, indent=2, default=str)
 
 
+def _merge_missing_base_risks(register: Dict[str, dict]) -> Dict[str, dict]:
+    """Añade R01–R09 faltantes sin sobrescribir estado existente."""
+    initial = _build_initial_register()
+    changed = False
+    for rid, data in initial.items():
+        if rid not in register:
+            register[rid] = data
+            changed = True
+    if changed:
+        save_risk_register(register)
+    return register
+
+
 def load_risk_register() -> Dict[str, dict]:
     """Carga el registro. Inicializa con definiciones base si no existe."""
     if not RISK_REGISTER_PATH.exists():
         initial = _build_initial_register()
         _write_json(RISK_REGISTER_PATH, initial)
         return dict(initial)
-    return _read_json(RISK_REGISTER_PATH)
+    register = _read_json(RISK_REGISTER_PATH)
+    return _merge_missing_base_risks(register)
 
 
 def save_risk_register(register: Dict[str, dict]) -> None:
@@ -160,7 +198,7 @@ def update_risk(
     """Actualiza un riesgo y registra el cambio en su historial."""
     register = load_risk_register()
     if risk_id not in register:
-        raise ValueError(f"risk_id inválido: {risk_id}. Válidos: R01-R06")
+        raise ValueError(f"risk_id inválido: {risk_id}. Válidos: R01-R09")
 
     risk = register[risk_id]
     old_status = risk["status"]

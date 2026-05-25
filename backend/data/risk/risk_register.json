@@ -94,5 +94,53 @@
     "evidencia_reciente": null,
     "historial": [],
     "fuente_score": "PMBOK 6th ed. Tabla 11-5 — Prob × Impacto"
+  },
+  "R07": {
+    "descripcion": "Score legal bajo en municipio — reforma insuficiente",
+    "probabilidad": "Alta",
+    "impacto": "Alto",
+    "score": 6,
+    "status": "AMARILLO",
+    "categoria": "Jurídico",
+    "gate_afectado": "G1",
+    "owner": null,
+    "fecha_creacion": "2026-05-22",
+    "fecha_ultima_revision": null,
+    "plan_mitigacion": null,
+    "evidencia_reciente": null,
+    "historial": [],
+    "fuente_score": "PMBOK 6th ed. Tabla 11-5 — Prob × Impacto"
+  },
+  "R08": {
+    "descripcion": "Reglamentos no homologados entre municipios de la ZM",
+    "probabilidad": "Alta",
+    "impacto": "Alto",
+    "score": 6,
+    "status": "AMARILLO",
+    "categoria": "Jurídico",
+    "gate_afectado": "G2",
+    "owner": null,
+    "fecha_creacion": "2026-05-22",
+    "fecha_ultima_revision": null,
+    "plan_mitigacion": null,
+    "evidencia_reciente": null,
+    "historial": [],
+    "fuente_score": "PMBOK 6th ed. Tabla 11-5 — Prob × Impacto"
+  },
+  "R09": {
+    "descripcion": "OPEX logístico excede presupuesto aprobado (feed HERMES)",
+    "probabilidad": "Media",
+    "impacto": "Alto",
+    "score": 4,
+    "status": "AMARILLO",
+    "categoria": "Financiero-operativo",
+    "gate_afectado": "G3",
+    "owner": null,
+    "fecha_creacion": "2026-05-22",
+    "fecha_ultima_revision": null,
+    "plan_mitigacion": null,
+    "evidencia_reciente": null,
+    "historial": [],
+    "fuente_score": "PMBOK 6th ed. Tabla 11-5 — Prob × Impacto"
   }
 }

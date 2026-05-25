@@ -49,6 +49,7 @@ from app.google.router import router as google_router
 from app.logistics.router import router as logistics_router
 from app.planning.budget.router import router as planning_budget_router
 from app.planning.risk.router import router as planning_risk_router
+from app.planning.financial_model.router import router as planning_prices_router
 from app.observability import (
     RequestLoggingMiddleware,
     app_version_from_env,
@@ -227,6 +228,7 @@ app.include_router(google_router,     prefix="/api/v1/google",        tags=["goo
 app.include_router(logistics_router,  prefix="/api/v1/logistics",     tags=["hermes-logistics"])
 app.include_router(planning_budget_router, prefix="/api/planning/budget", tags=["planning-budget"])
 app.include_router(planning_risk_router,   prefix="/api/planning/risk",   tags=["planning-risk"])
+app.include_router(planning_prices_router, prefix="/api/planning/prices", tags=["planning-prices"])
 
 
 @app.on_event("startup")
