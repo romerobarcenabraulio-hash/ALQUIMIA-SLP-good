@@ -571,7 +571,6 @@ function ModuleContextHeader({
 
       {preguntaGuia && (
         <p className="mt-3 text-[13px] italic text-[#6B6760] leading-relaxed">
-          <span className="not-italic font-semibold text-[#A8A49C] mr-1">Pregunta guía:</span>
           {preguntaGuia}
         </p>
       )}
@@ -896,7 +895,7 @@ function GuidancePanel({
 
         {/* Lectura ejecutiva */}
         {lectura && (
-          <SidebarAccordion summary={`Lectura ejecutiva · ${lectura.title}`}>
+          <SidebarAccordion summary={lectura.title}>
             <div className="space-y-3">
               {lectura.items.map(item => (
                 <div key={item.header}>

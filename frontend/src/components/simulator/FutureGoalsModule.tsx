@@ -477,9 +477,6 @@ function DecisionCommitBar({
   if (compact) {
     return (
       <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-4">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-2 font-semibold">
-          Decisiones comprometidas heredadas — solo lectura
-        </p>
         <div className="flex flex-wrap gap-2 text-[10px]">
           <span className="rounded-[6px] border border-[#D7E8C0] bg-[#F4FAEC] px-2.5 py-1">
             <span className="text-[#3B6D11] font-semibold">M1:</span>{' '}
@@ -497,13 +494,10 @@ function DecisionCommitBar({
 
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-semibold">
-        Decisiones comprometidas — no editables en este módulo
-      </p>
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         {/* M1 */}
         <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">Módulo 1 · Escenario y trayectoria</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">M1 · Escenario</p>
           <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">{municipio}</p>
           <p className="text-[11px] text-[#5A5750] mt-0.5">{horizonte} años · {trayectoria}</p>
           <div className="flex gap-3 mt-1.5">
@@ -524,7 +518,7 @@ function DecisionCommitBar({
 
         {/* M2 */}
         <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#1A5FA8] font-bold mb-1.5">Módulo 2 · Condición jurídica</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#1A5FA8] font-bold mb-1.5">M2 · Marco jurídico</p>
           <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">{faseLegal}</p>
           <p className="text-[11px] text-[#5A5750] mt-0.5">Reforma requerida antes de contratación</p>
           <div className="flex gap-3 mt-1.5">
@@ -545,9 +539,8 @@ function DecisionCommitBar({
 
         {/* M3 */}
         <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] font-bold mb-1.5">Módulo 3 · Decisión logística actual</p>
-          <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">Definir ruta crítica y calendario</p>
-          <p className="text-[11px] text-[#5A5750] mt-0.5">Fases · actividades · responsables · gates</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] font-bold mb-1.5">M3 · Planeación</p>
+          <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">Ruta crítica y calendario</p>
         </div>
       </div>
     </div>
@@ -1110,9 +1103,6 @@ function Page3({
     <div className="space-y-6">
       {/* Inherited decisions */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-5 py-4">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-bold">
-          Decisiones comprometidas heredadas — solo lectura
-        </p>
         <div className="flex flex-wrap gap-2">
           {[
             { label: 'Escenario',          value: trayectoria },
@@ -1386,17 +1376,10 @@ function RightRail({ page, vacios }: { page: number; vacios: number }) {
         </div>
         <p className="text-[9px] text-[#A8A49C]">{content.confianza.texto}</p>
       </RailSection>
-      <RailSection title="Qué está fijo vs. editable">
-        <div className="space-y-1.5">
-          <div>
-            <p className="text-[9px] font-semibold text-[#C0392B] mb-0.5">Solo lectura en M3:</p>
-            <p className="text-[9px]">Horizonte · municipio · trayectoria · RSU · precios · composición</p>
-          </div>
-          <div>
-            <p className="text-[9px] font-semibold text-[#3B6D11] mb-0.5">Editable en M3:</p>
-            <p className="text-[9px]">Fases · actividades · responsables · duraciones · RACI · gates · oleadas</p>
-          </div>
-        </div>
+      <RailSection title="Qué puedes editar aquí">
+        <p className="text-[9px] text-[#6B6760]">
+          Fases, actividades, responsables, duraciones, RACI, gates y oleadas. El escenario base (M1–M2) viene fijado arriba.
+        </p>
       </RailSection>
       <RailSection title="Interdependencias del programa">
         <div className="space-y-1.5">

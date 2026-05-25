@@ -384,10 +384,10 @@ export function RiskTrendsPanel() {
         <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
           <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Variables críticas del modelo</p>
           <p className="text-[9px] text-[#A8A49C] mb-4">
-            Sensibilidad del VPN a variación ±20% — análisis tornado calculado desde el estado actual del simulador
+            Sensibilidad del VPN a variación ±20%
           </p>
           {tornado.length === 0 && (
-            <p className="text-[11px] text-[#A8A49C] italic">Calculando desde estado del simulador…</p>
+            <p className="text-[11px] text-[#A8A49C] italic">Calculando…</p>
           )}
           <div className="space-y-2.5">
             {tornado.map(v => (

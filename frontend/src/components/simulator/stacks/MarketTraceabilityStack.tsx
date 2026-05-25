@@ -315,7 +315,6 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
   if (compact) {
     return (
       <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-4">
-        <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-2 font-semibold">Decisiones comprometidas — solo lectura</p>
         <div className="flex flex-wrap gap-2 text-[10px]">
           <span className="rounded-[6px] border border-[#D7E8C0] bg-[#F4FAEC] px-2.5 py-1">
             <span className="text-[#3B6D11] font-semibold">M1:</span>{' '}<span className="text-[#4A4740]">{municipio} · {horizonte}a · {trayectoria} · {fmt(rsuDia)} capturable</span>
@@ -330,21 +329,19 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
   }
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <p className="text-[9px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-semibold">Decisiones comprometidas — no editables en este módulo</p>
       <div className="rounded-[8px] bg-[#FEF7E7] border border-[#FDE68A] px-3 py-2 mb-3 text-[10px] text-[#92400E]">
-        Los valores de aceptación social provienen del Módulo de Estudio Sociodemográfico y Aceptación. Si ese módulo no ha sido completado, se usan supuestos preliminares con nivel de confianza <strong>condicionado</strong>.
+        Los valores de aceptación social provienen del estudio sociodemográfico (M02C). Sin ese módulo, se usan supuestos preliminares.
       </div>
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         {[
-          { label: 'Módulo 1 · Escenario comprometido', color: '#3B6D11', bg: '#F4FAEC', border: '#D7E8C0', body: `${municipio} · ${horizonte} años · ${trayectoria}`, sub: `${fmt(rsuDia)} capturable`, note: 'Flujo, composición, precios y merma heredados' },
-          { label: 'Módulo 6 · Infraestructura',        color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5', body: infra.label, sub: infra.sub, note: 'Capacidad desde mix CAs y motor M01' },
-          { label: 'Módulo 5 · Decisión actual',        color: '#A8A49C', bg: '#FAFAF8', border: '#E8E4DC', body: 'Viabilidad de mercado, aceptación y riesgo', sub: 'Emitir recomendación de viabilidad', note: 'Proceder / Condicionado / No proceder' },
+          { label: 'M1 · Escenario', color: '#3B6D11', bg: '#F4FAEC', border: '#D7E8C0', body: `${municipio} · ${horizonte} años · ${trayectoria}`, sub: `${fmt(rsuDia)} capturable` },
+          { label: 'M6 · Infraestructura', color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5', body: infra.label, sub: infra.sub },
+          { label: 'M5 · Decisión', color: '#A8A49C', bg: '#FAFAF8', border: '#E8E4DC', body: 'Viabilidad de mercado y aceptación', sub: 'Proceder / Condicionado / No proceder' },
         ].map(b => (
           <div key={b.label} className="flex-1 min-w-[150px] rounded-[10px] border px-4 py-3" style={{ borderColor: b.border, background: b.bg }}>
             <p className="text-[9px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
             <p className="text-[13px] font-semibold text-[#1C1B18]">{b.body}</p>
             <p className="text-[11px] text-[#5A5750]">{b.sub}</p>
-            <p className="text-[10px] text-[#A8A49C] mt-1">{b.note}</p>
           </div>
         ))}
       </div>

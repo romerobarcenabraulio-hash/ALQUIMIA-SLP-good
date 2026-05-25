@@ -127,20 +127,17 @@ export function ProgresionPlanMunicipalTiempo() {
   return (
     <section className="space-y-8">
       <header>
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Plan municipal integral</p>
-        <h2 className="font-serif text-[24px] text-[#1C1B18] mt-1">
+        <h2 className="font-serif text-[24px] text-[#1C1B18]">
           Progresión del Plan Municipal en el Tiempo
         </h2>
         <ScopeAnclaKicker className="mt-2" />
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760] max-w-3xl">
-          Lectura ejecutiva: infraestructura, economía circular material y cobeneficios públicos en el mismo eje temporal.
-          Las series se recalculan automáticamente con municipio, horizonte ({horizonte}a) y generación per cápita (
-          {Number(genPercapita ?? 0).toFixed(2)} kg/hab/día). Trayectoria de captura: preset {presetTrayectoria}.
+          Infraestructura, economía circular y cobeneficios en el mismo eje temporal — horizonte {horizonte}a,
+          generación {Number(genPercapita ?? 0).toFixed(2)} kg/hab/día, trayectoria {presetTrayectoria}.
         </p>
       </header>
 
       <div className="rounded-[14px] border border-[#C8D9B8] bg-[#F4F9EF] p-4 space-y-3">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#2D5409]">Tiempo en el plan (lectura)</p>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <p className="font-serif text-[18px] text-[#1C1B18]">
             Mes {mesVista} de {totalMeses}

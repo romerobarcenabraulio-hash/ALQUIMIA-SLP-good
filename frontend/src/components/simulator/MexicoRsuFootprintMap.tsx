@@ -59,7 +59,7 @@ export default function MexicoRsuFootprintMap() {
         const data = await getRsuFootprintMap()
         if (!cancelled) setPayload(data)
       } catch {
-        if (!cancelled) setError('Servidor no disponible — mostrando referencia geográfica estática.')
+        if (!cancelled) setError('Datos en preparación.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -106,14 +106,13 @@ export default function MexicoRsuFootprintMap() {
 
       {/* Status banners */}
       {loading && (
-        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#A8A49C] flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#D4881E] animate-pulse" />
-          Conectando con el servidor para datos de generación RSU…
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#A8A49C] animate-pulse">
+          …
         </div>
       )}
       {!loading && isFallback && (
         <div className="rounded-[8px] border border-[#F5D98A] bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#6B4800]">
-          {error ?? 'Servidor no disponible.'} Los puntos muestran la ubicación geográfica de referencia — sin datos de volumen.
+          Vista de referencia geográfica — volúmenes RSU pendientes de carga.
         </div>
       )}
       {!isFallback && (

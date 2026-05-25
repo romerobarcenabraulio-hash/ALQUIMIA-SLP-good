@@ -39,7 +39,7 @@ export function KronosRiskDashboardStack() {
     <div className="space-y-3 rounded-[8px] border border-[#D8C4E8] bg-[#F5EFF9] p-4">
       <p className="text-[10px] text-[#6B6760]">Score = Prob × Impacto (PMBOK 11-5)</p>
 
-      {loading && <p className="text-[11px] text-[#6B6760]">Cargando registro…</p>}
+      {loading && <p className="text-[11px] text-[#A8A49C] animate-pulse">…</p>}
       {error && <p className="text-[11px] text-red-700">{error}</p>}
 
       {register &&

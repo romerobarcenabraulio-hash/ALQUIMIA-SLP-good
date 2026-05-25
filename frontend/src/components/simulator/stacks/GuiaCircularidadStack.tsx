@@ -270,7 +270,6 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
       >
         <p className="text-[13px] leading-[1.75] text-gray-600c mb-5">
           {MODULE_COUNT} módulos en cuatro capítulos. Cada cifra muestra fórmula, fuente y certeza.
-          Metodología en el panel derecho (icono del libro).
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">

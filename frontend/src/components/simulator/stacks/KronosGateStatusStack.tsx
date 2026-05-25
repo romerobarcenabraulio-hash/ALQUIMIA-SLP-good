@@ -92,7 +92,7 @@ export function KronosGateStatusStack() {
         </div>
       </div>
 
-      {loading && <p className="text-[11px] text-[#6B6760]">Cargando gates…</p>}
+      {loading && <p className="text-[11px] text-[#A8A49C] animate-pulse">…</p>}
       {error && <p className="text-[11px] text-red-700">{error}</p>}
 
       {alertas.length > 0 && (

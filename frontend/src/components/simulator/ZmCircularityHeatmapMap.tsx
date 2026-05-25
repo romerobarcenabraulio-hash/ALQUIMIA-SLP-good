@@ -52,7 +52,7 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
         const data = await getCircularityHeatmap(zmId)
         if (!cancelled) setPayload(data)
       } catch {
-        if (!cancelled) setError('Servidor no disponible — mostrando mapa base de referencia.')
+        if (!cancelled) setError('Datos en preparación.')
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -112,14 +112,13 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
 
       {/* Status banners */}
       {loading && (
-        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#A8A49C] flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-[#D4881E] animate-pulse" />
-          Conectando con el servidor para datos de circularidad de ZM {zmId}…
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#A8A49C] animate-pulse">
+          …
         </div>
       )}
       {!loading && isFallbackMap && (
         <div className="rounded-[8px] border border-[#F5D98A] bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#6B4800]">
-          {error ?? `No hay datos de circularidad para ZM ${zmId}.`} El mapa muestra la vista de referencia geográfica.
+          Vista de referencia — datos de circularidad pendientes de carga.
         </div>
       )}
       {hasFeatures && (

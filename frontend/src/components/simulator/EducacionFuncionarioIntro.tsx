@@ -32,14 +32,9 @@ const EDUCATION_CARDS = [
 export function EducacionFuncionarioIntro() {
   return (
     <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4" aria-labelledby="educacion-funcionario-title">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Lectura ejecutiva ciudadana</p>
-      <h2 id="educacion-funcionario-title" className="mt-1 font-serif text-[24px] text-[#1C1B18]">
+      <h2 id="educacion-funcionario-title" className="font-serif text-[24px] text-[#1C1B18]">
         Lo que debe entenderse antes de decidir
       </h2>
-      <p className="mt-2 max-w-3xl text-[13px] leading-relaxed text-[#6B6760]">
-        Estos bloques traducen la vista ciudadana a una lectura institucional: explican qué se separa, por qué se encarece
-        cuando llega mezclado, cómo se transforma en valor y dónde empieza la responsabilidad municipal.
-      </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {EDUCATION_CARDS.map(({ title, body, tag, Icon }) => (
           <article key={title} className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">

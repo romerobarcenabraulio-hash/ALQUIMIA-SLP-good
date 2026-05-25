@@ -67,7 +67,7 @@ export function KronosRoadmapStack() {
         <span className="text-[#6B6760]">Gantt abajo · seguimiento M21B · presupuesto M20</span>
       </div>
 
-      {loading && <p className="text-[11px] text-[#6B6760]">Cargando roadmap…</p>}
+      {loading && <p className="text-[11px] text-[#A8A49C] animate-pulse">…</p>}
       {error && <p className="text-[11px] text-red-700">{error}</p>}
 
       {!loading && fases.length > 0 && (

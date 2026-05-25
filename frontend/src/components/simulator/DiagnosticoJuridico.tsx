@@ -612,8 +612,8 @@ export function DiagnosticoJuridico() {
       {/* ── Coordinación ZM: colapsable (sin pestaña) ─────────────────── */}
       <details className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
         <summary className="cursor-pointer text-[12px] font-semibold text-[#6B6760] outline-none hover:text-[#1C1B18]">
-          Coordinación metropolitana (solo lectura){' '}
-          <span className="font-normal text-[#A8A49C]">— convenios e infra compartida; no sustituye reglamento municipal</span>
+          Coordinación metropolitana{' '}
+          <span className="font-normal text-[#A8A49C]">— convenios e infra compartida</span>
         </summary>
         <div id="diagnostico-panel-metropolitano" className="mt-3 border-t border-[#EDE9E2] pt-3">
           <CoordinacionMetro p={paquete} />
