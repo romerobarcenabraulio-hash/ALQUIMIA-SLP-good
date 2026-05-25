@@ -1,0 +1,19 @@
+{
+  "$schema": "alquimia/config/cron.v1",
+  "updated": "2026-05-22",
+  "owner": "HERMES+KRONOS",
+  "jobs": {
+    "logistics_daily_summary": {
+      "schedule_utc": "0 19 * * *",
+      "schedule_local_mx": "13:00 America/Mexico_City",
+      "endpoint": "POST /api/v1/cron/logistics-daily-summary",
+      "description": "HERMES publica daily_summary → AURUM sincroniza AC → KRONOS"
+    },
+    "weekly_status": {
+      "schedule_utc": "0 14 * * 1",
+      "endpoint": "POST /api/v1/cron/weekly-status",
+      "description": "KRONOS genera weekly_status semanal"
+    }
+  },
+  "render_cron_hint": "Crear Cron Job en Render apuntando al endpoint con header X-Cron-Secret"
+}

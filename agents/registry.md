@@ -25,6 +25,16 @@
 - `POST /api/v1/logistics/daily-summary/run`
 - `GET /api/v1/logistics/daily-summary/{fecha}`
 
+## Cron (Render)
+
+- `GET /api/v1/cron/manifest` — schedules públicos
+- `POST /api/v1/cron/logistics-daily-summary` — 19:00 MX (header `X-Cron-Secret`)
+- `POST /api/v1/cron/weekly-status` — lunes semanal
+
+## KRONOS sync manual
+
+- `POST /api/planning/budget/kronos/sync-hermes` — HERMES + AURUM sin cron
+
 ## Evento Kafka (MVP → archivo)
 
 Topic: `alquimia/events/logistics/daily_summary`  

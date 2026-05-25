@@ -46,6 +46,9 @@ class Settings(BaseSettings):
     INVESTIGADOR_ENABLED: bool = True   # Ejecutar Agente Investigador (requiere SERPER_API_KEY)
     PLACES_SYNC_ENABLED:  bool = False
 
+    # Cron jobs (HERMES 19:00, KRONOS semanal) — header X-Cron-Secret
+    CRON_SECRET: Optional[str] = None
+
     # Google Drive
     DRIVE_ROOT_ID:     str = "1mVC_ay_qvmT08QZReoKp2X8jTHZiPoMW"
     DRIVE_SLP_ID:      str = "1btaIFfZiEFIoocFdbDAWN1O-lNKwyTWC"

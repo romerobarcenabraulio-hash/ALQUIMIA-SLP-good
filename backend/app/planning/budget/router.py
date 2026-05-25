@@ -158,6 +158,19 @@ def get_aurum_ac_latest() -> dict[str, Any]:
     return {"available": True, "ac_update": payload}
 
 
+@router.get("/aurum/hermes/status", summary="Estado del consumo del feed HERMES")
+def get_aurum_hermes_status(
+    municipio_id: str = Query("slp"),
+    lookback_days: int = Query(14, ge=1, le=90),
+) -> dict[str, Any]:
+    feeds, warnings = consume_hermes_feeds(municipio_id, lookback_days=lookback_days)
+    return {
+        "feeds_found": len(feeds),
+        "warnings": warnings,
+        "latest_feed": feeds[0].to_dict() if feeds else None,
+    }
+
+
 @router.post("/kronos/sync-hermes", summary="HERMES daily_summary → AURUM AC → listo para EVM")
 def post_kronos_sync_hermes(
     municipio_id: str = Query("slp"),
