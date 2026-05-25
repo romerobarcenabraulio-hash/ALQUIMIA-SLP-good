@@ -239,6 +239,33 @@ CREATE TABLE IF NOT EXISTS model_calibrations (
 );
 CREATE INDEX IF NOT EXISTS ix_calibration_scope ON model_calibrations (scope_id, parametro);
 
+-- ── 0004_logistics_kpi (HERMES→KRONOS snapshots G3) ─────────────────────────
+CREATE TABLE IF NOT EXISTS logistics_kpi_snapshots (
+    id SERIAL PRIMARY KEY,
+    municipio_id VARCHAR(64) NOT NULL,
+    zm_id VARCHAR(32),
+    clave_inegi VARCHAR(10),
+    fecha DATE NOT NULL,
+    fase_producto VARCHAR(8) NOT NULL DEFAULT '0-1',
+    fuente VARCHAR(64) NOT NULL DEFAULT 'dimensionamiento_conceptual',
+    total_camiones_requeridos INTEGER NOT NULL,
+    visitas_mes_estimadas DOUBLE PRECISION NOT NULL,
+    brecha_ton_dia DOUBLE PRECISION NOT NULL,
+    cap_instalada_ton_dia DOUBLE PRECISION NOT NULL,
+    merma_logistica_pct DOUBLE PRECISION,
+    km_recorrido_dia_estimado DOUBLE PRECISION,
+    pureza_promedio_pct DOUBLE PRECISION,
+    opex_logistica_anual_estimado_mxn DOUBLE PRECISION,
+    confianza DOUBLE PRECISION,
+    modulos_prerequisitos_ok BOOLEAN,
+    advertencia_gate TEXT,
+    payload_json JSONB NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    CONSTRAINT uq_logistics_kpi_municipio_fecha UNIQUE (municipio_id, fecha)
+);
+CREATE INDEX IF NOT EXISTS ix_logistics_kpi_municipio_id ON logistics_kpi_snapshots (municipio_id);
+CREATE INDEX IF NOT EXISTS ix_logistics_kpi_fecha ON logistics_kpi_snapshots (fecha);
+
 -- ── 0005_user_accounts ───────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS user_accounts (
     id VARCHAR(36) PRIMARY KEY,

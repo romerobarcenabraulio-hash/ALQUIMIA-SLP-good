@@ -5,6 +5,8 @@ services:
   - type: web
     name: alquimia-slp
     runtime: docker
+    # Raíz del repo (NO backend/) — requerido para COPY modules/, config/, data/
+    rootDir: .
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
     healthCheckPath: /health
@@ -12,7 +14,7 @@ services:
       - key: ENVIRONMENT
         value: production
       - key: PYTHONPATH
-        value: /app
+        value: /app:/app/backend
       - key: DATABASE_URL
         sync: false
       - key: SECRET_KEY
