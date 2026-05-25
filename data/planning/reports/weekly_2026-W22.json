@@ -1,0 +1,161 @@
+{
+  "week": "2026-W22",
+  "generated_at": "2026-05-25",
+  "municipio_id": "slp",
+  "gate_actual": "G1",
+  "gate_estado": "EN_RIESGO",
+  "dias_proximo_gate": -24,
+  "cpi": 0.3797,
+  "spi": 0.0425,
+  "eac": 8764517.65,
+  "tcpi": 1.0004,
+  "vac": -5436725.65,
+  "semaforo": "ROJO",
+  "evm_fuente": "aurum_hermes_integrado",
+  "evm_detalle": {
+    "bac": 3327792.0,
+    "pv": 18487.733333333334,
+    "ev": 785.7286666666668,
+    "ac": 2069.4,
+    "cpi": 0.3797,
+    "spi": 0.0425,
+    "tcpi": 1.0004,
+    "eac": 8764517.65,
+    "vac": -5436725.65,
+    "vac_pct": -163.37,
+    "semaforo": "ROJO",
+    "bac_programa_capex_mxn": 161178648.0,
+    "evm_scope": "operativo_fase_0_1"
+  },
+  "evm_integracion": {
+    "bac_programa_capex_mxn": 161178648.0,
+    "bac_operativo_anual_mxn": 3327792.0,
+    "opex_mensual_mxn": 277316.0,
+    "hermes_dias": 2,
+    "hermes_agg": {
+      "costo_logistico_total": "2069.4",
+      "tonelaje_total": "0.0",
+      "km_totales": "43.46",
+      "merma_promedio_pct": "2.5",
+      "dias": "2"
+    },
+    "ac_por_categoria": {
+      "capex_incurrido": "0",
+      "opex_referencia_mes": "277316",
+      "logistica_hermes_acumulado": "2069.4",
+      "no_calidad": "0.0000"
+    },
+    "aurum_fuente": "aurum_pipeline",
+    "gate_id": "G1",
+    "gate_status": "EN_RIESGO",
+    "earned_factor": 0.0425,
+    "feeds_consumidos": 2
+  },
+  "riesgos_rojos": [
+    "R01",
+    "R02"
+  ],
+  "riesgos_total": 9,
+  "gate_alertas": [
+    {
+      "gate_id": "G1",
+      "dias_al_gate": -24,
+      "nivel_alerta": "CRITICO",
+      "accion_requerida": "Gate G1 VENCIDO hace 24 días sin cruzarse. Escalar inmediatamente al Alcalde.",
+      "descripcion": "Acuerdo Cabildo publicado en Gaceta + reforma reglamentaria aprobada"
+    }
+  ],
+  "precios_alertas": [],
+  "precios_check": [
+    {
+      "material": "PET",
+      "precio_ancla": 5.5,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 5.5,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: PET en $5.50/kg (+0.0% vs ancla $5.50 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "papel_carton",
+      "precio_ancla": 2.5,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 2.5,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: papel_carton en $2.50/kg (+0.0% vs ancla $2.50 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "vidrio",
+      "precio_ancla": 2.3,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 2.3,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: vidrio en $2.30/kg (+0.0% vs ancla $2.30 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    },
+    {
+      "material": "aluminio",
+      "precio_ancla": 15.1,
+      "fuente_ancla": "FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026",
+      "precio_actual": 15.1,
+      "desviacion_pct": 0.0,
+      "alerta": false,
+      "impacto_mensual_mxn": 0.0,
+      "fuente_tonelaje": "Modelo_BASED.xlsx · Capítulo SLP · tonelaje proyectado Año 3",
+      "mensaje": "OK: aluminio en $15.10/kg (+0.0% vs ancla $15.10 · FALLBACK — Modelo_BASED.xlsx · Capítulo SLP · mayo 2026)."
+    }
+  ],
+  "alertas_consolidadas": [
+    {
+      "tipo": "gate",
+      "severidad": "CRITICO",
+      "mensaje": "Gate G1 VENCIDO hace 24 días sin cruzarse. Escalar inmediatamente al Alcalde.",
+      "referencia": "G1",
+      "descripcion": "Acuerdo Cabildo publicado en Gaceta + reforma reglamentaria aprobada"
+    },
+    {
+      "tipo": "riesgo_rojo",
+      "severidad": "ROJO",
+      "mensaje": "Riesgo R01 (score 9) en ROJO: Cabildo no aprueba reforma reglamentaria — SIN OWNER ASIGNADO",
+      "referencia": "R01"
+    },
+    {
+      "tipo": "riesgo_rojo",
+      "severidad": "ROJO",
+      "mensaje": "Riesgo R02 (score 9) en ROJO: Concesionario bloquea implementación de separación — SIN OWNER ASIGNADO",
+      "referencia": "R02"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R01 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R01"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R02 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R02"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R07 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R07"
+    },
+    {
+      "tipo": "riesgo_stale",
+      "severidad": "AMARILLO",
+      "mensaje": "Riesgo R08 con score >= 6 sin revisión en más de 14 días.",
+      "referencia": "R08"
+    }
+  ],
+  "datos_faltantes": []
+}

@@ -133,6 +133,12 @@ export function ImplementacionEspacioTiempo() {
 
   const empleoBasePert = resultados?.empleosTotalesDirectos ?? 0
 
+  // Carga oleadas al entrar si hay municipio + RSU (evita pantalla vacía hasta pulsar botón)
+  useEffect(() => {
+    if (territorialFetchTick > 0 || !canFetchTerritorialPlan) return
+    setTerritorialFetchTick(1)
+  }, [canFetchTerritorialPlan, territorialFetchTick])
+
   return (
     <section className="space-y-5">
       <div>

@@ -1,0 +1,77 @@
+{
+  "_instrucciones": "Copiar a /data/municipalities/{MUNICIPIO_ID}/legal_framework.json y vincular con profile.json.",
+  "municipio_id": "{{MUNICIPIO_ID}}",
+  "municipio": "{{NOMBRE_MUNICIPIO}}",
+  "estado": "{{NOMBRE_ESTADO}}",
+  "profile_ref": "profile.json",
+  "jerarquia_normativa": [
+    {
+      "nivel": "federal",
+      "instrumentos": [
+        {
+          "nombre": "Constitución Política de los Estados Unidos Mexicanos",
+          "articulos_relevantes": ["Art. 4", "Art. 115"],
+          "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/CPEUM.pdf"
+        },
+        {
+          "nombre": "Ley General de Residuos Sólidos (LGPGIR)",
+          "articulos_relevantes": ["Art. 7", "Art. 25", "Art. 27"],
+          "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf"
+        }
+      ]
+    },
+    {
+      "nivel": "estatal",
+      "instrumentos": [
+        {
+          "nombre": "Ley ambiental estatal de {{NOMBRE_ESTADO}}",
+          "articulos_relevantes": [],
+          "verificacion": "pendiente"
+        }
+      ]
+    },
+    {
+      "nivel": "municipal",
+      "instrumentos": [
+        {
+          "id": "reglamento_aseo_publico",
+          "nombre": "Reglamento de Aseo Público / Limpia de {{NOMBRE_MUNICIPIO}}",
+          "anio_version": 0,
+          "estado_verificacion": "no_localizado",
+          "url_fuente": "",
+          "archivo_local": "",
+          "articulos_clave": [],
+          "brechas_identificadas": []
+        }
+      ]
+    },
+    {
+      "nivel": "contractual",
+      "instrumentos": [
+        {
+          "nombre": "Contrato de concesión / servicio de aseo",
+          "operador": "",
+          "estado": "pendiente_verificacion",
+          "clausulas_criticas_alquimia": []
+        }
+      ]
+    }
+  ],
+  "adendos_alquimia_vinculados": [],
+  "competencias_clave": {
+    "sancion_municipal": "",
+    "autoridad_inspeccion": "",
+    "operacion_recoleccion": "",
+    "disposicion_final": "",
+    "zm_coordination": ""
+  },
+  "referencias_cruzadas": {
+    "frontend_reglamentos": "frontend/src/data/reglamentos.ts",
+    "backend_legal": "backend/app/legal/"
+  },
+  "meta": {
+    "agente": "POLIS",
+    "version": "1.0.0",
+    "actualizado": ""
+  }
+}

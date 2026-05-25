@@ -1,0 +1,165 @@
+{
+  "$schema": "../templates/profile.schema.json",
+  "municipio_id": "slp",
+  "municipio": "San Luis Potosí",
+  "estado": "San Luis Potosí",
+  "estado_id": "24",
+  "clave_inegi": "24028",
+  "zm_simulator_id": "SLP",
+  "zm_nombre": "Zona Metropolitana San Luis Potosí",
+  "es_municipio_lider_zm": true,
+  "poblacion": 912871,
+  "viviendas_universo": 224000,
+  "ocupantes_por_vivienda": 3.6,
+  "generacion_rsu_ton_dia": 839.58,
+  "generacion_rsu_kg_persona_dia": 0.92,
+  "generacion_rsu_fuente": "Modelo_BASED.xlsx · ZM SLP · mayo 2026",
+  "composicion_rsu": {
+    "organicos": 0.45,
+    "papel": 0.2,
+    "plasticos": 0.15,
+    "vidrio": 0.05,
+    "metales": 0.05,
+    "otros": 0.1
+  },
+  "composicion_rsu_fuente": "Modelo_BASED.xlsx · Bootstrap §2.1",
+  "mix_vivienda": {
+    "vertical_pct": 42,
+    "casa_habitacion_pct": 38,
+    "residencial_pct": 20
+  },
+  "concesionario": {
+    "nombre": "Red Ambiental",
+    "grupo": "Grupo Vigue",
+    "alias_operativo": "SERV",
+    "relacion": "neutral",
+    "cobertura": "recolección, transporte y disposición final",
+    "desde_anio": 2008,
+    "notas": "Operador concesionado post-declaración de incapacidad municipal (~2009). Renegociación contractual requerida para separación en origen.",
+    "fuente": "REPORTAJE_ANTECEDENTES_MUNICIPALES · SciELO T2 · mayo 2026",
+    "verificacion": "pendiente_contrato_vigente"
+  },
+  "dependencia_municipal": {
+    "nombre": "Dirección de Ecología y Aseo Público",
+    "alias": "DEAP",
+    "rol": "normativa, inspección y coordinación con concesionario"
+  },
+  "reglamento_vigente": {
+    "nombre": "Reglamento de Aseo Público del Municipio de San Luis Potosí",
+    "anio_version": 2018,
+    "estado_verificacion": "en_revision",
+    "url_fuente": "https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria",
+    "archivo_local": "/reglamentos/SLP_slp_reglamento_aseo_publico.pdf",
+    "articulos_a_reformar": [
+      "Art. 4 — Definiciones (cinco fracciones)",
+      "Art. 20 Bis — Esquemas condominio",
+      "Art. 21 — Obligaciones habitantes",
+      "Art. 21 Bis — Obligaciones administradores",
+      "Art. 21 Ter — Obligaciones vivienda",
+      "Art. 37 Bis — Sanciones",
+      "Art. 37 Ter — Procedimiento sancionador",
+      "Transitorios — Programa de implementación gradual"
+    ],
+    "legal_framework_ref": "legal_framework.json"
+  },
+  "gobierno": {
+    "trienio": "2024-2027",
+    "partido": "Coalición municipal vigente",
+    "meses_restantes": 14,
+    "proxima_eleccion": "2027-07",
+    "notas": "Verificar acta de toma de protesta y composición de Cabildo en archivo municipal.",
+    "fecha_verificacion": "2026-05-25"
+  },
+  "cabildo_apoyo": "medio",
+  "precios_locales": {
+    "PET": 5.5,
+    "papel": 2.5,
+    "vidrio": 2.3,
+    "aluminio": 15.1,
+    "organicos": 0.3,
+    "moneda": "MXN/kg",
+    "fecha_referencia": "2026-03",
+    "fuente": "Modelo_BASED.xlsx · ANIPAC/CEMPRE referencia"
+  },
+  "infraestructura_objetivo": {
+    "centros_acopio": 18,
+    "centros_acopio_detalle": {
+      "UV-P": 7,
+      "UV-M": 7,
+      "UV-G": 4
+    },
+    "recicladoras_por_giro": 5,
+    "tonelaje_objetivo_anio_3_t_dia": 725.76,
+    "ingreso_anual_anio_3_mxn": 361100000,
+    "co2e_evitadas_anio_3_t": 533178,
+    "capex_total_mxn": 46200000,
+    "opex_anual_mxn_rango": [26000000, 33000000],
+    "fuente": "SLP_BASELINE_REFERENCIA · Centros_Acopio_v2.xlsx · mayo 2026"
+  },
+  "recicladoras_locales": [
+    {
+      "id": "slp-pet-ecooro",
+      "nombre": "Eco-Oro Reciclaje (PET)",
+      "giro": "pet",
+      "capacidad_ton_dia": 22,
+      "precio_kg_mxn": 5.5,
+      "estado_verificacion": "verificado"
+    },
+    {
+      "id": "slp-papel-mrs",
+      "nombre": "MRS Logística / Papelera regional",
+      "giro": "papel",
+      "capacidad_ton_dia": 18,
+      "precio_kg_mxn": 2.5,
+      "estado_verificacion": "verificado"
+    },
+    {
+      "id": "slp-vidrio-envases",
+      "nombre": "Envases del Potosí / Vanalux",
+      "giro": "vidrio",
+      "capacidad_ton_dia": 8,
+      "precio_kg_mxn": 1.3,
+      "estado_verificacion": "verificado"
+    },
+    {
+      "id": "slp-alu-reciclimetal",
+      "nombre": "Reciclimetal SLP",
+      "giro": "aluminio",
+      "capacidad_ton_dia": 5,
+      "precio_kg_mxn": 15.1,
+      "estado_verificacion": "verificado"
+    },
+    {
+      "id": "slp-org-composta",
+      "nombre": "Composta agrícola El Refugio",
+      "giro": "organicos",
+      "municipio_id": "sol",
+      "capacidad_ton_dia": 12,
+      "precio_kg_mxn": 0.3,
+      "estado_verificacion": "verificado"
+    }
+  ],
+  "cifras_canonicas_coherencia": {
+    "viviendas": 224000,
+    "centros_acopio": 18,
+    "recicladoras": 5,
+    "ton_dia_anio_3": 725.76,
+    "ton_dia_zm_total_aprox": 839.58
+  },
+  "contaminacion_prohibida": {
+    "municipios_ajenos": ["mty", "qro", "gdl", "sol", "oaxaca"],
+    "tokens_forbidden_outside_slp": [
+      "Red Ambiental",
+      "Dirección de Ecología y Aseo Público",
+      "224,000 viviendas",
+      "725.76 t/día"
+    ]
+  },
+  "meta": {
+    "agente": "POLIS",
+    "version": "1.0.0",
+    "actualizado": "2026-05-25",
+    "modelo_base": "SLP",
+    "notas": "Perfil canónico piloto ALQUIMIA. No replicar cifras SLP en otros municipios sin calibrar perfil propio."
+  }
+}

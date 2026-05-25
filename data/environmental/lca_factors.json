@@ -1,0 +1,62 @@
+{
+  "version": "1.0",
+  "actualizado": "2026-05-25",
+  "agente": "BIOS",
+  "metodologia": "ISO 14040/14044 — impacto evitado vs. producción virgen",
+  "factores": [
+    {
+      "fraccion": "aluminio",
+      "co2e_evitado_ton": 9.0,
+      "fuente": "Ecoinvent",
+      "referencia": "aluminium production, primary, at plant / RER",
+      "anio_referencia": 2023,
+      "unidad": "tCO2e/t",
+      "notas": "Valor operativo BIOS; alineado a tabla GRI 305 del agente BIOS"
+    },
+    {
+      "fraccion": "pet",
+      "co2e_evitado_ton": 1.5,
+      "fuente": "Ecoinvent",
+      "referencia": "polyethylene terephthalate, granulate, at plant / RER",
+      "anio_referencia": 2023,
+      "unidad": "tCO2e/t",
+      "notas": "Proxy PET reciclado vs. virgen"
+    },
+    {
+      "fraccion": "papel_carton",
+      "co2e_evitado_ton": 0.9,
+      "fuente": "Ecoinvent",
+      "referencia": "market for paper, virgin / GLO",
+      "anio_referencia": 2023,
+      "unidad": "tCO2e/t",
+      "notas": "Papel y cartón recuperado"
+    },
+    {
+      "fraccion": "organicos_compost",
+      "co2e_evitado_ton": 0.5,
+      "fuente": "IPCC",
+      "referencia": "AR6 GWP100 CH4=27.9; metano evitado en relleno por compostaje",
+      "anio_referencia": 2021,
+      "unidad": "tCO2e/t",
+      "notas": "Orgánicos desviados a compost vs. disposición en relleno"
+    },
+    {
+      "fraccion": "vidrio",
+      "co2e_evitado_ton": 0.3,
+      "fuente": "Ecoinvent",
+      "referencia": "glass production, at plant / RER",
+      "anio_referencia": 2023,
+      "unidad": "tCO2e/t",
+      "notas": "Vidrio reciclado vs. virgen"
+    },
+    {
+      "fraccion": "organicos_biogas",
+      "co2e_evitado_ton": 0.234,
+      "fuente": "INECC/SEMARNAT",
+      "referencia": "Factor metano relleno sanitario sin captura biogás — Metodología Nacional GEI México",
+      "anio_referencia": 2022,
+      "unidad": "tCO2e/t",
+      "notas": "Complemento Modelo_BASED: vol_org × 0.30 × 234 × 0.0007168 × 27"
+    }
+  ]
+}

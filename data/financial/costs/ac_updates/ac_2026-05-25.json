@@ -1,20 +1,20 @@
 {
   "fecha": "2026-05-25",
   "municipio_id": "slp",
-  "ac_total_mxn": "1034.7000",
+  "ac_total_mxn": "2069.4000",
   "ac_por_categoria": {
     "capex_incurrido": "0",
     "opex_referencia_mes": "277316",
-    "logistica_hermes_acumulado": "1034.7",
+    "logistica_hermes_acumulado": "2069.4",
     "no_calidad": "0.0000"
   },
   "fuente": "aurum_pipeline",
-  "hermes_dias_consumidos": 1,
-  "supuesto_base": "Modelo_BASED.xlsx · Fase 0-1 · ZM SLP",
+  "hermes_dias_consumidos": 2,
+  "supuesto_base": "Modelo_BASED.xlsx · ZM SLP · mayo 2026",
   "indicadores": {
     "costo_por_tonelada_mxn": "0",
     "costo_por_vivienda_mxn": "1.24",
-    "payback_simple_anios": "1.81",
+    "payback_simple_anios": "0.49",
     "costo_no_calidad_pct": "0.00",
     "semaforo_costo_ton": "VERDE",
     "alerta_roja_no_calidad": false

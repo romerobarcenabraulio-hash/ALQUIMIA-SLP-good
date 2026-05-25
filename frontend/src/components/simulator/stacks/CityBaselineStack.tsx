@@ -306,7 +306,7 @@ export function CityBaselineStack() {
     <div className="space-y-4 pb-6">
 
       {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-chart-id="volumen-rsu">
         <KpiStrip icon={Truck}     label="RSU generado"  value={r ? fmt.kgd(r.rsuTotalTonDia) : '—'}                              sub="diario estimado"        accent="#3B6D11" />
         <KpiStrip icon={TrendingUp} label="Derrama anual" value={r ? fmt.mxnM(r.ingresosBrutos / Math.max(1, horizonte)) : '—'}   sub="valorización"           accent="#3B6D11" />
         <KpiStrip icon={Leaf}      label="CO₂e evitado"  value={r ? `${(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K t` : '—'}    sub="por año"                accent="#1A5FA8" />
@@ -538,7 +538,7 @@ export function CityBaselineStack() {
           </details>
 
           {/* Block 4 — Composición base RSU (colapsable) */}
-          <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+          <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden" data-chart-id="composicion-rsu">
             <summary className="cursor-pointer px-4 py-3 flex items-center justify-between select-none hover:bg-[#FAFAF8] transition-colors">
               <div className="flex items-center gap-2">
                 <span className="font-mono text-[#3B6D11] text-[12px] font-semibold">4.</span>
@@ -619,7 +619,7 @@ export function CityBaselineStack() {
         <div className="space-y-4">
 
           {/* Trayectoria de captura — live gráfica */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4" data-chart-id="trayectoria-captura">
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="text-[12px] font-semibold text-[#1C1B18]">Trayectoria de captura</p>
@@ -643,7 +643,7 @@ export function CityBaselineStack() {
 
           {/* 4 impact charts — 2×2 grid */}
           {impactLines && (
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3" data-chart-id="impactos-acumulados">
               {[
                 { title: 'CO₂e evitado acumulado',      unit: 'ktCO₂e', data: impactLines.coChartData,    fmtV: (v: number) => `${v}K tCO₂e`, yFmt: (v: number) => `${v}k`,  color: '#1A5FA8' },
                 { title: 'Derrama económica acumulada',  unit: 'M MXN',  data: impactLines.derrChartData,  fmtV: (v: number) => `$${v}M`,      yFmt: (v: number) => `$${v}M`, color: '#D4881E' },

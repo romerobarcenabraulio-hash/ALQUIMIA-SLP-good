@@ -1,0 +1,100 @@
+{
+  "_instrucciones": "Copiar a /data/municipalities/{MUNICIPIO_ID}/profile.json y llenar TODOS los campos antes de personalizar documentos.",
+  "municipio_id": "{{MUNICIPIO_ID}}",
+  "municipio": "{{NOMBRE_MUNICIPIO}}",
+  "estado": "{{NOMBRE_ESTADO}}",
+  "estado_id": "{{CVE_ESTADO}}",
+  "clave_inegi": "{{CVE_INEGI}}",
+  "zm_simulator_id": "{{ZM_ID}}",
+  "zm_nombre": "{{ZM_NOMBRE}}",
+  "es_municipio_lider_zm": false,
+  "poblacion": 0,
+  "viviendas_universo": 0,
+  "ocupantes_por_vivienda": 0,
+  "generacion_rsu_ton_dia": 0,
+  "generacion_rsu_kg_persona_dia": 0.92,
+  "generacion_rsu_fuente": "",
+  "composicion_rsu": {
+    "organicos": 0.45,
+    "papel": 0.2,
+    "plasticos": 0.15,
+    "vidrio": 0.05,
+    "metales": 0.05,
+    "otros": 0.1
+  },
+  "composicion_rsu_fuente": "Calibrar con BIOS/LCA local",
+  "mix_vivienda": {
+    "vertical_pct": 0,
+    "casa_habitacion_pct": 0,
+    "residencial_pct": 0
+  },
+  "concesionario": {
+    "nombre": "",
+    "grupo": "",
+    "alias_operativo": "",
+    "relacion": "neutral",
+    "cobertura": "",
+    "desde_anio": null,
+    "notas": "",
+    "fuente": "",
+    "verificacion": "pendiente"
+  },
+  "dependencia_municipal": {
+    "nombre": "",
+    "alias": "",
+    "rol": ""
+  },
+  "reglamento_vigente": {
+    "nombre": "",
+    "anio_version": 0,
+    "estado_verificacion": "no_localizado",
+    "url_fuente": "",
+    "archivo_local": "",
+    "articulos_a_reformar": [],
+    "legal_framework_ref": "legal_framework.json"
+  },
+  "gobierno": {
+    "trienio": "",
+    "partido": "",
+    "meses_restantes": 0,
+    "proxima_eleccion": "",
+    "notas": "",
+    "fecha_verificacion": ""
+  },
+  "cabildo_apoyo": "medio",
+  "precios_locales": {
+    "PET": 0,
+    "papel": 0,
+    "vidrio": 0,
+    "aluminio": 0,
+    "organicos": 0,
+    "moneda": "MXN/kg",
+    "fecha_referencia": "",
+    "fuente": ""
+  },
+  "infraestructura_objetivo": {
+    "centros_acopio": 0,
+    "centros_acopio_detalle": { "UV-P": 0, "UV-M": 0, "UV-G": 0 },
+    "recicladoras_por_giro": 0,
+    "tonelaje_objetivo_anio_3_t_dia": 0,
+    "fuente": ""
+  },
+  "recicladoras_locales": [],
+  "cifras_canonicas_coherencia": {
+    "viviendas": 0,
+    "centros_acopio": 0,
+    "recicladoras": 0,
+    "ton_dia_anio_3": 0
+  },
+  "contaminacion_prohibida": {
+    "municipios_ajenos": [],
+    "tokens_forbidden_outside_slp": []
+  },
+  "meta": {
+    "agente": "POLIS",
+    "version": "1.0.0",
+    "actualizado": "",
+    "modelo_base": null,
+    "notas": "Perfil generado desde plantilla — completar antes de entrega documental."
+  }
+}

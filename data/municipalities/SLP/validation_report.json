@@ -1,0 +1,24 @@
+{
+  "generated": "2026-05-25",
+  "agente": "POLIS",
+  "municipio": "SLP",
+  "validators": {
+    "cross_contamination": {
+      "passed": true,
+      "files_scanned": 70,
+      "veto_count": 0
+    },
+    "coherence": {
+      "passed": true,
+      "files_scanned": 76,
+      "warnings": 2,
+      "notes": "Warnings en REPORTAJE_ANTECEDENTES por cifras históricas SEGAM (~200 t/día, <10% reciclaje) — no son cifras del modelo ALQUIMIA."
+    }
+  },
+  "canonical_figures": {
+    "viviendas": 224000,
+    "centros_acopio": 18,
+    "recicladoras": 5,
+    "ton_dia_anio_3": 725.76
+  }
+}

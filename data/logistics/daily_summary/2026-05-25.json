@@ -1,0 +1,28 @@
+{
+  "date": "2026-05-25",
+  "municipio_id": "slp",
+  "zm_id": "zm_slp",
+  "tonelaje_por_fraccion": {
+    "organicos": 0.0,
+    "inorganicos": 0.0,
+    "vidrio": 0.0,
+    "metal": 0.0,
+    "papel": 0.0
+  },
+  "costo_logistico": 1034.7,
+  "km_totales": 21.73,
+  "emisiones_co2e": 19.34,
+  "pureza_promedio": {},
+  "semaforo": "AMARILLO",
+  "incidentes": [
+    "Sin tonelaje registrado — Fase 0-1 sin báscula conectada.",
+    "Plan con heurística territorial; Google Routes no disponible."
+  ],
+  "meta_tonelaje_dia": 45.0,
+  "utilizacion_flota_pct": 33.7,
+  "on_time_arrivals_pct": 92.0,
+  "merma_logistica_pct": 2.5,
+  "fuente": "hermes_kpi_calculator",
+  "fase_producto": "0-1",
+  "topic": "alquimia/events/logistics/daily_summary"
+}

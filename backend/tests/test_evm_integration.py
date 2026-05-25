@@ -1,4 +1,5 @@
 """Tests integración EVM AURUM + HERMES."""
+import json
 from pathlib import Path
 
 import pytest
@@ -13,7 +14,8 @@ def test_derive_evm_from_aurum_hermes_with_repo_fixtures():
 
     block, fuente, missing, meta = derive_evm_from_aurum_hermes("slp")
     assert fuente == "aurum_hermes_integrado"
-    assert block["ac"] == pytest.approx(1034.7, rel=0.01)
+    expected_ac = float(json.loads(ac_path.read_text())["ac_total_mxn"])
+    assert block["ac"] == pytest.approx(expected_ac, rel=0.01)
     assert block["cpi"] > 0
     assert block["spi"] > 0
     assert block["semaforo"] in {"VERDE", "AMARILLO", "ROJO"}

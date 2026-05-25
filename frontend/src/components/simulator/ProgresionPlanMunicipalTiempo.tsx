@@ -89,7 +89,7 @@ export function ProgresionPlanMunicipalTiempo() {
   )
 
   const [mesVista, setMesVista] = useState(1)
-  const [showCharts, setShowCharts] = useState(false)
+  const [showCharts, setShowCharts] = useState(true)
 
 
   useEffect(() => {

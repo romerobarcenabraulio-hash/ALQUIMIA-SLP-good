@@ -10,6 +10,7 @@ import {
 } from '@/lib/chapterConfig'
 import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { CHART_BRIEF_CATALOG } from '@/data/chartBriefCatalog'
 
 const readFrontend = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
@@ -117,5 +118,29 @@ describe('editorial inventory', () => {
     for (const p of stackPaths) {
       expect(readFrontend(p), `${p} repite hero h2`).not.toMatch(heroPattern)
     }
+  })
+
+  it('catálogo QHC cubre chartId del simulador', () => {
+    const ids = new Set<string>()
+    const patterns = [/chartId="([^"]+)"/g, /data-chart-id="([^"]+)"/g]
+    const simulatorFiles = [
+      'src/components/simulator/FutureGoalsModule.tsx',
+      'src/components/simulator/stacks/MarketTraceabilityStack.tsx',
+      'src/components/simulator/stacks/InfrastructureOperationsStack.tsx',
+      'src/components/simulator/stacks/LogisticaOperativaStack.tsx',
+      'src/components/simulator/stacks/MunicipalContextStack.tsx',
+      'src/components/simulator/stacks/DictamenTecnicoStack.tsx',
+      'src/components/simulator/stacks/CityBaselineStack.tsx',
+      'src/components/simulator/RiskTrendsPanel.tsx',
+      'src/components/simulator/ReferenciasCalculos.tsx',
+    ]
+    for (const p of simulatorFiles) {
+      const src = readFrontend(p)
+      for (const pattern of patterns) {
+        for (const m of src.matchAll(pattern)) ids.add(m[1]!)
+      }
+    }
+    const missing = [...ids].filter(id => !CHART_BRIEF_CATALOG[id])
+    expect(missing, `Sin QHC en catálogo: ${missing.join(', ')}`).toEqual([])
   })
 })

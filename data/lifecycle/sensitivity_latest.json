@@ -1,0 +1,109 @@
+{
+  "generado_en": "2026-05-25T18:46:18Z",
+  "variables": [
+    "precio_materiales",
+    "participacion_ciudadana",
+    "combustible_logistica",
+    "wacc"
+  ],
+  "base_vpn_mxn": 931814311.81,
+  "base_tir_pct": 120.45,
+  "escenarios": [
+    {
+      "variable": "precio_materiales",
+      "base": 931814311.81,
+      "delta_pct": -30.0,
+      "vpn_mxn": 592820359.15,
+      "tir_pct": 90.78,
+      "delta_vpn_pct": -36.38
+    },
+    {
+      "variable": "precio_materiales",
+      "base": 931814311.81,
+      "delta_pct": 0.0,
+      "vpn_mxn": 931814311.81,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": 0.0
+    },
+    {
+      "variable": "precio_materiales",
+      "base": 931814311.81,
+      "delta_pct": 30.0,
+      "vpn_mxn": 1270808264.47,
+      "tir_pct": 147.61,
+      "delta_vpn_pct": 36.38
+    },
+    {
+      "variable": "participacion_ciudadana",
+      "base": 931814311.81,
+      "delta_pct": -20.0,
+      "vpn_mxn": 709054405.5,
+      "tir_pct": 101.38,
+      "delta_vpn_pct": -23.91
+    },
+    {
+      "variable": "participacion_ciudadana",
+      "base": 931814311.81,
+      "delta_pct": 0.0,
+      "vpn_mxn": 931814311.81,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": 0.0
+    },
+    {
+      "variable": "participacion_ciudadana",
+      "base": 931814311.81,
+      "delta_pct": 20.0,
+      "vpn_mxn": 1009480673.46,
+      "tir_pct": 135.33,
+      "delta_vpn_pct": 8.33
+    },
+    {
+      "variable": "combustible_logistica",
+      "base": 931814311.81,
+      "delta_pct": -50.0,
+      "vpn_mxn": 939904467.14,
+      "tir_pct": 121.25,
+      "delta_vpn_pct": 0.87
+    },
+    {
+      "variable": "combustible_logistica",
+      "base": 931814311.81,
+      "delta_pct": 0.0,
+      "vpn_mxn": 931814311.81,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": 0.0
+    },
+    {
+      "variable": "combustible_logistica",
+      "base": 931814311.81,
+      "delta_pct": 50.0,
+      "vpn_mxn": 923724156.47,
+      "tir_pct": 119.64,
+      "delta_vpn_pct": -0.87
+    },
+    {
+      "variable": "wacc",
+      "base": 931814311.81,
+      "delta_pct": -20.0,
+      "vpn_mxn": 1143988716.34,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": 22.77
+    },
+    {
+      "variable": "wacc",
+      "base": 931814311.81,
+      "delta_pct": 0.0,
+      "vpn_mxn": 931814311.81,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": 0.0
+    },
+    {
+      "variable": "wacc",
+      "base": 931814311.81,
+      "delta_pct": 20.0,
+      "vpn_mxn": 766554052.61,
+      "tir_pct": 120.45,
+      "delta_vpn_pct": -17.74
+    }
+  ]
+}

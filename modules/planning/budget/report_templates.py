@@ -11,6 +11,59 @@ from modules.planning.budget.schemas import AcUpdatePayload, CostStructure, Effi
 Audience = Literal["pmo", "inversionista"]
 
 
+def render_qhc_block(title: str, que: str, como: str, cuidado: str) -> str:
+    """Bloque pedagógico QHC (LOGOS) para Markdown."""
+    return (
+        f"> **QHC · {title}**\n"
+        f"> - **Qué:** {que}\n"
+        f"> - **Cómo:** {como}\n"
+        f"> - **Cuidado:** {cuidado}"
+    )
+
+
+_QHC_PMO_RESUMEN = render_qhc_block(
+    "Resumen de costos",
+    "Consolida el costo real acumulado (AC), el baseline de CAPEX/OPEX y el semáforo de costo por tonelada.",
+    "Compare AC total contra el baseline; semáforo VERDE/AMARILLO/ROJO indica desviación operativa vs. umbral.",
+    "AC incluye logística HERMES acumulada; no sustituye conciliación contable municipal.",
+)
+
+_QHC_PMO_AC = render_qhc_block(
+    "AC por categoría",
+    "Desglose del costo real acumulado (AC) por rubro: CAPEX incurrido, OPEX de referencia, logística y no-calidad.",
+    "Revise la fila de logística HERMES para validar que el feed diario esté actualizado (<3 días).",
+    "OPEX de referencia es run-rate mensual del modelo, no facturación real del mes.",
+)
+
+_QHC_PMO_EFICIENCIA = render_qhc_block(
+    "Indicadores de eficiencia",
+    "Métricas unitarias: costo/ton, costo/vivienda, payback simple y % de costos de no-calidad.",
+    "Costo/ton = 0 indica fase sin tonelaje capturado aún; payback simple usa flujos del modelo base.",
+    "Payback simple no incluye valor residual ni sensibilidad de precios de materiales.",
+)
+
+_QHC_INV_RESUMEN = render_qhc_block(
+    "Resumen financiero",
+    "Expone CAPEX total del programa, OPEX mensual de referencia, payback simple y costo de no-calidad.",
+    "Payback simple (años) = CAPEX / flujo neto anual estimado; compare con horizonte del plan (10 años).",
+    "Proyección basada en supuesto declarado; no altera datos históricos conciliados.",
+)
+
+_QHC_INV_CAPEX = render_qhc_block(
+    "CAPEX por componente",
+    "Inversión inicial desglosada: recicladoras, centros de acopio, digital y flota.",
+    "Sume componentes para validar contra CAPEX total; recicladoras suele ser el rubro dominante.",
+    "Montos del modelo base; variaciones de licitación pueden mover ±10% sin recalcular escenario completo.",
+)
+
+_QHC_INV_UNIT = render_qhc_block(
+    "Unit economics",
+    "Costo por tonelada y costo por vivienda — indicadores de eficiencia del programa a escala.",
+    "Costo/vivienda = costo anualizado / universo de viviendas del perfil municipal.",
+    "No confundir con tarifa domiciliaria ni cuota de aseo; son costos del sistema de valorización.",
+)
+
+
 def repo_root() -> Path:
     return Path(__file__).resolve().parents[3]
 
@@ -31,6 +84,8 @@ def _pmo_template() -> dict[str, Any]:
     return {
         "audiencia": "pmo",
         "titulo": "Reporte quincenal de costos — PMO",
+        "marco": "operativo",
+        "registro": "tecnico-riguroso",
         "secciones": [
             "resumen_ejecutivo",
             "ac_por_categoria",
@@ -43,6 +98,8 @@ def _pmo_template() -> dict[str, Any]:
         "formato": "json+markdown",
         "frecuencia": "quincenal",
         "destinatario": "KRONOS + equipo PMO municipal",
+        "qhc_obligatorio": True,
+        "estructura_ref": "docs/style/estructura_reportes_por_audiencia.md#pmo--equipo-técnico-municipal",
     }
 
 
@@ -50,6 +107,8 @@ def _inversionista_template() -> dict[str, Any]:
     return {
         "audiencia": "inversionista",
         "titulo": "Reporte de costos — Inversionista / Cabildo",
+        "marco": "action",
+        "registro": "tecnico-financiero",
         "secciones": [
             "resumen_ejecutivo",
             "capex_por_componente",
@@ -63,6 +122,8 @@ def _inversionista_template() -> dict[str, Any]:
         "frecuencia": "mensual",
         "destinatario": "SUPREME + inversionistas / Cabildo",
         "disclaimer": "Proyección basada en supuesto declarado — no altera datos históricos conciliados.",
+        "qhc_obligatorio": True,
+        "estructura_ref": "docs/style/estructura_reportes_por_audiencia.md#inversionista--finanzas",
     }
 
 
@@ -170,47 +231,87 @@ def _build_alerts(ind: EfficiencyIndicators, warnings: list[str]) -> list[str]:
 
 def report_to_markdown(report: dict[str, Any]) -> str:
     audiencia = report.get("audiencia", "pmo")
+    audiencia_label = {
+        "pmo": "PMO · Equipo técnico municipal",
+        "inversionista": "Inversionista · Cabildo · Finanzas",
+    }.get(audiencia, audiencia.upper())
+
     lines = [
         f"# Reporte de costos · {audiencia.upper()}",
         "",
+        f"**Audiencia:** {audiencia_label}",
         f"**Fecha:** {report.get('fecha', date.today().isoformat())}",
         f"**Municipio:** {report.get('municipio_id', '—')}",
         f"**Supuesto base:** {report.get('supuesto_base', '—')}",
         "",
     ]
 
+    if audiencia == "pmo":
+        lines.extend([
+            "## Resumen ejecutivo",
+            "",
+        ])
+    else:
+        lines.extend([
+            "## Pregunta de decisión",
+            "",
+            "¿Los flujos de inversión y payback del programa se mantienen dentro de los umbrales aprobados?",
+            "",
+            "## Resumen ejecutivo",
+            "",
+        ])
+
     resumen = report.get("resumen_ejecutivo", {})
-    lines.append("## Resumen ejecutivo")
     for key, val in resumen.items():
         label = key.replace("_", " ").title()
         display = _format_mxn(str(val)) if "mxn" in key.lower() or key.endswith("_total") else str(val)
         lines.append(f"- **{label}:** {display}")
     lines.append("")
+    if audiencia == "pmo":
+        lines.extend([_QHC_PMO_RESUMEN, ""])
+    else:
+        lines.extend([_QHC_INV_RESUMEN, ""])
 
     if "ac_por_categoria" in report:
         lines.append("## AC por categoría")
         for key, val in report["ac_por_categoria"].items():
             lines.append(f"- {key.replace('_', ' ')}: {_format_mxn(str(val))}")
-        lines.append("")
+        lines.extend(["", _QHC_PMO_AC, ""])
 
     if "capex_por_componente" in report:
         lines.append("## CAPEX por componente")
         for key, val in report["capex_por_componente"].items():
             lines.append(f"- {key}: {_format_mxn(str(val))}")
-        lines.append("")
+        lines.extend(["", _QHC_INV_CAPEX, ""])
+
+    if "unit_economics" in report:
+        lines.append("## Unit economics")
+        for key, val in report["unit_economics"].items():
+            lines.append(f"- {key.replace('_', ' ')}: {val}")
+        lines.extend(["", _QHC_INV_UNIT, ""])
 
     if "indicadores_eficiencia" in report:
         lines.append("## Indicadores de eficiencia")
         for key, val in report["indicadores_eficiencia"].items():
             lines.append(f"- {key}: {val}")
-        lines.append("")
+        lines.extend(["", _QHC_PMO_EFICIENCIA, ""])
 
     alerts = report.get("alertas_y_acciones") or report.get("riesgos_costo") or []
     if alerts:
-        lines.append("## Alertas")
+        section = "Alertas y acciones" if audiencia == "pmo" else "Riesgos de costo"
+        lines.append(f"## {section}")
         for a in alerts:
             lines.append(f"- {a}")
         lines.append("")
+
+    if audiencia == "pmo":
+        lines.extend([
+            "## Supuestos y fuentes",
+            "",
+            f"- Baseline: {report.get('supuesto_base', '—')}",
+            f"- Feed logístico: {report.get('fuentes', {}).get('hermes', 'data/logistics/daily_summary/')}",
+            "",
+        ])
 
     disclaimer = report.get("disclaimer_proyeccion")
     if disclaimer:

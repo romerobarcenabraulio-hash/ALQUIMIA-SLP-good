@@ -1,0 +1,155 @@
+{
+  "$schema": "../templates/marco_legal.schema.json",
+  "municipio_id": "slp",
+  "municipio": "San Luis Potosí",
+  "estado": "San Luis Potosí",
+  "profile_ref": "profile.json",
+  "jerarquia_normativa": [
+    {
+      "nivel": "federal",
+      "instrumentos": [
+        {
+          "nombre": "Constitución Política de los Estados Unidos Mexicanos",
+          "articulos_relevantes": ["Art. 4 — Derecho a un medio ambiente sano", "Art. 115 — Competencias municipales"],
+          "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/CPEUM.pdf"
+        },
+        {
+          "nombre": "Ley General de Residuos Sólidos",
+          "version": "LGPGIR (reforma 2021)",
+          "articulos_relevantes": [
+            "Art. 7 — Jerarquía de residuos",
+            "Art. 25 — Planes de manejo",
+            "Art. 27 — Separación en origen"
+          ],
+          "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf"
+        }
+      ]
+    },
+    {
+      "nivel": "estatal",
+      "instrumentos": [
+        {
+          "nombre": "Constitución Política del Estado de San Luis Potosí",
+          "articulos_relevantes": ["Art. 115 equivalente estatal — competencias municipales en medio ambiente"],
+          "url": "https://www.congresosanluis.gob.mx/",
+          "verificacion": "pendiente_articulo_exacto"
+        },
+        {
+          "nombre": "Ley de Protección Ambiental del Estado de San Luis Potosí",
+          "articulos_relevantes": ["Gestión de residuos sólidos", "Autoridad estatal en materia ambiental"],
+          "verificacion": "pendiente_cotejo_dof"
+        },
+        {
+          "nombre": "Ley de Desarrollo Urbano del Estado de San Luis Potosí",
+          "articulos_relevantes": ["Usos de suelo para infraestructura de acopio"],
+          "verificacion": "pendiente"
+        }
+      ]
+    },
+    {
+      "nivel": "municipal",
+      "instrumentos": [
+        {
+          "id": "reglamento_aseo_publico",
+          "nombre": "Reglamento de Aseo Público del Municipio de San Luis Potosí",
+          "anio_version": 2018,
+          "estado_verificacion": "en_revision",
+          "url_fuente": "https://sitio.sanluis.gob.mx/SanLuisPotoSi/DispocisionReglamentaria",
+          "archivo_local": "/reglamentos/SLP_slp_reglamento_aseo_publico.pdf",
+          "articulos_clave": ["Definiciones", "Obligaciones", "Sanciones", "Disposiciones transitorias"],
+          "brechas_identificadas": [
+            "Sin definición de cinco fracciones ALQUIMIA",
+            "Sin esquemas condominio diferenciados",
+            "Procedimiento sancionador insuficiente para evidencia digital",
+            "Sin programa transitorio de implementación gradual"
+          ]
+        }
+      ]
+    },
+    {
+      "nivel": "contractual",
+      "instrumentos": [
+        {
+          "nombre": "Contrato de concesión de aseo público",
+          "operador": "Red Ambiental (Grupo Vigue)",
+          "desde_anio": 2008,
+          "estado": "vigente_verificar",
+          "clausulas_criticas_alquimia": [
+            "Obligaciones de recolección diferenciada",
+            "Inversión en infraestructura de acopio",
+            "Reporteo de toneladas por fracción",
+            "Coordinación con recicladores de base"
+          ],
+          "notas": "Contrato no disponible en repo ALQUIMIA — solicitar vía transparencia municipal."
+        }
+      ]
+    }
+  ],
+  "adendos_alquimia_vinculados": [
+    {
+      "id": "01",
+      "archivo": "ADENDOS: LEGAL/01_ADENDO_DEFINICIONES_ART4.md",
+      "articulo_objetivo": "Art. 4",
+      "estado": "borrador"
+    },
+    {
+      "id": "02",
+      "archivo": "ADENDOS: LEGAL/02_ADENDO_ESQUEMAS_CONDOMINIO_ART20BIS.md",
+      "articulo_objetivo": "Art. 20 Bis",
+      "estado": "borrador"
+    },
+    {
+      "id": "03",
+      "archivo": "ADENDOS: LEGAL/03_ADENDO_OBLIGACIONES_HABITANTES_ART21.md",
+      "articulo_objetivo": "Art. 21",
+      "estado": "borrador"
+    },
+    {
+      "id": "04",
+      "archivo": "ADENDOS: LEGAL/04_ADENDO_OBLIGACIONES_ADMIN_ART21BIS.md",
+      "articulo_objetivo": "Art. 21 Bis",
+      "estado": "borrador"
+    },
+    {
+      "id": "05",
+      "archivo": "ADENDOS: LEGAL/05_ADENDO_SANCIONES_ART37BIS.md",
+      "articulo_objetivo": "Art. 37 Bis",
+      "estado": "borrador"
+    },
+    {
+      "id": "06",
+      "archivo": "ADENDOS: LEGAL/06_ADENDO_TRANSITORIOS.md",
+      "articulo_objetivo": "Transitorios",
+      "estado": "borrador"
+    },
+    {
+      "id": "09",
+      "archivo": "ADENDOS: LEGAL/09_ADENDO_OBLIGACIONES_VIVIENDA_ART21TER.md",
+      "articulo_objetivo": "Art. 21 Ter",
+      "estado": "borrador"
+    },
+    {
+      "id": "10",
+      "archivo": "ADENDOS: LEGAL/10_ADENDO_PROCEDIMIENTO_SANCIONADOR_ART37TER.md",
+      "articulo_objetivo": "Art. 37 Ter",
+      "estado": "borrador"
+    }
+  ],
+  "competencias_clave": {
+    "sancion_municipal": "Municipio de San Luis Potosí — Reglamento de Aseo Público",
+    "autoridad_inspeccion": "Dirección de Ecología y Aseo Público",
+    "operacion_recoleccion": "Concesionario Red Ambiental bajo contrato municipal",
+    "disposicion_final": "Relleno sanitario regional (Peñasco / CIPRES)",
+    "zm_coordination": "Sin autoridad sancionatoria única ZM — convenio pendiente"
+  },
+  "referencias_cruzadas": {
+    "frontend_reglamentos": "frontend/src/data/reglamentos.ts",
+    "backend_legal": "backend/app/legal/",
+    "adendos_indice": "ADENDOS: LEGAL/00_INDICE_ADENDOS.md"
+  },
+  "meta": {
+    "agente": "POLIS",
+    "version": "1.0.0",
+    "actualizado": "2026-05-25"
+  }
+}

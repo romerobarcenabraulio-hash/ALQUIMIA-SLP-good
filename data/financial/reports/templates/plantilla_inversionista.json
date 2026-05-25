@@ -1,0 +1,21 @@
+{
+  "audiencia": "inversionista",
+  "titulo": "Reporte de costos — Inversionista / Cabildo",
+  "marco": "action",
+  "registro": "tecnico-financiero",
+  "secciones": [
+    "resumen_ejecutivo",
+    "capex_por_componente",
+    "opex_run_rate",
+    "unit_economics",
+    "payback_y_sensibilidades",
+    "riesgos_costo",
+    "disclaimer_proyeccion"
+  ],
+  "formato": "json+markdown",
+  "frecuencia": "mensual",
+  "destinatario": "SUPREME + inversionistas / Cabildo",
+  "disclaimer": "Proyección basada en supuesto declarado — no altera datos históricos conciliados.",
+  "qhc_obligatorio": true,
+  "estructura_ref": "docs/style/estructura_reportes_por_audiencia.md"
+}

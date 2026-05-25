@@ -1,10 +1,10 @@
 {
   "G1": {
-    "status": "NO_INICIADO",
-    "fecha_objetivo": null,
+    "status": "EN_RIESGO",
+    "fecha_objetivo": "2026-05-01",
     "fecha_cruce_real": null,
     "prerequisitos_completados": [],
-    "ultima_revision": null,
+    "ultima_revision": "2026-05-25",
     "alertas_enviadas": [],
     "notas": ""
   },

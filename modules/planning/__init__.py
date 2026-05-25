@@ -1,3 +1,3 @@
-"""AURUM · dominio de costos y presupuesto ALQUIMIA."""
+"""KRONOS + AURUM · planeación, gates, costos y EVM."""
 
-__all__ = ["budget"]
+__all__ = ["budget", "gates", "paths"]

@@ -1,4 +1,5 @@
 import type { MunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
+import { getCatalogChartBrief } from '@/data/chartBriefCatalog'
 import {
   FUNCTIONARY_MODULE_ORDER,
   moduleNumber,
@@ -79,12 +80,15 @@ function scopeText(ctx: ModuleEditorialContext): string {
   return 'Primero debe elegirse municipio para fijar reglamento, población y supuestos territoriales.'
 }
 
+
 export function getChartBrief(
   brief: ModuleEditorialBrief | null,
   chartId: string | null,
 ): ChartBrief | null {
-  if (!brief || !chartId) return null
-  return brief.chart_briefs.find((c) => c.chart_id === chartId) ?? null
+  if (!chartId) return null
+  const fromModule = brief?.chart_briefs.find((c) => c.chart_id === chartId)
+  if (fromModule) return fromModule
+  return getCatalogChartBrief(chartId)
 }
 
 export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialContext): ModuleEditorialBrief | null {

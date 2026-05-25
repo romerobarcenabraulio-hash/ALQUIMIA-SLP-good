@@ -1,0 +1,114 @@
+{
+  "updated_at": "2026-05-25",
+  "wave": "3-closed",
+  "wave_status": {
+    "wave_1": "closed",
+    "wave_2": "closed",
+    "wave_3_supreme": "closed",
+    "wave_4_scheduled": "2026-06-01"
+  },
+  "master_plan": "system/state/master_plan.md",
+  "baseline": "system/state/system_baseline.md",
+  "modules": {
+    "modules/logistics": {
+      "agent": "HERMES",
+      "status": "healthy",
+      "tests": "backend/tests/test_logistics*.py",
+      "notes": "daily_summary → AURUM feed operativo"
+    },
+    "modules/planning/gates": {
+      "agent": "KRONOS",
+      "status": "healthy",
+      "tests": "backend/tests/test_gate_tracker.py",
+      "notes": "migrado 2026-05-25; shim con sync path"
+    },
+    "modules/planning/budget": {
+      "agent": "AURUM",
+      "status": "healthy",
+      "tests": "backend/tests/test_aurum*.py, test_evm_engine.py",
+      "notes": "municipal_context POLIS + warnings BIOS RUL integrados"
+    },
+    "modules/lifecycle": {
+      "agent": "BIOS",
+      "status": "warning",
+      "tests": "backend/tests/test_bios_lifecycle.py",
+      "notes": "KOS-02 en ejecución L4-L5 — propuesta 03"
+    },
+    "modules/personalization": {
+      "agent": "POLIS",
+      "status": "healthy",
+      "tests": "backend/tests/test_polis_personalization.py",
+      "notes": "profile SLP + CLI validate + cross_contamination"
+    }
+  },
+  "backend_domains": {
+    "backend/app/planning": {
+      "status": "warning",
+      "notes": "KOS-01 en ejecución L2-L6 — propuesta 02"
+    },
+    "backend/app/auth": {
+      "agent": "FORGE",
+      "status": "healthy",
+      "notes": "registro + TOTP + migración 0005"
+    },
+    "backend/app/logistics": {
+      "status": "healthy",
+      "notes": "thin router"
+    },
+    "backend/app/lifecycle": {
+      "status": "healthy",
+      "notes": "router + POST /pipeline/run"
+    }
+  },
+  "embedded_agents": {
+    "FORGE": {
+      "status": "active",
+      "cursor_rule": "cursor-rules/forge.md",
+      "notes": "auth onboarding semana 1"
+    },
+    "ATLAS": {
+      "status": "active",
+      "cursor_rule": "cursor-rules/atlas.md",
+      "notes": "CI deploy migraciones"
+    }
+  },
+  "interventores": {
+    "LOGOS": {
+      "status": "healthy",
+      "notes": "QHC en reportes AURUM + informe ejecutivo SLP"
+    },
+    "OCCAM": {
+      "status": "healthy",
+      "notes": "COLA archivada KOS-05; 3 propuestas pendientes menores"
+    },
+    "EIDOS": {
+      "status": "healthy",
+      "notes": "glosario + CI checker activo"
+    },
+    "KOSMOS": {
+      "status": "healthy",
+      "notes": "wave 3 handoff completo"
+    },
+    "SUPREME": {
+      "status": "closed",
+      "notes": "master_plan + decisions_wave3 publicados 2026-05-25"
+    }
+  },
+  "data_layers": {
+    "data/": { "status": "healthy", "index": "data/README.md" },
+    "data/financial/reports/": {
+      "status": "healthy",
+      "notes": "LOGOS QHC en reportes 2026-05-25"
+    },
+    "backend/data/state/": { "status": "legacy", "notes": "KOS-03 semana 2" },
+    "backend/data/planning/": { "status": "legacy", "notes": "KOS-03 semana 2" }
+  },
+  "governance": {
+    "system/state/master_plan.md": { "status": "published", "updated": "2026-05-25" },
+    "system/state/system_baseline.md": { "status": "published", "updated": "2026-05-25" },
+    "system/state/decisions_wave3.md": { "status": "published", "updated": "2026-05-25" },
+    "system/state/next_activation.md": { "status": "scheduled", "date": "2026-06-01" },
+    "agents/registry.md": { "status": "healthy", "updated": "2026-05-25" },
+    "COLA_Y_ROLES_AGENTES.md": { "status": "superseded", "redirect": "system/state/master_plan.md" }
+  }
+}

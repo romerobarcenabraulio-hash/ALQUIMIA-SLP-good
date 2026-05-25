@@ -1,0 +1,103 @@
+{
+  "modelo": "Modelo_BASED.xlsx",
+  "horizonte_anios": 10,
+  "wacc_pct": 20.0,
+  "supuestos": {
+    "fuente": "Modelo_BASED.xlsx",
+    "zm": "SLP",
+    "horizonte_anios": 10,
+    "wacc_pct": 20.0,
+    "tipo_cambio_mxn_usd": 17.1,
+    "gen_percapita_kg_dia": 0.9,
+    "mix_cas": {
+      "P": 18,
+      "M": 0,
+      "G": 0
+    },
+    "pct_captura_por_anio": [
+      20,
+      45,
+      70,
+      90,
+      100,
+      100,
+      100,
+      100,
+      100,
+      100
+    ],
+    "merma_log_pct": 10,
+    "dias_operativos": 300,
+    "precio_carbono": "voluntario",
+    "costo_com_social_mxn": 600000,
+    "precios_mxn_kg": {
+      "pet": 5.5,
+      "hdpe": 8.5,
+      "papel": 2.5,
+      "vidrio": 2.3,
+      "aluminio": 15.1,
+      "organico": 0.3
+    }
+  },
+  "vpn_mxn": 931814311.81,
+  "tir_pct": 120.45,
+  "payback_meses": 1.7,
+  "payback_descontado_meses": 24.7,
+  "valor_terminal_mxn": 2190806675.66,
+  "vpn_con_terminal_mxn": 1285641820.96,
+  "capex_total_mxn": 60809572.0,
+  "co2e_horizonte_ton": 3563373.98,
+  "serie_anual_resumen": [
+    {
+      "año": 1,
+      "fcf": -36338562.0,
+      "co2e": 44334.0
+    },
+    {
+      "año": 2,
+      "fcf": 118478022.0,
+      "co2e": 149628.0
+    },
+    {
+      "año": 3,
+      "fcf": 265475448.0,
+      "co2e": 310341.0
+    },
+    {
+      "año": 4,
+      "fcf": 346233778.0,
+      "co2e": 399009.0
+    },
+    {
+      "año": 5,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    },
+    {
+      "año": 6,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    },
+    {
+      "año": 7,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    },
+    {
+      "año": 8,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    },
+    {
+      "año": 9,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    },
+    {
+      "año": 10,
+      "fcf": 386612943.0,
+      "co2e": 443344.0
+    }
+  ],
+  "generado_en": "2026-05-25T18:46:18Z"
+}

@@ -1,0 +1,12 @@
+{
+  "version": "1.0",
+  "actualizado": "2026-05-25",
+  "referencia_vida_util": {
+    "infraestructura_civil": 20,
+    "maquinaria_prensas": 10,
+    "flota": 8,
+    "basculas": 5,
+    "hardware_digital": 4
+  },
+  "assets": []
+}

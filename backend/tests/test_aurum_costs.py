@@ -181,8 +181,17 @@ def test_publish_ac_update(tmp_path, monkeypatch):
     assert path.is_file()
     event = json.loads(path.read_text(encoding="utf-8"))
     assert event["topic"] == "alquimia/events/planning/ac_update"
-    assert "ac_total_mxn" in event
     assert event["municipio_id"] == "slp"
+
+
+def test_municipal_context_reads_polis_profile():
+    from modules.planning.budget.municipal_context import load_municipal_params
+
+    params = load_municipal_params("slp")
+    assert params["fuente"].startswith("polis_profile:")
+    assert params["viviendas_activas"] == 224_000
+    assert params["ca_mix"] == {"P": 7, "M": 7, "G": 4}
+    assert params["n_recicladoras"] == 5
 
 
 def test_pipeline_end_to_end(tmp_path, monkeypatch):

@@ -18,3 +18,7 @@
 
 ### CI
 - Paso `EIDOS terminology check` en `.github/workflows/ci.yml`
+
+### Ola PD&SA (2026-05-22)
+- `cursor-rules/PD&SA.md` — stakeholder(s) → parte(s) interesada(s); estándares PMI traducidos al español
+- `scripts/eidos_check_docs.py` — `PD&SA.md` en reglas activas; exclusiones explícitas `OLD/` y `ARCHIVOS VIEJOS/`

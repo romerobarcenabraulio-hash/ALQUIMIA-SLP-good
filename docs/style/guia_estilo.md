@@ -2,6 +2,8 @@
 
 Complemento de `glosario_canonico.md`. Define **cómo** escribir, no solo **qué** términos usar.
 
+Para bloques pedagógicos en gráficas, tablas y modelos, ver `bloques_qhc.md`.
+
 ## Dos registros válidos
 
 | Registro | Dónde | Características |

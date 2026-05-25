@@ -125,6 +125,30 @@ export function LogisticaOperativaStack() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
         <div className="space-y-5">
 
+          <div className="rounded-[10px] border border-[#C4DFA0] bg-[#F4FAEC] px-4 py-3">
+            <p className="text-[11px] font-semibold text-[#23470A]">Rutas y cobertura operativa</p>
+            <p className="text-[11px] text-[#3B5F23] mt-1 leading-relaxed">
+              {!hasResultados
+                ? 'Complete M01 Baseline (RSU modelado) y M06 Infraestructura para dimensionar rutas y trazar en mapa.'
+                : 'Use el panel de rutas por colonia para trazar recorridos. Centros propuestos en M06; progresión mes a mes en 05C Oleadas territoriales.'}
+            </p>
+          </div>
+
+          {/* Rutas residenciales por colonia — trazado + Cabildo */}
+          <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
+            <div className="px-5 py-4 border-b border-[#F0EDE5]">
+              <p className="text-[13px] font-semibold text-[#1C1B18]">Programación de rutas por colonia</p>
+              <p className="text-[11px] text-[#A8A49C] mt-0.5">Vertical · casa · tiempos · combustible · export Cabildo</p>
+            </div>
+            <div className="p-4">
+              <ResidentialRoutesPanel
+                municipioLabel={municipioLabel}
+                rsuDia={rsuDia}
+                hasResultados={hasResultados}
+              />
+            </div>
+          </section>
+
           {/* Logistics KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
@@ -140,15 +164,6 @@ export function LogisticaOperativaStack() {
               </div>
             ))}
           </div>
-
-          {/* Rutas residenciales por colonia — trazado + Cabildo */}
-          <ExpandableChart chartId="m08-residential-routes" title="Programación de rutas por colonia" subtitle="Vertical · casa · tiempos · combustible · export Cabildo">
-            <ResidentialRoutesPanel
-              municipioLabel={municipioLabel}
-              rsuDia={rsuDia}
-              hasResultados={hasResultados}
-            />
-          </ExpandableChart>
 
           {/* Map CAs + recicladoras */}
           <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle="Rutas orgánicas · reciclables · mixtas · zonas cubiertas">

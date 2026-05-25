@@ -11,6 +11,7 @@ from modules.planning.budget.cost_structure import build_cost_structure
 from modules.planning.budget.efficiency import indicators_from_structure
 from modules.planning.budget.hermes_consumer import aggregate_hermes_logistics, consume_hermes_feeds
 from modules.planning.budget.kronos_publisher import build_ac_update, costs_data_dir, publish_ac_update
+from modules.planning.budget.municipal_context import load_bios_maintenance_warnings, load_municipal_params
 from modules.planning.budget.report_templates import (
     ensure_report_templates,
     persist_audience_reports,
@@ -50,7 +51,16 @@ def run_aurum_pipeline(
     5. Genera reportes PMO e inversionista
     """
     plan_date = fecha or date.today()
+    muni = load_municipal_params(municipio_id)
+    if viviendas_activas == 224_000:
+        viviendas_activas = int(muni["viviendas_activas"])
+    if ebitda_anual_mxn == "85000000":
+        ebitda_anual_mxn = str(muni["ebitda_anual_mxn"])
+    if ingreso_bruto_anual_mxn == "361000000":
+        ingreso_bruto_anual_mxn = str(muni["ingreso_bruto_anual_mxn"])
+
     feeds, warnings = consume_hermes_feeds(municipio_id, lookback_days=lookback_days, fecha_hasta=plan_date)
+    warnings.extend(load_bios_maintenance_warnings())
     hermes_agg = aggregate_hermes_logistics(feeds)
 
     nc_inputs: dict[str, Decimal] = {}
@@ -66,7 +76,10 @@ def run_aurum_pipeline(
     structure = build_cost_structure(
         municipio_id,
         fecha=plan_date,
+        ca_mix=muni["ca_mix"],
+        n_recicladoras=int(muni["n_recicladoras"]),
         no_calidad_inputs=nc_inputs or None,
+        supuesto_base=str(muni["supuesto_base"]),
     )
     structure_path = persist_cost_structure_snapshot(structure.to_dict())
 
@@ -105,4 +118,6 @@ def run_aurum_pipeline(
         "template_paths": {k: str(v) for k, v in template_paths.items()},
         "indicadores": indicadores.to_dict(),
         "ac_total_mxn": str(ac_update.ac_total_mxn),
+        "municipal_params_fuente": muni["fuente"],
+        "ca_mix": muni["ca_mix"],
     }

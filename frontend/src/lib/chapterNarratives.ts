@@ -170,7 +170,5 @@ export function shouldOfferChapterIndex(toModuleId: string): boolean {
   return !isChapterCoverDismissed(chapter.num)
 }
 
-/** @deprecated alias — la portada es el índice del capítulo */
-export const shouldOfferChapterCover = shouldOfferChapterIndex
 
 export const CHAPTER_COUNT = CHAPTERS.length

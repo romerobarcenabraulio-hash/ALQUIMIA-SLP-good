@@ -241,6 +241,63 @@ export function InfrastructureOperationsStack() {
             </div>
           )}
 
+          <div className="rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3 mb-5">
+            <p className="text-[11px] font-semibold text-[#1A5FA8]">Dónde se propone la infraestructura</p>
+            <p className="text-[11px] text-[#3D5A7A] mt-1 leading-relaxed">
+              El mapa y la tabla muestran ubicaciones propuestas y gates de habilitación. Para rutas por colonia vaya a{' '}
+              <strong>M08 Logística</strong>; para progresión mes a mes por zona, <strong>05C Oleadas territoriales</strong>.
+            </p>
+          </div>
+
+          {/* Mapa y tabla — visibles arriba (no enterrados tras portafolio) */}
+          <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden mb-5">
+            <div className="px-5 py-4 border-b border-[#F0EDE5]">
+              <p className="text-[13px] font-semibold text-[#1C1B18]">Mapa de centros de acopio propuestos</p>
+              <p className="text-[11px] text-[#A8A49C] mt-0.5">Centros verificados y propuestos · filtro por material · {municipio}</p>
+            </div>
+            <div className="p-4">
+              <CentrosAcopioMap />
+            </div>
+          </section>
+
+          <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden mb-5">
+            <div className="px-5 py-4 border-b border-[#F0EDE5]">
+              <p className="text-[13px] font-semibold text-[#1C1B18]">Centros propuestos y gates de habilitación</p>
+              <p className="text-[11px] text-[#A8A49C] mt-0.5">Un centro no puede ser operable sin cumplir los gates mínimos</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-[10px]">
+                <thead>
+                  <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
+                    {['Centro', 'Zona', 'Tipo', 'Estado', 'Uso de suelo', 'Conectividad vial', 'Permiso', 'Prioridad'].map(h => (
+                      <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[9px]">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {centersTable.map((c, i) => {
+                    const prioColor = c.prioridad === 'Alta' ? 'bg-[#FDE8E8] text-[#B91C1C]' : c.prioridad === 'Media' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#F4F2ED] text-[#6B6760]'
+                    const estadoColor = c.estado === 'En diseño' ? 'text-[#1A5FA8]' : 'text-[#6B6760]'
+                    return (
+                      <tr key={c.id} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
+                        <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">{c.id}</td>
+                        <td className="px-3 py-2.5 text-[#6B6760]">{c.zona}</td>
+                        <td className="px-3 py-2.5"><span className="px-1.5 py-0.5 rounded-full bg-[#EAF3DE] text-[#2D5A0D] font-semibold">{c.tipo}</span></td>
+                        <td className={cn('px-3 py-2.5 font-semibold', estadoColor)}>{c.estado}</td>
+                        <td className="px-3 py-2.5 text-[#6B6760]">{c.uso}</td>
+                        <td className="px-3 py-2.5 text-[#6B6760]">{c.vial}</td>
+                        <td className="px-3 py-2.5">
+                          <span className={cn('px-1.5 py-0.5 rounded font-semibold', c.permiso === 'Aprobado' ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-[#FEF3C7] text-[#92400E]')}>{c.permiso}</span>
+                        </td>
+                        <td className="px-3 py-2.5"><span className={cn('px-1.5 py-0.5 rounded font-semibold', prioColor)}>{c.prioridad}</span></td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
           {/* Portfolio */}
           <div className="space-y-2.5 mb-5">
             <p className="text-[12px] font-semibold text-[#1C1B18]">Portafolio de infraestructura</p>
@@ -281,15 +338,6 @@ export function InfrastructureOperationsStack() {
             })}
           </div>
 
-          {/* Map — centros de acopio verificados y propuestos */}
-          <ExpandableChart
-            chartId="mapa-centros-acopio"
-            title="Mapa de centros de acopio"
-            subtitle="Centros verificados y propuestos · filtro por material"
-          >
-            <CentrosAcopioMap />
-          </ExpandableChart>
-
           {/* Phase deployment chart */}
           <ExpandableChart chartId="m06-phase-deploy" title="Despliegue de infraestructura por fase" subtitle="Centros activos · capacidad instalada · cobertura acumulada">
             <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 mb-5">
@@ -326,47 +374,6 @@ export function InfrastructureOperationsStack() {
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
-              </div>
-            </div>
-          </ExpandableChart>
-
-          {/* Center table */}
-          <ExpandableChart chartId="m06-center-table" title="Centros propuestos y gates de habilitación" subtitle="Estado · uso de suelo · conectividad · permiso · prioridad">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden mb-5">
-              <div className="px-5 py-4 border-b border-[#F0EDE5]">
-                <p className="text-[12px] font-semibold text-[#1C1B18]">Centros propuestos y gates de habilitación</p>
-                <p className="text-[10px] text-[#A8A49C]">Un centro no puede ser operable sin cumplir los gates mínimos</p>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-[10px]">
-                  <thead>
-                    <tr className="bg-[#FAFAF8] border-b border-[#F0EDE5]">
-                      {['Centro', 'Zona', 'Tipo', 'Estado', 'Uso de suelo', 'Conectividad vial', 'Permiso', 'Prioridad'].map(h => (
-                        <th key={h} className="text-left px-3 py-2.5 font-bold text-[#1C1B18] uppercase tracking-wide text-[9px]">{h}</th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {centersTable.map((c, i) => {
-                      const prioColor = c.prioridad === 'Alta' ? 'bg-[#FDE8E8] text-[#B91C1C]' : c.prioridad === 'Media' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#F4F2ED] text-[#6B6760]'
-                      const estadoColor = c.estado === 'En diseño' ? 'text-[#1A5FA8]' : 'text-[#6B6760]'
-                      return (
-                        <tr key={c.id} className={i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF8]'}>
-                          <td className="px-3 py-2.5 font-semibold text-[#1C1B18]">{c.id}</td>
-                          <td className="px-3 py-2.5 text-[#6B6760]">{c.zona}</td>
-                          <td className="px-3 py-2.5"><span className="px-1.5 py-0.5 rounded-full bg-[#EAF3DE] text-[#2D5A0D] font-semibold">{c.tipo}</span></td>
-                          <td className={cn('px-3 py-2.5 font-semibold', estadoColor)}>{c.estado}</td>
-                          <td className="px-3 py-2.5 text-[#6B6760]">{c.uso}</td>
-                          <td className="px-3 py-2.5 text-[#6B6760]">{c.vial}</td>
-                          <td className="px-3 py-2.5">
-                            <span className={cn('px-1.5 py-0.5 rounded font-semibold', c.permiso === 'Aprobado' ? 'bg-[#D1FAE5] text-[#065F46]' : 'bg-[#FEF3C7] text-[#92400E]')}>{c.permiso}</span>
-                          </td>
-                          <td className="px-3 py-2.5"><span className={cn('px-1.5 py-0.5 rounded font-semibold', prioColor)}>{c.prioridad}</span></td>
-                        </tr>
-                      )
-                    })}
-                  </tbody>
-                </table>
               </div>
             </div>
           </ExpandableChart>

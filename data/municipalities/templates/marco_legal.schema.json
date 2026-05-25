@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://alquimia.local/schemas/marco-legal-municipal.json",
+  "title": "Marco Legal Municipal ALQUIMIA",
+  "type": "object",
+  "required": ["municipio_id", "municipio", "estado", "jerarquia_normativa", "competencias_clave"],
+  "properties": {
+    "municipio_id": { "type": "string" },
+    "municipio": { "type": "string" },
+    "estado": { "type": "string" },
+    "profile_ref": { "type": "string" },
+    "jerarquia_normativa": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["nivel", "instrumentos"],
+        "properties": {
+          "nivel": { "enum": ["federal", "estatal", "municipal", "contractual", "zm"] },
+          "instrumentos": { "type": "array" }
+        }
+      }
+    },
+    "adendos_alquimia_vinculados": { "type": "array" },
+    "competencias_clave": { "type": "object" }
+  }
+}

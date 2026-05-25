@@ -37,7 +37,7 @@ SKIP_FILES = {
     "cursor-rules/bios.md",
 }
 
-# Reglas activas revisadas (excluye PD&SA metodología PMI pendiente de propagación)
+# Reglas activas revisadas (excluye cursor-rules/OLD/ y archivos históricos)
 CURSOR_RULES_ACTIVE = (
     "supreme.md",
     "kronos.md",
@@ -47,8 +47,11 @@ CURSOR_RULES_ACTIVE = (
     "navigator.md",
     "EJECUTOR.md",
     "AUDITOR.md",
+    "PD&SA.md",
     "prompt_maestro_ejecucion.md",
 )
+
+SKIP_DIR_NAMES = frozenset({"OLD", "ARCHIVOS VIEJOS", "node_modules"})
 
 FRONTEND_COPY_DIRS = (
     ROOT / "frontend" / "src" / "data",
@@ -71,7 +74,7 @@ def iter_target_files() -> list[Path]:
         for path in base.rglob("*"):
             if path.suffix not in {".md", ".tsx", ".ts"}:
                 continue
-            if "node_modules" in path.parts:
+            if SKIP_DIR_NAMES.intersection(path.parts):
                 continue
             files.append(path)
     return sorted(set(files))
@@ -87,6 +90,10 @@ def contains_prohibited(text: str, phrase: str) -> bool:
         return bool(re.search(r"(?<![-/])\bperformance\b", scrubbed))
     if p == "pipeline":
         return bool(re.search(r"\bpipeline\b", lower))
+    if p == "irr":
+        return bool(re.search(r"\birr\b", lower))
+    if p == "npv":
+        return bool(re.search(r"\bnpv\b", lower))
     return p in lower
 
 

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Expand, Info, X } from 'lucide-react'
 import type { ChartBrief } from '@/data/moduleEditorialBriefs'
+import { getCatalogChartBrief } from '@/data/chartBriefCatalog'
 
 interface ExpandableChartProps {
   children: React.ReactNode
@@ -50,6 +51,7 @@ function BriefPanel({ brief, compact = false }: { brief: ChartBrief; compact?: b
 export function ExpandableChart({ children, title, chartId, subtitle, className = '', brief }: ExpandableChartProps) {
   const [open, setOpen] = useState(false)
   const [briefOpen, setBriefOpen] = useState(false)
+  const resolvedBrief = brief ?? (chartId ? getCatalogChartBrief(chartId) : null)
 
   const handleOpen = useCallback((e: React.MouseEvent) => {
     const target = e.target as HTMLElement
@@ -73,7 +75,7 @@ export function ExpandableChart({ children, title, chartId, subtitle, className 
             )}
           </div>
           <div className="flex items-center gap-1 shrink-0 opacity-70 group-hover:opacity-100 transition-opacity">
-          {brief && (
+          {resolvedBrief && (
             <button
               type="button"
               onClick={() => setBriefOpen(v => !v)}
@@ -103,9 +105,9 @@ export function ExpandableChart({ children, title, chartId, subtitle, className 
 
         <div className="px-5 py-4">{children}</div>
 
-        {brief && briefOpen && (
+        {resolvedBrief && briefOpen && (
           <div className="mx-5 mb-4 rounded-[10px] border border-[#D7E8C0] bg-[#F6FAEF] px-4 py-3">
-            <BriefPanel brief={brief} compact />
+            <BriefPanel brief={resolvedBrief} compact />
           </div>
         )}
       </div>
@@ -146,8 +148,8 @@ export function ExpandableChart({ children, title, chartId, subtitle, className 
             </div>
 
             <div className="px-6 py-3 border-t border-[#F0EDE5] shrink-0">
-              {brief ? (
-                <BriefPanel brief={brief} />
+              {resolvedBrief ? (
+                <BriefPanel brief={resolvedBrief} />
               ) : (
                 <p className="text-[9px] text-[#C4C0B8] text-center">
                   Clic fuera o Escape para cerrar

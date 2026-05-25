@@ -51,6 +51,28 @@ const GuiaCircularidadStack = dynamic(
   },
 )
 
+const ImplementacionEspacioTiempo = dynamic(
+  () =>
+    import('@/components/simulator/ImplementacionEspacioTiempo').then(m => ({
+      default: m.ImplementacionEspacioTiempo,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando oleadas territoriales…</p>,
+  },
+)
+
+const ProgresionPlanMunicipalTiempo = dynamic(
+  () =>
+    import('@/components/simulator/ProgresionPlanMunicipalTiempo').then(m => ({
+      default: m.ProgresionPlanMunicipalTiempo,
+    })),
+  {
+    ssr: false,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando progresión mes a mes…</p>,
+  },
+)
+
 const LogisticaOperativaStack = dynamic(
   () =>
     import('@/components/simulator/stacks/LogisticaOperativaStack').then(m => ({ default: m.LogisticaOperativaStack })),
@@ -275,7 +297,14 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'ruta_critica':
       return <FutureGoalsModule notice={<M03Notice />} pageOnly={2} />
     case 'oleadas_territoriales':
-      return <FutureGoalsModule notice={<M03Notice />} pageOnly={3} />
+      return (
+        <div className="space-y-10">
+          <ImplementacionEspacioTiempo />
+          <div className="border-t border-[#E8E4DC] pt-8">
+            <ProgresionPlanMunicipalTiempo />
+          </div>
+        </div>
+      )
     case 'infraestructura':
       return <InfrastructureOperationsStack />
     case 'organigrama':

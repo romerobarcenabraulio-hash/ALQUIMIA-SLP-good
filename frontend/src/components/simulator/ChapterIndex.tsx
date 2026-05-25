@@ -296,5 +296,3 @@ export function ChapterIndex({
   )
 }
 
-/** @deprecated — usar ChapterIndex */
-export { ChapterIndex as ChapterCover }

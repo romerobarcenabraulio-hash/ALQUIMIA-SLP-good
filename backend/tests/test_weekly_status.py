@@ -22,8 +22,10 @@ def test_build_weekly_status_has_required_fields():
     # Con fixtures AURUM+HERMES en repo debe integrar, no sintético puro
     ac_path = Path(__file__).resolve().parents[2] / "data" / "financial" / "costs" / "ac_latest.json"
     if ac_path.is_file():
+        import json
+        expected_ac = float(json.loads(ac_path.read_text())["ac_total_mxn"])
         assert report["evm_fuente"] == "aurum_hermes_integrado"
-        assert report["evm_detalle"]["ac"] == pytest.approx(1034.7, rel=0.01)
+        assert report["evm_detalle"]["ac"] == pytest.approx(expected_ac, rel=0.01)
         assert report["evm_integracion"]["feeds_consumidos"] >= 1
     else:
         assert report["evm_fuente"] == "sintetico_fase_0_1"

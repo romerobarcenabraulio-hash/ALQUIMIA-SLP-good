@@ -17,7 +17,7 @@ from app.planning.scheduling.gate_tracker import check_gate_alerts, get_current_
 
 logger = logging.getLogger(__name__)
 
-_DATA_ROOT = Path(__file__).resolve().parents[4] / "data" / "planning"
+_DATA_ROOT = Path(__file__).resolve().parents[3] / "data" / "planning"
 REPORTS_DIR = _DATA_ROOT / "reports"
 LATEST_PATH = _DATA_ROOT / "weekly_status_latest.json"
 

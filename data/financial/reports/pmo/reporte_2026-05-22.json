@@ -1,0 +1,39 @@
+{
+  "audiencia": "pmo",
+  "fecha": "2026-05-22",
+  "municipio_id": "slp",
+  "supuesto_base": "Modelo_BASED.xlsx · ZM SLP · mayo 2026",
+  "resumen_ejecutivo": {
+    "ac_total": "1034.7000",
+    "capex_baseline": "161178648",
+    "opex_mensual_referencia": "277316",
+    "hermes_dias_consumidos": 1,
+    "semaforo_costo_ton": "VERDE"
+  },
+  "ac_por_categoria": {
+    "capex_incurrido": "0",
+    "opex_referencia_mes": "277316",
+    "logistica_hermes_acumulado": "1034.7",
+    "no_calidad": "0.0000"
+  },
+  "costos_no_calidad": {
+    "merma_logistica": "0.0000",
+    "rechazo_contaminacion": "0",
+    "tiempo_muerto_flota": "0",
+    "costo_relleno_evitable": "0",
+    "total": "0.0000"
+  },
+  "indicadores_eficiencia": {
+    "costo_por_tonelada_mxn": "0",
+    "costo_por_vivienda_mxn": "1.24",
+    "payback_simple_anios": "0.49",
+    "costo_no_calidad_pct": "0.00",
+    "semaforo_costo_ton": "VERDE",
+    "alerta_roja_no_calidad": false
+  },
+  "alertas_y_acciones": [],
+  "fuentes": {
+    "hermes": "data/logistics/daily_summary/",
+    "baseline": "Modelo_BASED.xlsx · ZM SLP · mayo 2026"
+  }
+}

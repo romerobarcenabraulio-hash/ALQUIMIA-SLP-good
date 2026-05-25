@@ -1,0 +1,49 @@
+{
+  "periodo": "2026-escenario",
+  "generado_en": "2026-05-25T18:46:18Z",
+  "fuente_tonelaje": "modelo_BASED_escenario_base",
+  "tonelaje_total": 210872.48,
+  "co2e_total_ton": 220717.34,
+  "por_fraccion": [
+    {
+      "fraccion": "aluminio",
+      "toneladas": 9246.96,
+      "co2e_ton": 83222.64,
+      "factor_aplicado": 9.0,
+      "fuente_factor": "Ecoinvent (2023)"
+    },
+    {
+      "fraccion": "organicos_compost",
+      "toneladas": 118889.53,
+      "co2e_ton": 59444.765,
+      "factor_aplicado": 0.5,
+      "fuente_factor": "IPCC (2021)"
+    },
+    {
+      "fraccion": "papel_carton",
+      "toneladas": 51171.17,
+      "co2e_ton": 46054.053,
+      "factor_aplicado": 0.9,
+      "fuente_factor": "Ecoinvent (2023)"
+    },
+    {
+      "fraccion": "pet",
+      "toneladas": 18772.03,
+      "co2e_ton": 28158.045,
+      "factor_aplicado": 1.5,
+      "fuente_factor": "Ecoinvent (2023)"
+    },
+    {
+      "fraccion": "vidrio",
+      "toneladas": 12792.79,
+      "co2e_ton": 3837.837,
+      "factor_aplicado": 0.3,
+      "fuente_factor": "Ecoinvent (2023)"
+    }
+  ],
+  "hermes_disponible": false,
+  "notas": [
+    "HERMES sin tonelaje registrado — Fase 0-1 sin báscula conectada.",
+    "Fallback: volúmenes anuales del escenario Modelo_BASED (ZM SLP, horizonte año 3)."
+  ]
+}

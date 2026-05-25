@@ -1,0 +1,20 @@
+{
+  "audiencia": "pmo",
+  "titulo": "Reporte quincenal de costos — PMO",
+  "marco": "operativo",
+  "registro": "tecnico-riguroso",
+  "secciones": [
+    "resumen_ejecutivo",
+    "ac_por_categoria",
+    "desviaciones_vs_baseline",
+    "costos_no_calidad",
+    "indicadores_eficiencia",
+    "alertas_y_acciones",
+    "supuestos_y_fuentes"
+  ],
+  "formato": "json+markdown",
+  "frecuencia": "quincenal",
+  "destinatario": "KRONOS + equipo PMO municipal",
+  "qhc_obligatorio": true,
+  "estructura_ref": "docs/style/estructura_reportes_por_audiencia.md"
+}

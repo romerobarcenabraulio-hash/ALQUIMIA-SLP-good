@@ -1,0 +1,91 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://alquimia.local/schemas/municipal-profile.json",
+  "title": "Perfil Municipal ALQUIMIA",
+  "description": "Schema canónico para personalización municipal — instanciar por municipio activo.",
+  "type": "object",
+  "required": [
+    "municipio_id",
+    "municipio",
+    "estado",
+    "viviendas_universo",
+    "generacion_rsu_ton_dia",
+    "composicion_rsu",
+    "concesionario",
+    "reglamento_vigente",
+    "gobierno",
+    "cabildo_apoyo",
+    "precios_locales",
+    "recicladoras_locales",
+    "cifras_canonicas_coherencia"
+  ],
+  "properties": {
+    "municipio_id": { "type": "string", "pattern": "^[a-z]{2,5}$" },
+    "municipio": { "type": "string", "minLength": 1 },
+    "estado": { "type": "string", "minLength": 1 },
+    "estado_id": { "type": "string" },
+    "clave_inegi": { "type": "string" },
+    "zm_simulator_id": { "type": "string" },
+    "poblacion": { "type": "integer", "minimum": 1 },
+    "viviendas_universo": { "type": "integer", "minimum": 1 },
+    "generacion_rsu_ton_dia": { "type": "number", "minimum": 0 },
+    "composicion_rsu": {
+      "type": "object",
+      "required": ["organicos", "papel", "plasticos", "vidrio", "metales"],
+      "properties": {
+        "organicos": { "type": "number", "minimum": 0, "maximum": 1 },
+        "papel": { "type": "number", "minimum": 0, "maximum": 1 },
+        "plasticos": { "type": "number", "minimum": 0, "maximum": 1 },
+        "vidrio": { "type": "number", "minimum": 0, "maximum": 1 },
+        "metales": { "type": "number", "minimum": 0, "maximum": 1 },
+        "otros": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "concesionario": {
+      "type": "object",
+      "required": ["nombre", "relacion"],
+      "properties": {
+        "nombre": { "type": "string" },
+        "relacion": { "enum": ["cooperativa", "neutral", "conflictiva"] }
+      }
+    },
+    "reglamento_vigente": {
+      "type": "object",
+      "required": ["nombre", "articulos_a_reformar"],
+      "properties": {
+        "nombre": { "type": "string" },
+        "articulos_a_reformar": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "gobierno": {
+      "type": "object",
+      "required": ["partido", "meses_restantes"],
+      "properties": {
+        "partido": { "type": "string" },
+        "meses_restantes": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "cabildo_apoyo": { "enum": ["alto", "medio", "bajo"] },
+    "precios_locales": {
+      "type": "object",
+      "required": ["PET", "papel", "vidrio", "aluminio"],
+      "properties": {
+        "PET": { "type": "number" },
+        "papel": { "type": "number" },
+        "vidrio": { "type": "number" },
+        "aluminio": { "type": "number" }
+      }
+    },
+    "recicladoras_locales": { "type": "array", "minItems": 1 },
+    "cifras_canonicas_coherencia": {
+      "type": "object",
+      "required": ["viviendas", "centros_acopio", "recicladoras"],
+      "properties": {
+        "viviendas": { "type": "integer" },
+        "centros_acopio": { "type": "integer" },
+        "recicladoras": { "type": "integer" },
+        "ton_dia_anio_3": { "type": "number" }
+      }
+    }
+  }
+}
