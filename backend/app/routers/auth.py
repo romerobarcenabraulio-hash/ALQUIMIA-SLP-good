@@ -196,6 +196,7 @@ class AuthStatusResponse(BaseModel):
     registration_enabled: bool
     email_provider: str
     sms_provider: str
+    email_ready: bool = False
 
 
 def create_token(data: dict, expires_delta: timedelta) -> str:
@@ -312,10 +313,12 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInfo:
 
 @router.get("/status", response_model=AuthStatusResponse)
 async def auth_status():
+    email_ready = settings.EMAIL_PROVIDER == "resend" and bool(settings.RESEND_API_KEY)
     return AuthStatusResponse(
         registration_enabled=settings.REGISTRATION_ENABLED,
         email_provider=settings.EMAIL_PROVIDER,
         sms_provider=settings.SMS_PROVIDER,
+        email_ready=email_ready,
     )
 
 
@@ -351,7 +354,11 @@ async def register(req: RegisterRequest, db: Session = Depends(get_db)):
     )
     raw = issue_email_verification(db, user)
     verify_url = f"{settings.app_public_url()}/verify-email?token={raw}"
-    await send_verification_email(to_email=user.email, verify_url=verify_url, nombre=user.nombre)
+    try:
+        await send_verification_email(to_email=user.email, verify_url=verify_url, nombre=user.nombre)
+    except RuntimeError as exc:
+        logger.exception("Fallo envío correo verificación para %s", user.email)
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
     log_access(db, event="register", user=user)
     return {
         "message": "Revisa tu correo. Después elegirás tu perfil, verificarás SMS y configurarás TOTP.",

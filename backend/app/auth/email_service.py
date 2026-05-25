@@ -30,6 +30,9 @@ async def send_verification_email(*, to_email: str, verify_url: str, nombre: str
     """
 
     if settings.EMAIL_PROVIDER == "console" or not settings.RESEND_API_KEY:
+        if settings.EMAIL_PROVIDER == "resend" and not settings.RESEND_API_KEY:
+            logger.error("[EMAIL] EMAIL_PROVIDER=resend pero falta RESEND_API_KEY")
+            raise RuntimeError("Correo no configurado: falta RESEND_API_KEY")
         logger.info("[EMAIL:console] verification → %s | %s", to_email, verify_url)
         return
 

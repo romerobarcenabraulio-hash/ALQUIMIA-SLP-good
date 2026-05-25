@@ -66,7 +66,7 @@ describe('simulator functionary surface', () => {
     expect(guiaSource).toContain('FUNCTIONARY_MODULE_ORDER')
     expect(guiaSource).toContain('CHAPTERS')
     expect(guiaSource).not.toMatch(/16 módulos/)
-    expect(guiaSource).toContain('{MODULE_COUNT} módulos de análisis')
+    expect(guiaSource).toContain('{MODULE_COUNT} módulos en {CHAPTER_COUNT} capítulos')
   })
 
   it('simulator page usa fondo blanco homogéneo sin wrapper con borde', () => {

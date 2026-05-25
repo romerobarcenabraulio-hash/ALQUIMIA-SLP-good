@@ -40,6 +40,7 @@ def test_auth_status_endpoint(client):
     assert "registration_enabled" in body
     assert "email_provider" in body
     assert "sms_provider" in body
+    assert "email_ready" in body
 
 
 def test_onboarding_options_endpoint(client):
