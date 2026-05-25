@@ -7,8 +7,16 @@ from starlette.responses import Response
 from contextlib import asynccontextmanager
 import logging
 import os
+import sys
 import time
 from collections import defaultdict
+from pathlib import Path
+
+# Monorepo: modules/, config/, data/ viven en la raíz del repo (ver backend/scripts/start.sh)
+_REPO_ROOT = Path(__file__).resolve().parents[2]
+if _REPO_ROOT.is_dir() and str(_REPO_ROOT) not in sys.path:
+    if (_REPO_ROOT / "modules").is_dir():
+        sys.path.insert(0, str(_REPO_ROOT))
 
 from app.routers import auth, simulate, generate_plan, hub, admin
 from app.legal.router import router as legal_router
@@ -262,6 +270,9 @@ async def health():
             or "unknown"
         )[:12],
         "hermes": "/api/v1/logistics/health" in route_paths,
+        "aurum": "/api/planning/budget/aurum/run" in route_paths,
+        "kronos": "/api/planning/weekly-status" in route_paths,
+        "bios": "/api/v1/lifecycle/health" in route_paths,
         "cron": "/api/v1/cron/manifest" in route_paths,
     }
 
