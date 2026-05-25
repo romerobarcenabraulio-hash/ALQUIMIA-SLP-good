@@ -61,20 +61,10 @@ export function KronosRoadmapStack() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-[8px] border border-[#BDD7F5] bg-[#E8F0FA] p-4">
-        <h3 className="text-[13px] font-semibold text-[#1A5FA8]">
-          Roadmap de implementación — 24 meses (M05D)
-        </h3>
-        <p className="mt-1 text-[11px] text-[#6B6760]">
-          Vista maestra por fases institucionales <strong>G1–G5</strong> (gates KRONOS).
-          El detalle operativo Gantt/PERT está abajo; el seguimiento de avance en{' '}
-          <strong>M21B</strong> (Control) y presupuesto en <strong>M20</strong>.
-        </p>
-        {gateActual && (
-          <p className="mt-2 text-[11px] text-[#1A5FA8]">
-            Gate actual del proyecto: <strong>{gateActual}</strong>
-          </p>
-        )}
+      <div className="flex flex-wrap items-center gap-2 text-[11px] text-[#1A5FA8]">
+        <span>Gates <strong>G1–G5</strong></span>
+        {gateActual && <span className="rounded px-2 py-0.5 bg-[#1A5FA8] text-white font-semibold">Actual: {gateActual}</span>}
+        <span className="text-[#6B6760]">Gantt abajo · seguimiento M21B · presupuesto M20</span>
       </div>
 
       {loading && <p className="text-[11px] text-[#6B6760]">Cargando roadmap…</p>}

@@ -54,21 +54,13 @@ export function KronosEvmDashboardStack() {
 
   return (
     <div className="space-y-4 rounded-[8px] border border-[#D8C4E8] bg-[#F5EFF9] p-4">
-      <h3 className="text-[13px] font-semibold text-[#4A1C7A]">
-        EVM — Control presupuestal municipal (M20)
-      </h3>
-      <p className="text-[10px] text-[#6B6760]">
-        Nivel B: proyecto del municipio contratante. BAC = CAPEX calculado en el simulador.
-      </p>
-
-      {capexTotal == null ? (
-        <p className="text-[11px] text-amber-700">
-          BAC no disponible — completa el módulo de Infraestructura (M06) para calcular el CAPEX.
+      {capexTotal != null ? (
+        <p className="text-[11px] text-[#4A1C7A]">
+          BAC (CAPEX simulador): <strong>${bac.toLocaleString('es-MX')} MXN</strong>
         </p>
       ) : (
-        <p className="text-[11px] text-[#4A1C7A]">
-          BAC (desde CAPEX simulador):{' '}
-          <strong>${bac.toLocaleString('es-MX')} MXN</strong>
+        <p className="text-[11px] text-amber-700">
+          BAC no disponible — complete M06 para calcular CAPEX.
         </p>
       )}
 

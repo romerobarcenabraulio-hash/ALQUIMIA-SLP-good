@@ -131,15 +131,9 @@ export default function CoberturaNacional() {
   return (
     <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">S22 · Cobertura nacional</p>
-          <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
-            Legal municipal por cobertura · {zmActiva}
-          </h3>
-          <p className="mt-1 text-[12px] text-[#6B6760]">
-            Una ZM coordina. Cada municipio regula, verifica y bloquea por separado.
-          </p>
-        </div>
+        <p className="text-[13px] font-semibold text-[#1C1B18]">
+          Cobertura legal · {zmActiva}
+        </p>
         <button
           onClick={loadCoverage}
           disabled={loading}

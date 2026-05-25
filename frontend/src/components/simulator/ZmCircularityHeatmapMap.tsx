@@ -100,16 +100,14 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
       aria-labelledby="circularity-map-title"
     >
       <div>
-        <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">Mapa calor circularidad · ZM {zmId}</p>
-        <h3 id="circularity-map-title" className="mt-1 font-serif text-[22px] text-[#1C1B18]">
-          Circularidad modelada por zona geoestadística (proxy) · ZM {zmId}
-        </h3>
-        <p className="mt-1 text-[12px] text-[#6B6760] max-w-3xl leading-relaxed">
-          {hasFeatures
-            ? <>Comparación <strong>actual vs proyectado</strong> sobre <strong>{payload!.feature_count}</strong> celdas proxy. Ámbito <strong>{payload!.jurisdiction_scope}</strong>.</>
-            : 'Vista de referencia geográfica. Los datos de circularidad se cargarán cuando el servidor responda.'
-          }
+        <p id="circularity-map-title" className="text-[13px] font-semibold text-[#1C1B18]">
+          Circularidad modelada · ZM {zmId}
         </p>
+        {hasFeatures && (
+          <p className="mt-0.5 text-[11px] text-[#6B6760]">
+            Actual vs proyectado · {payload!.feature_count} celdas · {payload!.jurisdiction_scope}
+          </p>
+        )}
       </div>
 
       {/* Status banners */}

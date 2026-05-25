@@ -78,15 +78,7 @@ export function KronosGateStatusStack() {
   return (
     <div className="space-y-4 rounded-[8px] border border-[#D8C4E8] bg-[#F5EFF9] p-4">
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
-          <h3 className="text-[13px] font-semibold text-[#4A1C7A]">
-            Estado de gates G1–G5 (M21B)
-          </h3>
-          <p className="text-[10px] text-[#6B6760]">
-            Tablero de fase institucional — prerequisitos, alertas y riesgo si no se cruza.
-          </p>
-        </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {gateActual && (
             <span className="rounded px-2 py-1 text-[10px] font-semibold bg-[#4A1C7A] text-white">
               Gate actual: {gateActual}

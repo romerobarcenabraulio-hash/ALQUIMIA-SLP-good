@@ -94,16 +94,14 @@ export default function MexicoRsuFootprintMap() {
   return (
     <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-3" aria-labelledby="rsu-map-title">
       <div>
-        <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">Mapa interactivo · piloto nacional</p>
-        <h3 id="rsu-map-title" className="mt-1 font-serif text-[22px] text-[#1C1B18]">
-          Generación RSU y huella (aprox.) por ciudad en catálogo
-        </h3>
-        <p className="mt-1 text-[12px] text-[#6B6760] max-w-3xl leading-relaxed">
-          {isFallback
-            ? 'Referencia geográfica de las ZMs en catálogo. Los datos de generación RSU se cargarán cuando el servidor responda.'
-            : <>Visualización de los <strong>{displayPayload.feature_count}</strong> municipios sembrados hoy (ZM San Luis Potosí, Querétaro y Monterrey).</>
-          }
+        <p id="rsu-map-title" className="text-[13px] font-semibold text-[#1C1B18]">
+          Huella RSU · catálogo piloto
         </p>
+        {!isFallback && (
+          <p className="mt-0.5 text-[11px] text-[#6B6760]">
+            {displayPayload.feature_count} municipios (SLP, QRO, MTY)
+          </p>
+        )}
       </div>
 
       {/* Status banners */}

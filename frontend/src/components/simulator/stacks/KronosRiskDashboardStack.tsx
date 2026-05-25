@@ -37,12 +37,7 @@ export function KronosRiskDashboardStack() {
 
   return (
     <div className="space-y-3 rounded-[8px] border border-[#D8C4E8] bg-[#F5EFF9] p-4">
-      <h3 className="text-[13px] font-semibold text-[#4A1C7A]">
-        Registro de riesgos KRONOS (M21)
-      </h3>
-      <p className="text-[10px] text-[#6B6760]">
-        Score = Probabilidad × Impacto — Fuente: PMBOK 6th ed. Tabla 11-5
-      </p>
+      <p className="text-[10px] text-[#6B6760]">Score = Prob × Impacto (PMBOK 11-5)</p>
 
       {loading && <p className="text-[11px] text-[#6B6760]">Cargando registro…</p>}
       {error && <p className="text-[11px] text-red-700">{error}</p>}

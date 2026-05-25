@@ -457,24 +457,13 @@ export function MunicipalContextStack({
       {tab === 'diagnostico' && (
         <div className="space-y-5">
 
-          {/* A. Lectura ejecutiva del módulo */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-3 flex items-center gap-1.5">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#3B6D11] shrink-0" />
-              Lectura ejecutiva del módulo
-            </p>
-            <div className="flex items-start gap-5">
-              <div className="flex-1 min-w-0">
-                {legal.lecturaEjecutiva.split('\n\n').map((párrafo, i) => (
-                  <p key={i} className={cn('text-[13px] leading-relaxed text-[#4A4740]', i > 0 && 'mt-3')}>
-                    {párrafo}
-                  </p>
-                ))}
-              </div>
-              {/* Decorative legal icon */}
-              <div className="shrink-0 hidden md:flex w-16 h-16 rounded-[12px] bg-[#F4FAEC] border border-[#D7E8C0] items-center justify-center">
-                <Scale className="w-8 h-8 text-[#3B6D11]" strokeWidth={1.5} />
-              </div>
+            <div className="min-w-0">
+              {legal.lecturaEjecutiva.split('\n\n').map((párrafo, i) => (
+                <p key={i} className={cn('text-[13px] leading-relaxed text-[#4A4740]', i > 0 && 'mt-3')}>
+                  {párrafo}
+                </p>
+              ))}
             </div>
           </div>
 
@@ -509,11 +498,8 @@ export function MunicipalContextStack({
               className="w-full flex items-start justify-between gap-3 text-left"
             >
               <div>
-                <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-0.5">Ruta de reforma normativa</p>
-                <p className="text-[13px] font-semibold text-[#1C1B18] mb-1">Pasos normativos de la reforma</p>
-                <p className="text-[11px] text-[#6B6760] max-w-2xl leading-relaxed">
-                  Secuencia jurídica — no el calendario de implementación, que se arma en Planificación (Cap. 2).
-                </p>
+                <p className="text-[13px] font-semibold text-[#1C1B18]">Pasos normativos de la reforma</p>
+                <p className="text-[11px] text-[#6B6760] mt-0.5">Secuencia jurídica — calendario operativo en Cap. 2</p>
               </div>
               <ChevronDown
                 size={16}
@@ -523,11 +509,7 @@ export function MunicipalContextStack({
 
             {rutaNormativaOpen && (
               <>
-                <p className="text-[11px] text-[#6B6760] mb-4 max-w-2xl mt-3">
-                  La reforma jurídica no debe verse como una lista aislada de cambios, sino como una secuencia que alinea facultades, operadores e infraestructura antes de comprometer fechas operativas.
-                </p>
-
-                <div className="flex flex-wrap gap-2 lg:gap-0 lg:flex-nowrap">
+                <div className="flex flex-wrap gap-2 lg:gap-0 lg:flex-nowrap mt-4">
                   {FASES_INSTITUCIONALES.map((f, idx) => (
                     <div key={f.fase} className="flex items-stretch lg:flex-1">
                       <div className={cn(

@@ -22,8 +22,6 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
   if (mode === 'citizen') {
     return (
       <div>
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Marco legal</p>
-        <h2 className="font-serif text-[20px] text-[#1C1B18] mb-2">Leyes locales y programa de limpia</h2>
         <ScopeAnclaKicker className="mb-3" />
 
         <div className="mb-4">
@@ -59,11 +57,8 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Marco legal y reforma reglamentaria</p>
-      <h2 className="font-serif text-[20px] text-[#1C1B18] mb-2">Reforma reglamentaria</h2>
       <ScopeAnclaKicker className="mb-3 max-w-2xl" />
       <div className="mb-6 rounded-[12px] border border-[#E8E4DC] bg-[#F8F6F1] p-5">
-        <p className="text-[11px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Estado normativo actual</p>
         <p className={cn(
           'inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium mb-3',
           agoraLegalBloqueado ? 'bg-[#FEF7E7] text-[#8B5A00]' : 'bg-[#EAF3DE] text-[#3B6D11]'

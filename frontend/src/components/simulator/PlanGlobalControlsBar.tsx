@@ -14,19 +14,8 @@ export function PlanGlobalControlsBar({ showGeneration = true }: { showGeneratio
 
   return (
     <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">
-        Plan municipal — controles globales
-      </p>
-      <h2 className="font-serif text-[22px] text-[#1C1B18]">
-        {showGeneration ? 'Horizonte y generación per cápita' : 'Horizonte del plan'}
-      </h2>
-      <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
-        El municipio se define en el bloque anterior. La trayectoria de captura y el despliegue operativo se fijan al
-        preset <span className="font-medium text-[#1C1B18]">Realista</span> del modelo (solo lectura).
-      </p>
-
-      <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
-        <p className="text-[11px] text-[#6B6760]">Horizonte del plan (años hasta meta de circularidad)</p>
+      <div className="mt-1 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
+        <p className="text-[11px] text-[#6B6760]">Horizonte (años)</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map(n => (
             <button

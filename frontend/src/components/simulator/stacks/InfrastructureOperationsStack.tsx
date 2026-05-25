@@ -7,7 +7,7 @@ import {
   ReferenceLine, Legend,
 } from 'recharts'
 import {
-  AlertTriangle, Users, MapPin, Building2, ArrowRight, Zap,
+  AlertTriangle, Users, MapPin, Building2, ArrowRight,
   Target, Package, ChevronDown,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -63,7 +63,6 @@ function DecisionCommitBar({
 }: { municipio: string; horizonte: number; trayectoria: string; rsuDia: number }) {
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <p className="text-[11px] uppercase tracking-[0.12em] text-[#A8A49C] mb-3 font-semibold">Contexto del escenario</p>
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         <div className="flex-1 min-w-[160px] rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
           <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">M01 · Escenario base</p>
@@ -372,19 +371,13 @@ export function InfrastructureOperationsStack() {
             </div>
           </ExpandableChart>
 
-          {/* Executive reading */}
-          <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5 flex items-start gap-4">
-            <Zap className="w-7 h-7 text-[#3B6D11] shrink-0 mt-0.5" />
-            <div className="flex-1">
-              <p className="text-[13px] font-bold text-[#3B6D11] mb-2">Lectura ejecutiva del motor</p>
-              <p className="text-[13px] text-[#3B5F23] leading-relaxed mb-3">
-                La brecha de <strong>{fmt.kgd(brecha)}</strong> implica que, sin nueva infraestructura, el municipio
-                dependerá de traslados fuera de su territorio con mayores costos, tiempos y emisiones.
-                Instalar <strong>{targetCA} centros</strong> en el horizonte F3–F5 permitiría capturar el{' '}
-                {FASES_CA.find(f => f.esOptimo)?.coberturaPct ?? 61}% del potencial.
-                Ver M07 para el organigrama de quién opera cada centro, M08 para las rutas y M09 para el CAPEX detallado.
-              </p>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+          <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5">
+            <p className="text-[13px] text-[#3B5F23] leading-relaxed mb-3">
+              Brecha <strong>{fmt.kgd(brecha)}</strong> · {targetCA} centros en F3–F5 capturan{' '}
+              {FASES_CA.find(f => f.esOptimo)?.coberturaPct ?? 61}% del potencial.
+              Ver M07 (operación), M08 (rutas), M09 (CAPEX).
+            </p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
                   { label: 'Recomendación', value: 'Plan moderado F3–F5', color: '#3B6D11' },
                   { label: 'Riesgo principal', value: 'Predios y permisos', color: '#C0392B' },
@@ -396,7 +389,6 @@ export function InfrastructureOperationsStack() {
                     <p className="text-[11px] font-semibold" style={{ color: c.color }}>{c.value}</p>
                   </div>
                 ))}
-              </div>
             </div>
           </div>
         </div>

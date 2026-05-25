@@ -44,16 +44,8 @@ export function DespliegueOperativoCaRecicladoraChart() {
 
   return (
     <div className="mt-8 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-      <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">
-        Despliegue operativo · referencia §2.4
-      </p>
-      <h2 className="font-serif text-[22px] text-[#1C1B18] mb-1">
-        Despliegue operativo: CA + Recicladoras
-      </h2>
-      <p className="text-[12px] text-[#6B6760] mb-4 max-w-3xl leading-relaxed">
-        Curva acumulada según fases de infraestructura del modelo, horizonte a{' '}
-        <span className="font-medium text-[#1C1B18]">{horizonte} año{horizonte !== 1 ? 's' : ''}</span> y ritmo del preset{' '}
-        <span className="font-medium text-[#1C1B18]">{presetTrayectoria}</span>. Sin parámetros adicionales: solo lectura del plan.
+      <p className="text-[13px] font-semibold text-[#1C1B18] mb-3">
+        Despliegue CA + recicladoras · {horizonte}a · {presetTrayectoria}
       </p>
 
       <div className="mb-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
