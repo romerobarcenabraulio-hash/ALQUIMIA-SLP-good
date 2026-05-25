@@ -18,6 +18,7 @@ import {
 } from '@/lib/chapterConfig'
 import {
   CHAPTER_COUNT,
+  CHAPTER_HERO_GRADIENT,
   CHAPTER_NARRATIVES,
   CHAPTER_SUBQUESTIONS,
   chapterModuleRange,
@@ -141,11 +142,17 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
   const chapterCards = useMemo(
     () =>
       CHAPTERS.map(ch => ({
+        num: ch.num,
         icon: CHAPTER_ICONS[ch.num] ?? MapPin,
         label: ch.label,
+        question: ch.question,
         sub: chapterModuleRange(ch),
         desc: CHAPTER_SUBQUESTIONS[ch.num] ?? ch.question,
         color: ch.color,
+        bgColor: ch.bgColor,
+        gradient: CHAPTER_HERO_GRADIENT[ch.num],
+        moduleCount: ch.modulos.length,
+        rubroCount: ch.rubros.length,
         firstId: ch.firstModuleId,
       })),
     [],
@@ -191,35 +198,57 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
       </EditorialSection>
 
       <EditorialSection
-        title="Cómo leer el simulador por capítulos"
+        title="Portadas de capítulo — abre el índice antes de entrar"
         accentColor="#1A5FA8"
       >
         <p className="text-[13px] leading-[1.75] text-gray-600c mb-5">
-          {MODULE_COUNT} módulos en cuatro capítulos. Cada cifra muestra fórmula, fuente y certeza.
+          {MODULE_COUNT} módulos en cuatro capítulos. Elige una portada para ver su índice (rubros y módulos) y
+          luego salta al módulo que necesites.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
           {chapterCards.map(e => (
             <button
               key={e.label}
               type="button"
               onClick={() => onNavigate?.(e.firstId)}
               className={cn(
-                'rounded-[10px] bg-surface-muted p-4 text-center transition-all',
+                'group relative overflow-hidden rounded-[14px] text-left transition-all',
                 onNavigate
-                  ? 'hover:bg-green-50a hover:shadow-sm cursor-pointer'
+                  ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer'
                   : 'cursor-default',
               )}
             >
-              <e.icon size={22} className="mx-auto mb-2" style={{ color: e.color }} />
-              <p className="text-[12px] font-bold text-gray-900c">{e.label}</p>
-              <p className="text-[10px] font-mono text-gray-400c mb-1">{e.sub}</p>
-              <p className="text-[11px] text-gray-600c">{e.desc}</p>
-              {onNavigate && (
-                <p className="text-[10px] text-green-500a mt-1.5 flex items-center justify-center gap-0.5">
-                  Ir <ArrowRight size={9} />
+              <div
+                className={cn(
+                  'relative bg-gradient-to-br px-5 py-5 text-white',
+                  e.gradient,
+                )}
+              >
+                <e.icon
+                  size={72}
+                  strokeWidth={0.8}
+                  className="pointer-events-none absolute -right-1 -top-1 opacity-15"
+                  aria-hidden
+                />
+                <p className="relative text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">
+                  Capítulo {e.num} · Portada
                 </p>
-              )}
+                <p className="relative mt-1 font-serif text-[20px] font-bold leading-tight">{e.label}</p>
+                <p className="relative mt-1 text-[13px] leading-snug text-white/85">{e.question}</p>
+                <p className="relative mt-2 text-[11px] text-white/65">
+                  {e.rubroCount} rubros · {e.moduleCount} módulos · {e.sub}
+                </p>
+                {onNavigate && (
+                  <p className="relative mt-4 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white group-hover:bg-white/25">
+                    Abrir índice
+                    <ArrowRight size={12} />
+                  </p>
+                )}
+              </div>
+              <div className="border border-t-0 border-[#E8E4DC] bg-[#FDFCFA] px-5 py-3">
+                <p className="text-[12px] leading-relaxed text-[#6B6760]">{e.desc}</p>
+              </div>
             </button>
           ))}
         </div>

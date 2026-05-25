@@ -201,13 +201,13 @@ export default function SimulatorPage() {
               loading={portalJourneyLoading}
               error={portalError}
               audience={portalEntry}
-              renderModule={module =>
+              renderModule={(module, { navigateModule }) =>
                 renderDecisionModule({
                   module,
                   audience,
                   isOrganizationJourney,
                   sociodemographicBlock,
-                  onNavigate: setActiveModuleId,
+                  onNavigate: navigateModule,
                 })
               }
             />

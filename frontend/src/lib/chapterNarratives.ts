@@ -141,6 +141,15 @@ export function dismissChapterCover(chapterNum: number): void {
   }
 }
 
+export function shouldForceChapterIndexEntry(
+  fromModuleId: string | undefined,
+  toModuleId: string,
+): boolean {
+  if (fromModuleId !== 'guia_circularidad') return false
+  const chapter = getChapterForModule(toModuleId)
+  return !!chapter && chapter.firstModuleId === toModuleId
+}
+
 export function shouldOfferChapterIndex(toModuleId: string): boolean {
   const chapter = getChapterForModule(toModuleId)
   if (!chapter || chapter.firstModuleId !== toModuleId) return false

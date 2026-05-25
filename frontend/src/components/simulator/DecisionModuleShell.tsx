@@ -42,7 +42,7 @@ import {
   getChapterForModule,
   getChapterIndexAnchor,
 } from '@/lib/chapterConfig'
-import { shouldOfferChapterIndex } from '@/lib/chapterNarratives'
+import { shouldForceChapterIndexEntry, shouldOfferChapterIndex } from '@/lib/chapterNarratives'
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
@@ -1055,7 +1055,10 @@ interface DecisionModuleShellProps {
   loading: boolean
   error: string | null
   audience: PortalEntry | null
-  renderModule: (module: DecisionModule) => ReactNode
+  renderModule: (
+    module: DecisionModule,
+    nav: { navigateModule: (id: string) => void },
+  ) => ReactNode
 }
 
 export function DecisionModuleShell({
@@ -1079,6 +1082,7 @@ export function DecisionModuleShell({
     highlightId?: string
   } | null>(null)
   const initialCoverChecked = useRef(false)
+  const prevModuleIdRef = useRef<string | null>(null)
   const [guidanceCollapsed, setGuidanceCollapsed] = useState(false)
 
   useEffect(() => {
@@ -1124,15 +1128,25 @@ export function DecisionModuleShell({
     })
   }, [])
 
-  const navigateOrCover = useCallback((toId: string) => {
-    if (shouldOfferChapterIndex(toId)) {
+  const tryOpenChapterIndex = useCallback((toId: string, fromId?: string) => {
+    const chapter = getChapterForModule(toId)
+    if (!chapter || chapter.firstModuleId !== toId) return false
+
+    const force = shouldForceChapterIndexEntry(fromId, toId)
+    if (force || shouldOfferChapterIndex(toId)) {
       setChapterIndex({ anchorId: toId, mode: 'entry' })
-      return
+      onModuleChange(toId)
+      return true
     }
-    onModuleChange(toId)
+    return false
   }, [onModuleChange])
 
-  /** Intercepts navigation: separator on chapter cross, cover at chapter entry */
+  const navigateOrCover = useCallback((toId: string, fromId?: string) => {
+    if (tryOpenChapterIndex(toId, fromId)) return
+    onModuleChange(toId)
+  }, [tryOpenChapterIndex, onModuleChange])
+
+  /** Intercepts navigation: separator on chapter cross, índice al abrir capítulo */
   const handleModuleChange = useCallback((toId: string) => {
     const fromId = activeModule?.module_id
     if (!fromId) {
@@ -1145,7 +1159,7 @@ export function DecisionModuleShell({
       setChapterIndex(null)
       setChapterSep({ fromId, toId })
     } else {
-      navigateOrCover(toId)
+      navigateOrCover(toId, fromId)
     }
   }, [activeModule?.module_id, navigateOrCover])
 
@@ -1154,11 +1168,26 @@ export function DecisionModuleShell({
     setChapterSep(null)
   }, [activeModule?.module_id])
 
+  /** Captura navegación externa (p. ej. guía M00 con setActiveModuleId) */
   useEffect(() => {
-    if (initialCoverChecked.current || !activeModule || chapterSep || chapterIndex) return
-    initialCoverChecked.current = true
-    if (shouldOfferChapterIndex(activeModule.module_id)) {
-      setChapterIndex({ anchorId: activeModule.module_id, mode: 'entry' })
+    if (!activeModule) return
+
+    const toId = activeModule.module_id
+    const fromId = prevModuleIdRef.current
+    prevModuleIdRef.current = toId
+
+    if (chapterSep || chapterIndex) return
+
+    if (shouldForceChapterIndexEntry(fromId ?? undefined, toId)) {
+      setChapterIndex({ anchorId: toId, mode: 'entry' })
+      return
+    }
+
+    if (fromId === null && !initialCoverChecked.current) {
+      initialCoverChecked.current = true
+      if (shouldOfferChapterIndex(toId)) {
+        setChapterIndex({ anchorId: toId, mode: 'entry' })
+      }
     }
   }, [activeModule, chapterSep, chapterIndex])
 
@@ -1218,8 +1247,9 @@ export function DecisionModuleShell({
           toModuleId={chapterSep.toId}
           onContinue={() => {
             const toId = chapterSep.toId
+            const fromId = chapterSep.fromId
             setChapterSep(null)
-            navigateOrCover(toId)
+            navigateOrCover(toId, fromId)
           }}
           onBack={() => setChapterSep(null)}
         />
@@ -1291,7 +1321,7 @@ export function DecisionModuleShell({
                     moduleId={activeModule.module_id}
                     activeChartId={activeChartId}
                   />
-                  {renderModule(activeModule)}
+                  {renderModule(activeModule, { navigateModule: handleModuleChange })}
                 </div>
               )}
             </div>
