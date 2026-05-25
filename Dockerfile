@@ -1,7 +1,7 @@
-# Build desde la RAÍZ del repo (no desde backend/):
-#   docker build -f backend/Dockerfile .
+# ALQUIMIA backend — build desde la RAÍZ del repo (Render recomendado).
+#   docker build -f Dockerfile .
 #
-# Render: Root Directory = (vacío) · Dockerfile Path = backend/Dockerfile
+# Render: Root Directory vacío · Dockerfile Path = Dockerfile
 FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1

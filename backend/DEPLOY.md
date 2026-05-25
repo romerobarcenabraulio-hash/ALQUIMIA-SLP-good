@@ -17,7 +17,7 @@
 
 1. **New → Web Service**, conectar repo GitHub.
 2. **Root Directory:** dejar **vacío** (raíz del repo, no `backend/`).
-3. **Dockerfile Path:** `backend/Dockerfile`
+3. **Dockerfile Path:** `Dockerfile` (raíz del repo; incluye `modules/`, `config/`, `data/`).
 4. Variables: ver `.env.example` + `CRON_SECRET` para el Cron Job.
 5. Tras deploy, verificar:
 

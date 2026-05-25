@@ -21,11 +21,7 @@ if [ -z "${DATABASE_URL:-}" ]; then
   exit 1
 fi
 
-echo "==> Alembic upgrade head"
-if ! alembic upgrade head; then
-  echo "ERROR: alembic upgrade head falló. Revisa logs y scripts/apply_migrations_manual.sql"
-  exit 1
-fi
+"$(dirname "$0")/migrate_safe.sh"
 
 echo "==> Uvicorn"
 exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"

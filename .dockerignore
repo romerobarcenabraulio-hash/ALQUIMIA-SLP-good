@@ -1,0 +1,15 @@
+.git
+.github
+frontend
+node_modules
+**/__pycache__
+**/.pytest_cache
+**/.venv
+**/.mypy_cache
+*.pyc
+.env
+.env.*
+cursor-rules
+docs
+AJUSTES.ALQUIMIA
+audit_reports

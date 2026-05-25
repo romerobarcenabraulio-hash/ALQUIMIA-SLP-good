@@ -17,8 +17,12 @@ from logging.config import fileConfig
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
-# ── Agregar el directorio backend/app al path para imports ────────────────────
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+# ── Monorepo: backend + raíz (modules/) ─────────────────────────────────────
+_backend_root = os.path.join(os.path.dirname(__file__), "..")
+_repo_root = os.path.abspath(os.path.join(_backend_root, ".."))
+sys.path.insert(0, _backend_root)
+if os.path.isdir(os.path.join(_repo_root, "modules")):
+    sys.path.insert(0, _repo_root)
 
 # ── Importar Base (registra todos los modelos en metadata) ───────────────────
 # Este import es crítico: Base.metadata contiene el esquema completo.

@@ -7,7 +7,7 @@ services:
     runtime: docker
     # Raíz del repo (NO backend/) — requerido para COPY modules/, config/, data/
     rootDir: .
-    dockerfilePath: ./backend/Dockerfile
+    dockerfilePath: ./Dockerfile
     dockerContext: .
     healthCheckPath: /health
     envVars:
