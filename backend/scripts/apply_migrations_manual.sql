@@ -286,4 +286,39 @@ CREATE TABLE IF NOT EXISTS access_logs (
 DELETE FROM alembic_version;
 INSERT INTO alembic_version (version_num) VALUES ('0005_user_accounts');
 
+-- ── 0006_onboarding_sms ───────────────────────────────────────────────────────
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS client_segment VARCHAR(40);
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS service_interest VARCHAR(80);
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS organizacion VARCHAR(200);
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS phone_verified_at TIMESTAMPTZ;
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS sms_enabled BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS onboarding_completed_at TIMESTAMPTZ;
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS failed_login_count INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS locked_until TIMESTAMPTZ;
+
+CREATE TABLE IF NOT EXISTS sms_verification_codes (
+    id VARCHAR(36) PRIMARY KEY,
+    user_id VARCHAR(36) NOT NULL,
+    purpose VARCHAR(32) NOT NULL,
+    code_hash VARCHAR(64) NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used_at TIMESTAMPTZ,
+    attempts INTEGER NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS ix_sms_codes_user_id ON sms_verification_codes (user_id);
+CREATE INDEX IF NOT EXISTS ix_sms_codes_code_hash ON sms_verification_codes (code_hash);
+
+DELETE FROM alembic_version;
+INSERT INTO alembic_version (version_num) VALUES ('0006_onboarding_sms');
+
+-- ── 0007_user_municipio_reglamento ────────────────────────────────────────────
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS municipio_id VARCHAR(40);
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS clave_inegi VARCHAR(10);
+ALTER TABLE user_accounts ADD COLUMN IF NOT EXISTS reglamento_uploaded_at TIMESTAMPTZ;
+CREATE INDEX IF NOT EXISTS ix_user_accounts_municipio_id ON user_accounts (municipio_id);
+
+DELETE FROM alembic_version;
+INSERT INTO alembic_version (version_num) VALUES ('0007_user_municipio_reglamento');
+
 COMMIT;

@@ -39,3 +39,27 @@ def test_auth_status_endpoint(client):
     body = res.json()
     assert "registration_enabled" in body
     assert "email_provider" in body
+    assert "sms_provider" in body
+
+
+def test_onboarding_options_endpoint(client):
+    res = client.get("/auth/onboarding/options")
+    assert res.status_code == 200
+    body = res.json()
+    assert "politica_publica" in body["segments"]
+    assert "empresarial" in body["segments"]
+
+
+def test_service_requires_reglamento():
+    from app.auth.onboarding_catalog import service_requires_reglamento
+
+    assert service_requires_reglamento("politica_publica", "reforma_rsu")
+    assert not service_requires_reglamento("politica_publica", "capacitacion_institucional")
+    assert not service_requires_reglamento("empresarial", "consultoria_esg")
+
+
+def test_phone_normalize_mx():
+    from app.auth.phone_utils import normalize_phone_mx, mask_phone
+
+    assert normalize_phone_mx("4441234567") == "+524441234567"
+    assert mask_phone("+524441234567").endswith("67")

@@ -70,6 +70,15 @@ class Settings(BaseSettings):
     EMAIL_FROM: str = "ALQUIMIA <noreply@alquimia.mx>"
     APP_PUBLIC_URL: str = "http://localhost:3000"
 
+    # SMS — verificación de teléfono y segundo factor en login
+    SMS_PROVIDER: str = "console"  # console | twilio
+    TWILIO_ACCOUNT_SID: Optional[str] = None
+    TWILIO_AUTH_TOKEN: Optional[str] = None
+    TWILIO_FROM_NUMBER: Optional[str] = None
+    SMS_MAX_SENDS_PER_HOUR: int = 5
+    ACCOUNT_LOCKOUT_MINUTES: int = 15
+    MAX_FAILED_LOGINS: int = 5
+
     def app_public_url(self) -> str:
         """URL pública del frontend (enlaces de verificación de correo)."""
         base = (self.APP_PUBLIC_URL or "").strip().rstrip("/")

@@ -23,7 +23,7 @@ function VerifyEmailInner() {
         setSetupToken(res.setup_token)
         setStatus('ok')
         setMessage(res.message)
-        setTimeout(() => router.replace('/setup-2fa'), 1200)
+        setTimeout(() => router.replace('/onboarding/perfil'), 1200)
       })
       .catch(err => {
         setStatus('error')
@@ -39,7 +39,7 @@ function VerifyEmailInner() {
           <>
             <h1 className="font-serif text-[22px] text-[#3B6D11] mb-2">Correo confirmado</h1>
             <p className="text-[13px] text-[#4A4740]">{message}</p>
-            <p className="text-[12px] text-[#A8A49C] mt-3">Redirigiendo a configuración TOTP…</p>
+            <p className="text-[12px] text-[#A8A49C] mt-3">Redirigiendo a selección de perfil…</p>
           </>
         )}
         {status === 'error' && (

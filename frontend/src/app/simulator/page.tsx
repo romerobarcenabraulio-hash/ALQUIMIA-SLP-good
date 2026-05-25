@@ -21,6 +21,7 @@ import { buildFunctionaryJourney } from '@/lib/simulator/clientModuleRegistry'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 import { AntecedentesReportajePanel } from '@/components/simulator/AntecedentesReportajePanel'
+import { useAccountOnboardingBootstrap } from '@/hooks/useAccountOnboardingBootstrap'
 
 function SimulatorSimulationRibbon() {
   const [open, setOpen] = useState(false)
@@ -69,6 +70,8 @@ export default function SimulatorPage() {
   const audience = useSimulatorStore(s => s.audience)
   const clientSetupComplete = useSimulatorStore(s => s.clientSetupComplete)
   const [sessionReady, setSessionReady] = useState(false)
+
+  useAccountOnboardingBootstrap()
 
   useEffect(() => {
     setSessionReady(true)

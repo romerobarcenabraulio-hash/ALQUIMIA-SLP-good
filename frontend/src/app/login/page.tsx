@@ -89,7 +89,7 @@ function LoginForm() {
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[20px] p-8 w-full max-w-md shadow-md">
         <div className="text-center mb-8">
           <h1 className="font-serif text-[32px] text-[#3B6D11]">ALQUIMIA</h1>
-          <p className="text-[13px] text-[#6B6760] mt-1">Consultoría integral de gestión pública</p>
+          <p className="text-[13px] text-[#6B6760] mt-1">Acceso seguro · contraseña + TOTP</p>
         </div>
 
         {!pendingToken ? (
@@ -155,7 +155,7 @@ function LoginForm() {
         <div className="mt-6 pt-6 border-t border-[#E8E4DC] space-y-3">
           <p className="text-[12px] text-center text-[#6B6760]">
             ¿Primera vez?{' '}
-            <Link href="/register" className="text-[#3B6D11] font-medium hover:underline">Crear cuenta institucional</Link>
+            <Link href="/register" className="text-[#3B6D11] font-medium hover:underline">Crear cuenta</Link>
           </p>
           <p className="text-[11px] text-[#A8A49C] text-center mb-2">Acceso de demostración</p>
           <button

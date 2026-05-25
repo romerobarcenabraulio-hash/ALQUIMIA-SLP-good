@@ -57,7 +57,7 @@ function Setup2faForm() {
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[20px] p-8 w-full max-w-md shadow-md">
         <h1 className="font-serif text-[24px] text-[#3B6D11] text-center mb-2">Seguridad TOTP</h1>
         <p className="text-[13px] text-[#6B6760] text-center mb-6 leading-relaxed">
-          Escanea el código con Google Authenticator, Authy o 1Password y escribe el código de 6 dígitos.
+          Paso final · escanea el código con Google Authenticator, Authy o 1Password.
         </p>
 
         {otpauthUri && (
