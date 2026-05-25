@@ -13,16 +13,13 @@ from sqlalchemy.orm import Session
 
 from app.cron.jobs import job_logistics_daily_summary, job_weekly_status
 from app.db.session import get_db
+from app.repo_paths import repo_root
 
 router = APIRouter()
 
 
-def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
-
-
 def _load_cron_config() -> dict[str, Any]:
-    path = _repo_root() / "config" / "cron.json"
+    path = repo_root() / "config" / "cron.json"
     if not path.is_file():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))

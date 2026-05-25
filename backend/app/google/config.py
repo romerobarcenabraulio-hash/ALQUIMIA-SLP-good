@@ -7,10 +7,11 @@ from functools import lru_cache
 from pathlib import Path
 
 from app.config import settings
+from app.repo_paths import repo_root
 
 
 def _repo_root() -> Path:
-    return Path(__file__).resolve().parents[3]
+    return repo_root()
 
 
 @lru_cache(maxsize=1)

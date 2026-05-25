@@ -15,8 +15,18 @@
 
 ## Render
 
-1. **New → Web Service**, conectar repo, **Dockerfile path**: `backend/Dockerfile` o root si el servicio apunta a `backend/`.
-2. Mismas variables que en `.env.example`.
+1. **New → Web Service**, conectar repo GitHub.
+2. **Root Directory:** dejar **vacío** (raíz del repo, no `backend/`).
+3. **Dockerfile Path:** `backend/Dockerfile`
+4. Variables: ver `.env.example` + `CRON_SECRET` para el Cron Job.
+5. Tras deploy, verificar:
+
+```bash
+curl -sS https://alquimia-slp.onrender.com/api/v1/logistics/health
+curl -sS https://alquimia-slp.onrender.com/api/v1/cron/manifest
+```
+
+Si responde `{"detail":"Not Found"}`, el servicio sigue en un commit anterior o el **Root Directory** está mal (`backend/` rompe el build de HERMES).
 
 ## `GET /health`
 
