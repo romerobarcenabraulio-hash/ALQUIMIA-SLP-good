@@ -44,7 +44,7 @@ async def send_verification_email(*, to_email: str, verify_url: str, nombre: str
                 "Content-Type": "application/json",
             },
             json={
-                "from": settings.EMAIL_FROM,
+                "from": settings.email_from_address(),
                 "to": [to_email],
                 "subject": subject,
                 "html": html,

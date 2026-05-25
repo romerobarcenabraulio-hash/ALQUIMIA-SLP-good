@@ -68,6 +68,10 @@ class Settings(BaseSettings):
     EMAIL_PROVIDER: str = "console"  # console | resend
     RESEND_API_KEY: Optional[str] = None
     EMAIL_FROM: str = "ALQUIMIA <noreply@alquimia.mx>"
+
+    def email_from_address(self) -> str:
+        """Remitente normalizado para Resend (sin comillas extra del panel de Render)."""
+        return (self.EMAIL_FROM or "").strip().strip('"').strip("'")
     APP_PUBLIC_URL: str = "http://localhost:3000"
 
     # SMS — verificación de teléfono y segundo factor en login
