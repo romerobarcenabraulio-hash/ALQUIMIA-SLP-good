@@ -2,6 +2,8 @@
 from pathlib import Path
 from unittest.mock import patch
 
+import pytest
+
 from app.planning.weekly_status import (
     build_weekly_status,
     persist_weekly_status,
@@ -17,7 +19,14 @@ def test_build_weekly_status_has_required_fields():
     assert report["semaforo"] in {"VERDE", "AMARILLO", "ROJO"}
     assert report["riesgos_total"] >= 9
     assert isinstance(report["datos_faltantes"], list)
-    assert report["evm_fuente"] == "sintetico_fase_0_1"
+    # Con fixtures AURUM+HERMES en repo debe integrar, no sintético puro
+    ac_path = Path(__file__).resolve().parents[2] / "data" / "financial" / "costs" / "ac_latest.json"
+    if ac_path.is_file():
+        assert report["evm_fuente"] == "aurum_hermes_integrado"
+        assert report["evm_detalle"]["ac"] == pytest.approx(1034.7, rel=0.01)
+        assert report["evm_integracion"]["feeds_consumidos"] >= 1
+    else:
+        assert report["evm_fuente"] == "sintetico_fase_0_1"
 
 
 def test_persist_weekly_status(tmp_path):

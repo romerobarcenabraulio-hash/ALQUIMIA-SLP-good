@@ -5,12 +5,11 @@ import json
 import logging
 from datetime import date
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.planning.budget.evm_engine import calculate_evm
-from app.planning.budget.persistence import list_evm_snapshots
+from app.planning.budget.evm_integration import resolve_evm_for_weekly
 from app.planning.financial_model.material_prices import check_all_precios, get_precio_ancla
 from app.planning.risk.alert_engine import get_all_active_alerts
 from app.planning.risk.risk_register import get_risks_by_status, load_risk_register
@@ -21,15 +20,6 @@ logger = logging.getLogger(__name__)
 _DATA_ROOT = Path(__file__).resolve().parent.parent.parent / "data" / "planning"
 REPORTS_DIR = _DATA_ROOT / "reports"
 LATEST_PATH = _DATA_ROOT / "weekly_status_latest.json"
-
-# Baseline sintético Fase 0–1 cuando no hay snapshots PMO en BD
-_SYNTHETIC_EVM = {
-    "bac": 1_500_000.0,
-    "pv": 375_000.0,
-    "ev": 350_000.0,
-    "ac": 380_000.0,
-    "notas": "Baseline sintético Fase 0–1 — reemplazar con POST /api/planning/budget/evm",
-}
 
 
 def _iso_week(d: date | None = None) -> str:
@@ -53,57 +43,6 @@ def _gate_estado_y_dias(gate_id: str | None) -> tuple[str, int | None]:
     return gate_estado, dias
 
 
-def _resolve_evm(
-    db: Session | None,
-    municipio_id: str | None,
-) -> tuple[dict[str, Any], str, list[str]]:
-    datos_faltantes: list[str] = []
-
-    if db is not None:
-        snapshots = list_evm_snapshots(db, municipio_id=municipio_id, limit=1)
-        if snapshots:
-            s = snapshots[0]
-            return {
-                "bac": s["bac"],
-                "pv": s["pv"],
-                "ev": s["ev"],
-                "ac": s["ac"],
-                "cpi": s["cpi"],
-                "spi": s["spi"],
-                "tcpi": s["tcpi"],
-                "eac": s["eac_likely"],
-                "vac": s["vac"],
-                "vac_pct": s["vac_pct"],
-                "semaforo": s["semaforo"],
-            }, "evm_snapshots", datos_faltantes
-
-    datos_faltantes.append(
-        "Sin snapshot EVM en PostgreSQL — ingresar PV/EV/AC vía POST /api/planning/budget/evm"
-    )
-    datos_faltantes.append(
-        "AC real de operación logística (HERMES daily_summary) aún no cableado a EVM"
-    )
-    result = calculate_evm(
-        bac=_SYNTHETIC_EVM["bac"],
-        pv=_SYNTHETIC_EVM["pv"],
-        ev=_SYNTHETIC_EVM["ev"],
-        ac=_SYNTHETIC_EVM["ac"],
-    )
-    return {
-        "bac": result.bac,
-        "pv": result.pv,
-        "ev": result.ev,
-        "ac": result.ac,
-        "cpi": result.cpi,
-        "spi": result.spi,
-        "tcpi": result.tcpi,
-        "eac": result.eac_likely,
-        "vac": result.vac,
-        "vac_pct": result.vac_pct,
-        "semaforo": result.semaforo,
-    }, "sintetico_fase_0_1", datos_faltantes
-
-
 def build_weekly_status(
     *,
     municipio_id: str | None = None,
@@ -113,7 +52,7 @@ def build_weekly_status(
     """Construye reporte semanal al formato kronos.md."""
     gate_actual = get_current_gate() or "G5"
     gate_estado, dias_proximo_gate = _gate_estado_y_dias(gate_actual)
-    evm_block, evm_fuente, datos_faltantes = _resolve_evm(db, municipio_id)
+    evm_block, evm_fuente, datos_faltantes, evm_meta = resolve_evm_for_weekly(db, municipio_id)
 
     if precios_mercado is None:
         precios_mercado = {}
@@ -142,6 +81,7 @@ def build_weekly_status(
         "semaforo": evm_block["semaforo"],
         "evm_fuente": evm_fuente,
         "evm_detalle": evm_block,
+        "evm_integracion": evm_meta,
         "riesgos_rojos": riesgos_rojos,
         "riesgos_total": len(register),
         "gate_alertas": check_gate_alerts(),

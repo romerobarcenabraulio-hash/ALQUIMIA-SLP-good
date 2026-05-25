@@ -5,25 +5,51 @@
   "gate_actual": "G1",
   "gate_estado": "NO_INICIADO",
   "dias_proximo_gate": null,
-  "cpi": 0.9211,
-  "spi": 0.9333,
-  "eac": 1628571.43,
-  "tcpi": 1.0268,
-  "vac": -128571.43,
-  "semaforo": "AMARILLO",
-  "evm_fuente": "sintetico_fase_0_1",
+  "cpi": 1.0,
+  "spi": 0.1119,
+  "eac": 3327792.0,
+  "tcpi": 1.0,
+  "vac": 0.0,
+  "semaforo": "ROJO",
+  "evm_fuente": "aurum_hermes_integrado",
   "evm_detalle": {
-    "bac": 1500000.0,
-    "pv": 375000.0,
-    "ev": 350000.0,
-    "ac": 380000.0,
-    "cpi": 0.9211,
-    "spi": 0.9333,
-    "tcpi": 1.0268,
-    "eac": 1628571.43,
-    "vac": -128571.43,
-    "vac_pct": -8.57,
-    "semaforo": "AMARILLO"
+    "bac": 3327792.0,
+    "pv": 9243.866666666667,
+    "ev": 1034.7,
+    "ac": 1034.7,
+    "cpi": 1.0,
+    "spi": 0.1119,
+    "tcpi": 1.0,
+    "eac": 3327792.0,
+    "vac": 0.0,
+    "vac_pct": 0.0,
+    "semaforo": "ROJO",
+    "bac_programa_capex_mxn": 153641308.0,
+    "evm_scope": "operativo_fase_0_1"
+  },
+  "evm_integracion": {
+    "bac_programa_capex_mxn": 153641308.0,
+    "bac_operativo_anual_mxn": 3327792.0,
+    "opex_mensual_mxn": 277316.0,
+    "hermes_dias": 1,
+    "hermes_agg": {
+      "costo_logistico_total": "1034.7",
+      "tonelaje_total": "0.0",
+      "km_totales": "21.73",
+      "merma_promedio_pct": "2.5",
+      "dias": "1"
+    },
+    "ac_por_categoria": {
+      "capex_incurrido": "0",
+      "opex_referencia_mes": "277316",
+      "logistica_hermes_acumulado": "1034.7",
+      "no_calidad": "0.0000"
+    },
+    "aurum_fuente": "aurum_pipeline",
+    "gate_id": "G1",
+    "gate_status": "NO_INICIADO",
+    "earned_factor": 0.1119,
+    "feeds_consumidos": 1
   },
   "riesgos_rojos": [
     "R01",
@@ -116,8 +142,5 @@
       "referencia": "R08"
     }
   ],
-  "datos_faltantes": [
-    "Sin snapshot EVM en PostgreSQL — ingresar PV/EV/AC vía POST /api/planning/budget/evm",
-    "AC real de operación logística (HERMES daily_summary) aún no cableado a EVM"
-  ]
+  "datos_faltantes": []
 }

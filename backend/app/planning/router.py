@@ -12,7 +12,8 @@ Endpoints:
 from __future__ import annotations
 
 import logging
-from typing import Any, Dict, Optional
+from datetime import date
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
@@ -28,6 +29,7 @@ from app.planning.weekly_status import (
     load_latest_weekly_status,
     persist_weekly_status,
 )
+from modules.planning.budget.pipeline import run_aurum_pipeline
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -88,12 +90,23 @@ def get_weekly_status_cached() -> dict:
 @router.post("/weekly-status/generate", summary="Generar y persistir reporte semanal")
 def post_weekly_status_generate(
     municipio_id: str | None = Query(None),
+    run_aurum: bool = Query(True, description="Ejecutar pipeline AURUM antes del reporte"),
     db: Session | None = Depends(get_db),
 ) -> dict:
-    """Genera CPI/SPI/EAC, gates, riesgos y precios; persiste en data/planning/."""
+    """Genera CPI/SPI/EAC desde AURUM+HERMES (o snapshot BD), persiste en data/planning/."""
+    aurum_result: dict[str, Any] | None = None
+    if run_aurum:
+        mid = municipio_id or "slp"
+        aurum_result = run_aurum_pipeline(mid, lookback_days=14)
+
     report = build_weekly_status(municipio_id=municipio_id, db=db)
     path = persist_weekly_status(report)
-    return {"ok": True, "path": str(path), "report": report}
+    return {
+        "ok": True,
+        "path": str(path),
+        "aurum_pipeline": aurum_result,
+        "report": report,
+    }
 
 
 @router.post("/gantt", response_model=GanttPlan)
