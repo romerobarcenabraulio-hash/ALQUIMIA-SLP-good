@@ -51,10 +51,20 @@ def test_denue_mapping_scian():
     assert centro.tipo.value == "empresa_recicladora"
 
 
-def test_sync_municipio_skips_if_exists():
+def test_sync_municipio_skips_if_exists(tmp_path, monkeypatch):
     from app.centros_acopio import nacional_sync
+    from app.centros_acopio import file_store
 
-    # 24028 operadores file exists; municipio file may not — force path for skip test
+    municipios_dir = tmp_path / "municipios"
+    municipios_dir.mkdir()
+    manifest = tmp_path / "manifest.json"
+    monkeypatch.setattr(file_store, "MUNICIPIOS_DIR", municipios_dir)
+    monkeypatch.setattr(file_store, "MANIFEST_PATH", manifest)
+    monkeypatch.setattr(
+        file_store,
+        "municipio_file",
+        lambda cve: municipios_dir / f"{cve.zfill(5)}.json",
+    )
     file_store.save_municipio_centros(
         "99999",
         [],
