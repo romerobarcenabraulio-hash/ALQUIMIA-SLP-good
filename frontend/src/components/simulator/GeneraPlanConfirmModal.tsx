@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dialog'
 
 /**
- * Q-010 — Confirmación explícita antes de lanzar el pipeline ÁGORA (H-02).
+ * Q-010 — Confirmación explícita antes de lanzar el flujo ÁGORA (H-02).
  * Cerrar el modal o cancelar no ejecuta el callback registrado.
  */
 export function GeneraPlanConfirmModal() {

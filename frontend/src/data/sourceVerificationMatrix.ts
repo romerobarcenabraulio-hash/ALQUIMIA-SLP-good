@@ -396,6 +396,6 @@ export const SOURCE_VERIFICATION_MATRIX: SourceVerificationRow[] = [
     formula: 'CO₂e_CH₄ = masa_CH₄_emitida × GWP₁₀₀_CH₄ donde GWP₁₀₀_CH₄ = 27.9',
     unidad: 'GWP₁₀₀ sin retroalimentaciones del ciclo del carbono',
     accionCorrectiva: 'Actualizar el valor GWP si se publica AR7 y supera el umbral de revisión de >0.5 de diferencia.',
-    responsable: 'Modelo / IPCC tracking',
+    responsable: 'Modelo / factores IPCC',
   },
 ]

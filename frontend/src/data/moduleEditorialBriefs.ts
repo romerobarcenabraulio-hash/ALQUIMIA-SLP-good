@@ -534,7 +534,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Score total = 0.30·R_mercado + 0.40·R_político + 0.20·R_operativo + 0.10·R_regulatorio. Cada dimensión se calcula con su propia fórmula documentada. El score va de 0 (sin riesgo) a 100 (riesgo crítico).',
           origen_datos: 'R_mercado: datos del M10. R_político: mapa de actores (M02C). R_operativo: holgura PERT del M05. R_regulatorio: checklist LGPGIR del M03B.',
-          por_que_este_enfoque: 'ALQUIMIA pondera el riesgo político al 40% —la ponderación más alta— porque históricamente es el factor que más cancela programas municipales exitosos técnicamente. Los proyectos públicos no mueren por falta de tecnología sino por falta de stakeholders en la mesa correcta.',
+          por_que_este_enfoque: 'ALQUIMIA pondera el riesgo político al 40% —la ponderación más alta— porque históricamente es el factor que más cancela programas municipales exitosos técnicamente. Los proyectos públicos no mueren por falta de tecnología sino por falta de actores en la mesa correcta.',
           supuesto_critico: 'La tasa de colocación del mercado secundario (R_mercado). Es la variable más volátil y la que más rápido puede cambiar el score total de un trimestre a otro.',
         },
         chart_briefs: [
@@ -606,7 +606,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             chart_id: 'resumen-ejecutivo',
             chart_label: 'Resumen ejecutivo de escenarios',
             metodologia: {
-              como_se_calcula: 'Tabla comparativa de los tres escenarios activos: TIR, VPN, payback, empleos y CO₂e. TIR calculada con IRR estándar sobre flujos anuales del horizonte seleccionado.',
+              como_se_calcula: 'Tabla comparativa de los tres escenarios activos: TIR, VPN, payback, empleos y CO₂e. TIR calculada con método estándar sobre flujos anuales del horizonte seleccionado.',
               origen_datos: 'Todos los inputs vienen de los módulos anteriores. TIR/VPN: cálculo propio del motor financiero ALQUIMIA.',
               por_que_este_enfoque: 'Presentar tres escenarios —no uno— obliga al equipo municipal a decidir con información de sensibilidad, no solo con el escenario optimista.',
               supuesto_critico: 'El WACC utilizado como tasa de descuento. La referencia pre-cargada es 12% (SHCP proyectos públicos México). Un alcalde puede considerar una tasa diferente según el costo de financiamiento municipal.',
@@ -996,10 +996,10 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'Confirmar que el expediente responde las 6 preguntas que todo regidor hace: ¿cuánto cuesta?, ¿quién paga?, ¿quién opera?, ¿cuál es el riesgo?, ¿cuál es el beneficio?, ¿cuándo empezamos?',
         que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
         siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
-        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por pipeline AGORA.`,
+        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por flujo AGORA.`,
         metodologia_editorial: {
           como_se_calcula: 'No aplica. Este módulo consolida y exporta, no calcula.',
-          origen_datos: 'Store del simulador (Zustand) y pipeline AGORA para generación de documentos.',
+          origen_datos: 'Store del simulador (Zustand) y flujo AGORA para generación de documentos.',
           por_que_este_enfoque: 'Sin un expediente ordenado, el análisis pierde frente a resúmenes simplificados en sesión de Cabildo.',
           supuesto_critico: 'La completitud depende de que los módulos anteriores estén configurados con datos del municipio.',
         },

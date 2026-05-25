@@ -158,7 +158,7 @@ Toda entrega se evalúa contra **6 dimensiones**, cada una con criterios verific
 - Targets ≥ 24×24 CSS px.
 - Auditoría axe-core / Lighthouse a11y ≥ 95.
 
-### 6.4 Dimensión performance (Core Web Vitals)
+### 6.4 Dimensión desempeño (Core Web Vitals)
 
 - LCP ≤ 2.5s.
 - INP ≤ 200ms.
@@ -211,7 +211,7 @@ RPN (Risk Priority Number) = Severidad × Ocurrencia × Detección, escala 1–1
 ## [<timestamp>] · Auditor · INFORM · trace=<id>
 **Status Auditor:** TERMINADO / AUTORIZADO
 **Entrega evaluada:** <ref a COMMIT>
-**Rúbrica (§6):** ✓ Técnica · ✓ Calidad · ✓ A11y · ✓ Performance · ✓ Narrativa · ✓ Legal
+**Rúbrica (§6):** ✓ Técnica · ✓ Calidad · ✓ A11y · ✓ Desempeño · ✓ Narrativa · ✓ Legal
 **Evidencia adjunta:** <hashes / outputs>
 **Próxima fase desbloqueada:** <FN.M>
 **Hash anterior:** sha256:…

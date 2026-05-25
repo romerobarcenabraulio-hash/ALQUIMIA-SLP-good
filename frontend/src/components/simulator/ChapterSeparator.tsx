@@ -155,7 +155,7 @@ export function ChapterSeparator({ fromModuleId, toModuleId, onContinue, onBack 
             )}
             style={{ backgroundColor: toChapter.color }}
           >
-            Continuar al índice · Cap. {toChapter.num}
+            Continuar a la portada · Cap. {toChapter.num}
             <ArrowRight size={14} />
           </button>
         </div>

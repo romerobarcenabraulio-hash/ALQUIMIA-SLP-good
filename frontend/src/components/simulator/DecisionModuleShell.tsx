@@ -497,10 +497,10 @@ function ModuleContextHeader({
               type="button"
               onClick={onOpenChapterIndex}
               className="inline-flex items-center gap-1 rounded-full border border-[#E8E4DC] bg-white px-2 py-1 text-[10px] font-semibold text-[#6B6760] transition-colors hover:border-[#D7E8C0] hover:text-[#3B6D11]"
-              title={`Índice del capítulo ${chapter.num}: ${chapter.label}`}
+              title={`Portada del capítulo ${chapter.num}: ${chapter.label}`}
             >
               <ListTree size={11} aria-hidden />
-              Índice
+              Portada
             </button>
           )}
           {conf && (

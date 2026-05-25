@@ -85,7 +85,7 @@ function AdendoWorkflowPanel({ adendas }: { adendas: AdendaItem[] }) {
         )}
       </div>
 
-      {/* Etapa pipeline indicator */}
+      {/* Etapa del flujo */}
       <div className="px-5 pt-3 pb-2 overflow-x-auto">
         <div className="flex items-center gap-1 min-w-max">
           {ADENDO_ESTADOS.map((e, i) => (

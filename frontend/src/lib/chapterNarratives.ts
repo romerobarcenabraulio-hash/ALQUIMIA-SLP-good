@@ -141,6 +141,20 @@ export function dismissChapterCover(chapterNum: number): void {
   }
 }
 
+export const CHAPTER_PORTADA_INTRO: Record<
+  1 | 2 | 3 | 4,
+  (ctx: ChapterNarrativeContext) => string
+> = {
+  1: ctx =>
+    `Antes de planificar, necesitas una foto clara de ${ctx.municipio}: cuánto RSU genera, quién participa, qué dice el reglamento y cuánto cuesta no actuar. El índice ordena ese diagnóstico por rubros.`,
+  2: ctx =>
+    `Con el diagnóstico cerrado, aquí dimensionas infraestructura (${ctx.nCAs} centros de acopio en el escenario activo), operación, costos y mercado. Sigue el orden sugerido o salta al rubro que ya tengas resuelto.`,
+  3: ctx =>
+    `El Cabildo decide el modelo de negocio: quién pone capital, quién opera y cómo se reparte el ingreso. Este capítulo cierra con el expediente listo para sesión.`,
+  4: _ctx =>
+    `Operación, cumplimiento y reporteo: inspección, monitoreo, doble materialidad y control presupuestal. Usa el índice para ubicarte en el rubro que estés auditando.`,
+}
+
 export function shouldForceChapterIndexEntry(
   fromModuleId: string | undefined,
   toModuleId: string,

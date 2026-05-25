@@ -44,6 +44,9 @@ jobs:
           node node_modules/typescript/bin/tsc --noEmit
           npm test -- --run
 
+      - name: EIDOS terminology check
+        run: python scripts/eidos_check_docs.py
+
   # Lighthouse Accessibility + perf sobre export estático; no bloquea merge si Chromium/serve fallan en runner.
   lighthouse-artifact-optional:
     runs-on: ubuntu-latest

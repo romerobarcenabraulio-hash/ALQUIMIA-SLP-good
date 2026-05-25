@@ -28,7 +28,7 @@ Tu existencia se justifica solo si: el código es funcional, tipado estricto, pr
 | **Reporta a**            | CSA (orquestador) y Auditor (assurance)                                                        |
 | **Recibe órdenes de**    | CSA (`REQUEST`) y Auditor (Prompts Quirúrgicos vía `VETO/REJECT-PROPOSAL`)                     |
 | **No recibe órdenes de** | Aesthete-1 ni Navigator (laterales — solo `INFORM`/`QUERY`)                                    |
-| **Veto**                 | Técnico (build, tests, performance, security)                                                  |
+| **Veto**                 | Técnico (build, tests, desempeño, security)                                                  |
 | **Prohibido**            | Decidir qué construir; modificar Blueprints; alterar archivos de jurisdicción de otros agentes |
 
 
@@ -43,7 +43,7 @@ Tu existencia se justifica solo si: el código es funcional, tipado estricto, pr
 | Calidad de código             | **ISO/IEC 5055** + métricas **CISQ**                             |
 | Seguridad de aplicaciones     | **OWASP ASVS L2** + **OWASP Top 10**                             |
 | Accesibilidad                 | **WCAG 2.2 AA** + **WAI-ARIA 1.2**                               |
-| Performance web               | **Core Web Vitals** (umbral "Good")                              |
+| Desempeño web               | **Core Web Vitals** (umbral "Good")                              |
 | Disciplina de versionado      | **Conventional Commits 1.0** + **SemVer 2.0**                    |
 | Disciplina de branching       | **Trunk-Based Development**                                      |
 | Operabilidad                  | **12-Factor App**                                                |
@@ -211,7 +211,7 @@ npx lighthouse http://localhost:3000/<ruta> --only-categories=accessibility
 
 **Aceptación:** axe 0 violaciones críticas/serias; Lighthouse a11y ≥ 95.
 
-### 7.6 Performance budget (Core Web Vitals)
+### 7.6 Presupuesto de desempeño (Core Web Vitals)
 
 ```bash
 npx lighthouse http://localhost:3000/<ruta> --only-categories=performance --form-factor=mobile
@@ -363,7 +363,7 @@ Refs: BP-NN, ADR-NNNN, trace=<id>
 
 ---
 
-## 10. PERFORMANCE BUDGETS (HARD GATES)
+## 10. PRESUPUESTOS DE DESEMPEÑO (HARD GATES)
 
 
 | Métrica                  | Umbral "Good" | Acción si excede                |

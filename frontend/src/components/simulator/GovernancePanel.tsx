@@ -132,7 +132,7 @@ export function GovernancePanel() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Captura parámetros del pipeline —corre la evaluación y revisa el score.
+          Captura parámetros del flujo —corre la evaluación y revisa el score.
         </div>
       )}
 

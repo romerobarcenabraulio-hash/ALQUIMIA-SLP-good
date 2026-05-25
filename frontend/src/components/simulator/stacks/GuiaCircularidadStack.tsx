@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useMemo, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import {
-  ArrowRight, ChevronDown, Recycle,
-  BarChart3, Scale, Target,
-  CheckCircle2, MapPin,
+  ArrowRight, Recycle,
+  BarChart3, Scale, Target, MapPin,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -14,41 +13,15 @@ import { NarrativaIntroBridge } from '@/components/simulator/NarrativeBridge'
 import {
   CHAPTERS,
   FUNCTIONARY_MODULE_ORDER,
-  moduleNumber,
 } from '@/lib/chapterConfig'
 import {
   CHAPTER_COUNT,
-  CHAPTER_HERO_GRADIENT,
-  CHAPTER_NARRATIVES,
   CHAPTER_SUBQUESTIONS,
   chapterModuleRange,
-  type ChapterNarrativeContext,
 } from '@/lib/chapterNarratives'
 import { M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
-import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 
 const MODULE_COUNT = FUNCTIONARY_MODULE_ORDER.length
-
-interface StepModule {
-  label: string
-  id: string
-}
-
-interface NarrativeCtx extends ChapterNarrativeContext {}
-
-interface StepDef {
-  num: number
-  icon: LucideIcon
-  tag: string
-  title: string
-  question: string
-  color: string
-  bgColor: string
-  borderColor: string
-  modules: StepModule[]
-  body: (ctx: NarrativeCtx) => string
-  learns: string[]
-}
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
   1: MapPin,
@@ -56,33 +29,6 @@ const CHAPTER_ICONS: Record<number, LucideIcon> = {
   3: Scale,
   4: BarChart3,
 }
-
-function moduleLabel(id: string): string {
-  const num = moduleNumber(id)
-  const name = CLIENT_FUNCTIONARY_MODULES[id]?.label ?? id
-  return `M${num} ${name}`
-}
-
-function buildGuideSteps(): StepDef[] {
-  return CHAPTERS.map(ch => {
-    const narrative = CHAPTER_NARRATIVES[ch.num]!
-    return {
-      num: ch.num,
-      icon: CHAPTER_ICONS[ch.num] ?? MapPin,
-      tag: ch.label.toUpperCase(),
-      title: ch.question,
-      question: CHAPTER_SUBQUESTIONS[ch.num] ?? ch.question,
-      color: ch.color,
-      bgColor: ch.bgColor,
-      borderColor: ch.borderColor,
-      modules: ch.modulos.map(id => ({ id, label: moduleLabel(id) })),
-      body: narrative.body,
-      learns: narrative.learns,
-    }
-  })
-}
-
-const GUIDE_STEPS = buildGuideSteps()
 
 function EditorialSection({
   title,
@@ -113,10 +59,6 @@ interface GuiaCircularidadProps {
 export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}) {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const resultados = useSimulatorStore(s => s.resultados)
-  const horizonte = useSimulatorStore(s => s.horizonte)
-  const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
-  const mixCAs = useSimulatorStore(s => s.mixCAs)
 
   const municipioNarrativa = useMemo(() => {
     if (municipiosActivos.length === 1) {
@@ -124,39 +66,6 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
     }
     return 'Un municipio mexicano'
   }, [municipiosActivos, zmActiva])
-
-  const ctx: NarrativeCtx = useMemo(() => ({
-    municipio: municipioNarrativa,
-    rsuTonDia: resultados?.rsuTotalTonDia ?? 0,
-    pctCaptura: pctCapturaPorAño[horizonte - 1] ?? 70,
-    empleos: resultados?.empleosTotalesDirectos ?? 0,
-    ingresosMunicipio: resultados?.ingresosMunicipioTotal ?? 0,
-    co2e: resultados?.co2eEvitadasAnualTon ?? 0,
-    horizonte,
-    nCAs: (mixCAs.P ?? 0) + (mixCAs.M ?? 0) + (mixCAs.G ?? 0),
-    tir: resultados?.tir ?? 0,
-  }), [municipioNarrativa, resultados, horizonte, pctCapturaPorAño, mixCAs])
-
-  const [expandedStep, setExpandedStep] = useState<number | null>(1)
-
-  const chapterCards = useMemo(
-    () =>
-      CHAPTERS.map(ch => ({
-        num: ch.num,
-        icon: CHAPTER_ICONS[ch.num] ?? MapPin,
-        label: ch.label,
-        question: ch.question,
-        sub: chapterModuleRange(ch),
-        desc: CHAPTER_SUBQUESTIONS[ch.num] ?? ch.question,
-        color: ch.color,
-        bgColor: ch.bgColor,
-        gradient: CHAPTER_HERO_GRADIENT[ch.num],
-        moduleCount: ch.modulos.length,
-        rubroCount: ch.rubros.length,
-        firstId: ch.firstModuleId,
-      })),
-    [],
-  )
 
   return (
     <div className="space-y-10">
@@ -173,6 +82,10 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             Pregunta central: ¿puede{' '}
             {municipiosActivos.length === 1 ? municipioNarrativa : 'un municipio mexicano'}{' '}
             convertir RSU en valor económico, empleos y calidad de vida?
+          </p>
+          <p className="mt-3 text-[13px] leading-relaxed text-white/75 max-w-2xl">
+            Esta pantalla orienta el recorrido. Cada capítulo abre con su propia portada e índice de
+            rubros y módulos — ahí verás el detalle antes de entrar al contenido.
           </p>
         </div>
       </section>
@@ -198,154 +111,48 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
       </EditorialSection>
 
       <EditorialSection
-        title="Portadas de capítulo — abre el índice antes de entrar"
+        title="Los cuatro capítulos del recorrido"
         accentColor="#1A5FA8"
       >
         <p className="text-[13px] leading-[1.75] text-gray-600c mb-5">
-          {MODULE_COUNT} módulos en cuatro capítulos. Elige una portada para ver su índice (rubros y módulos) y
-          luego salta al módulo que necesites.
+          Vista de conjunto — al entrar a cada capítulo verás su portada con el índice completo de
+          rubros y módulos.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-          {chapterCards.map(e => (
-            <button
-              key={e.label}
-              type="button"
-              onClick={() => onNavigate?.(e.firstId)}
-              className={cn(
-                'group relative overflow-hidden rounded-[14px] text-left transition-all',
-                onNavigate
-                  ? 'hover:shadow-lg hover:-translate-y-0.5 cursor-pointer'
-                  : 'cursor-default',
-              )}
-            >
-              <div
-                className={cn(
-                  'relative bg-gradient-to-br px-5 py-5 text-white',
-                  e.gradient,
-                )}
-              >
-                <e.icon
-                  size={72}
-                  strokeWidth={0.8}
-                  className="pointer-events-none absolute -right-1 -top-1 opacity-15"
-                  aria-hidden
-                />
-                <p className="relative text-[10px] font-bold uppercase tracking-[0.12em] text-white/80">
-                  Capítulo {e.num} · Portada
-                </p>
-                <p className="relative mt-1 font-serif text-[20px] font-bold leading-tight">{e.label}</p>
-                <p className="relative mt-1 text-[13px] leading-snug text-white/85">{e.question}</p>
-                <p className="relative mt-2 text-[11px] text-white/65">
-                  {e.rubroCount} rubros · {e.moduleCount} módulos · {e.sub}
-                </p>
-                {onNavigate && (
-                  <p className="relative mt-4 inline-flex items-center gap-1 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold text-white group-hover:bg-white/25">
-                    Abrir índice
-                    <ArrowRight size={12} />
-                  </p>
-                )}
-              </div>
-              <div className="border border-t-0 border-[#E8E4DC] bg-[#FDFCFA] px-5 py-3">
-                <p className="text-[12px] leading-relaxed text-[#6B6760]">{e.desc}</p>
-              </div>
-            </button>
-          ))}
-        </div>
-      </EditorialSection>
-
-      <div className="space-y-3">
-          {GUIDE_STEPS.map(step => {
-            const isOpen = expandedStep === step.num
-            const Icon = step.icon
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
+          {CHAPTERS.map(ch => {
+            const Icon = CHAPTER_ICONS[ch.num] ?? MapPin
             return (
               <div
-                key={step.num}
-                className={cn(
-                  'rounded-[12px] transition-all border-l-[3px]',
-                  isOpen ? 'bg-surface-base shadow-sm' : 'bg-surface-base hover:bg-surface-muted',
-                )}
-                style={{ borderLeftColor: step.color }}
+                key={ch.num}
+                className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4"
+                style={{ borderLeftWidth: 3, borderLeftColor: ch.color }}
               >
-                <button
-                  type="button"
-                  onClick={() => setExpandedStep(isOpen ? null : step.num)}
-                  className="w-full flex items-center gap-4 px-5 py-4 text-left"
-                >
+                <div className="flex items-start gap-3">
                   <div
-                    className="shrink-0 w-10 h-10 rounded-full flex items-center justify-center"
-                    style={{ backgroundColor: step.bgColor }}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full"
+                    style={{ backgroundColor: ch.bgColor }}
                   >
-                    <Icon size={18} style={{ color: step.color }} />
+                    <Icon size={16} style={{ color: ch.color }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span
-                        className="text-[9px] font-bold uppercase tracking-[0.1em] px-2 py-0.5 rounded"
-                        style={{ backgroundColor: step.bgColor, color: step.color }}
-                      >
-                        Cap. {step.num} · {step.tag}
-                      </span>
-                      <span className="text-[9px] text-gray-400c font-mono">
-                        {step.modules.length} módulos
-                      </span>
-                    </div>
-                    <p className="text-[14px] font-semibold text-gray-900c">{step.title}</p>
-                    <p className="text-[11px] text-gray-400c mt-0.5">{step.question}</p>
+                  <div className="min-w-0">
+                    <p className="text-[10px] font-bold uppercase tracking-[0.08em]" style={{ color: ch.color }}>
+                      Capítulo {ch.num} · {ch.label}
+                    </p>
+                    <p className="mt-0.5 text-[13px] font-semibold text-gray-900c leading-snug">{ch.question}</p>
+                    <p className="mt-1 text-[11px] text-gray-600c leading-snug">
+                      {CHAPTER_SUBQUESTIONS[ch.num]}
+                    </p>
+                    <p className="mt-2 font-mono text-[10px] text-gray-400c">
+                      {chapterModuleRange(ch)} · {ch.modulos.length} módulos · {ch.rubros.length} rubros
+                    </p>
                   </div>
-                  <ChevronDown
-                    size={18}
-                    className={cn(
-                      'shrink-0 text-gray-400c transition-transform',
-                      isOpen && 'rotate-180',
-                    )}
-                  />
-                </button>
-
-                {isOpen && (
-                  <div className="px-5 pb-5 space-y-4">
-                    <div className="text-[13px] leading-[1.85] text-gray-600c whitespace-pre-line">
-                      {step.body(ctx)}
-                    </div>
-
-                    <div className="flex flex-wrap gap-1.5">
-                      {step.modules.map(m => (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => onNavigate?.(m.id)}
-                          className={cn(
-                            'text-[10px] font-mono font-semibold px-2 py-0.5 rounded border flex items-center gap-1 transition-opacity',
-                            onNavigate ? 'hover:opacity-80 cursor-pointer' : 'cursor-default',
-                          )}
-                          style={{
-                            borderColor: step.borderColor,
-                            backgroundColor: step.bgColor,
-                            color: step.color,
-                          }}
-                        >
-                          {m.label}
-                          {onNavigate && <ArrowRight size={8} />}
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="rounded-[10px] bg-surface-muted p-4">
-                      <ul className="space-y-1.5">
-                        {step.learns.map((l, i) => (
-                          <li key={i} className="flex items-start gap-2 text-[12px] text-gray-600c">
-                            <CheckCircle2 size={13} className="shrink-0 mt-0.5" style={{ color: step.color }} />
-                            <span>{l}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
             )
           })}
-      </div>
+        </div>
+      </EditorialSection>
 
       <section className="pl-5 border-l-[3px] border-red-500a/40 py-1">
         <p className="text-[14px] font-semibold text-gray-900c mb-3">Lo que ALQUIMIA no es</p>
@@ -366,7 +173,8 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
       <section className="rounded-[12px] bg-green-50a p-5 text-center border-l-[3px] border-green-500a">
         <p className="text-[13px] text-green-600a mb-4 max-w-lg mx-auto">
-          {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} — línea base de{' '}
+          {M01_NEXT_ACTION.replace('Abrir ', 'Abra ')} — verá primero la portada del capítulo Diagnóstico
+          con el índice de módulos, luego la línea base de{' '}
           {municipiosActivos.length === 1 ? municipioNarrativa : 'su municipio'}.
         </p>
         {onNavigate ? (

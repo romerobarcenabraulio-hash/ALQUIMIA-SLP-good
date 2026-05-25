@@ -243,7 +243,7 @@ export function ExportadorReporte() {
           )}
         </div>
         <p className="text-[11px] text-[#6B6860]">
-          {EXPORT_SIMULATION_FOOTER_LINE} PDF en Times New Roman vía pipeline de consultoría ALQUIMIA.
+          {EXPORT_SIMULATION_FOOTER_LINE} PDF en Times New Roman vía flujo de consultoría ALQUIMIA.
         </p>
       </div>
 

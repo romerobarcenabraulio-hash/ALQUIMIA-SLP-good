@@ -23,12 +23,11 @@ import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import {
   CHAPTER_HERO_GRADIENT,
-  CHAPTER_NARRATIVES,
+  CHAPTER_PORTADA_INTRO,
   CHAPTER_SUBQUESTIONS,
   RUBRO_HINTS,
   chapterModuleRange,
   dismissChapterCover,
-  type ChapterNarrativeContext,
 } from '@/lib/chapterNarratives'
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
@@ -69,6 +68,21 @@ export function ChapterIndex({
   const municipioLabel = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
   const chapter = getChapterForModule(chapterAnchorId)
 
+  const portadaIntro = useMemo(() => {
+    if (!chapter) return ''
+    return CHAPTER_PORTADA_INTRO[chapter.num]({
+      municipio: municipioLabel,
+      rsuTonDia: resultados?.rsuTotalTonDia ?? 0,
+      pctCaptura: pctCapturaPorAño[horizonte - 1] ?? 70,
+      empleos: resultados?.empleosTotalesDirectos ?? 0,
+      ingresosMunicipio: resultados?.ingresosMunicipioTotal ?? 0,
+      co2e: resultados?.co2eEvitadasAnualTon ?? 0,
+      horizonte,
+      nCAs: (mixCAs.P ?? 0) + (mixCAs.M ?? 0) + (mixCAs.G ?? 0),
+      tir: resultados?.tir ?? 0,
+    })
+  }, [chapter, municipioLabel, resultados, horizonte, pctCapturaPorAño, mixCAs])
+
   const briefCtx = useMemo(
     (): import('@/data/moduleEditorialBriefs').ModuleEditorialContext => ({
       territorio: municipioLabel,
@@ -83,24 +97,8 @@ export function ChapterIndex({
     [municipioLabel, municipiosActivos.length],
   )
 
-  const ctx: ChapterNarrativeContext = useMemo(
-    () => ({
-      municipio: municipioLabel,
-      rsuTonDia: resultados?.rsuTotalTonDia ?? 0,
-      pctCaptura: pctCapturaPorAño[horizonte - 1] ?? 70,
-      empleos: resultados?.empleosTotalesDirectos ?? 0,
-      ingresosMunicipio: resultados?.ingresosMunicipioTotal ?? 0,
-      co2e: resultados?.co2eEvitadasAnualTon ?? 0,
-      horizonte,
-      nCAs: (mixCAs.P ?? 0) + (mixCAs.M ?? 0) + (mixCAs.G ?? 0),
-      tir: resultados?.tir ?? 0,
-    }),
-    [municipioLabel, resultados, horizonte, pctCapturaPorAño, mixCAs],
-  )
-
   if (!chapter) return null
 
-  const narrative = CHAPTER_NARRATIVES[chapter.num]
   const Icon = CHAPTER_ICONS[chapter.num] ?? BookOpen
   const gradient = CHAPTER_HERO_GRADIENT[chapter.num]
   const rubroHints = RUBRO_HINTS[chapter.num] ?? {}
@@ -120,7 +118,7 @@ export function ChapterIndex({
     <div
       className="min-h-[70vh] bg-[#FAFAF8]"
       data-testid="chapter-index"
-      aria-label={`Índice del capítulo ${chapter.num}: ${chapter.label}`}
+      aria-label={`Portada del capítulo ${chapter.num}: ${chapter.label}`}
     >
       <section
         className={cn(
@@ -138,7 +136,7 @@ export function ChapterIndex({
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/95 bg-white/10">
               <ListTree size={12} aria-hidden />
-              Índice del capítulo
+              Portada del capítulo
             </span>
             <span
               className="rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]"
@@ -154,8 +152,8 @@ export function ChapterIndex({
           </p>
           <p className="mt-3 max-w-2xl text-[12px] leading-relaxed text-white/70">
             {isReview
-              ? 'Mapa del capítulo: elige un rubro o salta directo al módulo que necesites revisar.'
-              : 'Antes de entrar al contenido, repasa qué rubros y módulos componen este capítulo.'}
+              ? 'Índice del capítulo: elige el módulo que quieras revisar.'
+              : 'Repasa el índice y entra por el rubro que toque — o comienza desde el primer módulo.'}
           </p>
         </div>
       </section>
@@ -163,9 +161,7 @@ export function ChapterIndex({
       <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
         {!isReview && (
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.05)]">
-            <p className="whitespace-pre-line text-[13px] leading-[1.85] text-[#4A4740]">
-              {narrative.body(ctx)}
-            </p>
+            <p className="text-[13px] leading-[1.85] text-[#4A4740]">{portadaIntro}</p>
           </div>
         )}
 
