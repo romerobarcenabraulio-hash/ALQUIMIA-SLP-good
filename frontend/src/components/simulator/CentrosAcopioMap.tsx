@@ -10,7 +10,7 @@ import {
   buildRecyclersKpiContract,
   getRecicladorasForZm,
 } from '@/lib/recicladorasCatalog'
-import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter } from 'lucide-react'
+import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter, Truck } from 'lucide-react'
 
 const MATERIAL_LABELS: Record<string, string> = {
   pet: 'PET',
@@ -35,7 +35,16 @@ const TIPO_COLORS: Record<string, string> = {
   punto_verde:        '#2D9E4A',
   chatarreria:        '#D4881E',
   banco_de_residuos:  '#7B3FA8',
+  bodega_concesionario: '#C0392B',
+  patio_concesionario:  '#8B2942',
+  transferencia_rs:     '#6B4FA8',
   otro:               '#8A857C',
+}
+
+const TIPO_LABELS: Record<string, string> = {
+  bodega_concesionario: 'Bodega concesionario',
+  patio_concesionario: 'Patio concesionario',
+  transferencia_rs: 'Transferencia RS',
 }
 
 function escHtml(s: string) {
@@ -46,6 +55,8 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const cityContext = useSimulatorStore(s => s.cityContext)
+  const seleccionMunicipioCatalog = useSimulatorStore(s => s.seleccionMunicipioCatalog)
+  const claveInegi = seleccionMunicipioCatalog?.claveInegi ?? null
   const { center: mapCenter, loading: mapCenterLoading } = useMapCenter(zmActiva, cityContext?.nombre)
 
   const municipioId = municipiosActivos[0] ?? null
@@ -77,18 +88,23 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
   const [error, setError]             = useState<string | null>(null)
   const [selectedMat, setSelectedMat] = useState<string>('all')
   const [selected, setSelected]       = useState<CentroAcopio | null>(null)
+  const [showOperador, setShowOperador] = useState(true)
 
   // Fetch centros
   useEffect(() => {
     let cancelled = false
     setLoading(true)
     setError(null)
-    getCentrosAcopio({ zm: zmActiva ?? 'SLP' })
+    getCentrosAcopio({
+      zm: zmActiva ?? 'SLP',
+      clave_inegi: claveInegi ?? undefined,
+      incluir_operador: showOperador,
+    })
       .then(data => { if (!cancelled) setCentros(data.centros) })
       .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : 'Error cargando centros') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
-  }, [zmActiva])
+  }, [zmActiva, claveInegi, showOperador])
 
   // Filter
   const filtered = selectedMat === 'all'
@@ -140,8 +156,30 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
     )
   }
 
+  const operadorCount = centros.filter(c => c.es_operador_principal).length
+
   return (
     <div className="space-y-3">
+      {operadorCount > 0 && (
+        <div className="rounded-[8px] border border-[#F5C6CB] bg-[#FEF7F7] px-3 py-2 text-[11px] text-[#6B2727]">
+          <div className="flex items-center gap-1.5 font-semibold">
+            <Truck className="h-3.5 w-3.5" />
+            Operador principal ({operadorCount} instalación{operadorCount !== 1 ? 'es' : ''})
+          </div>
+          <p className="mt-1 leading-relaxed">
+            Bodega/patio del concesionario en rojo — coordenadas aproximadas hasta validación de campo.
+          </p>
+        </div>
+      )}
+
+      {centros.length === 0 && !loading && (
+        <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 text-[11px] text-[#6B6760]">
+          Sin centros identificados para este municipio. Ejecute sync DENUE (
+          <code className="text-[10px]">POST /centros-acopio/sync/denue</code>) o registre operador en{' '}
+          <code className="text-[10px]">data/geo/operadores_logisticos/{claveInegi ?? 'CVE'}.json</code>.
+        </div>
+      )}
+
       {/* KPI bar */}
       <div className="flex flex-wrap gap-3 text-[11px]">
         <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-1.5">
@@ -172,7 +210,21 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
             </div>
           </>
         )}
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-1.5">
+          <span className="font-bold text-[#23470A]">{centros.filter(c => c.es_operador_principal).length}</span>
+          <span className="ml-1 text-[#6B6760]">operador</span>
+        </div>
       </div>
+
+      <label className="flex items-center gap-2 text-[10px] text-[#6B6760] cursor-pointer">
+        <input
+          type="checkbox"
+          checked={showOperador}
+          onChange={e => setShowOperador(e.target.checked)}
+          className="accent-[#C0392B]"
+        />
+        Mostrar bodega/patio del concesionario
+      </label>
 
       {showRecicladoras && recicladoras.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 text-[10px] text-[#6B6760]">
@@ -257,7 +309,12 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
                     style={{ color: TIPO_COLORS[c.tipo] ?? '#8A857C' }}
                   />
                   <span className="truncate text-[11px] font-medium text-[#1C1B18]">{c.nombre}</span>
-                  {c.verificado && (
+                  {c.es_operador_principal && (
+                    <span className="ml-auto shrink-0 rounded-full bg-[#FDE8E8] px-1.5 py-0.5 text-[9px] font-bold text-[#B91C1C]">
+                      Operador
+                    </span>
+                  )}
+                  {!c.es_operador_principal && c.verificado && (
                     <span className="ml-auto shrink-0 rounded-full bg-[#EAF3DE] px-1.5 py-0.5 text-[9px] font-bold text-[#23470A]">
                       ✓
                     </span>
@@ -292,7 +349,10 @@ function CentroCard({ centro: c, onClose }: { centro: CentroAcopio; onClose: () 
       <div className="mb-2 flex items-start justify-between gap-2">
         <div>
           <p className="text-[12px] font-semibold text-[#1C1B18]">{c.nombre}</p>
-          <p className="text-[10px] text-[#8A857C]">{c.tipo.replace(/_/g, ' ')}</p>
+          <p className="text-[10px] text-[#8A857C]">
+            {TIPO_LABELS[c.tipo] ?? c.tipo.replace(/_/g, ' ')}
+            {c.operador_nombre ? ` · ${c.operador_nombre}` : ''}
+          </p>
         </div>
         <button onClick={onClose} className="text-[11px] text-[#8A857C] hover:text-[#1C1B18]">✕</button>
       </div>
@@ -312,6 +372,11 @@ function CentroCard({ centro: c, onClose }: { centro: CentroAcopio; onClose: () 
         {c.acepta_empresa && (
           <span className="rounded bg-blue-50 px-1.5 py-0.5 text-[9px] font-medium text-blue-800">
             Empresa ✓
+          </span>
+        )}
+        {c.es_operador_principal && (
+          <span className="rounded bg-[#FDE8E8] px-1.5 py-0.5 text-[9px] font-bold text-[#B91C1C]">
+            Operador principal
           </span>
         )}
         {c.verificado && (
@@ -338,6 +403,10 @@ function CentroCard({ centro: c, onClose }: { centro: CentroAcopio; onClose: () 
           })}
         </div>
       </div>
+
+      {c.notas && (
+        <p className="mt-2 text-[10px] italic text-[#8A857C]">{c.notas}</p>
+      )}
 
       <p className="mt-2 text-[9px] text-[#8A857C]">
         Fuente: {c.fuente} · score {(c.score_confianza * 100).toFixed(0)}%

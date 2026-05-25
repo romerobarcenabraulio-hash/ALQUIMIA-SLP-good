@@ -1,0 +1,36 @@
+{
+  "clave_inegi": "19039",
+  "municipio": "Monterrey",
+  "estado": "Nuevo León",
+  "operador": {
+    "nombre": "Red Ambiental",
+    "grupo": "Grupo Vigue",
+    "relacion": "neutral"
+  },
+  "updated_at": "2026-05-25T12:00:00Z",
+  "notas": "Geocodificado Google Maps — operador concesionado recolección domiciliaria MTY.",
+  "instalaciones": [
+    {
+      "centro_id": "op-mty-bodega-central",
+      "nombre": "Operaciones Red Ambiental Monterrey",
+      "tipo": "bodega_concesionario",
+      "direccion": "Blvd. Díaz Ordaz 130, Santa María, 64650 Monterrey, N.L., México",
+      "municipio": "Monterrey",
+      "estado": "Nuevo León",
+      "clave_inegi": "19039",
+      "zm": "MTY",
+      "lat": 25.6715662,
+      "lon": -100.3759144,
+      "materiales": ["organico", "otro"],
+      "acepta_publico": false,
+      "acepta_empresa": true,
+      "rol_instalacion": "bodega_operador",
+      "es_operador_principal": true,
+      "operador_nombre": "Red Ambiental",
+      "fuente": "google_geocoding",
+      "verificado": false,
+      "score_confianza": 0.75,
+      "notas": "Geocodificado Google Maps (query: Red Ambiental Monterrey). Validar contra contrato municipal vigente."
+    }
+  ]
+}

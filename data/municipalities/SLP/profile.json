@@ -37,7 +37,8 @@
     "desde_anio": 2008,
     "notas": "Operador concesionado post-declaración de incapacidad municipal (~2009). Renegociación contractual requerida para separación en origen.",
     "fuente": "REPORTAJE_ANTECEDENTES_MUNICIPALES · SciELO T2 · mayo 2026",
-    "verificacion": "pendiente_contrato_vigente"
+    "verificacion": "pendiente_contrato_vigente",
+    "instalaciones_geo_ref": "data/geo/operadores_logisticos/24028.json"
   },
   "dependencia_municipal": {
     "nombre": "Dirección de Ecología y Aseo Público",

@@ -27,10 +27,23 @@ from app.agents.schemas import (
     CentroAcopioTipo,
 )
 
+from app.centros_acopio import file_store
+
 logger = logging.getLogger(__name__)
 
 # ─── Tienda en memoria ────────────────────────────────────────────────────────
 _store: Dict[str, CentroAcopio] = {}
+_persisted_loaded = False
+
+
+def _load_persisted_once() -> None:
+    global _persisted_loaded
+    if _persisted_loaded:
+        return
+    for centro in file_store.load_all_persisted():
+        _store[centro.centro_id] = centro
+    _persisted_loaded = True
+    logger.info("CentroAcopio persistidos: %d registros en store.", len(_store))
 
 
 # ─── Datos demo (seed) ───────────────────────────────────────────────────────
@@ -173,7 +186,8 @@ def _seed_demo() -> None:
     ]
     for c in demos:
         _store[c.centro_id] = c
-    logger.info(f"CentroAcopio seed: {len(_store)} centros cargados.")
+    _load_persisted_once()
+    logger.info(f"CentroAcopio seed: {len(_store)} centros cargados (demo + persistidos).")
 
 
 _seed_demo()
@@ -188,24 +202,38 @@ def get(centro_id: str) -> Optional[CentroAcopio]:
 def list_centros(
     zm: Optional[str] = None,
     municipio: Optional[str] = None,
+    clave_inegi: Optional[str] = None,
     material: Optional[CentroAcopioMaterial] = None,
     acepta_empresa: Optional[bool] = None,
     verificado_only: bool = False,
+    incluir_operador: bool = True,
+    solo_operador: bool = False,
 ) -> List[CentroAcopio]:
+    _load_persisted_once()
     results = list(_store.values())
+    if clave_inegi:
+        cve = clave_inegi.zfill(5)
+        results = [c for c in results if (c.clave_inegi or "").zfill(5) == cve]
     if zm:
         results = [c for c in results if c.zm and c.zm.upper() == zm.upper()]
     if municipio:
         results = [c for c in results
                    if municipio.lower() in c.municipio.lower()]
+    if solo_operador:
+        results = [c for c in results if c.es_operador_principal]
+    elif not incluir_operador:
+        results = [c for c in results if not c.es_operador_principal]
     if material:
         results = [c for c in results if material in c.materiales]
     if acepta_empresa is not None:
         results = [c for c in results if c.acepta_empresa == acepta_empresa]
     if verificado_only:
         results = [c for c in results if c.verificado]
-    # Ordenar por score_confianza desc, luego verificado primero
-    results.sort(key=lambda c: (c.verificado, c.score_confianza), reverse=True)
+    # Operador principal primero, luego score
+    results.sort(
+        key=lambda c: (c.es_operador_principal, c.verificado, c.score_confianza),
+        reverse=True,
+    )
     return results
 
 

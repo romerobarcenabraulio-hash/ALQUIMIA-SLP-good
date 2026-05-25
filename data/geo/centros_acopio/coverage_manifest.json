@@ -1,0 +1,51 @@
+{
+  "version": "1.0.0",
+  "updated_at": "2026-05-25T20:58:11.349534+00:00",
+  "descripcion": "Cobertura nacional de identificación de centros de acopio (DENUE) y operadores logísticos por CVE INEGI.",
+  "municipios": {
+    "24028": {
+      "clave_inegi": "24028",
+      "municipio": "San Luis Potosí",
+      "estado": "San Luis Potosí",
+      "total_centros": 0,
+      "operador_instalaciones": 2,
+      "fuente": "operadores_logisticos",
+      "status": "operador_geocodificado",
+      "synced_at": "2026-05-25T00:00:00Z"
+    },
+    "19039": {
+      "clave_inegi": "19039",
+      "municipio": "Monterrey",
+      "estado": "Nuevo León",
+      "total_centros": 0,
+      "operador_instalaciones": 1,
+      "fuente": "operadores_logisticos",
+      "status": "operador_geocodificado",
+      "synced_at": "2026-05-25T00:00:00Z"
+    },
+    "22014": {
+      "clave_inegi": "22014",
+      "municipio": "Querétaro",
+      "estado": "Querétaro",
+      "total_centros": 0,
+      "operador_instalaciones": 1,
+      "fuente": "operadores_logisticos",
+      "status": "operador_geocodificado",
+      "synced_at": "2026-05-25T00:00:00Z"
+    },
+    "99999": {
+      "clave_inegi": "99999",
+      "municipio": "Test",
+      "estado": "Test",
+      "total_centros": 0,
+      "fuente": "test",
+      "status": "sin_datos",
+      "synced_at": "2026-05-25T20:58:11.349495+00:00"
+    }
+  },
+  "totales": {
+    "municipios_catalogados": 4,
+    "con_datos": 0,
+    "sin_datos": 4
+  }
+}

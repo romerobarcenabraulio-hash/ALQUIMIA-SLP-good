@@ -764,17 +764,33 @@ class CentroAcopioTipo(str, Enum):
     punto_verde        = "punto_verde"
     chatarreria        = "chatarreria"
     banco_de_residuos  = "banco_de_residuos"
+    bodega_concesionario = "bodega_concesionario"
+    patio_concesionario  = "patio_concesionario"
+    transferencia_rs     = "transferencia_rs"
     otro               = "otro"
 
 
+class CentroAcopioRolInstalacion(str, Enum):
+    """Rol logístico de la instalación en la cadena RSU."""
+    centro_acopio     = "centro_acopio"
+    bodega_operador   = "bodega_operador"
+    patio_operador    = "patio_operador"
+    transferencia     = "transferencia"
+    disposicion_final = "disposicion_final"
+
+
 class CentroAcopio(BaseModel):
-    """Punto de disposición o venta de materiales reciclables."""
+    """Punto de disposición, acopio o instalación del operador de limpia."""
     centro_id:      str = Field(default_factory=lambda: str(uuid.uuid4()))
     nombre:         str
     tipo:           CentroAcopioTipo = CentroAcopioTipo.otro
     direccion:      str
     municipio:      str
     estado:         str
+    clave_inegi:    Optional[str] = Field(
+        None,
+        description="CVE geoestadística municipal INEGI (5 dígitos)",
+    )
     zm:             Optional[str] = None
     lat:            Optional[float] = None
     lon:            Optional[float] = None
@@ -787,9 +803,19 @@ class CentroAcopio(BaseModel):
     horario:        Optional[str] = None
     acepta_publico: bool = True
     acepta_empresa: bool = False
-    fuente:         str = "usuario"   # "places_api" | "denue" | "usuario"
+    rol_instalacion: CentroAcopioRolInstalacion = CentroAcopioRolInstalacion.centro_acopio
+    es_operador_principal: bool = Field(
+        False,
+        description="True si es bodega/patio base del concesionario vigente",
+    )
+    operador_nombre: Optional[str] = Field(
+        None,
+        description="Nombre del concesionario u operador (p.ej. Red Ambiental / SERV)",
+    )
+    fuente:         str = "usuario"   # "places_api" | "denue" | "usuario" | "perfil_municipal"
     verificado:     bool = False
     score_confianza: float = Field(ge=0.0, le=1.0, default=0.5)
+    notas:          Optional[str] = None
     created_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

@@ -1,0 +1,35 @@
+{
+  "clave_inegi": "22014",
+  "municipio": "Querétaro",
+  "estado": "Querétaro",
+  "operador": {
+    "nombre": "Operador ZM Querétaro",
+    "relacion": "neutral"
+  },
+  "updated_at": "2026-05-25T12:00:00Z",
+  "notas": "Zona de transferencia metropolitana — geocodificado Google Maps.",
+  "instalaciones": [
+    {
+      "centro_id": "op-qro-transferencia-lacanada",
+      "nombre": "Zona de transferencia La Cañada (ZM Querétaro)",
+      "tipo": "transferencia_rs",
+      "direccion": "La Cañada, Querétaro, Qro., México",
+      "municipio": "Querétaro",
+      "estado": "Querétaro",
+      "clave_inegi": "22014",
+      "zm": "QRO",
+      "lat": 20.6068808,
+      "lon": -100.3294942,
+      "materiales": ["organico", "otro"],
+      "acepta_publico": false,
+      "acepta_empresa": true,
+      "rol_instalacion": "transferencia",
+      "es_operador_principal": true,
+      "operador_nombre": "Operador ZM Querétaro",
+      "fuente": "google_geocoding",
+      "verificado": false,
+      "score_confianza": 0.68,
+      "notas": "Corredor La Cañada (referencia legal_framework ZM QRO). Precisar predio exacto en validación metropolitana."
+    }
+  ]
+}

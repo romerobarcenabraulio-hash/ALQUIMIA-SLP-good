@@ -1,0 +1,62 @@
+{
+  "clave_inegi": "24028",
+  "municipio": "San Luis Potosí",
+  "estado": "San Luis Potosí",
+  "operador": {
+    "nombre": "Red Ambiental",
+    "alias": "SERV",
+    "grupo": "Grupo Vigue",
+    "razon_social": "RED RECOLECTOR SA DE CV",
+    "relacion": "neutral"
+  },
+  "updated_at": "2026-05-25T12:00:00Z",
+  "notas": "Dirección oficial catálogo proveedores municipio SLP + coordenadas Google Geocoding.",
+  "instalaciones": [
+    {
+      "centro_id": "op-slp-bodega-central",
+      "nombre": "Bodega central RED RECOLECTOR / SERV",
+      "tipo": "bodega_concesionario",
+      "direccion": "Av. Anillo Perif. Nte. 5015, Tercera Chica 4, 78414 S.L.P., México",
+      "municipio": "San Luis Potosí",
+      "estado": "San Luis Potosí",
+      "clave_inegi": "24028",
+      "zm": "SLP",
+      "lat": 22.2182182,
+      "lon": -100.9701059,
+      "place_id": "EkJBdi4gQW5pbGxvIFBlcmlmLiBOdGUuIDUwMTUsIFRlcmNlcmEgQ2hpY2EgNCwgNzg0MTQgUy5MLlAuLCBNZXhpY28iMRIvChQKEgkxqxJcI6AqhBFySIfFJZG4QRCXJyoUChIJraX265qfKoQRfwa2YnPNk9M",
+      "materiales": ["organico", "otro"],
+      "acepta_publico": false,
+      "acepta_empresa": true,
+      "rol_instalacion": "bodega_operador",
+      "es_operador_principal": true,
+      "operador_nombre": "Red Ambiental (SERV / RED RECOLECTOR)",
+      "fuente": "google_geocoding",
+      "verificado": true,
+      "score_confianza": 0.88,
+      "notas": "Dirección Periférico Norte #5015 Milpillas — catálogo municipal proveedores SLP. Geocodificado Google Maps."
+    },
+    {
+      "centro_id": "op-slp-patio-flota",
+      "nombre": "Patio de flota y salida de rutas SERV",
+      "tipo": "patio_concesionario",
+      "direccion": "Av. Anillo Perif. Nte. 5015, Tercera Chica 4, 78414 S.L.P., México",
+      "municipio": "San Luis Potosí",
+      "estado": "San Luis Potosí",
+      "clave_inegi": "24028",
+      "zm": "SLP",
+      "lat": 22.21785,
+      "lon": -100.96972,
+      "place_id": "EkJBdi4gQW5pbGxvIFBlcmlmLiBOdGUuIDUwMTUsIFRlcmNlcmEgQ2hpY2EgNCwgNzg0MTQgUy5MLlAuLCBNZXhpY28iMRIvChQKEgkxqxJcI6AqhBFySIfFJZG4QRCXJyoUChIJraX265qfKoQRfwa2YnPNk9M",
+      "materiales": ["organico", "otro"],
+      "acepta_publico": false,
+      "acepta_empresa": true,
+      "rol_instalacion": "patio_operador",
+      "es_operador_principal": true,
+      "operador_nombre": "Red Ambiental (SERV)",
+      "fuente": "google_geocoding",
+      "verificado": false,
+      "score_confianza": 0.82,
+      "notas": "Misma sede operativa Periférico Norte 5015 — patio de flota colindante; confirmar acceso vial en campo."
+    }
+  ]
+}
