@@ -1,0 +1,39 @@
+{
+  "$schema": "alquimia/config/api_limits.v1",
+  "updated": "2026-05-22",
+  "owner": "HERMES",
+  "services": {
+    "google_routes": {
+      "daily_quota": 2500,
+      "warn_at_pct": 0.8,
+      "hard_stop_at_pct": 0.95,
+      "fallback": "cached_plan_redis"
+    },
+    "google_route_optimization": {
+      "daily_quota": 100,
+      "warn_at_pct": 0.75,
+      "hard_stop_at_pct": 0.9,
+      "fallback": "heuristic_tsp_territorial"
+    },
+    "google_geocoding": {
+      "daily_quota": 3000,
+      "warn_at_pct": 0.85,
+      "hard_stop_at_pct": 0.98,
+      "fallback": "colonia_centroid_cache"
+    },
+    "google_roads_snap": {
+      "daily_quota": 1500,
+      "warn_at_pct": 0.85,
+      "hard_stop_at_pct": 0.98,
+      "fallback": "skip_snap"
+    },
+    "google_routes_matrix": {
+      "daily_quota": 500,
+      "warn_at_pct": 0.8,
+      "hard_stop_at_pct": 0.95,
+      "schedule_cron": "0 4 * * *",
+      "fallback": "haversine_od_matrix"
+    }
+  },
+  "phase_0_1_note": "Fase 0-1: cuotas conservadoras; sin GPS/IoT. Ajustar tras primer mes de telemetría."
+}

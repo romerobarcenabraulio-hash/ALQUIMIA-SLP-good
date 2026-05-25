@@ -1,0 +1,35 @@
+{
+  "$schema": "alquimia/config/google_maps.v1",
+  "updated": "2026-05-22",
+  "owner": "HERMES",
+  "endpoints": {
+    "routes_compute": "https://routes.googleapis.com/directions/v2:computeRoutes",
+    "routes_matrix": "https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix",
+    "geocoding_forward": "https://maps.googleapis.com/maps/api/geocode/json",
+    "roads_snap": "https://roads.googleapis.com/v1/snapToRoads"
+  },
+  "routes": {
+    "travel_mode": "DRIVE",
+    "routing_preference": "TRAFFIC_AWARE_OPTIMAL",
+    "language_code": "es-MX",
+    "units": "METRIC",
+    "field_mask": "routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.travelAdvisory",
+    "compute_alternative_routes": false
+  },
+  "geocoding": {
+    "region": "mx",
+    "language": "es"
+  },
+  "env_key_resolution": {
+    "maps_platform": ["MAPS_PLATFORM_API", "GOOGLE_MAPS_API_KEY"],
+    "geocoding": ["GEOCODING_API", "GOOGLE_GEOCODING_API_KEY"],
+    "routes": ["OPTIMIZATION_ROUTE_API", "GOOGLE_ROUTES_API_KEY"],
+    "places": ["GOOGLE_PLACES_API_KEY"]
+  },
+  "phase_0_1": {
+    "use_route_optimization_api": false,
+    "use_routes_api_for_plan": true,
+    "use_traffic_aware": true,
+    "residential_focus": true
+  }
+}

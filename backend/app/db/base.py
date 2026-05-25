@@ -17,3 +17,4 @@ def import_all_models() -> None:
     import app.models.research  # noqa: F401
     import app.models.planning_evm  # noqa: F401
     import app.models.user_account  # noqa: F401
+    import app.models.logistics  # noqa: F401

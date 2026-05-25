@@ -1,9 +1,32 @@
 """Resolución de API keys — nombres exactos de Render."""
 from __future__ import annotations
 
+import json
 import os
+from functools import lru_cache
+from pathlib import Path
 
 from app.config import settings
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+@lru_cache(maxsize=1)
+def load_api_limits() -> dict:
+    path = _repo_root() / "config" / "api_limits.json"
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+@lru_cache(maxsize=1)
+def load_google_maps_config() -> dict:
+    path = _repo_root() / "config" / "google_maps.json"
+    if not path.is_file():
+        return {}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def _first_env(*keys: str) -> str:
