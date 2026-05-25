@@ -2,7 +2,6 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import {
-  monteCarlo,
   monteCarloTriangularSamples,
   MONTE_CARLO_SPEC,
   perturbStateMonteCarlo,
@@ -24,9 +23,9 @@ describe('integridad de simulación (Supreme / PD&SA)', () => {
     expect(readFrontend('src/components/charts/MonteCarloVpnChart.tsx')).toContain('useLiveMonteCarlo')
   })
 
-  it('monteCarlo devuelve el arreglo completo de muestras TIR', () => {
+  it('monteCarloTriangularSamples devuelve el arreglo completo de muestras TIR', () => {
     const state = useSimulatorStore.getState()
-    const samples = monteCarlo(state, 100)
+    const samples = monteCarloTriangularSamples(state, 100, 'tir')
     expect(samples).toHaveLength(100)
     expect(samples[0]).toBeLessThanOrEqual(samples[samples.length - 1]!)
   })

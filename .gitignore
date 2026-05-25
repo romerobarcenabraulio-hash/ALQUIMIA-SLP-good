@@ -19,6 +19,7 @@ frontend/audit_reports/*
 
 # Secretos / env local (ACCESS_CODE, tokens)
 frontend/.env.local
+frontend/.env.local*
 frontend/.env.*.local
 backend/.env
 backend/.env.save

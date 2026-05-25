@@ -14,8 +14,9 @@
 | Backend API | **operativo** | pytest ~870+ pass | auth DB en prod |
 | Export portfolio ZIP | **operativo** | `analisis/` + `implementacion/` Fase→Etapa→Actividad | sin regresión post-KRONOS |
 | Gate PDF municipal | **operativo** | 11 municipios verificados en catálogo | mantener |
-| CI GitHub | **operativo** | checks green post 780075a7 | permanente |
+| CI GitHub | **operativo con caveats** | `07d86e67`+ green; Render puede ir retrasado vs `main` | permanente |
 | Producción Vercel | **operativo** | `main` auto-deploy | auth migración |
+| Producción Render | **operativo (revisar sync)** | `/health` Wave 1 flags; ver `render.yaml` | auto-deploy desde `main` |
 
 ---
 

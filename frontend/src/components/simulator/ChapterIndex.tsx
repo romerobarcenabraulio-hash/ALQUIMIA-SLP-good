@@ -27,7 +27,7 @@ import {
   CHAPTER_SUBQUESTIONS,
   RUBRO_HINTS,
   chapterModuleRange,
-  dismissChapterCover,
+  dismissChapterIndex,
 } from '@/lib/chapterNarratives'
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
@@ -105,12 +105,12 @@ export function ChapterIndex({
   const isReview = mode === 'review'
 
   const handleBeginFromStart = () => {
-    dismissChapterCover(chapter.num)
+    dismissChapterIndex(chapter.num)
     onBeginFromStart()
   }
 
   const handleSelectModule = (moduleId: string) => {
-    dismissChapterCover(chapter.num)
+    dismissChapterIndex(chapter.num)
     onSelectModule(moduleId)
   }
 

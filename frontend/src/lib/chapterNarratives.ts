@@ -123,19 +123,19 @@ export function chapterModuleRange(ch: ChapterDef): string {
   return `M${moduleNumber(modulos[0]!)} – M${moduleNumber(modulos[modulos.length - 1]!)}`
 }
 
-const CHAPTER_COVER_SESSION_PREFIX = 'alquimia-ch-cover-dismissed-'
+const CHAPTER_INDEX_SESSION_PREFIX = 'alquimia-ch-cover-dismissed-'
 
-export function isChapterCoverDismissed(chapterNum: number): boolean {
+export function isChapterIndexDismissed(chapterNum: number): boolean {
   try {
-    return sessionStorage.getItem(`${CHAPTER_COVER_SESSION_PREFIX}${chapterNum}`) === '1'
+    return sessionStorage.getItem(`${CHAPTER_INDEX_SESSION_PREFIX}${chapterNum}`) === '1'
   } catch {
     return false
   }
 }
 
-export function dismissChapterCover(chapterNum: number): void {
+export function dismissChapterIndex(chapterNum: number): void {
   try {
-    sessionStorage.setItem(`${CHAPTER_COVER_SESSION_PREFIX}${chapterNum}`, '1')
+    sessionStorage.setItem(`${CHAPTER_INDEX_SESSION_PREFIX}${chapterNum}`, '1')
   } catch {
     /* ignore */
   }
@@ -167,7 +167,7 @@ export function shouldForceChapterIndexEntry(
 export function shouldOfferChapterIndex(toModuleId: string): boolean {
   const chapter = getChapterForModule(toModuleId)
   if (!chapter || chapter.firstModuleId !== toModuleId) return false
-  return !isChapterCoverDismissed(chapter.num)
+  return !isChapterIndexDismissed(chapter.num)
 }
 
 

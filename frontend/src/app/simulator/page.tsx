@@ -11,7 +11,6 @@ import { ClientOnboardingGate } from '@/components/onboarding/ClientOnboardingGa
 import { AudienceGateway } from '@/components/simulator/AudienceGateway'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
 import { PlanGlobalControlsBar } from '@/components/simulator/PlanGlobalControlsBar'
-import { FuncionariosViviendaRsuModel } from '@/components/simulator/FuncionariosViviendaRsuModel'
 import { GenerarPlanModal } from '@/components/simulator/GenerarPlanModal'
 import { GeneraPlanConfirmModal } from '@/components/simulator/GeneraPlanConfirmModal'
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'

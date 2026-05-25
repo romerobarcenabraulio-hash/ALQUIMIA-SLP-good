@@ -1,7 +1,7 @@
 'use client'
 import { useMemo, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { monteCarlo, tornadoAnalysis } from '@/lib/calculator'
+import { monteCarloTriangularSamples, tornadoAnalysis } from '@/lib/calculator'
 import { fmt, cn } from '@/lib/utils'
 import { WaterfallChart } from '@/components/charts/WaterfallChart'
 import { MonteCarloCChart } from '@/components/charts/MonteCarloChart'
@@ -160,7 +160,7 @@ export function ImpactoFinanciero() {
   /* Linter: getState() no aparece en el grafo de deps; la lista fuerza recálculo al variar precios, trayectoria o ámbito municipal (Q-024). */
   /* eslint-disable react-hooks/exhaustive-deps */
   const tirDistribution = useMemo(
-    () => monteCarlo(useSimulatorStore.getState(), 2000),
+    () => monteCarloTriangularSamples(useSimulatorStore.getState(), 2000, 'tir'),
     [precios, pctCapturaPorAño, mermaLogPct, horizonte, zmActiva, municipiosActivos],
   )
 

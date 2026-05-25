@@ -736,12 +736,13 @@ export async function ensureProfessionalPackageRendered(
 }> {
   const existing = await getRenderReport(packageId)
   if (existing) {
+    const rendered = existing.rendered_assets as Array<{ format?: string }> | undefined
     return {
       qa_status: String(existing.qa_status ?? 'ok'),
-      n_rendered: Number(existing.rendered_assets?.length ?? 0),
-      has_docx: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'docx')),
-      has_xlsx: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'xlsx')),
-      has_pdf: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'pdf')),
+      n_rendered: rendered?.length ?? 0,
+      has_docx: Boolean(rendered?.some(a => a.format === 'docx')),
+      has_xlsx: Boolean(rendered?.some(a => a.format === 'xlsx')),
+      has_pdf: Boolean(rendered?.some(a => a.format === 'pdf')),
     }
   }
   const result = await renderProfessionalPackage(packageId, resultados)

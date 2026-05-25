@@ -557,11 +557,6 @@ export function monteCarloTriangular(state: SimulatorState, n = 2000): MonteCarl
   return { p10, p50, p90, bcr_p50 }
 }
 
-/** @deprecated Usar monteCarloTriangular() o monteCarloTriangularSamples(). */
-export function monteCarlo(state: SimulatorState, n = 2000): number[] {
-  return monteCarloTriangularSamples(state, n, 'tir')
-}
-
 // ─── Motor de Riesgo ─────────────────────────────────────────────────────────
 /**
  * Calcula scores de riesgo (0–100) por dimensión desde datos del simulador.
