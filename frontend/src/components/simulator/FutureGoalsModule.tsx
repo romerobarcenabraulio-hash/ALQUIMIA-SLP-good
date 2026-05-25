@@ -22,7 +22,7 @@ const CircularidadRoadmapMap = dynamic(
   () => import('@/components/simulator/CircularidadRoadmapMap').then(m => ({ default: m.CircularidadRoadmapMap })),
   {
     ssr: false,
-    loading: () => <p className="text-[12px] text-[#6B6760] py-8 text-center">Cargando mapa de avance territorial…</p>,
+    loading: () => <p className="text-[12px] text-[#6B6760] py-8 text-center">…</p>,
   },
 )
 
@@ -1215,7 +1215,7 @@ function Page3({
             </ResponsiveContainer>
           ) : (
             <div className="h-[220px] flex items-center justify-center">
-              <p className="text-[12px] text-[#A8A49C]">Selecciona un municipio en Módulo 1 para ver la progresión.</p>
+              <p className="text-[12px] text-[#A8A49C]">Selecciona un municipio para ver la progresión.</p>
             </div>
           )}
         </>
@@ -1340,7 +1340,6 @@ function RightRail({ page, vacios }: { page: number; vacios: number }) {
 
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold mb-3 px-1">Consideraciones del módulo</p>
       <RailSection title="Cómo se calcula" defaultOpen>
         <p>{content.calcula}</p>
       </RailSection>

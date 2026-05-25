@@ -62,14 +62,12 @@ export function BenchmarkLATAM() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S18 — Benchmark LATAM</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Contexto regional</h2>
       <p className="text-[13px] text-[#6B6760] mb-6">
         Compara el plan de {zmActiva} con ciudades que lideraron la transición circular en América Latina.
       </p>
 
       <EditorialTimeline
-        kicker="S22 · Línea de tiempo regional"
         title={tituloTimeline}
         milestones={milestones}
       />

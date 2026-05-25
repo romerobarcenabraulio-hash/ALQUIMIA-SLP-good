@@ -85,7 +85,7 @@ export function SocialDemographicContextPanel({
           El programa de separación tiene dos hemisferios: <span className="font-medium text-[#1C1B18]">condominios y privadas</span> (Adendos 1-11)
           y <span className="font-medium text-[#1C1B18]">casas en vía pública</span> (Adendo 12, en desarrollo).
           Este módulo genera la evidencia social para justificar políticamente ambos ante cabildo.
-          Los datos de campo capturados aquí actualizan el módulo de riesgos en tiempo real.
+          Los datos de campo capturados aquí alimentan el módulo de riesgos del escenario.
         </p>
 
         {/* Indicadores rápidos */}

@@ -42,9 +42,6 @@ export function ReasoningGraphCanvas({ graph, height = 280 }: ReasoningGraphCanv
   const { nodes, width } = positioned
   return (
     <div className="overflow-x-auto rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <p className="mb-3 text-[11px] uppercase tracking-[0.08em] text-[#A8A49C]">
-        S22 · Mapa causal del cálculo
-      </p>
       <svg
         role="img"
         aria-label="Grafo causal del razonamiento"

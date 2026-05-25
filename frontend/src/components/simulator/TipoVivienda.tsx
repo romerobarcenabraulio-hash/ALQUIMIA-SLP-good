@@ -17,7 +17,6 @@ export function TipoVivienda() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S7 — Tipo de vivienda</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">Segmentación por vivienda</h2>
 
       {/* Tipos activos */}

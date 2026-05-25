@@ -23,7 +23,6 @@ export function EditorTrayectoria() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S9 — Trayectoria de captura</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">¿A qué ritmo captura RSU?</h2>
 
       {/* Presets */}

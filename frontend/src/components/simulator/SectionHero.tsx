@@ -134,9 +134,7 @@ export function SectionHero() {
           Vista ciudadana · análisis orientativo
         </p>
       ) : (
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
-          S1 — Plataforma de circularidad municipal
-        </p>
+        null
       )}
       <h1 className="font-serif text-[38px] leading-[1.05] tracking-[-0.02em] text-[#1C1B18] mb-4 max-w-3xl">
         ¿Sabes cuánto le cuesta a{' '}
@@ -182,8 +180,7 @@ export function SectionHero() {
         </p>
       )}
       <div className="mb-6 max-w-3xl rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#3B6D11]">Lectura municipal</p>
-        <h2 className="mt-1 font-serif text-[18px] text-[#1C1B18]">{narrative.title}</h2>
+        <h2 className="font-serif text-[18px] text-[#1C1B18]">{narrative.title}</h2>
         <p className="mt-2 text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
         <p className="mt-2 text-[11px] font-medium text-[#3B6D11]">{narrative.maturity}</p>
       </div>
@@ -194,7 +191,7 @@ export function SectionHero() {
       )}
       {municipiosActivos.length === 0 && (
         <p className="text-[12px] text-[#8A857C] max-w-2xl mb-6 leading-relaxed">
-          Define el municipio o conjunto municipal en “Ciudad primero” para anclar reglamento y parámetros; hasta entonces los KPIs son de ZM agregada.
+          Define el municipio de trabajo para anclar reglamento y parámetros; hasta entonces los KPIs son de ZM agregada.
         </p>
       )}
 

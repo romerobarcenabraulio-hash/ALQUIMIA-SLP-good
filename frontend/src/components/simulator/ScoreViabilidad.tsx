@@ -21,7 +21,6 @@ export function ScoreViabilidad() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S17 — Score de viabilidad política</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">¿Qué tan viable políticamente?</h2>
 
       <div className="flex items-start gap-6 mb-6">

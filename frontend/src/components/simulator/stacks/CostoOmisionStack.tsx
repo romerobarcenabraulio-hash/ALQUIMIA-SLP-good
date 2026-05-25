@@ -121,7 +121,6 @@ export function CostoOmisionStack() {
                 <AlertTriangle className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.1em] text-[#C0392B] font-bold mb-0.5">Análisis contrafactual · Costo de la omisión</p>
                 <p className="text-[20px] font-serif font-bold text-[#1C1B18] leading-tight">
                   Sin programa, el municipio perderá {pxnM(costoTotal10)} en los próximos {años} años
                 </p>

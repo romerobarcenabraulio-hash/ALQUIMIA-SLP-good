@@ -267,7 +267,6 @@ export function ImpactoFinanciero() {
         <WaterfallChart />
         {r && (
           <NarrativeBridge
-            kicker="S22 · Lectura del Waterfall"
             variant={r.vpn >= 0 ? 'result' : 'warning'}
             summary={r.vpn >= 0
               ? `Los componentes positivos sostienen un VPN de ${fmt.mxnK(r.vpn)} con TIR ${r.tir.toFixed(1)}%. El proyecto crea valor con la WACC actual (${wacc}%).`
@@ -292,7 +291,6 @@ export function ImpactoFinanciero() {
         <MonteCarloCChart />
         {r && mcPercentiles && (
           <NarrativeBridge
-            kicker="S22 · Lectura del Monte Carlo"
             variant={mcPercentiles.p10 < wacc ? 'warning' : 'result'}
             summary={
               `En 2,000 corridas aleatorias, el TIR cae en el percentil 10 a ${mcPercentiles.p10.toFixed(1)}%, la mediana queda en ${mcPercentiles.p50.toFixed(1)}% y el percentil 90 llega a ${mcPercentiles.p90.toFixed(1)}%. ` +
@@ -321,7 +319,6 @@ export function ImpactoFinanciero() {
         </div>
         {tornadoRows.length > 0 && (
           <NarrativeBridge
-            kicker="S22 · Lectura del Tornado"
             variant="bridge"
             summary={
               tornadoRows.length >= 2
@@ -346,7 +343,6 @@ export function ImpactoFinanciero() {
         <CashflowChart />
         {r && (
           <NarrativeBridge
-            kicker="S22 · Lectura del cashflow"
             variant="bridge"
             summary={`En ${horizonte} años el modelo acumula derrama bruta ${fmt.mxnK(r.ingresosBrutos)} —inversión inicial ${fmt.mxnK(r.capexTotal)} y EBITDA acumulado ${fmt.mxnK(r.ebitda)}. La forma del flujo dice si hace falta refinanciamiento temprano o si la captura sostiene la deuda.`}
             evidence={[
@@ -383,7 +379,6 @@ export function ImpactoFinanciero() {
         <StressTest />
         {r && (
           <NarrativeBridge
-            kicker="S22 · Stress adversarial"
             variant={r.vpn >= 0 ? 'bridge' : 'warning'}
             summary={`La rejilla contrasta choques de volumen y precios respecto al caso base (VPN ${fmt.mxnK(r.vpn)}, TIR ${r.tir.toFixed(1)}%). Si la mayoría de celdas permanece verde, la estructura aguanta shocks coordinados; si predominan tonos adversos, prioriza contratos indexados o hedges simples.`}
             evidence={[

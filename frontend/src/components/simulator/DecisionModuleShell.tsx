@@ -1121,7 +1121,7 @@ export function DecisionModuleShell({
       <div className="flex items-center justify-center py-20 text-[#A8A49C]">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-[#3B6D11] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
-          <p className="text-[13px]">Cargando módulos del journey…</p>
+          <p className="text-[13px]">…</p>
         </div>
       </div>
     )

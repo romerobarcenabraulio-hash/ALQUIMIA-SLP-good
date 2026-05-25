@@ -221,7 +221,6 @@ export default function Precolocacion() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">S22 · Trazabilidad de mercado</p>
           <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
             Precolocación de materiales · {zmActiva}
           </h3>

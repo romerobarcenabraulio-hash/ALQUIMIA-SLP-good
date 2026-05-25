@@ -136,7 +136,6 @@ export function ImplementacionEspacioTiempo() {
   return (
     <section className="space-y-5">
       <div>
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.2 — Implementación espacio-tiempo</p>
         <h2 className="mt-2 font-serif text-[24px] text-[#1C1B18]">Ruta territorial por oleadas</h2>
         <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
           Convierte el horizonte en zonas, municipios, colonias piloto propuestas, trimestres y metas parciales para RSU municipal.

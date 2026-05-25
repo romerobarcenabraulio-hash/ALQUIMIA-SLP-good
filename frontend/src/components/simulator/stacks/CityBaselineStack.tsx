@@ -605,9 +605,7 @@ export function CityBaselineStack() {
             )}
           </div>
 
-          {/* Lectura municipal — siempre visible */}
           <section className="pt-4 border-t border-[#F0EDE5]">
-            <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#A8A49C] mb-2">Lectura municipal</p>
             <div className="border-l-2 border-[#3B6D11] pl-3">
               <p className="font-serif text-[14px] text-[#1C1B18] mb-1">{narrative.title}</p>
               <p className="text-[12px] leading-relaxed text-[#5A6347]">{narrative.body}</p>
@@ -625,7 +623,7 @@ export function CityBaselineStack() {
             <div className="flex items-start justify-between mb-3">
               <div>
                 <p className="text-[12px] font-semibold text-[#1C1B18]">Trayectoria de captura</p>
-                <p className="text-[10px] text-[#A8A49C]">Perfil {activeUI?.label ?? presetTrayectoria} · {horizonte} años · se actualiza en tiempo real</p>
+                <p className="text-[10px] text-[#A8A49C]">Perfil {activeUI?.label ?? presetTrayectoria} · {horizonte} años</p>
               </div>
               <div className="text-right shrink-0">
                 <p className="font-mono text-[22px] leading-none font-semibold" style={{ color: activeUI?.color ?? '#3B6D11' }}>{capturaFinal.toFixed(0)}%</p>

@@ -65,20 +65,20 @@ function DecisionCommitBar({
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         <div className="flex-1 min-w-[160px] rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">M01 · Escenario base</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">Escenario base</p>
           <p className="text-[13px] font-semibold text-[#1C1B18]">{municipio}</p>
           <p className="text-[11px] text-[#5A5750]">{horizonte} años · {trayectoria}</p>
           <p className="text-[11px] font-semibold text-[#3B6D11]">{fmt.kgd(rsuDia)} capturable</p>
         </div>
         <div className="hidden lg:flex items-center"><ArrowRight className="w-4 h-4 text-[#A8A49C] shrink-0" /></div>
         <div className="flex-1 min-w-[160px] rounded-[10px] border border-[#E8D4A0] bg-[#FEF7E7] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#D4881E] font-bold mb-1.5">M05 · Plan logístico</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#D4881E] font-bold mb-1.5">Plan logístico</p>
           <p className="text-[13px] font-semibold text-[#1C1B18]">Fase actual F3</p>
           <p className="text-[11px] text-[#5A5750]">Oleadas territoriales · calendario aprobado</p>
         </div>
         <div className="hidden lg:flex items-center"><ArrowRight className="w-4 h-4 text-[#A8A49C] shrink-0" /></div>
         <div className="flex-1 min-w-[160px] rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] font-bold mb-1.5">M06 · Decisión actual</p>
+          <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] font-bold mb-1.5">Decisión actual</p>
           <p className="text-[13px] font-semibold text-[#1C1B18]">Dimensionar centros de acopio</p>
           <p className="text-[11px] text-[#5A5750]">Capacidad · brechas · tipología P/M/G</p>
         </div>

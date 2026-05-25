@@ -63,7 +63,6 @@ export function ExportarSection() {
 
   return (
     <div id="sim-export-empresa-plan">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S20 — Exportar</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Paquete de exportación para revisión</h2>
       <ScopeAnclaKicker className="mb-4" />
 

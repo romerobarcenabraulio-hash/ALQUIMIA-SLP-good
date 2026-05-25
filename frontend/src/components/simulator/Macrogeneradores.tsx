@@ -271,7 +271,6 @@ export default function Macrogeneradores() {
     <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">S22 · Macrogeneradores</p>
           <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
             Grandes fuentes RSU · {zmActiva}
           </h3>

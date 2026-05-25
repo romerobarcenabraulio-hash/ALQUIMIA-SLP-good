@@ -22,9 +22,6 @@ export function ContainersProvider() {
     <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">
-            S22 · Operador de contenedores
-          </p>
           <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
             Suministro y operación de contenedores · {zmActiva}
           </h3>
@@ -48,7 +45,6 @@ export function ContainersProvider() {
       </div>
 
       <NarrativeBridge
-        kicker="S22 · Lectura del módulo"
         variant="bridge"
         summary={totalToneladas != null
           ? `Tu organización proyecta ${totalToneladas.toFixed(1)} t/año de RSU recuperables. El operador de contenedores se activa cuando se valida la ruta logística (Logística + Macrogeneradores) y la propuesta comercial.`

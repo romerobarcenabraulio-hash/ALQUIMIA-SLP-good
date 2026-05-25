@@ -93,7 +93,6 @@ export function AdvertenciasGateLegal() {
     <section className="space-y-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">S12.4 — Alcance legal educativo</p>
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <h2 className="font-serif text-[24px] text-[#1C1B18]">
               Advertencias, inspección y propuestas ·{' '}

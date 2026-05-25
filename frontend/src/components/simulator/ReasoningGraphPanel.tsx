@@ -107,7 +107,6 @@ export default function ReasoningGraphPanel() {
 
       {graph && (
         <NarrativeBridge
-          kicker="S22 · Lectura del grafo causal"
           variant={graph.warnings.length > 0 ? 'warning' : 'result'}
           summary={`El grafo conecta ${graph.nodes.length} nodos con ${graph.edges.length} relaciones causales y reporta ${graph.warnings.length} advertencias. Cada cambio numérico se rastrea hasta su fuente y fórmula original.`}
           evidence={[

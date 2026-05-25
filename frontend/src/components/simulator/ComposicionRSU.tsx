@@ -16,7 +16,6 @@ const MATERIALS = [
 export function ComposicionRSU() {
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S6 — Composición RSU</p>
       <div className="flex items-center gap-3 mb-4">
         <h2 className="font-serif text-[24px] text-[#1C1B18]">Fracción de residuos</h2>
         <Badge variant="info">Referencia documental</Badge>

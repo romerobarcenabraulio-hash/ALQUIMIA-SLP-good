@@ -801,7 +801,6 @@ function Page1({ prob }: { prob: number }) {
             <Shield className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] uppercase tracking-[0.1em] text-[#D4881E] font-bold mb-0.5">Dictamen inicial del módulo</p>
             <p className="text-[20px] font-bold text-[#1C1B18] mb-2">PROCEDER CONDICIONADO</p>
             <p className="text-[13px] text-[#4A4740] leading-relaxed mb-4">
               El escenario es viable, pero no debe avanzar como implementación plena hasta validar aceptación ciudadana,
@@ -1067,7 +1066,6 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
       <div className="rounded-[12px] border-2 border-[#1A5FA8] bg-[#EBF3FB] px-6 py-5 flex items-start gap-4">
         <DollarSign className="w-7 h-7 text-[#1A5FA8] shrink-0 mt-0.5" />
         <div className="flex-1">
-          <p className="text-[10px] uppercase tracking-[0.1em] text-[#1A5FA8] font-bold mb-0.5">Lectura de mercado</p>
           <p className="text-[16px] font-bold text-[#1C1B18] mb-2">ESCENARIO ROBUSTO CON CONDICIONES</p>
           <p className="text-[13px] text-[#3A3F6F] leading-relaxed mb-3">
             El modelo es viable bajo las condiciones actuales de precios y cobertura. Priorizar cierre de contratos en orgánicos y otros para reducir riesgo y elevar confianza.
@@ -1155,7 +1153,6 @@ function Page3() {
             <FileText className="w-6 h-6" />
           </div>
           <div className="flex-1">
-            <p className="text-[10px] uppercase tracking-[0.1em] text-[#D4881E] font-bold mb-0.5">Dictamen final del módulo</p>
             <p className="text-[20px] font-bold text-[#1C1B18] mb-2">PROCEDER CONDICIONADO</p>
             <p className="text-[13px] text-[#4A4740] leading-relaxed mb-3">
               El escenario es viable, pero debe avanzar con implementación plena solo si se cumplen cinco condiciones críticas.

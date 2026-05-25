@@ -8,7 +8,6 @@ export function HorizonteCircularidad() {
 
   return (
     <div>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">S8 — Horizonte de circularidad</p>
       <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">¿Cuántos años abarca el plan?</h2>
 
       {/* Botones 1–5 */}

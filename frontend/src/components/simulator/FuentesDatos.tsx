@@ -80,18 +80,14 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
 
   return (
     <div data-variant={variant}>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">
-        {embedded ? 'S2 — API /data/fuentes' : 'S2 — Fuentes de datos'}
-      </p>
       {embedded ? (
-        <h3 className="font-serif text-[20px] text-[#1C1B18] mb-2">Estado en vivo de fuentes de datos</h3>
+        <h3 className="font-serif text-[20px] text-[#1C1B18] mb-2">Fuentes consultadas</h3>
       ) : (
         <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Bibliografía y cálculos</h2>
       )}
       {!embedded && <ScopeAnclaKicker className="mb-2" />}
       <p className="text-[13px] text-[#6B6760] mb-1">
-        Estado real de cada fuente de datos oficial. El simulador prioriza datos
-        verificados y etiqueta cada cifra con su tier de confianza.
+        Tier de confianza por fuente oficial o estimada.
       </p>
       <p className={embedded ? 'text-[11px] text-[#A8A49C] mb-4' : 'text-[11px] text-[#A8A49C] mb-6'}>
         ✓ Oficial — API verificada en esta sesión &nbsp;|&nbsp;

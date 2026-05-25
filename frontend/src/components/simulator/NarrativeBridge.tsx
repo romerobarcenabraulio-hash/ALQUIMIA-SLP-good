@@ -44,7 +44,7 @@ export interface NarrativeBridgeSource {
 }
 
 export interface NarrativeBridgeProps {
-  kicker: string
+  kicker?: string
   title?: string
   summary: string
   evidence?: NarrativeBridgeEvidence[]
@@ -109,6 +109,11 @@ export function NarrativeBridge({
     }
   }, [personalizar, title, summary, municipiosActivos, zmActiva, unSoloMunicipio])
 
+  const showKicker =
+    kicker &&
+    !/^S\d+\s*[·—-]/i.test(kicker.trim()) &&
+    !/^Lectura\b/i.test(kicker.trim())
+
   return (
     <aside
       className={cn(
@@ -119,10 +124,14 @@ export function NarrativeBridge({
       role="note"
       data-audience={audience}
     >
-      <div className="flex items-center gap-2">
-        {styles.icon}
-        <p className={cn('text-[10px] uppercase tracking-[0.14em]', styles.kicker)}>{kicker}</p>
-      </div>
+      {showKicker ? (
+        <div className="flex items-center gap-2">
+          {styles.icon}
+          <p className={cn('text-[10px] uppercase tracking-[0.14em]', styles.kicker)}>{kicker}</p>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">{styles.icon}</div>
+      )}
       {titleShown && (
         <h3 className="mt-2 font-serif text-[20px] leading-tight text-[#1C1B18]">{titleShown}</h3>
       )}
@@ -166,7 +175,6 @@ export function NarrativeBridge({
 
       {nextStep && (nextStep.href || nextStep.onClick || nextStep.helper) && (
         <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#E8E4DC] pt-3">
-          <span className="text-[11px] uppercase tracking-[0.08em] text-[#A8A49C]">Acción siguiente</span>
           {nextStep.href ? (
             <a
               href={nextStep.href}

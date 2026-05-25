@@ -27,7 +27,7 @@ export function SimulationComputeTrace({
     <div className={cn('rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-3 space-y-2', className)}>
       <div className="flex items-center justify-between gap-2">
         <p className="text-[10px] font-semibold uppercase tracking-wide text-[#6B6760]">
-          Cómputo en vivo · Monte Carlo
+          Monte Carlo
         </p>
         {isRunning && <Loader2 className="w-3.5 h-3.5 animate-spin text-[#3B6D11]" aria-hidden />}
       </div>

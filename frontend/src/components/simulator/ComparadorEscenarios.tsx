@@ -258,7 +258,6 @@ export function ComparadorEscenarios() {
             const delta = ganador?.diferencia_vs_base?.score ?? 0
             return ganador && base ? (
               <NarrativeBridge
-                kicker="S22 · Lectura del comparador"
                 variant={delta > 0 ? 'result' : 'bridge'}
                 summary={delta > 0
                   ? `El escenario "${ganador.nombre}" supera al base ("${base.nombre}") por ${delta.toFixed(1)} puntos de score y mueve la tasa de circularidad de ${base.tasa_circularidad_pct.toFixed(1)}% a ${ganador.tasa_circularidad_pct.toFixed(1)}%. Es la opción a recomendar formalmente.`

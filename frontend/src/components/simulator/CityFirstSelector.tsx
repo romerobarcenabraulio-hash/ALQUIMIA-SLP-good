@@ -104,7 +104,6 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
     <Tag className={compact ? 'py-2' : 'section'} aria-labelledby="city-first-title">
       {!compact && (
         <>
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Ciudad primero</p>
           <h2 id="city-first-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">Estado y municipio de trabajo</h2>
         </>
       )}
@@ -117,7 +116,7 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
           </span>
           <span className="text-[11px] text-[#A8A49C] shrink-0">{zmActiva}</span>
           <span className="text-[9px] uppercase tracking-wide text-[#A8A49C] shrink-0">
-            Módulo 1 para cambiar
+            Cambiar en escenario base
           </span>
         </div>
       )}
@@ -127,7 +126,7 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
         <>
           {loading && (
             <div className={cn('rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] text-[12px] text-[#6B6760]', compact ? 'px-3 py-2' : 'px-4 py-3')}>
-              Cargando catálogo municipal…
+              …
             </div>
           )}
 
@@ -241,7 +240,7 @@ export function CityFirstSelector({ compact }: { compact?: boolean } = {}) {
       )}
 
       {cityContextLoading && (
-        <p className="mt-2 text-[12px] text-[#8A857C]">Cargando contexto de la ciudad...</p>
+        <p className="mt-2 text-[12px] text-[#8A857C]">…</p>
       )}
 
       {!cityContextLoading && cityPortalError && (
