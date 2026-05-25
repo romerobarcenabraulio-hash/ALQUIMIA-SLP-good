@@ -131,8 +131,6 @@ async def trigger_plan(
                 progress_cb,
                 municipios_activos=municipios_activos,
             )
-            jobs[job_id]["status"]   = "completed"
-            jobs[job_id]["progress"] = 100
             jobs[job_id]["output"]   = {
                 "docs_drive_ids":   output.docs_drive_ids,
                 "reporte_ejecutivo": output.reporte_ejecutivo,
@@ -157,9 +155,39 @@ async def trigger_plan(
                         f"PackageRecord {job_id} persistido | "
                         f"{record.n_documents} docs | checksum={record.checksum[:8]}..."
                     )
+
+                    # Portfolio consultoría: analisis/ + implementacion/ (DOCX/XLSX/PDF)
+                    await progress_cb(92, "Portfolio — armando analisis/ e implementacion/...")
+                    try:
+                        from app.export.package_renderer import render_package
+
+                        resultados_render = (
+                            request.resultados_completos or request.kpis or {}
+                        )
+                        report = render_package(job_id, resultados=resultados_render)
+                        jobs[job_id]["render"] = {
+                            "qa_status": report.qa_status,
+                            "n_rendered": report.n_ok(),
+                            "n_bloqueados": report.n_bloqueados(),
+                            "has_docx": report.has_docx(),
+                            "has_xlsx": report.has_xlsx(),
+                            "has_pdf": report.has_pdf(),
+                        }
+                        logger.info(
+                            f"Portfolio profesional {job_id} | qa={report.qa_status} | "
+                            f"{report.n_ok()} assets"
+                        )
+                    except Exception as render_err:
+                        logger.warning(
+                            f"Render portfolio falló para {job_id}: {render_err}"
+                        )
+                        jobs[job_id]["render_error"] = str(render_err)
                 except Exception as e:
                     logger.warning(f"No se pudo persistir PackageRecord: {e}")
 
+            await progress_cb(100, "Paquete consultoría listo para descarga")
+            jobs[job_id]["status"]   = "completed"
+            jobs[job_id]["progress"] = 100
             logger.info(f"Job {job_id} completado")
         except Exception as e:
             logger.error(f"Job {job_id} falló: {e}")

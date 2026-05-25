@@ -5,7 +5,7 @@ import { AlertTriangle } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
-import { getApiUrl, getJobStatus, getPackageManifest, downloadPackageZip } from '@/lib/api'
+import { getApiUrl, getJobStatus, getPackageManifest, downloadPackageZip, downloadConsultingPortfolioZip, buildRenderResultadosPayload } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import type { PackageStatus, PackageManifest } from '@/types'
 
@@ -17,6 +17,7 @@ const AGENT_STEPS = [
   { pct: 60, label: 'Ghostwriter — Redactando documentos...' },
   { pct: 75, label: 'Validador — Verificando consistencia con simulador...' },
   { pct: 88, label: 'Humanizador — Eliminando patrones de IA...' },
+  { pct: 92, label: 'Portfolio — Armando analisis/ e implementacion/...' },
 ]
 
 export function GenerarPlanModal() {
@@ -175,6 +176,35 @@ export function GenerarPlanModal() {
     router.push(`/hub?zm=${zmActiva}${pkgId ? `&job=${pkgId}` : ''}`)
   }
 
+  const handleDescargarConsultoria = async () => {
+    const pkgId = pkgStatus?.package_id ?? jobId
+    if (!pkgId) return
+    setDownloading(true)
+    setDownloadError(null)
+    try {
+      const resultadosPayload = buildRenderResultadosPayload(
+        resultados ? {
+          tir: resultados.tir,
+          tir_equity: resultados.tirEquity,
+          vpn: resultados.vpn,
+          payback_meses: resultados.paybackMeses,
+          ingresos_brutos: resultados.ingresosBrutos,
+          capex_total: resultados.capexTotal,
+          ebitda: resultados.ebitda,
+          margen_ebitda: resultados.margenEbitda,
+          moic: resultados.moic,
+          rsu_total_ton_dia: resultados.rsuTotalTonDia,
+          serie_anual: resultados.serieAnual,
+        } : undefined,
+      )
+      await downloadConsultingPortfolioZip(pkgId, zmActiva, resultadosPayload)
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : 'Error al descargar paquete consultoría')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleDescargar = async () => {
     const pkgId = pkgStatus?.package_id ?? jobId
     if (!pkgId) return
@@ -322,37 +352,50 @@ export function GenerarPlanModal() {
 
             {/* ── Botones de acción ── */}
 
-            {/* CTA principal: Hub para exportación profesional */}
+            {/* CTA principal: paquete consultoría completo */}
             <button
-              onClick={handleVerHub}
-              className={cn(
-                'w-full flex items-center justify-center gap-2 text-[14px] font-medium py-3 rounded-[10px] transition-colors mb-2',
-                'bg-[#3B6D11] text-white hover:bg-[#2D5409]'
-              )}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              Ir al Hub → exportación profesional DOCX/XLSX/PDF
-            </button>
-
-            {/* ZIP base (Markdown + manifest) */}
-            <button
-              onClick={handleDescargar}
+              onClick={handleDescargarConsultoria}
               disabled={downloading || !packageId}
               className={cn(
-                'w-full flex items-center justify-center gap-2 text-[13px] font-medium py-2.5 rounded-[10px] transition-colors mb-2',
+                'w-full flex items-center justify-center gap-2 text-[14px] font-medium py-3 rounded-[10px] transition-colors mb-2',
                 downloading || !packageId
                   ? 'bg-[#E2DED6] text-[#A8A49C] cursor-not-allowed'
-                  : 'border border-[#3B6D11] text-[#3B6D11] hover:bg-[#F0F7EA]'
+                  : 'bg-[#3B6D11] text-white hover:bg-[#2D5409]'
               )}
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                   d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
               </svg>
-              {downloading ? 'Descargando…' : 'Descargar ZIP base (Markdown + manifest)'}
+              {downloading ? 'Armando paquete consultoría…' : 'Descargar paquete consultoría (analisis + implementacion)'}
+            </button>
+
+            <button
+              onClick={handleVerHub}
+              className={cn(
+                'w-full flex items-center justify-center gap-2 text-[13px] font-medium py-2.5 rounded-[10px] transition-colors mb-2',
+                'border border-[#1A5FA8] text-[#1A5FA8] hover:bg-[#EBF3FB]'
+              )}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+              Ir al Hub — revisar manifest y assets
+            </button>
+
+            {/* ZIP base (Markdown plano — respaldo técnico) */}
+            <button
+              onClick={handleDescargar}
+              disabled={downloading || !packageId}
+              className={cn(
+                'w-full flex items-center justify-center gap-2 text-[12px] font-medium py-2 rounded-[10px] transition-colors mb-2',
+                downloading || !packageId
+                  ? 'text-[#A8A49C] cursor-not-allowed'
+                  : 'text-[#6B6760] hover:text-[#1C1B18] underline-offset-2 hover:underline'
+              )}
+            >
+              {downloading ? 'Descargando…' : 'Descargar ZIP técnico (Markdown + manifest)'}
             </button>
 
             <button

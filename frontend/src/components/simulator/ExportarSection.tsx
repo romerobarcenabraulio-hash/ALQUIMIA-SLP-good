@@ -1,11 +1,7 @@
 'use client'
-import { useState } from 'react'
-import { Loader2 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { EXPORT_SIMULATION_FOOTER_LINE } from '@/lib/simulationDisclaimer'
 import { fmt } from '@/lib/utils'
-import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
-import { fetchAgoraPlanZip, triggerBrowserDownload } from '@/lib/api'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { ExportStatusPanel } from '@/components/simulator/ExportStatusPanel'
 import { useConsultingExport } from '@/hooks/useConsultingExport'
@@ -16,42 +12,11 @@ export function ExportarSection() {
   const snapshotDatos = useSimulatorStore(s => s.snapshotDatos)
   const openAgoraPlanConfirm = useSimulatorStore(s => s.openAgoraPlanConfirm)
 
-  const [agoraZipLoading, setAgoraZipLoading] = useState(false)
-  const [agoraZipError, setAgoraZipError] = useState<string | null>(null)
   const { loading: exportLoading, error: exportError, runExport } = useConsultingExport()
 
   const handleGenerar = () => {
     openAgoraPlanConfirm(() => {
       useSimulatorStore.getState().setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
-    })
-  }
-
-  const handleAgoraZip = () => {
-    const r = useSimulatorStore.getState().resultados
-    if (!r) return
-    openAgoraPlanConfirm(() => {
-      void (async () => {
-        setAgoraZipError(null)
-        setAgoraZipLoading(true)
-        try {
-          const st = useSimulatorStore.getState()
-          const body = buildAgoraPlanPayload(
-            st.zmActiva,
-            st.municipiosActivos,
-            st.horizonte,
-            st.presetTrayectoria,
-            st.snapshotDatos,
-            r,
-            st.seleccionMunicipioCatalog,
-          )
-          const { blob, filename } = await fetchAgoraPlanZip(body)
-          triggerBrowserDownload(blob, filename)
-        } catch (e) {
-          setAgoraZipError(e instanceof Error ? e.message : 'No se pudo generar el ZIP')
-        } finally {
-          setAgoraZipLoading(false)
-        }
-      })()
     })
   }
 
@@ -158,34 +123,17 @@ export function ExportarSection() {
       <div className="bg-gradient-to-br from-[#1F3B06] to-[#2D5409] rounded-[20px] p-8 text-center text-white">
         <h3 className="font-serif text-[32px] mb-2">Genera tu plan de circularidad</h3>
         <p className="text-[#EAF3DE] text-[14px] mb-6 max-w-lg mx-auto">
-          ÁGORA producirá en ~10 minutos todos los documentos: marco legal,
-          modelo financiero, Gantt de implementación, presentación para Cabildo
-          y carta ciudadana. Listos en tu carpeta de Drive.
+          ÁGORA producirá en ~10 minutos el paquete consultoría completo: carpetas{' '}
+          <span className="font-mono text-[#F6FAD8]">analisis/</span> e{' '}
+          <span className="font-mono text-[#F6FAD8]">implementacion/</span>, DOCX, XLSX, PDF
+          y kits por actividad — ordenados por los agentes del pipeline.
         </p>
         <button
           onClick={handleGenerar}
           className="bg-[#F6C84B] text-[#1C1B18] font-medium text-[16px] px-8 py-4 rounded-[10px] hover:bg-[#D4881E] hover:text-white transition-colors"
         >
-          [ Genera mi plan de circularidad ]
+          Generar paquete consultoría (ÁGORA)
         </button>
-        <button
-          type="button"
-          disabled={!resultados || agoraZipLoading}
-          onClick={handleAgoraZip}
-          className="mt-4 inline-flex items-center justify-center gap-2 border border-[#EAF3DE]/40 bg-[#274d0c] px-6 py-3 text-[14px] text-[#F6FAD8] hover:bg-[#1f3b06] disabled:opacity-45 rounded-[10px]"
-        >
-          {agoraZipLoading ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
-              Generando documentos…
-            </>
-          ) : (
-            'Genera mi plan completo (ÁGORA)'
-          )}
-        </button>
-        {agoraZipError && (
-          <p className="mt-2 max-w-md text-[11px] text-red-200">{agoraZipError}</p>
-        )}
         {resultados && (
           <p className="text-[#A8A49C] text-[11px] mt-3">
             {zmActiva} · TIR {resultados.tir.toFixed(1)}% · {fmt.mxnK(resultados.ingresosBrutos)} total

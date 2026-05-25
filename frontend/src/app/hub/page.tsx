@@ -16,7 +16,7 @@ import {
   getPackageAssets,
   getPackageManifest,
   downloadPackageZip,
-  downloadProfessionalZip,
+  downloadConsultingPortfolioZip,
   renderProfessionalPackage,
   getRenderReport,
 } from '@/lib/api'
@@ -157,6 +157,35 @@ function HubContent() {
     }).finally(() => setLoadingPkg(false))
   }, [jobParam])
 
+  const handleDescargarConsultoria = async () => {
+    const pkgId = pkgStatus?.package_id ?? jobParam
+    if (!pkgId) return
+    setDownloading(true)
+    setDownloadError(null)
+    try {
+      await downloadConsultingPortfolioZip(pkgId, zmActiva)
+      setHasProfessional(true)
+      const assetsData = await getPackageAssets(pkgId) as {
+        assets: PackageAsset[]; has_professional?: boolean
+      }
+      setAssets(assetsData.assets ?? [])
+      const rr = await getRenderReport(pkgId)
+      if (rr) {
+        setRenderResult({
+          qa_status: String(rr.qa_status ?? 'ok'),
+          n_rendered: Array.isArray(rr.rendered_assets) ? rr.rendered_assets.length : 0,
+          has_docx: Boolean((rr.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'docx')),
+          has_xlsx: Boolean((rr.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'xlsx')),
+          has_pdf: Boolean((rr.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'pdf')),
+        })
+      }
+    } catch (err) {
+      setDownloadError(err instanceof Error ? err.message : 'Error al descargar paquete consultoría')
+    } finally {
+      setDownloading(false)
+    }
+  }
+
   const handleDescargar = async (professional = false) => {
     const pkgId = pkgStatus?.package_id ?? jobParam
     if (!pkgId) return
@@ -164,7 +193,7 @@ function HubContent() {
     setDownloadError(null)
     try {
       if (professional) {
-        await downloadProfessionalZip(pkgId, zmActiva)
+        await downloadConsultingPortfolioZip(pkgId, zmActiva)
       } else {
         await downloadPackageZip(pkgId, zmActiva)
       }
@@ -421,9 +450,9 @@ function HubContent() {
 
             {/* Botones del paquete */}
             <div className="mt-4 flex flex-wrap gap-2">
-              {/* ZIP base (Markdown) */}
+              {/* Paquete consultoría (analisis + implementacion) */}
               <button
-                onClick={() => handleDescargar(false)}
+                onClick={() => void handleDescargarConsultoria()}
                 disabled={downloading || !pkgStatus || pkgStatus.status !== 'completed'}
                 className={cn(
                   'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] transition-colors',
@@ -436,24 +465,24 @@ function HubContent() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                {downloading ? 'Descargando…' : `Descargar ZIP base${assetZip ? ` (${fmtBytes(assetZip.size_bytes)})` : ''}`}
+                {downloading ? 'Armando paquete…' : 'Descargar paquete consultoría'}
               </button>
 
-              {/* ZIP profesional (DOCX/XLSX/PDF) */}
-              {hasProfessional ? (
-                <button
-                  onClick={() => handleDescargar(true)}
-                  disabled={downloading}
-                  className={cn(
-                    'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] transition-colors border',
-                    downloading
-                      ? 'border-[#E8E4DC] text-[#A8A49C] cursor-not-allowed'
-                      : 'border-[#1A5FA8] text-[#1A5FA8] hover:bg-[#EBF3FB]'
-                  )}
-                >
-                  📝 {downloading ? 'Descargando…' : 'Descargar ZIP profesional'}
-                </button>
-              ) : (
+              {/* ZIP técnico Markdown */}
+              <button
+                onClick={() => handleDescargar(false)}
+                disabled={downloading || !pkgStatus || pkgStatus.status !== 'completed'}
+                className={cn(
+                  'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] transition-colors border',
+                  downloading || !pkgStatus || pkgStatus.status !== 'completed'
+                    ? 'border-[#E8E4DC] text-[#A8A49C] cursor-not-allowed'
+                    : 'border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F1EB]'
+                )}
+              >
+                {downloading ? 'Descargando…' : `ZIP técnico Markdown${assetZip ? ` (${fmtBytes(assetZip.size_bytes)})` : ''}`}
+              </button>
+
+              {!hasProfessional && (
                 <button
                   onClick={handleRender}
                   disabled={rendering || !pkgStatus || pkgStatus.status !== 'completed'}
@@ -464,7 +493,7 @@ function HubContent() {
                       : 'border-[#1A5FA8] text-[#1A5FA8] hover:bg-[#EBF3FB]'
                   )}
                 >
-                  {rendering ? '⏳ Generando DOCX/XLSX/PDF…' : '📝 Generar exportación profesional'}
+                  {rendering ? '⏳ Regenerando exportación…' : '📝 Regenerar exportación profesional'}
                 </button>
               )}
 
@@ -555,14 +584,15 @@ function HubContent() {
                 type="button"
                 onClick={() => void handleDescargarPaqueteCapitulo()}
                 disabled={zipLoading}
+                title="Solo archivos estáticos del repositorio — no es el paquete generado por ÁGORA"
                 className={cn(
                   'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] border transition-colors shrink-0',
                   zipLoading
                     ? 'border-[#E8E4DC] text-[#A8A49C] cursor-not-allowed'
-                    : 'border-[#3B6D11] bg-[#3B6D11] text-white hover:bg-[#2D5409]',
+                    : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#6B6760] hover:bg-[#F4F1EB]',
                 )}
               >
-                {zipLoading ? 'Generando ZIP…' : '🗜️ Descargar paquete ZIP'}
+                {zipLoading ? 'Generando ZIP…' : '📁 ZIP demo capítulo (estático)'}
               </button>
             </div>
             {zipPaqueteError && (
@@ -579,10 +609,14 @@ function HubContent() {
               role="status"
               data-testid="hub-q023-zip-status"
             >
-              <strong className="text-[#1C1B18]">ÁGORA Q-023 · ZIP capítulo ({zmActiva}).</strong>{' '}
-              Documentos con archivo en <span className="font-mono">public/</span> incluibles en el ZIP:{' '}
-              <strong>{nDocsZipListos}</strong> (objetivo consultivo ≥{HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO}:{' '}
-              {cumpleQ023Zip ? 'sí' : 'no — mayoría en elaboración; README lista el inventario completo'}).
+              <strong className="text-[#1C1B18]">Importante — dos tipos de ZIP distintos.</strong>{' '}
+              El botón gris <em>ZIP demo capítulo</em> empaqueta archivos estáticos de{' '}
+              <span className="font-mono">public/</span> (borradores de referencia).{' '}
+              <strong>No sustituye</strong> el paquete consultoría de ÁGORA con carpetas{' '}
+              <span className="font-mono">analisis/</span> e{' '}
+              <span className="font-mono">implementacion/</span>: genere el plan en el simulador y descargue desde ahí o desde el Hub con un{' '}
+              <span className="font-mono">job=</span> activo.
+              {' '}Incluibles en demo estático: <strong>{nDocsZipListos}</strong> (objetivo Q-023 ≥{HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO}).
             </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">

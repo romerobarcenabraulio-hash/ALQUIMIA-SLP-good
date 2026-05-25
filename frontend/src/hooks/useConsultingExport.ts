@@ -7,8 +7,6 @@ import { buildAgoraPlanPayload } from '@/lib/agoraPlanPayload'
 import {
   downloadExecutivePdf,
   downloadMasterIndexPdf,
-  fetchAgoraPlanZip,
-  triggerBrowserDownload,
 } from '@/lib/api'
 import { isPlatformDeveloper } from '@/lib/authSession'
 import { EXPORT_DISCLAIMER } from '@/lib/consultingDeliverables'
@@ -125,25 +123,16 @@ export function useConsultingExport() {
           return
         }
 
-        if (action === 'full_zip') {
-          st.openAgoraPlanConfirm(() => {
-            void (async () => {
-              try {
-                const { blob, filename } = await fetchAgoraPlanZip(agoraBody)
-                triggerBrowserDownload(blob, filename)
-              } catch (e) {
-                setError(e instanceof Error ? e.message : 'No se pudo generar el ZIP')
-              } finally {
-                setLoading(false)
-              }
-            })()
-          })
-          return
-        }
+      if (action === 'full_zip') {
+        st.openAgoraPlanConfirm(() => {
+          useSimulatorStore.getState().setGeneratingPlan(true, 0, 'Iniciando ALQUIMIA...')
+        })
+        return
+      }
       } catch (e) {
         setError(e instanceof Error ? e.message : 'Error al generar documento')
       } finally {
-        if (action !== 'full_zip') setLoading(false)
+        setLoading(false)
       }
     },
     [buildPayload, router],

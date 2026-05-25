@@ -712,6 +712,61 @@ export async function getRenderReport(packageId: string): Promise<Record<string,
   return res.json()
 }
 
+/** KPIs del simulador para el render profesional (XLSX / PDF). */
+export function buildRenderResultadosPayload(
+  resultados: Record<string, unknown> | null | undefined,
+): Record<string, unknown> | undefined {
+  if (!resultados) return undefined
+  return resultados
+}
+
+/**
+ * Garantiza professional_package.zip (analisis/ + implementacion/).
+ * Renderiza si aún no existe.
+ */
+export async function ensureProfessionalPackageRendered(
+  packageId: string,
+  resultados?: Record<string, unknown>,
+): Promise<{
+  qa_status: string
+  n_rendered: number
+  has_docx: boolean
+  has_xlsx: boolean
+  has_pdf: boolean
+}> {
+  const existing = await getRenderReport(packageId)
+  if (existing) {
+    return {
+      qa_status: String(existing.qa_status ?? 'ok'),
+      n_rendered: Number(existing.rendered_assets?.length ?? 0),
+      has_docx: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'docx')),
+      has_xlsx: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'xlsx')),
+      has_pdf: Boolean((existing.rendered_assets as Array<{ format?: string }> | undefined)?.some(a => a.format === 'pdf')),
+    }
+  }
+  const result = await renderProfessionalPackage(packageId, resultados)
+  return {
+    qa_status: result.qa_status,
+    n_rendered: result.n_rendered,
+    has_docx: result.has_docx,
+    has_xlsx: result.has_xlsx,
+    has_pdf: result.has_pdf,
+  }
+}
+
+/**
+ * Descarga el paquete consultoría completo (portfolio profesional).
+ * Ejecuta render automáticamente si hace falta.
+ */
+export async function downloadConsultingPortfolioZip(
+  packageId: string,
+  zm: string = 'ZM',
+  resultados?: Record<string, unknown>,
+): Promise<void> {
+  await ensureProfessionalPackageRendered(packageId, resultados)
+  await downloadProfessionalZip(packageId, zm)
+}
+
 // ─── Fase 5: Marketplace / Precolocación ─────────────────────────────────────
 
 /**
@@ -1111,6 +1166,7 @@ export interface CentroAcopio {
   direccion:      string
   municipio:      string
   estado:         string
+  clave_inegi?:   string | null
   zm:             string | null
   lat:            number | null
   lon:            number | null
@@ -1120,9 +1176,30 @@ export interface CentroAcopio {
   horario:        string | null
   acepta_publico: boolean
   acepta_empresa: boolean
+  rol_instalacion?: string
+  es_operador_principal?: boolean
+  operador_nombre?: string | null
   fuente:         string
   verificado:     boolean
   score_confianza: number
+  notas?:         string | null
+}
+
+export interface CentrosAcopioCoverageResponse {
+  manifest: {
+    version: string
+    updated_at: string
+    municipios: Record<string, {
+      clave_inegi: string
+      municipio: string
+      estado: string
+      total_centros?: number
+      operador_instalaciones?: number
+      status: string
+    }>
+    totales: Record<string, number>
+  }
+  geo_root: string
 }
 
 export interface CentrosAcopioListResponse {
@@ -1133,14 +1210,26 @@ export interface CentrosAcopioListResponse {
 export async function getCentrosAcopio(params: {
   zm?: string
   municipio?: string
+  clave_inegi?: string
   material?: string
+  incluir_operador?: boolean
+  solo_operador?: boolean
 }): Promise<CentrosAcopioListResponse> {
   const query = new URLSearchParams()
   if (params.zm)        query.set('zm', params.zm)
   if (params.municipio) query.set('municipio', params.municipio)
+  if (params.clave_inegi) query.set('clave_inegi', params.clave_inegi)
   if (params.material)  query.set('material', params.material)
+  if (params.incluir_operador === false) query.set('incluir_operador', 'false')
+  if (params.solo_operador) query.set('solo_operador', 'true')
   const res = await backendFetch(`${getApiUrl()}/api/v1/centros-acopio/?${query.toString()}`)
   if (!res.ok) throw new Error(`Centros de acopio no disponibles: ${res.status}`)
+  return res.json()
+}
+
+export async function getCentrosAcopioCoverage(): Promise<CentrosAcopioCoverageResponse> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/centros-acopio/coverage`)
+  if (!res.ok) throw new Error(`Cobertura geo no disponible: ${res.status}`)
   return res.json()
 }
 
