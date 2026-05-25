@@ -1,0 +1,23 @@
+# Render Blueprint — ALQUIMIA backend (monorepo)
+# Manual: Web Service → Root Directory vacío · Dockerfile Path backend/Dockerfile
+
+services:
+  - type: web
+    name: alquimia-slp
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHONPATH
+        value: /app
+      - key: DATABASE_URL
+        sync: false
+      - key: SECRET_KEY
+        sync: false
+      - key: CRON_SECRET
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://alquimia-slp.vercel.app

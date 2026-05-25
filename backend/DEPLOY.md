@@ -28,6 +28,33 @@ curl -sS https://alquimia-slp.onrender.com/api/v1/cron/manifest
 
 Si responde `{"detail":"Not Found"}`, el servicio sigue en un commit anterior o el **Root Directory** está mal (`backend/` rompe el build de HERMES).
 
+## Verificar qué commit está vivo
+
+```bash
+curl -sS https://alquimia-slp.onrender.com/health
+```
+
+Cuando el deploy es correcto verás:
+
+```json
+{
+  "status": "ok",
+  "hermes": true,
+  "cron": true,
+  "git_commit": "081986a9..."
+}
+```
+
+Si `"hermes": false` → el deploy falló o no llegó el código nuevo. Revisa **Logs** del último deploy en Render (busca `ModuleNotFoundError: modules`).
+
+## Si usas Root Directory = `backend` (sin Docker)
+
+`scripts/start.sh` ya exporta `PYTHONPATH` al monorepo. Start command:
+
+```text
+./scripts/start.sh
+```
+
 ## `GET /health`
 
 - Público, sin autenticación.

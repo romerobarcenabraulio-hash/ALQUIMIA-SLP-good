@@ -3,6 +3,12 @@ set -e
 
 echo "==> ALQUIMIA backend starting (PORT=${PORT:-8000})"
 
+# Monorepo: modules/, config/, data/ viven un nivel arriba de backend/
+REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+BACKEND_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PYTHONPATH="${REPO_ROOT}:${BACKEND_ROOT}${PYTHONPATH:+:$PYTHONPATH}"
+echo "==> PYTHONPATH includes repo root: ${REPO_ROOT}"
+
 if [ -z "${DATABASE_URL:-}" ]; then
   echo "ERROR: DATABASE_URL no está definida. El deploy no puede continuar."
   exit 1

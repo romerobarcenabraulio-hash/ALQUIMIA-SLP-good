@@ -250,10 +250,19 @@ async def _create_tables():
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():
+    route_paths = {getattr(r, "path", "") for r in app.routes}
     return {
         "status": "ok",
         "version": app_version_from_env(app.version),
         "environment": get_app_environment(),
+        "git_commit": (
+            os.getenv("RENDER_GIT_COMMIT")
+            or os.getenv("GIT_COMMIT")
+            or os.getenv("VERCEL_GIT_COMMIT_SHA")
+            or "unknown"
+        )[:12],
+        "hermes": "/api/v1/logistics/health" in route_paths,
+        "cron": "/api/v1/cron/manifest" in route_paths,
     }
 
 
