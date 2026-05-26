@@ -12,6 +12,7 @@ import { Slider } from '@/components/ui/Slider'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 import { ChartPanel } from '@/components/ui/ChartPanel'
+import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
 import { describeMaterialPriceReference, PRICE_RESEARCH_SOURCE_LABEL } from '@/data/materialPriceResearch'
 import type { AñoResultados } from '@/types'
 
@@ -414,18 +415,9 @@ export function ImpactoFinanciero() {
         </details>
       )}
 
-      {/* Bloque maestro TIR múltiples + stress */}
-      {r && (
-        <div className="mb-4 rounded-[12px] border border-[#B0D0F5] bg-[#EBF3FB] px-4 py-3.5 text-[11px] text-[#0D3B7A] leading-relaxed">
-          <p className="font-semibold text-[#1A5FA8] mb-1.5">Varias TIR en este módulo — no son inconsistentes</p>
-          <p>
-            Miden cosas distintas del mismo proyecto. La <strong>TIR base ({r.tir.toFixed(1)}%)</strong> es el rendimiento del caso central y responde la pregunta corta sobre rentabilidad.
-            Los escenarios de estrés <strong>C</strong> (bloqueo del concesionario 12 meses) y <strong>D</strong> (costos operativos +20%) simulan adversidad operativa;
-            las barras acelerado/base/conservador arriba exploran captura y precio nominal.
-            Para la decisión del Cabildo, la cifra de referencia es la TIR base; las demás son medidas de robustez ante condiciones adversas.
-          </p>
-        </div>
-      )}
+      <div className="mb-4">
+        <TirMultipleExplainer variant="impacto" />
+      </div>
 
       <ChartPanel
         chartId="m13-rejilla-stress"

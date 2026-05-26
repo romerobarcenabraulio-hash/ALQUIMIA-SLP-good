@@ -31,6 +31,7 @@ import { TornadoChart } from '@/components/charts/TornadoChart'
 import { FASES_INVERSION } from '@/lib/capexOpexData'
 import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
+import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -364,17 +365,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
             </ChartPanel>
           </div>
 
-          {/* Bloque maestro TIR múltiples */}
-          {r && (
-            <div className="rounded-[12px] border border-[#B0D0F5] bg-[#EBF3FB] px-4 py-3.5 text-[11px] text-[#0D3B7A] leading-relaxed">
-              <p className="font-semibold text-[#1A5FA8] mb-1.5">Varias TIR en este módulo — no son inconsistentes</p>
-              <p>
-                Miden cosas distintas del mismo proyecto. La <strong>TIR base ({r.tir.toFixed(1)}%)</strong> es el rendimiento del caso central del modelo y responde la pregunta corta sobre rentabilidad.
-                Las TIR de los escenarios acelerado, conservador y sin intervención simulan variación de captura y precio; en la página de sensibilidad, los escenarios <strong>C</strong> y <strong>D</strong> estresan bloqueo del concesionario (+12 meses) y costos operativos (+20%).
-                Para la decisión del Cabildo, la cifra de referencia es la TIR base; las otras son medidas de robustez del proyecto ante condiciones adversas.
-              </p>
-            </div>
-          )}
+          <TirMultipleExplainer variant="escenarios" />
 
           {/* Retorno por escenario */}
           <ChartPanel

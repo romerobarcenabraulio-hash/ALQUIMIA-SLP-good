@@ -344,7 +344,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
     'm08-residential-routes',
     'Rutas por colonia',
     'Modelo casa a casa antes de VRP completo: tiempos, combustible y export Cabildo por colonia piloto.',
-    'Heurística ITDP 2023 · capacidad operadores SLP/NL/QRO.',
+    'Heurística ITDP 2023 · capacidad referencia ciudades medias México.',
     'Inputs estructurados para OR-Tools o ArcGIS después.',
     'Densidad heterogénea mueve km/ruta ±30% vs modelo.',
   ),
@@ -360,7 +360,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
     'm08-trucks',
     'Camiones por material',
     'Unidades = volumen_fracción / capacidad / frecuencia: subdimensionar flota genera incumplimiento en temporada alta.',
-    'Operadores SLP/NL/QRO 2023 · frecuencias SEMARNAT.',
+    'Benchmarks operadores urbanos MX 2023 · frecuencias SEMARNAT.',
     'Traduce toneladas en chasis negociables con concesionario.',
     'Disponibilidad real de chasis puede limitar unidades calculadas.',
   ),
@@ -444,7 +444,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
     'Desembolso por fases F1–F6 alinea inversión con captura real — evita pagar madurez completa en año 1.',
     'Centros_Acopio_v2.xlsx · mix CAs escenario activo.',
     'Finanzas municipales negocian por fase, no por monolito.',
-    'No extrapolar CAPEX de otra ciudad sin recalcular mix M06.',
+    'No extrapolar CAPEX de otro municipio sin recalcular mix M06 del escenario activo.',
   ),
 
   // ── M13 ─────────────────────────────────────────────────────

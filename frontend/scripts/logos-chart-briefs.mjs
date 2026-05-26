@@ -221,7 +221,7 @@ const ENTRIES = {
     cuidado: 'Capacidad = camiones × viajes × ton/viaje; validar en campo.' },
   'm08-residential-routes': { module: 'M08', type: 'tabla rutas', label: 'Rutas por colonia', cifras: '0.15 km/hogar · 400 hog/ruta',
     q: 'Modelo casa a casa antes de VRP completo: tiempos, combustible y export Cabildo por colonia piloto.',
-    fuente: 'Heurística ITDP 2023 · capacidad operadores SLP/NL/QRO.',
+    fuente: 'Heurística ITDP 2023 · capacidad referencia ciudades medias México.',
     porque: 'Inputs estructurados para OR-Tools o ArcGIS después.',
     cuidado: 'Densidad heterogénea mueve km/ruta ±30% vs modelo.' },
   'm08-routes': { module: 'M08', type: 'mapa', label: 'Mapa de rutas', cifras: 'orgánico · reciclable · mixto',
@@ -231,7 +231,7 @@ const ENTRIES = {
     cuidado: 'Haversine subestima desvíos — factor tortuga 1.3× aplicado.' },
   'm08-trucks': { module: 'M08', type: 'barra', label: 'Camiones por material', cifras: 'unidades por fracción',
     q: 'Unidades = volumen_fracción / capacidad / frecuencia: subdimensionar flota genera incumplimiento en temporada alta.',
-    fuente: 'Operadores SLP/NL/QRO 2023 · frecuencias SEMARNAT.',
+    fuente: 'Benchmarks operadores urbanos MX 2023 · frecuencias SEMARNAT.',
     porque: 'Traduce toneladas en chasis negociables con concesionario.',
     cuidado: 'Disponibilidad real de chasis puede limitar unidades calculadas.' },
 
@@ -284,7 +284,7 @@ const ENTRIES = {
     q: 'Desembolso por fases F1–F6 alinea inversión con captura real — evita pagar madurez completa en año 1.',
     fuente: 'Centros_Acopio_v2.xlsx · mix CAs escenario activo.',
     porque: 'Finanzas municipales negocian por fase, no por monolito.',
-    cuidado: 'No extrapolar CAPEX de otra ciudad sin recalcular mix M06.' },
+    cuidado: 'No extrapolar CAPEX de otro municipio sin recalcular mix M06 del escenario activo.' },
 
   'escenarios-waterfall': { module: 'M13', type: 'waterfall', label: 'Flujo de valor', cifras: 'componentes VPN · M MXN',
     q: 'VPN neto en millones: barras desglosan ahorros, ingresos y costo de implementación antes de la decisión de Cabildo.',

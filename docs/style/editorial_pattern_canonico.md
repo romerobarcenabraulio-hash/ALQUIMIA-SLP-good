@@ -54,3 +54,7 @@ Componente: `NarrativeBridge` con `evidence[]` (4 KPIs) y `source.fuente`.
 ```
 
 Los `summary` deben derivar del store (`useSimulatorStore`) — no copy estático intercambiable entre módulos.
+
+## Bloque maestro TIR múltiples (M13)
+
+`TirMultipleExplainer.tsx` usa `getEtiquetaNarrativaCiudad` y `resultados.tir` del escenario activo — válido para cualquier municipio o ZM, sin anclar a una ciudad piloto.

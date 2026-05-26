@@ -77,3 +77,7 @@
 - Tornado M13: jerarquía WACC / captura año 1 (sustituye párrafo genérico)
 - Monte Carlo TIR: entrada por método (Los Álamos → 2 000 corridas → percentiles)
 - Rejilla: patrón canónico EIDOS preservado y reforzado en catálogo
+
+### Territorio dinámico (cualquier ciudad)
+- `TirMultipleExplainer.tsx` — TIR base + etiqueta de `getEtiquetaNarrativaCiudad` (municipio único, ZM multi-ancla o «tu ciudad»)
+- Catálogo QHC sin nombres de ciudad piloto; referencias operativas genéricas («ciudades medias MX»)
