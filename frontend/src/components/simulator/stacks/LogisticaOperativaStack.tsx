@@ -28,13 +28,13 @@ import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartThe
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { buildRecyclersKpiContract } from '@/lib/recicladorasCatalog'
 import { ResidentialRoutesPanel } from '@/components/simulator/ResidentialRoutesPanel'
-import { EditorialCallout, MarginalNote } from '@/components/editorial'
+import { EditorialCallout, EditorialStatusLabel, gravedadTone, MarginalNote } from '@/components/editorial'
 
 const CentrosAcopioMap = dynamic(
   () => import('@/components/simulator/CentrosAcopioMap').then(m => m.CentrosAcopioMap),
   { ssr: false, loading: () => (
-    <div className="h-48 rounded-[10px] bg-[#EBF3FB] border border-[#BDD7F5] flex items-center justify-center">
-      <p className="text-[11px] text-[#1A5FA8]">Cargando mapa…</p>
+    <div className="flex h-48 items-center justify-center rounded-[10px] border border-dashed border-[#E8E4DC]">
+      <p className="text-[11px] text-[#6B6760]">Cargando mapa…</p>
     </div>
   ) },
 )
@@ -292,13 +292,14 @@ export function LogisticaOperativaStack() {
             <p className="text-[12px] font-semibold text-[#1C1B18]">Cuellos de botella detectados</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
               {calculatedBottlenecks.map(b => {
-                const gColor = b.gravedad === 'Alto' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : b.gravedad === 'Medio' ? 'border-[#FDE68A] bg-[#FEF7E7]' : 'border-[#D1FAE5] bg-[#F0FDF4]'
                 const tColor = b.gravedad === 'Alto' ? 'text-[#C0392B]' : b.gravedad === 'Medio' ? 'text-[#D4881E]' : 'text-[#3B6D11]'
                 return (
-                  <div key={b.zona} className={cn('rounded-[10px] border p-4', gColor)}>
+                  <div key={b.zona} className="rounded-[10px] border border-[#E8E4DC] p-4">
                     <div className="flex items-start justify-between gap-2 mb-2">
                       <p className="text-[11px] font-semibold text-[#1C1B18] leading-snug">{b.zona}</p>
-                      <span className={cn('text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0', b.gravedad === 'Alto' ? 'bg-[#FDE8E8] text-[#B91C1C]' : b.gravedad === 'Medio' ? 'bg-[#FEF3C7] text-[#92400E]' : 'bg-[#D1FAE5] text-[#065F46]')}>{b.gravedad}</span>
+                      <EditorialStatusLabel tone={gravedadTone(b.gravedad)} className="shrink-0 normal-case">
+                        {b.gravedad}
+                      </EditorialStatusLabel>
                     </div>
                     <p className="text-[9px] text-[#6B6760] mb-1">Causa: {b.causa}</p>
                     <p className={cn('text-[9px] font-semibold mb-2', tColor)}>Impacto: {b.impacto}</p>

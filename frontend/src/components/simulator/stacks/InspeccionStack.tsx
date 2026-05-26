@@ -525,12 +525,11 @@ export function InspeccionStack() {
                   : undefined
               }
               className={cn(
-                'flex flex-col items-center gap-1 rounded-[10px] border px-3 py-3 text-center transition-shadow hover:shadow-sm',
-                btn.bg,
+                'flex flex-col items-center gap-1 rounded-[10px] border border-[#E8E4DC] bg-transparent px-3 py-3 text-center transition-colors hover:bg-[#F8F6F1]',
                 btn.disabled && 'opacity-40 cursor-not-allowed',
               )}
             >
-              <p className="text-[11px] font-semibold" style={{ color: btn.color }}>{btn.label}</p>
+              <p className="text-[11px] font-semibold text-[#1C1B18]">{btn.label}</p>
               <p className="text-[9px] text-[#6B6760]">{btn.sub}</p>
             </button>
           ))}
