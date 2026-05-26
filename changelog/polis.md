@@ -18,3 +18,4 @@
 | 2026-05-25 | editorial-rollout | ~60 archivos simulador + stacks: `KpiAnchorGrid`, `EditorialCallout`, rails `border-t` | copy sin cajas KPI |
 | 2026-05-25 | OfficialStatCard | Cifra principal → `AnchorFigure`; mismatch amber conservado | social layer |
 | 2026-05-25 | GanttMaestroView | `KpiCard` local eliminado → `KpiAnchorGrid` | cronograma |
+| 2026-05-26 | EditorialStatusLabel | Chips Inspección/Logística/Infra sin cajas de color | estados operativos |

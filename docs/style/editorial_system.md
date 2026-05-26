@@ -52,6 +52,10 @@ Rótulo sans 11px, uppercase, tracking 1.5px, color terciario. No usar pills par
 
 Fuente, unidad, incertidumbre — sans 12px, sin fondo info/warning.
 
+### `<EditorialStatusLabel />`
+
+Estado operativo (éxito, alerta, validación) con punto de color + texto; sin pills ni `bg-[#FEF7E7]`. Usar en Inspección, Logística PER/cuellos de botella y badges de expediente.
+
 ### `<EditorialClose />`
 
 Sustituto de `NarrativeBridge` bajo gráficas: `Conclusion` + hasta 4 `AnchorFigure` + `MarginalNote` + enlace siguiente paso.

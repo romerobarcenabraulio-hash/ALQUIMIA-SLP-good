@@ -267,11 +267,20 @@ export function LogisticaOperativaStack() {
             <div className="space-y-3">
               <p className="text-[12px] font-semibold text-[#1C1B18]">PER — Presión, estado y respuesta por ruta crítica</p>
               {perRoutes.map(r => (
-                <div key={r.id} className={cn('rounded-[10px] border p-4', r.estado_chip === 'alerta' ? 'border-[#FCA5A5] bg-[#FFF5F5]' : 'border-[#BDD7F5] bg-[#EBF3FB]')}>
+                <div key={r.id} className="rounded-[10px] border border-[#E8E4DC] p-4">
                   <div className="flex items-center gap-2 mb-3">
-                    <span className="font-mono text-[10px] font-bold bg-[#1C2B15] text-white px-2 py-0.5 rounded">{r.id}</span>
+                    <span className="font-mono text-[10px] font-bold text-[#1C1B18]">{r.id}</span>
                     <span className="text-[11px] font-semibold text-[#1C1B18]">{r.material}</span>
-                    {r.estado_chip === 'alerta' && <AlertTriangle className="w-3.5 h-3.5 text-[#C0392B] ml-auto" />}
+                    {r.estado_chip === 'alerta' ? (
+                      <EditorialStatusLabel tone="critical" className="ml-auto normal-case">
+                        Alerta
+                      </EditorialStatusLabel>
+                    ) : (
+                      <EditorialStatusLabel tone="info" className="ml-auto normal-case">
+                        Normal
+                      </EditorialStatusLabel>
+                    )}
+                    {r.estado_chip === 'alerta' && <AlertTriangle className="h-3.5 w-3.5 text-[#C0392B]" aria-hidden />}
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-[10px]">
                     {[['Presión', r.presion, '#C0392B'], ['Estado', r.estado, '#1A5FA8'], ['Respuesta', r.respuesta, '#3B6D11']].map(([k, v, c]) => (
