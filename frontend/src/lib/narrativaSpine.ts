@@ -64,7 +64,13 @@ function buildRichTransition(
       return {
         kicker: 'La guía orienta el primer análisis',
         title: labelFor(nextId),
-        summary: `Ahora que entiendes la estructura de ALQUIMIA, el primer paso técnico es cuantificar el problema: cuántas toneladas genera ${municipioLabel}, de qué tipo, y cuánto se recupera hoy.`,
+        summary: `Ahora que entiendes la estructura de ALQUIMIA, el primer paso es reconstruir el legado RSU de ${municipioLabel}: concesiones, programas y lecciones antes de cuantificar toneladas.`,
+      }
+    case 'antecedentes_municipales':
+      return {
+        kicker: 'Los antecedentes habilitan la línea base',
+        title: labelFor(nextId),
+        summary: `Con el contexto histórico documentado, el siguiente paso es cuantificar el presente: cuántas toneladas genera ${municipioLabel}, de qué tipo, y cuánto se recupera hoy.`,
       }
     case 'city_baseline': {
       const rsu = resultados?.rsuTotalTonDia ?? null

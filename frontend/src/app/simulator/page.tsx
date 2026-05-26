@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
@@ -23,7 +23,6 @@ import {
   pickFirstVisibleModuleId,
 } from '@/lib/journeyMode'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
-import { AntecedentesReportajePanel } from '@/components/simulator/AntecedentesReportajePanel'
 import { useAccountOnboardingBootstrap } from '@/hooks/useAccountOnboardingBootstrap'
 
 function SimulatorSimulationRibbon() {
@@ -124,6 +123,10 @@ export default function SimulatorPage() {
   }, [audience, filteredModules, journeyMode])
 
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
+  const shellNavRef = useRef<{
+    navigateModule: (id: string) => void
+    openChapterCover: (chapterFirstModuleId: string) => void
+  } | null>(null)
 
   useEffect(() => {
     if (!journeyFilteredModules.length) { setActiveModuleId(null); return }
@@ -175,7 +178,13 @@ export default function SimulatorPage() {
     <ModuleNav
       modules={journeyFilteredModules}
       activeId={activeModuleId ?? ''}
-      onChange={setActiveModuleId}
+      onChange={id => {
+        if (shellNavRef.current) shellNavRef.current.navigateModule(id)
+        else setActiveModuleId(id)
+      }}
+      onOpenChapterCover={anchor => {
+        shellNavRef.current?.openChapterCover(anchor)
+      }}
       theme="dark"
     />
   ) : undefined
@@ -191,9 +200,6 @@ export default function SimulatorPage() {
         {/* Compact disclaimer ribbon — always visible, outside scroll */}
         <SimulatorSimulationRibbon />
 
-        {/* Reportaje antecedentes — se regenera automáticamente al cambiar municipio */}
-        <AntecedentesReportajePanel />
-
         {/* Scrollable content — full width, moderate padding */}
         <div className="flex-1 overflow-y-auto">
           <main className="w-full">
@@ -207,6 +213,9 @@ export default function SimulatorPage() {
               modules={journeyFilteredModules}
               activeModule={activeModule}
               onModuleChange={setActiveModuleId}
+              bindNavigation={api => {
+                shellNavRef.current = api
+              }}
               loading={portalJourneyLoading}
               error={portalError}
               audience={portalEntry}

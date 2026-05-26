@@ -58,7 +58,10 @@ export function getRailActionKind(moduleId: string): RailActionLabel {
   return 'cabildo'
 }
 
-/** Handoff canónico al primer módulo técnico. */
+/** Handoff canónico tras M00. */
+export const M00B_NEXT_ACTION = 'Abrir M00B — Antecedentes municipales RSU'
+
+/** Handoff canónico al primer módulo numérico. */
 export const M01_NEXT_ACTION = 'Abrir M01 — Línea base territorial y RSU'
 
 export const M00_EVIDENCE_TEMPLATE = (moduleCount: number, chapterCount: number) =>

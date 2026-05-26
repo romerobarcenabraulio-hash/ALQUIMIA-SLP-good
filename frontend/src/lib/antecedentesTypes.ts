@@ -1,4 +1,4 @@
-/** Reportaje automático de antecedentes municipales (M01A). */
+/** Reportaje automático de antecedentes municipales (M00B). */
 
 export type AntecedenteTipo =
   | 'concesion'

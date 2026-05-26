@@ -53,12 +53,15 @@ export function ModuleNav({
   modules,
   activeId,
   onChange,
+  onOpenChapterCover,
   className,
   theme = 'light',
 }: {
   modules: DecisionModule[]
   activeId: string
   onChange: (id: string) => void
+  /** Abre la portada del capítulo (índice editorial) — no navega al primer rubro. */
+  onOpenChapterCover?: (chapterFirstModuleId: string) => void
   className?: string
   theme?: 'light' | 'dark'
 }) {
@@ -128,6 +131,10 @@ export function ModuleNav({
               )}
             >
               <summary
+                onClick={e => {
+                  e.preventDefault()
+                  onOpenChapterCover?.(ch.firstModuleId)
+                }}
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden',
                   isDark ? 'hover:bg-[#243320]' : 'hover:bg-[#ECEAE5]',
@@ -178,12 +185,6 @@ export function ModuleNav({
                       className="group/rubro border-t border-[#E8E4DC]/60 first:border-t-0"
                     >
                       <summary
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (!isActiveRubro && rubroModules[0]) {
-                            onChange(rubroModules[0].module_id)
-                          }
-                        }}
                         className={cn(
                           'flex items-center gap-2 px-4 py-1.5 cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden text-[9px] font-semibold uppercase tracking-[0.06em]',
                           isDark ? 'text-[#6A9A50] hover:bg-[#243320]' : 'text-[#8A8680] hover:bg-[#E4E2DD]',
@@ -1081,6 +1082,10 @@ interface DecisionModuleShellProps {
   loading: boolean
   error: string | null
   audience: PortalEntry | null
+  bindNavigation?: (api: {
+    navigateModule: (id: string) => void
+    openChapterCover: (chapterFirstModuleId: string) => void
+  }) => void
   renderModule: (
     module: DecisionModule,
     nav: { navigateModule: (id: string) => void },
@@ -1093,6 +1098,7 @@ export function DecisionModuleShell({
   onModuleChange,
   loading,
   error,
+  bindNavigation,
   renderModule,
 }: DecisionModuleShellProps) {
   const audienceSelected = useSimulatorStore(s => s.audience)
@@ -1188,6 +1194,13 @@ export function DecisionModuleShell({
       navigateOrCover(toId, fromId)
     }
   }, [activeModule?.module_id, navigateOrCover])
+
+  useEffect(() => {
+    bindNavigation?.({
+      navigateModule: handleModuleChange,
+      openChapterCover: anchor => openChapterIndex(anchor, 'review'),
+    })
+  }, [bindNavigation, handleModuleChange, openChapterIndex])
 
   useEffect(() => {
     // Clear chapter separator when activeModule changes externally (e.g. sidebar click)

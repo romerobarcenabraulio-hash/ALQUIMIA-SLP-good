@@ -29,6 +29,11 @@ export const CHAPTERS: ChapterDef[] = [
     borderColor: '#C9DDB1',
     rubros: [
       {
+        id: 'antecedentes',
+        label: 'Antecedentes',
+        modulos: ['antecedentes_municipales'],
+      },
+      {
         id: 'ambiental',
         label: 'Ambiental',
         modulos: ['city_baseline', 'impacto_ambiental'],
@@ -60,7 +65,7 @@ export const CHAPTERS: ChapterDef[] = [
       },
     ],
     modulos: [] as string[],
-    firstModuleId: 'city_baseline',
+    firstModuleId: 'antecedentes_municipales',
   },
   {
     num: 2,
@@ -203,6 +208,7 @@ export function getRubroForModule(moduleId: string): RubroDef | null {
 
 export const MODULE_NUMBERS: Record<string, string> = {
   guia_circularidad: '00',
+  antecedentes_municipales: '00B',
   city_baseline: '01',
   impacto_ambiental: '01B',
   social_diagnostico: '02',

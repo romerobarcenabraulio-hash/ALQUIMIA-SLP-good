@@ -16,6 +16,7 @@ export const JOURNEY_MODE_STORAGE_KEY = 'alquimia.journeyMode' as const
 
 /** Puentes mínimos en modo implementar — no rediagnosticar 14 módulos. */
 export const IMPLEMENTAR_BRIDGE_MODULE_IDS = [
+  'antecedentes_municipales',
   'city_baseline',
   'marco_legal',
   'dictamen_tecnico',
@@ -50,8 +51,8 @@ export const JOURNEY_MODE_META: Record<
     subtitle: 'Comprender el municipio y preparar la decisión de Cabildo',
     question: '¿Vale la pena? ¿Qué le presentamos al Cabildo?',
     chapters: 'Cap. 1 Diagnóstico + Cap. 3 Modelo de negocio',
-    cta: 'Comenzar diagnóstico (M01)',
-    startModuleId: 'city_baseline',
+    cta: 'Comenzar antecedentes (M00B)',
+    startModuleId: 'antecedentes_municipales',
   },
   implementar: {
     title: 'Implementar y operar',

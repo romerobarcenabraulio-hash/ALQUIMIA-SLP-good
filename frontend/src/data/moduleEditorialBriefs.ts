@@ -5,7 +5,7 @@ import {
   moduleNumber,
   resolveModuleId,
 } from '@/lib/chapterConfig'
-import { M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
+import { M00B_NEXT_ACTION, M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
 
 /**
  * Guía de estilo editorial (simulador funcionario):
@@ -109,13 +109,33 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         observacion_alquimia: 'No hay gráficas ni cálculos aquí. Los ejemplos numéricos del cuerpo usan el escenario activo solo como ilustración. Cada módulo posterior trae su metodología en el panel lateral.',
         criterio_decision: 'Lectura recomendada antes del M01. No requiere decisión técnica ni territorio definido.',
         que_no_significa: 'No sustituye los módulos técnicos. Es el índice del expediente.',
-        siguiente_accion: M01_NEXT_ACTION,
+        siguiente_accion: M00B_NEXT_ACTION,
         fuente_o_evidencia: 'Estructura modular ALQUIMIA (chapterConfig), estándares GRI 306 y ESRS E5.',
         metodologia_editorial: {
           como_se_calcula: 'Sin cálculos. Los números del hero (RSU, ingresos, CO₂e) se leen del estado actual del simulador.',
-          origen_datos: `Datos en tiempo real de los módulos ${moduleRangeLabel()} una vez definido el territorio en M01.`,
-          por_que_este_enfoque: 'Sin esta guía, las cifras del M01 carecen de marco para Cabildo y financiadores.',
+          origen_datos: `Datos en tiempo real de los módulos ${moduleRangeLabel()} una vez definido el territorio en M00B/M01.`,
+          por_que_este_enfoque: 'Sin esta guía, las cifras del diagnóstico carecen de marco para Cabildo y financiadores.',
           supuesto_critico: 'Ninguno en este módulo. Los supuestos viven en cada módulo de cálculo.',
+        },
+        chart_briefs: [],
+      }
+    case 'antecedentes_municipales':
+      return {
+        moduleId: resolvedId,
+        title: 'Qué intentó el municipio antes de este programa',
+        pregunta_guia: '¿Qué legado RSU deja la administración previa — operadores, concesiones y programas?',
+        subtitulo_catchy: 'Cronología documentada antes de abrir la línea base numérica.',
+        situacion_actual: `En ${territorio}, conviene saber qué concesiones, campañas o conflictos precedieron al diagnóstico actual. Sin ese contexto, el Cabildo repite errores ya pagados.`,
+        observacion_alquimia: 'ALQUIMIA investiga automáticamente al elegir municipio: hitos con tier de fuente (T1–T3), lecciones explícitas y vacíos marcados para verificación en archivo municipal.',
+        criterio_decision: 'Use este módulo para contextualizar la propuesta: qué heredar, qué cerrar y qué verificar antes de comprometer esquema operativo.',
+        que_no_significa: 'No es dictamen legal, crónica periodística sin URL ni sustituto del reglamento vigente (M03B).',
+        siguiente_accion: M01_NEXT_ACTION,
+        fuente_o_evidencia: 'Research Serper + tiers T1–T3 (Navigator). Cada hito lleva URL o marca VERIFICAR.',
+        metodologia_editorial: {
+          como_se_calcula: 'Sin modelado numérico. El reportaje agrega eventos de fuentes públicas clasificadas por tier y confianza.',
+          origen_datos: 'Consultas automáticas al cambiar municipio activo; prioridad a `.gob.mx`, INEGI, SEMARNAT y medios locales citables.',
+          por_que_este_enfoque: 'La línea base (M01) mide el presente; los antecedentes evitan proponer lo que el municipio ya descartó o fracasó.',
+          supuesto_critico: 'Un antecedente sin fuente citada es anécdota — no entra al argumento de Cabildo hasta verificarse.',
         },
         chart_briefs: [],
       }

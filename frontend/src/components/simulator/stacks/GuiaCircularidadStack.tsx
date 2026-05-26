@@ -164,7 +164,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         </div>
         {journeyMode === 'implementar' && !resultados && (
           <p className="mt-3 rounded-[8px] border border-[#D4881E]/30 bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#8B5A00]">
-            Recomendado: complete al menos M01 (línea base) en modo validar antes de planificar
+            Recomendado: complete al menos M00B y M01 (antecedentes y línea base) en modo validar antes de planificar
             infraestructura — los KPIs del simulador alimentan Cap. 2 y el paquete consultoría.
           </p>
         )}
@@ -237,7 +237,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           {JOURNEY_MODE_META[journeyMode].cta.replace('Comenzar ', 'comience en ')}
           {journeyMode === 'validar'
             ? ' — verá la portada del capítulo Diagnóstico con el índice filtrado.'
-            : ' — incluye puentes M01/M03 para línea base y dictamen.'}
+            : ' — incluye puentes M00B/M01/M03 para contexto histórico y dictamen.'}
         </p>
         {onNavigate ? (
           <button

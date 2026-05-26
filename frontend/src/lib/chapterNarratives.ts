@@ -40,6 +40,7 @@ export const CHAPTER_HERO_GRADIENT: Record<1 | 2 | 3 | 4, string> = {
 export const RUBRO_HINTS: Record<number, Record<string, string>> = {
   1: {
     ambiental: 'Cuánto RSU genera el municipio y qué impacto tiene no actuar.',
+    antecedentes: 'Qué programas, concesiones y operadores precedieron al diagnóstico numérico.',
     social: 'Disposición ciudadana, actores clave y encuesta de aceptación.',
     gobernanza_operativa: 'Quién opera el servicio hoy y cómo está organizado.',
     institucional_normativo: 'Reglamento, brechas normativas y cobertura territorial.',
@@ -146,7 +147,7 @@ export const CHAPTER_PORTADA_INTRO: Record<
   (ctx: ChapterNarrativeContext) => string
 > = {
   1: ctx =>
-    `Antes de planificar, necesitas una foto clara de ${ctx.municipio}: cuánto RSU genera, quién participa, qué dice el reglamento y cuánto cuesta no actuar. El índice ordena ese diagnóstico por rubros.`,
+    `Antes de planificar, necesitas una foto clara de ${ctx.municipio}: qué legado RSU dejó la administración previa, cuánto genera hoy, quién participa y cuánto cuesta no actuar. El índice ordena ese diagnóstico por rubros.`,
   2: ctx =>
     `Con el diagnóstico cerrado, aquí dimensionas infraestructura (${ctx.nCAs} centros de acopio en el escenario activo), operación, costos y mercado. Sigue el orden sugerido o salta al rubro que ya tengas resuelto.`,
   3: ctx =>

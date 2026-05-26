@@ -22,7 +22,14 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     label: 'Pasos hacia la circularidad — Guía de lectura',
     decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador.',
     evidence: `${CHAPTERS.length} capítulos · modos validar propuesta / implementar · fuentes documentadas.`,
-    next_action: 'Abrir M01 — Línea base territorial y RSU',
+    next_action: 'Abrir M00B — Antecedentes municipales RSU',
+  }),
+  antecedentes_municipales: base({
+    module_id: 'antecedentes_municipales',
+    label: 'Antecedentes municipales RSU',
+    decision: '¿Qué legado deja el municipio en recolección, concesiones y programas antes de abrir la línea base?',
+    evidence: 'Cronología verificable, operadores, lecciones y vacíos documentales — research automático al elegir territorio.',
+    next_action: 'Revisar hitos con fuente antes de usar M01 — Línea base territorial.',
   }),
   city_baseline: base({
     module_id: 'city_baseline',

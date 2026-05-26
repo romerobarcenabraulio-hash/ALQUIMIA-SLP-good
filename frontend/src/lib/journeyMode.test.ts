@@ -15,6 +15,7 @@ describe('journeyMode', () => {
   })
 
   it('modo validar incluye Cap. 1 y Cap. 3', () => {
+    expect(VALIDAR_MODULE_IDS).toContain('antecedentes_municipales')
     expect(VALIDAR_MODULE_IDS).toContain('city_baseline')
     expect(VALIDAR_MODULE_IDS).toContain('expediente_cabildo')
     expect(VALIDAR_MODULE_IDS).not.toContain('roadmap_implementacion')
@@ -22,6 +23,7 @@ describe('journeyMode', () => {
   })
 
   it('modo implementar incluye Cap. 2, Cap. 4 y puentes', () => {
+    expect(IMPLEMENTAR_MODULE_IDS).toContain('antecedentes_municipales')
     expect(IMPLEMENTAR_MODULE_IDS).toContain('roadmap_implementacion')
     expect(IMPLEMENTAR_MODULE_IDS).toContain('gate_status')
     expect(IMPLEMENTAR_MODULE_IDS).toContain('marco_legal')

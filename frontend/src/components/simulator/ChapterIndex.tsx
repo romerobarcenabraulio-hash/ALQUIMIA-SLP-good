@@ -1,16 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import {
-  ArrowRight,
-  BarChart3,
-  BookOpen,
-  ListTree,
-  MapPin,
-  Scale,
-  Target,
-} from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
+import { ArrowRight, BookOpen } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { cn } from '@/lib/utils'
@@ -23,7 +14,6 @@ import { isModuleVisibleInJourneyMode } from '@/lib/journeyMode'
 import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import {
-  CHAPTER_HERO_GRADIENT,
   CHAPTER_PORTADA_INTRO,
   CHAPTER_SUBQUESTIONS,
   RUBRO_HINTS,
@@ -31,19 +21,10 @@ import {
   dismissChapterIndex,
 } from '@/lib/chapterNarratives'
 
-const CHAPTER_ICONS: Record<number, LucideIcon> = {
-  1: MapPin,
-  2: Target,
-  3: Scale,
-  4: BarChart3,
-}
-
 export type ChapterIndexMode = 'entry' | 'review'
 
 interface ChapterIndexProps {
-  /** Primer módulo del capítulo — ancla del índice */
   chapterAnchorId: string
-  /** Módulo activo al reabrir el índice desde el capítulo */
   highlightModuleId?: string | null
   mode?: ChapterIndexMode
   onSelectModule: (moduleId: string) => void
@@ -106,8 +87,6 @@ export function ChapterIndex({
 
   if (!chapter) return null
 
-  const Icon = CHAPTER_ICONS[chapter.num] ?? BookOpen
-  const gradient = CHAPTER_HERO_GRADIENT[chapter.num]
   const rubroHints = RUBRO_HINTS[chapter.num] ?? {}
   const isReview = mode === 'review'
 
@@ -127,179 +106,139 @@ export function ChapterIndex({
       data-testid="chapter-index"
       aria-label={`Portada del capítulo ${chapter.num}: ${chapter.label}`}
     >
-      <section
-        className={cn(
-          'relative overflow-hidden bg-gradient-to-br px-6 py-8 text-white',
-          gradient,
-        )}
-      >
-        <Icon
-          size={140}
-          strokeWidth={0.7}
-          className="pointer-events-none absolute right-4 top-2 opacity-10"
-          aria-hidden
-        />
-        <div className="relative z-10 mx-auto max-w-3xl">
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em] text-white/95 bg-white/10">
-              <ListTree size={12} aria-hidden />
-              Portada del capítulo
+      <header className="border-b border-[#E8E4DC] bg-[#FDFCFA]">
+        <div className="mx-auto max-w-3xl px-6 py-10">
+          <p className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-[0.14em] text-[#A8A49C]">
+            <span className="inline-flex items-center gap-1.5">
+              <BookOpen size={12} aria-hidden />
+              Portada
             </span>
-            <span
-              className="rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]"
-              style={{ backgroundColor: `${chapter.bgColor}33`, color: chapter.bgColor }}
-            >
-              Cap. {chapter.num} · {chapter.label}
+            <span aria-hidden>·</span>
+            <span>
+              Capítulo {chapter.num} — {chapter.label}
             </span>
-            <span className="font-mono text-[10px] text-white/60">{chapterModuleRange(chapter)}</span>
-          </div>
-          <h1 className="mb-2 font-serif text-[26px] font-bold leading-tight">{chapter.question}</h1>
-          <p className="text-[14px] leading-relaxed text-white/85">
+            <span aria-hidden>·</span>
+            <span className="font-mono normal-case tracking-normal text-[#C8C4BC]">
+              {chapterModuleRange(chapter)}
+            </span>
+          </p>
+          <h1 className="max-w-2xl font-serif text-[28px] font-semibold leading-[1.2] text-[#1C1B18]">
+            {chapter.question}
+          </h1>
+          <p className="mt-3 max-w-2xl text-[15px] leading-[1.65] text-[#5A5750]">
             {CHAPTER_SUBQUESTIONS[chapter.num]}
           </p>
-          <p className="mt-3 max-w-2xl text-[12px] leading-relaxed text-white/70">
-            {isReview
-              ? 'Índice del capítulo: elige el módulo que quieras revisar.'
-              : 'Repasa el índice y entra por el rubro que toque — o comienza desde el primer módulo.'}
-          </p>
         </div>
-      </section>
+      </header>
 
-      <div className="mx-auto max-w-3xl space-y-8 px-6 py-8">
-        {!isReview && (
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 shadow-[0_2px_12px_rgba(28,27,24,0.05)]">
-            <p className="text-[13px] leading-[1.85] text-[#4A4740]">{portadaIntro}</p>
-          </div>
+      <div className="mx-auto max-w-3xl space-y-10 px-6 py-10">
+        <p className="max-w-2xl text-[14px] leading-[1.9] text-[#4A4740]">{portadaIntro}</p>
+
+        {isReview && (
+          <p className="text-[13px] leading-relaxed text-[#6B6760]">
+            Índice del capítulo: elija el módulo que quiera revisar.
+          </p>
         )}
 
         <div>
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <p className="text-[13px] font-semibold text-[#1C1B18]">Contenido del capítulo</p>
-              <p className="mt-0.5 text-[11px] text-[#6B6760]">
-                {chapter.rubros.length} rubros · {visibleModuleCount} módulos en este modo
-              </p>
-            </div>
+          <div className="mb-6 flex items-baseline justify-between gap-4 border-b border-[#E8E4DC] pb-3">
+            <h2 className="font-serif text-[17px] font-semibold text-[#1C1B18]">Rubros del capítulo</h2>
+            <p className="text-[11px] text-[#A8A49C]">
+              {chapter.rubros.length} rubros · {visibleModuleCount} módulos visibles
+            </p>
           </div>
 
-          <div className="overflow-hidden rounded-[12px] border border-[#E8E4DC] bg-white shadow-[0_2px_12px_rgba(28,27,24,0.04)]">
-            {chapter.rubros.map((rubro, rubroIdx) => {
+          <div className="space-y-10">
+            {chapter.rubros.map(rubro => {
               const visibleModulos = rubro.modulos.filter(id =>
                 isModuleVisibleInJourneyMode(id, journeyMode),
               )
               if (visibleModulos.length === 0) return null
 
               return (
-              <section
-                key={rubro.id}
-                className={cn(rubroIdx > 0 && 'border-t border-[#E8E4DC]')}
-              >
-                <div
-                  className="px-4 py-3"
-                  style={{ backgroundColor: `${chapter.bgColor}55` }}
-                >
-                  <p
-                    className="text-[11px] font-bold uppercase tracking-[0.08em]"
-                    style={{ color: chapter.color }}
-                  >
-                    {rubro.label}
-                  </p>
+                <section key={rubro.id}>
+                  <h3 className="font-serif text-[16px] font-semibold text-[#1C1B18]">{rubro.label}</h3>
                   {rubroHints[rubro.id] && (
-                    <p className="mt-0.5 text-[11px] leading-snug text-[#5A5750]">
+                    <p className="mt-2 max-w-2xl text-[13px] leading-[1.75] text-[#5A5750]">
                       {rubroHints[rubro.id]}
                     </p>
                   )}
-                </div>
-                <ol className="divide-y divide-[#F0EDE5]">
-                  {visibleModulos.map(modId => {
-                    const brief = getModuleEditorialBrief(modId, briefCtx)
-                    const label =
-                      brief?.title ??
-                      CLIENT_FUNCTIONARY_MODULES[modId]?.label ??
-                      modId
-                    const ordinal = getChapterModuleOrdinal(chapter, modId)
-                    const isActive = highlightModuleId === modId
-                    const isStart = modId === chapter.firstModuleId
 
-                    return (
-                      <li key={modId}>
-                        <button
-                          type="button"
-                          onClick={() => handleSelectModule(modId)}
-                          className={cn(
-                            'group flex w-full items-start gap-3 px-4 py-3 text-left transition-colors',
-                            isActive
-                              ? 'bg-[#FAFAF8]'
-                              : 'hover:bg-[#FDFCFA]',
-                          )}
-                          style={isActive ? { boxShadow: `inset 3px 0 0 ${chapter.color}` } : undefined}
-                        >
-                          <span
-                            className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-bold"
-                            style={{
-                              color: chapter.color,
-                              backgroundColor: chapter.bgColor,
-                            }}
-                          >
-                            {ordinal}
-                          </span>
-                          <span className="min-w-0 flex-1">
-                            <span className="flex flex-wrap items-center gap-2">
-                              <span className="font-mono text-[10px] font-bold text-[#A8A49C]">
-                                M{moduleNumber(modId)}
-                              </span>
-                              {isStart && (
-                                <span
-                                  className="rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide"
-                                  style={{ color: chapter.color, backgroundColor: chapter.bgColor }}
-                                >
-                                  Inicio
-                                </span>
-                              )}
-                              {isActive && (
-                                <span className="rounded bg-[#1C1B18] px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">
-                                  Actual
-                                </span>
-                              )}
-                            </span>
-                            <span className="mt-0.5 block text-[13px] font-medium leading-snug text-[#1C1B18]">
-                              {label}
-                            </span>
-                            {brief?.pregunta_guia && (
-                              <span className="mt-1 block text-[11px] leading-snug text-[#6B6760] line-clamp-2">
-                                {brief.pregunta_guia}
-                              </span>
+                  <ol className="mt-4 divide-y divide-[#E8E4DC] border-t border-[#E8E4DC]">
+                    {visibleModulos.map(modId => {
+                      const brief = getModuleEditorialBrief(modId, briefCtx)
+                      const label =
+                        brief?.title ?? CLIENT_FUNCTIONARY_MODULES[modId]?.label ?? modId
+                      const ordinal = getChapterModuleOrdinal(chapter, modId)
+                      const isActive = highlightModuleId === modId
+                      const isStart = modId === chapter.firstModuleId
+
+                      return (
+                        <li key={modId}>
+                          <button
+                            type="button"
+                            onClick={() => handleSelectModule(modId)}
+                            className={cn(
+                              'group flex w-full items-start gap-4 py-3.5 text-left transition-colors hover:bg-[#FDFCFA]',
+                              isActive && 'bg-[#FDFCFA]',
                             )}
-                          </span>
-                          <ArrowRight
-                            size={14}
-                            className="mt-1 shrink-0 text-[#A8A49C] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6B6760]"
-                            aria-hidden
-                          />
-                        </button>
-                      </li>
-                    )
-                  })}
-                </ol>
-              </section>
+                          >
+                            <span className="mt-0.5 w-6 shrink-0 font-mono text-[11px] text-[#A8A49C]">
+                              {String(ordinal).padStart(2, '0')}
+                            </span>
+                            <span className="min-w-0 flex-1">
+                              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <span className="font-mono text-[10px] text-[#C8C4BC]">
+                                  M{moduleNumber(modId)}
+                                </span>
+                                {isStart && (
+                                  <span className="text-[10px] uppercase tracking-wide text-[#6B6760]">
+                                    Inicio del capítulo
+                                  </span>
+                                )}
+                                {isActive && (
+                                  <span className="text-[10px] uppercase tracking-wide text-[#1C1B18]">
+                                    Módulo actual
+                                  </span>
+                                )}
+                              </span>
+                              <span className="mt-1 block text-[14px] font-medium leading-snug text-[#1C1B18]">
+                                {label}
+                              </span>
+                              {brief?.pregunta_guia && (
+                                <span className="mt-1 block text-[12px] leading-snug text-[#6B6760] line-clamp-2">
+                                  {brief.pregunta_guia}
+                                </span>
+                              )}
+                            </span>
+                            <ArrowRight
+                              size={14}
+                              className="mt-1 shrink-0 text-[#C8C4BC] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6B6760]"
+                              aria-hidden
+                            />
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                </section>
               )
             })}
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#E8E4DC] pt-4">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#E8E4DC] pt-6">
           <button
             type="button"
             onClick={onBack}
-            className="rounded-[8px] border border-[#E8E4DC] bg-white px-4 py-2 text-[12px] text-[#6B6760] transition-colors hover:bg-[#F4F2ED]"
+            className="text-[12px] text-[#6B6760] transition-colors hover:text-[#1C1B18]"
           >
             {isReview ? '← Volver al módulo' : '← Volver'}
           </button>
           <button
             type="button"
             onClick={handleBeginFromStart}
-            className="inline-flex items-center gap-2 rounded-[10px] px-6 py-2.5 text-[13px] font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ backgroundColor: chapter.color }}
+            className="inline-flex items-center gap-2 border border-[#1C1B18] bg-[#1C1B18] px-5 py-2.5 text-[13px] font-medium text-white transition-opacity hover:opacity-90"
           >
             {isReview ? 'Ir al inicio del capítulo' : `Comenzar capítulo ${chapter.num}`}
             <ArrowRight size={14} />
@@ -309,4 +248,3 @@ export function ChapterIndex({
     </div>
   )
 }
-

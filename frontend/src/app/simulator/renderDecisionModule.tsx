@@ -19,6 +19,7 @@ import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModule
 import { moduleNumber, resolveModuleId } from '@/lib/chapterConfig'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ImpactoAmbientalStack } from '@/components/simulator/stacks/ImpactoAmbientalStack'
+import { AntecedentesMunicipalesStack } from '@/components/simulator/stacks/AntecedentesMunicipalesStack'
 import { CapacidadInstitucionalStack } from '@/components/simulator/stacks/CapacidadInstitucionalStack'
 import { EvaluacionSocioeconomicaStack } from '@/components/simulator/stacks/EvaluacionSocioeconomicaStack'
 import { TeoriaCambioStack } from '@/components/simulator/stacks/TeoriaCambioStack'
@@ -264,6 +265,8 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
   switch (moduleId) {
     case 'guia_circularidad':
       return <GuiaCircularidadStack onNavigate={onNavigate} />
+    case 'antecedentes_municipales':
+      return <AntecedentesMunicipalesStack />
     case 'city_baseline':
       return <CityBaselineStack />
     case 'impacto_ambiental':

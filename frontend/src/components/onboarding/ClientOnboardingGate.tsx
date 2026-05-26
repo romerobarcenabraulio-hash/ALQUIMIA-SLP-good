@@ -6,7 +6,6 @@ import { getEstadosMx, getLegalSourceManifest, getMunicipiosMx, registerMunicipi
 import { isPlatformDeveloper } from '@/lib/authSession'
 import { notifyLegalPdfUploaded, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
 import { ZMS } from '@/lib/constants'
-import { AntecedentesReportajePanel } from '@/components/simulator/AntecedentesReportajePanel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import type { EstadoMxOption, MunicipioMxApi } from '@/types'
@@ -137,8 +136,6 @@ export function ClientOnboardingGate() {
           de aseo o limpia. Sin PDF no se habilita el análisis jurídico ni los módulos que dependen de él.
         </p>
       </div>
-
-      {activeMid && <AntecedentesReportajePanel defaultOpen={false} />}
 
       <div className="flex-1 px-4 sm:px-6 lg:px-12 py-8 max-w-3xl">
         <div className="space-y-4">
