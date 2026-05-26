@@ -21,7 +21,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     module_id: 'guia_circularidad',
     label: 'Pasos hacia la circularidad — Guía de lectura',
     decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador.',
-    evidence: `${CHAPTERS.length} capítulos consultivos · ${FUNCTIONARY_MODULE_ORDER.length} módulos de análisis con fuentes documentadas.`,
+    evidence: `${CHAPTERS.length} capítulos · modos validar propuesta / implementar · fuentes documentadas.`,
     next_action: 'Abrir M01 — Línea base territorial y RSU',
   }),
   city_baseline: base({

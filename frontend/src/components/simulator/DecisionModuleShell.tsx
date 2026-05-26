@@ -43,6 +43,7 @@ import {
   getChapterIndexAnchor,
 } from '@/lib/chapterConfig'
 import { shouldForceChapterIndexEntry, shouldOfferChapterIndex } from '@/lib/chapterNarratives'
+import { JOURNEY_MODE_META } from '@/lib/journeyMode'
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
@@ -62,6 +63,7 @@ export function ModuleNav({
   theme?: 'light' | 'dark'
 }) {
   const isDark = theme === 'dark'
+  const journeyMode = useSimulatorStore(s => s.journeyMode)
   const activeChapter = MODULE_CHAPTER[activeId] ?? null
   const modulesById = useMemo(
     () => Object.fromEntries(modules.map(m => [m.module_id, m])),
@@ -79,6 +81,24 @@ export function ModuleNav({
         <p className={cn('text-[9px] uppercase tracking-[0.1em] font-semibold px-1', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
           Módulos de decisión
         </p>
+        <button
+          type="button"
+          onClick={() => onChange('guia_circularidad')}
+          className={cn(
+            'mt-2 w-full rounded-[6px] px-2 py-1.5 text-left text-[9px] leading-snug transition-colors',
+            isDark
+              ? 'bg-[#243320] text-[#8AAD78] hover:bg-[#2D4020]'
+              : 'bg-[#ECEAE5] text-[#6B6760] hover:bg-[#E4E2DD]',
+          )}
+          title="Cambiar modo de recorrido en M00"
+        >
+          <span className="font-semibold uppercase tracking-wide">
+            {JOURNEY_MODE_META[journeyMode].title}
+          </span>
+          <span className={cn('block', isDark ? 'text-[#6A9A50]' : 'text-[#A8A49C]')}>
+            Cambiar en M00 →
+          </span>
+        </button>
       </div>
 
       <div className="py-1.5">

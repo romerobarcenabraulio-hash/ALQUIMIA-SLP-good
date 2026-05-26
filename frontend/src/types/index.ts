@@ -1,5 +1,8 @@
 // ─── ZMs y Municipios ───────────────────────────────────────────────────────
 
+import type { JourneyMode } from '@/lib/journeyMode'
+export type { JourneyMode }
+
 export type MaterialKey = 'organico' | 'papel' | 'plastico' | 'vidrio' | 'aluminio' | 'otros'
 
 /** Esquema institucional de operación del CA.
@@ -587,6 +590,9 @@ export interface SimulatorState {
 
   /** Cliente completó onboarding inicial (estado + municipio + PDF). Desarrolladores omiten vía JWT. */
   clientSetupComplete: boolean
+
+  /** Recorrido funcionario: validar propuesta vs implementar/operar (activado en M00). */
+  journeyMode: JourneyMode
 
   // ── Estudio social — campo y educación ciudadana ───────────────────────────
   /** % del total de viviendas no-condominio que están en calle pública (vs. privada/coto).

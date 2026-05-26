@@ -164,7 +164,7 @@ for (const ch of CHAPTERS) {
   ch.modulos = ch.rubros.flatMap(r => r.modulos)
 }
 
-const CHAPTER_MODULES: Record<1 | 2 | 3 | 4, string[]> = {
+export const CHAPTER_MODULES: Record<1 | 2 | 3 | 4, string[]> = {
   1: CHAPTERS[0].modulos,
   2: CHAPTERS[1].modulos,
   3: CHAPTERS[2].modulos,

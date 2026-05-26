@@ -18,6 +18,10 @@ import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { enrichFunctionaryModules } from '@/lib/simulator/functionaryJourneyEnrichment'
 import { buildFunctionaryJourney } from '@/lib/simulator/clientModuleRegistry'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
+import {
+  isModuleVisibleInJourneyMode,
+  pickFirstVisibleModuleId,
+} from '@/lib/journeyMode'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 import { AntecedentesReportajePanel } from '@/components/simulator/AntecedentesReportajePanel'
 import { useAccountOnboardingBootstrap } from '@/hooks/useAccountOnboardingBootstrap'
@@ -67,6 +71,7 @@ export default function SimulatorPage() {
   const recalcular = useSimulatorStore(s => s.recalcular)
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const audience = useSimulatorStore(s => s.audience)
+  const journeyMode = useSimulatorStore(s => s.journeyMode)
   const clientSetupComplete = useSimulatorStore(s => s.clientSetupComplete)
   const [sessionReady, setSessionReady] = useState(false)
 
@@ -113,19 +118,24 @@ export default function SimulatorPage() {
     [portalJourneyWithTraceability, visibleIds],
   )
 
+  const journeyFilteredModules = useMemo(() => {
+    if (audience !== 'functionary') return filteredModules
+    return filteredModules.filter(m => isModuleVisibleInJourneyMode(m.module_id, journeyMode))
+  }, [audience, filteredModules, journeyMode])
+
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
 
   useEffect(() => {
-    if (!filteredModules.length) { setActiveModuleId(null); return }
+    if (!journeyFilteredModules.length) { setActiveModuleId(null); return }
     setActiveModuleId(prev => {
-      if (!prev || !filteredModules.some(m => m.module_id === prev)) return filteredModules[0].module_id
-      return prev
+      if (prev && journeyFilteredModules.some(m => m.module_id === prev)) return prev
+      return pickFirstVisibleModuleId(journeyFilteredModules, journeyMode)
     })
-  }, [filteredModules])
+  }, [journeyFilteredModules, journeyMode])
 
   const activeModule = useMemo(
-    () => filteredModules.find(m => m.module_id === activeModuleId) ?? filteredModules[0] ?? null,
-    [activeModuleId, filteredModules],
+    () => journeyFilteredModules.find(m => m.module_id === activeModuleId) ?? journeyFilteredModules[0] ?? null,
+    [activeModuleId, journeyFilteredModules],
   )
 
   const sociodemographicBlock = useMemo(
@@ -161,9 +171,9 @@ export default function SimulatorPage() {
     )
   }
 
-  const moduleNav = filteredModules.length > 0 && !portalJourneyLoading ? (
+  const moduleNav = journeyFilteredModules.length > 0 && !portalJourneyLoading ? (
     <ModuleNav
-      modules={filteredModules}
+      modules={journeyFilteredModules}
       activeId={activeModuleId ?? ''}
       onChange={setActiveModuleId}
       theme="dark"
@@ -194,7 +204,7 @@ export default function SimulatorPage() {
             )}
 
             <DecisionModuleShell
-              modules={filteredModules}
+              modules={journeyFilteredModules}
               activeModule={activeModule}
               onModuleChange={setActiveModuleId}
               loading={portalJourneyLoading}

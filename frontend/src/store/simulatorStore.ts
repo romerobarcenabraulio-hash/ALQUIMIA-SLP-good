@@ -29,6 +29,8 @@ import { getApiUrl, getCircularityBaseline, getCityContext, getPortalJourney, ap
 import type { AntecedentesReportaje } from '@/lib/antecedentesTypes'
 import { ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY } from '@/data/organigramaDiagnostico'
 import { migrateSimulatorPersistedState, propuestaSlotsVacios } from '@/store/simulatorPersistMigrate'
+import type { JourneyMode } from '@/lib/journeyMode'
+import { isValidJourneyMode } from '@/lib/journeyMode'
 
 const PRESET_PLAN_FIJADO = 'Realista' as const
 
@@ -149,6 +151,9 @@ interface SimulatorStore extends SimulatorState {
   cityPortalError: string | null
   /** Módulo activo en `DecisionModuleShell` (no persistido; UI). */
   activeDecisionModuleId: string | null
+  /** Modo de recorrido funcionario — persistido; default validar. */
+  journeyMode: JourneyMode
+  setJourneyMode: (mode: JourneyMode) => void
   /** Índice de la propuesta que fue cargada más recientemente (0|1|2), null si ninguna. */
   propuestaActivaIdx: number | null
   /** Onboarding obligatorio cliente: territorio + PDF antes del simulador. */
@@ -294,6 +299,7 @@ const defaultState: SimulatorState = {
   },
   seleccionMunicipioCatalog: null,
   clientSetupComplete: false,
+  journeyMode: 'validar',
   casaViaPublicaPct: 70,           // % de no-condominio en calle pública; estimado DONUE/INEGI como fallback
   indicePreparacionCiudadana: null, // null = sin encuesta de campo; usa benchmark SEMARNAT 2022 (70)
   indexAceptacionVP: null,
@@ -348,6 +354,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         activeDecisionModuleId: null,
         propuestaActivaIdx: null,
         clientSetupComplete: false,
+        journeyMode: 'validar',
         municipioPdfHabilitado: false,
         researchFindings: null,
         researchFindingsLoading: false,
@@ -357,6 +364,11 @@ export const useSimulatorStore = create<SimulatorStore>()(
 
         completeClientSetup: () => {
           set({ clientSetupComplete: true })
+        },
+
+        setJourneyMode: (mode) => {
+          if (!isValidJourneyMode(mode)) return
+          set({ journeyMode: mode })
         },
 
         resetClientSetup: () => {
@@ -1096,6 +1108,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         migrate: (persisted, _fromVersion) => migrateSimulatorPersistedState(persisted),
         partialize: (s) => ({
           audience: s.audience,
+          journeyMode: s.journeyMode,
           propuestaSlots: s.propuestaSlots,
           organigramaDiagnostico: s.organigramaDiagnostico,
           clientSetupComplete: s.clientSetupComplete,
@@ -1105,6 +1118,14 @@ export const useSimulatorStore = create<SimulatorStore>()(
         }),
         onRehydrateStorage: () => (partial, error) => {
           if (error || typeof window === 'undefined') return
+          if (partial && typeof partial === 'object' && partial !== null && 'journeyMode' in partial) {
+            const jm = (partial as { journeyMode: unknown }).journeyMode
+            if (!isValidJourneyMode(jm)) {
+              queueMicrotask(() => {
+                useSimulatorStore.setState({ journeyMode: 'validar' })
+              })
+            }
+          }
           const literal = readAudienceLiteralKey()
           if (literal) {
             queueMicrotask(() => {

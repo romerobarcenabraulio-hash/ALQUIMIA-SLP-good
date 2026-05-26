@@ -19,6 +19,7 @@ import {
   getChapterModuleOrdinal,
   moduleNumber,
 } from '@/lib/chapterConfig'
+import { isModuleVisibleInJourneyMode } from '@/lib/journeyMode'
 import { CLIENT_FUNCTIONARY_MODULES } from '@/lib/simulator/clientModuleRegistry'
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import {
@@ -64,9 +65,15 @@ export function ChapterIndex({
   const horizonte = useSimulatorStore(s => s.horizonte)
   const pctCapturaPorAño = useSimulatorStore(s => s.pctCapturaPorAño)
   const mixCAs = useSimulatorStore(s => s.mixCAs)
+  const journeyMode = useSimulatorStore(s => s.journeyMode)
 
   const municipioLabel = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
   const chapter = getChapterForModule(chapterAnchorId)
+
+  const visibleModuleCount = useMemo(() => {
+    if (!chapter) return 0
+    return chapter.modulos.filter(id => isModuleVisibleInJourneyMode(id, journeyMode)).length
+  }, [chapter, journeyMode])
 
   const portadaIntro = useMemo(() => {
     if (!chapter) return ''
@@ -170,13 +177,19 @@ export function ChapterIndex({
             <div>
               <p className="text-[13px] font-semibold text-[#1C1B18]">Contenido del capítulo</p>
               <p className="mt-0.5 text-[11px] text-[#6B6760]">
-                {chapter.rubros.length} rubros · {chapter.modulos.length} módulos
+                {chapter.rubros.length} rubros · {visibleModuleCount} módulos en este modo
               </p>
             </div>
           </div>
 
           <div className="overflow-hidden rounded-[12px] border border-[#E8E4DC] bg-white shadow-[0_2px_12px_rgba(28,27,24,0.04)]">
-            {chapter.rubros.map((rubro, rubroIdx) => (
+            {chapter.rubros.map((rubro, rubroIdx) => {
+              const visibleModulos = rubro.modulos.filter(id =>
+                isModuleVisibleInJourneyMode(id, journeyMode),
+              )
+              if (visibleModulos.length === 0) return null
+
+              return (
               <section
                 key={rubro.id}
                 className={cn(rubroIdx > 0 && 'border-t border-[#E8E4DC]')}
@@ -198,7 +211,7 @@ export function ChapterIndex({
                   )}
                 </div>
                 <ol className="divide-y divide-[#F0EDE5]">
-                  {rubro.modulos.map(modId => {
+                  {visibleModulos.map(modId => {
                     const brief = getModuleEditorialBrief(modId, briefCtx)
                     const label =
                       brief?.title ??
@@ -269,7 +282,8 @@ export function ChapterIndex({
                   })}
                 </ol>
               </section>
-            ))}
+              )
+            })}
           </div>
         </div>
 
