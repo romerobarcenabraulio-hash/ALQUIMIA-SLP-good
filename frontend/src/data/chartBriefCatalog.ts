@@ -406,6 +406,22 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
     'Identifica tres riesgos críticos antes del diseño operativo.',
     'Sin encuesta local, riesgo «comunicación» es estimado.',
   ),
+  'costo-omision-acumulado': brief(
+    'costo-omision-acumulado',
+    'Costo de omisión acumulado',
+    'Contrafactual sin programa: disposición × tarifa relleno + daño salud (fracción orgánica × costo OPS) + costo social carbono (tCO₂e/ton × SCE) acumulados con INPC anual. Con programa: disposición residual − ingresos valorización − beneficio carbono capturado.',
+    'SEMARNAT Informe RSU 2022 · INSP carga enfermedad · BANXICO INPC · MODELO_PARAMS.precioCarbonoSCE.',
+    'Traduce la omisión en pesos comparables para Cabildo — no solo CAPEX del programa.',
+    'Capacidad residual del relleno (6M m³) y tarifa media nacional pueden subestimar costo local.',
+  ),
+  'social-aceptacion-actores': brief(
+    'social-aceptacion-actores',
+    'Aceptación por actor',
+    'Barras = % aceptación estimada por segmento institucional; Ciudadanos usa IPC de encuesta municipal cuando existe, si no benchmark SEMARNAT 2022 (24 municipios).',
+    'Encuesta IPC M02B · mapa actores Proyecto Vivo · evaluaciones programas RSU SEMARNAT 2019–2024.',
+    'La aceptación condiciona captura años 1–2 más que infraestructura — debe leerse antes del score político.',
+    'Sin encuesta local, severidad de comunicación es estimada, no medida.',
+  ),
   'doble-materialidad-grid': brief(
     'doble-materialidad-grid',
     'Matriz doble materialidad',
@@ -421,6 +437,78 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
     'Centros_Acopio_v2.xlsx · marketplaces equipamiento mayo 2026 · IMSS Rama 37.',
     'Cabildo exige trazabilidad de cada peso de inversión — no solo total CAPEX.',
     'Precios mayo 2026 son referencia; cotización local puede variar ±10%.',
+  ),
+
+  // ── M04 costos programa ───────────────────────────────────────────────────
+  'costos-capex-fases': brief(
+    'costos-capex-fases',
+    'Inversión por fase',
+    'Barras = CAPEX total del sistema (M MXN) por fase F1–F6 del catálogo FASES_INVERSION.',
+    'Centros_Acopio_v2.xlsx · mix CAs y toneladas del escenario activo.',
+    'Despliegue por fases evita desembolso único y alinea inversión con captura real.',
+    'Fase óptima depende de mix M06 — no extrapolar CAPEX de otra ciudad sin recalcular.',
+  ),
+
+  // ── M10 escenarios financieros ────────────────────────────────────────────
+  'escenarios-waterfall': brief(
+    'escenarios-waterfall',
+    'Flujo de valor (waterfall)',
+    'Barras = fracciones del VPN desglosadas en ahorros, ingresos y costo de implementación (M MXN).',
+    'Motor financiero ALQUIMIA · proporciones metodología M06/M04.',
+    'Muestra de dónde proviene el valor neto antes de la decisión de Cabildo.',
+    'Proporciones de componentes son heurísticas — validar con modelo municipal cerrado.',
+  ),
+  'escenarios-tir': brief(
+    'escenarios-tir',
+    'TIR por escenario',
+    'TIR base del simulador × multiplicador de captura/precio por escenario acelerado/base/conservador.',
+    'resultados.tir del escenario activo · definiciones SCENARIO_DEF.',
+    'Compara retorno relativo sin recalcular flujos completos en cada variante.',
+    'Multiplicadores no capturan correlación precio-captura — ver Monte Carlo VPN.',
+  ),
+  'escenarios-vpn': brief(
+    'escenarios-vpn',
+    'Ruta de inversión acumulada',
+    'Área = CAPEX acumulado por fase de despliegue (M MXN) según FASES_INVERSION.',
+    'Catálogo FASES_INVERSION · capexTotalSistema por fase.',
+    'Visualiza calendario de desembolso que condiciona VPN y payback descontado.',
+    'Inversión acumulada ≠ erogación anual — ver flujo de caja en expediente financiero.',
+  ),
+
+  // ── M04 esquema concesión ─────────────────────────────────────────────────
+  'esquema-ingresos-municipio': brief(
+    'esquema-ingresos-municipio',
+    'Ingresos al municipio',
+    'Donut = reparto ingreso operativo vs. fiscal según % socio público y tarifas del esquema.',
+    'Parámetros concesión del store · marco MARCO_LEGAL_CONCESION.',
+    'Traduce cláusulas contractuales en flujo de caja municipal verificable.',
+    'Ingresos fiscales dependen de recaudación efectiva — no solo tarifa nominal.',
+  ),
+  'esquema-derrama-sector': brief(
+    'esquema-derrama-sector',
+    'Derrama por sector',
+    'Barras = derrama económica anual estimada por cadena de valor (acopio, reciclaje, acero, agro).',
+    'Multiplicadores sectoriales CANACERO/SAGARPA · empleos del mix M06.',
+    'Conecta concesión con impacto regional más allá del ingreso directo municipal.',
+    'Empleos inducidos no incluidos — solo directos documentados en catálogo.',
+  ),
+
+  // ── M07 inspección ────────────────────────────────────────────────────────
+  'm07-staff-composition': brief(
+    'm07-staff-composition',
+    'Composición de personal',
+    'Barras = plazas directas por rol operativo (supervisión, clasificación, logística) según mix M06.',
+    'Catálogo ORGANIGRAMA · ratios personal/ton del escenario activo.',
+    'Traduce capacidad instalada en necesidad de contratación verificable para cabildo.',
+    'Plazas indirectas (recicladores) no incluidas — ver derrama empleo en M01.',
+  ),
+  'inspeccion-completitud': brief(
+    'inspeccion-completitud',
+    'Índice de completitud',
+    'Donut = % ítems del checklist en estado cumplido / parcial / pendiente.',
+    'Checklist mínimo PER digital · gates M07 en tiempo real.',
+    'Un expediente incompleto no debe generarse — este índice es gate operativo.',
+    'Estados «parcial» no cuentan como cumplido para firma de dictamen.',
   ),
 }
 

@@ -33,6 +33,26 @@ En el frontend, el equivalente vive en:
 
 No duplicar QHC en UI si ya existe metodología en rail; en export PDF sí incluir bloque compacto.
 
+## Formato ChartPanel (gráficas EIDOS)
+
+Contrato visual unificado para gráficas del simulador (`ChartPanel` + `chartTheme.ts`):
+
+| Capa | Contenido |
+|------|-----------|
+| **Header** | Título serif 13–14px · subtítulo/unidad 11px · botón QHC (ℹ) |
+| **KPI strip** | Lectura rápida del escenario activo (opcional) |
+| **Body** | Una gráfica o `ChartPanel.Grid` 2×2 sin bordes por celda |
+| **Footer** | `ChartPanel.Legend` compartida cuando hay ≥2 series relacionadas |
+
+Reglas:
+- Un borde por panel analítico — no cards 2×2 sueltas + leyenda externa.
+- Ejes Recharts ≥10px (`CHART_AXIS_TICK`); tooltips 11px.
+- Todo panel con gráfica lleva `chartId` / `data-chart-id` y entrada en `chartBriefCatalog.ts`.
+- Escenario activo resaltado (trazo sólido); resto atenuado (dash + opacidad).
+- `ExpandableChart` es alias deprecado de `ChartPanel` — migrar imports gradualmente.
+
+Ver tokens en `frontend/src/lib/chartTheme.ts` y piloto M01 en `ImpactScenariosPanel.tsx`.
+
 ## Cuándo es obligatorio
 
 - Tablas con ≥3 indicadores financieros u operativos

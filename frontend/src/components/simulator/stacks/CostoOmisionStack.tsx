@@ -8,7 +8,9 @@ import {
 import { AlertTriangle, TrendingDown, ChevronDown, DollarSign, Leaf } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { MODELO_PARAMS } from '@/lib/constants'
+import { ChartPanel } from '@/components/ui/ChartPanel'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { CHART_AXIS_TICK, CHART_AXIS_TICK_MUTED, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { cn, fmt } from '@/lib/utils'
 
 // ── Calculation helpers ───────────────────────────────────────────────────────
@@ -152,44 +154,44 @@ export function CostoOmisionStack() {
           </div>
 
           {/* Gap chart */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">
-              Sin programa vs. Con programa — costo acumulado {años} años
-            </p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">
-              Millones de MXN · La brecha crece con inflación y saturación progresiva del relleno
-            </p>
-            <ResponsiveContainer width="100%" height={260}>
-              <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="gradSin" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#C0392B" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#C0392B" stopOpacity={0.0} />
-                  </linearGradient>
-                  <linearGradient id="gradCon" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3B6D11" stopOpacity={0.25} />
-                    <stop offset="95%" stopColor="#3B6D11" stopOpacity={0.0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="año" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `$${v}M`} />
-                <Tooltip
-                  contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                  formatter={(v: number, name: string) => [`$${v}M MXN`, name]}
-                />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                <ReferenceLine
-                  x={`A${rellenoAños}`}
-                  stroke="#8B6B4A"
-                  strokeDasharray="4 2"
-                  label={{ value: '⚠ Relleno lleno', position: 'top', fontSize: 9, fill: '#8B6B4A' }}
-                />
-                <Area type="monotone" dataKey="sinPrograma" name="Sin programa" stroke="#C0392B" strokeWidth={2.5} fill="url(#gradSin)" />
-                <Area type="monotone" dataKey="conPrograma" name="Con programa" stroke="#3B6D11" strokeWidth={2.5} fill="url(#gradCon)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartPanel
+            chartId="costo-omision-acumulado"
+            title={`Sin programa vs. Con programa — costo acumulado ${años} años`}
+            subtitle="Millones de MXN · La brecha crece con inflación y saturación progresiva del relleno"
+          >
+            <div className="px-5 pb-4">
+              <ResponsiveContainer width="100%" height={260}>
+                <AreaChart data={data} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gradSin" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#C0392B" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#C0392B" stopOpacity={0.0} />
+                    </linearGradient>
+                    <linearGradient id="gradCon" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#3B6D11" stopOpacity={0.25} />
+                      <stop offset="95%" stopColor="#3B6D11" stopOpacity={0.0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="año" tick={CHART_AXIS_TICK_MUTED} tickLine={false} axisLine={false} />
+                  <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `$${v}M`} />
+                  <Tooltip
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                    formatter={(v: number, name: string) => [`$${v}M MXN`, name]}
+                  />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <ReferenceLine
+                    x={`A${rellenoAños}`}
+                    stroke="#8B6B4A"
+                    strokeDasharray="4 2"
+                    label={{ value: '⚠ Relleno lleno', position: 'top', fontSize: 10, fill: '#8B6B4A' }}
+                  />
+                  <Area type="monotone" dataKey="sinPrograma" name="Sin programa" stroke="#C0392B" strokeWidth={2.5} fill="url(#gradSin)" />
+                  <Area type="monotone" dataKey="conPrograma" name="Con programa" stroke="#3B6D11" strokeWidth={2.5} fill="url(#gradCon)" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartPanel>
 
           {/* Benefits waterfall */}
           <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] px-6 py-5">

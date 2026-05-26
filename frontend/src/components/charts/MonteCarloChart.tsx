@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceLine, Res
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { useLiveMonteCarlo } from '@/hooks/useLiveMonteCarlo'
 import { SimulationComputeTrace } from '@/components/simulator/SimulationComputeTrace'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 
 export function MonteCarloCChart() {
   const state = useSimulatorStore()
@@ -55,14 +56,14 @@ export function MonteCarloCChart() {
         <div className="w-full h-52">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={histogram} margin={{ top: 4, right: 8, bottom: 0, left: 0 }}>
-              <CartesianGrid strokeDasharray="4 4" stroke="#E8E4DC" vertical={false} />
-              <XAxis dataKey="bin" tick={{ fontSize: 8, fill: '#A8A49C' }} interval={7} />
-              <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} />
+              <CartesianGrid {...CHART_GRID} vertical={false} />
+              <XAxis dataKey="bin" tick={CHART_AXIS_TICK} interval={7} />
+              <YAxis tick={CHART_AXIS_TICK} />
               <Tooltip
-                contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11 }}
+                contentStyle={CHART_TOOLTIP_STYLE}
                 formatter={(v: number) => [`${v} simulaciones`, 'Frecuencia']}
               />
-              <ReferenceLine x={`${wacc.toFixed(0)}%`} stroke="#C0392B" strokeDasharray="4 2" label={{ value: 'WACC', fontSize: 9, fill: '#C0392B' }} />
+              <ReferenceLine x={`${wacc.toFixed(0)}%`} stroke="#C0392B" strokeDasharray="4 2" label={{ value: 'WACC', fontSize: 10, fill: '#C0392B' }} />
               <Bar dataKey="count" radius={[2, 2, 0, 0]}>
                 {histogram.map((d, i) => (
                   <Cell key={i} fill={d.lo >= wacc ? '#3B6D11' : '#E8E4DC'} opacity={isRunning ? 0.65 : 0.85} />

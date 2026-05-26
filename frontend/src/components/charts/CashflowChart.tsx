@@ -3,6 +3,7 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Referenc
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { calcular } from '@/lib/calculator'
 import { useMemo } from 'react'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { fmt } from '@/lib/utils'
 
 export function CashflowChart() {
@@ -28,15 +29,15 @@ export function CashflowChart() {
     <div className="w-full h-56">
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 4, right: 12, bottom: 0, left: 20 }}>
-          <CartesianGrid strokeDasharray="4 4" stroke="#E8E4DC" />
-          <XAxis dataKey="año" tick={{ fontSize: 10, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }} />
-          <YAxis tickFormatter={v => fmt.mxnM(v)} tick={{ fontSize: 10, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }} />
+          <CartesianGrid {...CHART_GRID} />
+          <XAxis dataKey="año" tick={CHART_AXIS_TICK} />
+          <YAxis tickFormatter={v => fmt.mxnM(v)} tick={CHART_AXIS_TICK} />
           <Tooltip
             formatter={(v: number) => [fmt.mxn(v), '']}
-            contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11 }}
+            contentStyle={CHART_TOOLTIP_STYLE}
           />
           <Legend wrapperStyle={{ fontSize: 11 }} />
-          <ReferenceLine y={0} stroke="#C0392B" strokeDasharray="4 2" label={{ value: 'Breakeven', fontSize: 9, fill: '#C0392B' }} />
+          <ReferenceLine y={0} stroke="#C0392B" strokeDasharray="4 2" label={{ value: 'Breakeven', fontSize: 10, fill: '#C0392B' }} />
           <Line type="monotone" dataKey="Realista"  stroke="#1A5FA8" strokeWidth={2.5} dot={{ r: 4, fill: '#1A5FA8' }} />
           <Line type="monotone" dataKey="Optimista" stroke="#3B6D11" strokeWidth={1.5} strokeDasharray="5 3" dot={false} />
           <Line type="monotone" dataKey="Pesimista" stroke="#A8A49C" strokeWidth={1.5} strokeDasharray="5 3" dot={false} />

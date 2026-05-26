@@ -6,9 +6,8 @@ import {
   AlertTriangle, CheckCircle2, ExternalLink,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ExpandableChart } from '@/components/ui/ExpandableChart'
-import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
-import { getEtiquetaNarrativaCiudad, getMunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
 import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
 import {
@@ -80,16 +79,7 @@ export function DictamenTecnicoStack() {
   const [openSection, setOpenSection] = useState<SectionId | null>('fracciones')
 
   const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
   const munId = municipiosActivos[0] ?? (zmActiva?.toLowerCase() ?? 'mty')
-
-  const brief = getModuleEditorialBrief('dictamen_tecnico', {
-    territorio,
-    scope,
-    municipio,
-    municipiosCount: municipiosActivos.length,
-  })
 
   const precios = useMemo(() => {
     const p: Record<string, number> = {}
@@ -150,11 +140,10 @@ export function DictamenTecnicoStack() {
 
       {/* City-specific capture argument */}
       {captureDelta && (
-        <ExpandableChart
+        <ChartPanel
           chartId="dictamen-captura-5v3"
           title="Valor de captura: 5 fracciones vs. 3"
           subtitle={`Escenario activo · ${territorio}`}
-          brief={getChartBrief(brief, 'dictamen-captura-5v3')}
         >
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
             <p className="text-[12px] text-[#1C1B18] leading-relaxed mb-4">
@@ -177,7 +166,7 @@ export function DictamenTecnicoStack() {
               </div>
             </div>
           </div>
-        </ExpandableChart>
+        </ChartPanel>
       )}
 
       {!captureDelta && (
@@ -243,11 +232,10 @@ export function DictamenTecnicoStack() {
                   )}
 
                   {section.id === 'comparativo' && (
-                    <ExpandableChart
+                    <ChartPanel
                       chartId="dictamen-benchmarks"
                       title="Benchmarks internacionales"
                       subtitle="Esquemas de separación y desvío"
-                      brief={getChartBrief(brief, 'dictamen-benchmarks')}
                     >
                       <div className="overflow-x-auto">
                         <table className="w-full text-[11px]">
@@ -273,7 +261,7 @@ export function DictamenTecnicoStack() {
                           </tbody>
                         </table>
                       </div>
-                    </ExpandableChart>
+                    </ChartPanel>
                   )}
                 </div>
               )}

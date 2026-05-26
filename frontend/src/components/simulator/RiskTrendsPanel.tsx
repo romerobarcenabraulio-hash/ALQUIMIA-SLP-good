@@ -1,7 +1,9 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, AreaChart, Area, CartesianGrid } from 'recharts'
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { monteCarloTriangular, tornadoAnalysis, calcularScoresRiesgo } from '@/lib/calculator'
 import type { TrendscapeAxis, TrendscapeBaselineResponse, TrendscapeTrendItem } from '@/data/trendscapeBaseline'
@@ -284,20 +286,17 @@ export function RiskTrendsPanel() {
       </section>
 
       {/* ── Risk probability/impact heatmap matrix ─────────────────────── */}
-      <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-5 space-y-4">
-        <div>
-          <h3 className="font-serif text-[18px] text-[#1C1B18]">Matriz de riesgo — Probabilidad × Impacto</h3>
-          <p className="text-[12px] text-[#6B6760] mt-1">Posicionamiento de cada dimensión de riesgo en la matriz 5×5. Zona roja = crítico.</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* 5×5 heatmap */}
-          <div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <ChartPanel
+          chartId="social-risk-matrix"
+          title="Matriz de riesgo — Probabilidad × Impacto"
+          subtitle="Posicionamiento de cada dimensión de riesgo en la matriz 5×5. Zona roja = crítico."
+        >
+          <div className="px-5 pb-4">
             <div className="flex items-end gap-2 mb-1">
               <span className="text-[9px] text-[#A8A49C] uppercase w-16 text-right leading-none">Probabilidad →</span>
             </div>
             <div className="relative">
-              {/* Y-axis label */}
               <div className="absolute -left-6 top-1/2 -translate-y-1/2 -rotate-90 text-[9px] text-[#A8A49C] uppercase whitespace-nowrap">Impacto →</div>
               <div className="grid gap-0.5 ml-4" style={{ gridTemplateColumns: 'repeat(5, 1fr)', gridTemplateRows: 'repeat(5, 1fr)' }}>
                 {[5, 4, 3, 2, 1].map(imp =>
@@ -331,14 +330,12 @@ export function RiskTrendsPanel() {
                   })
                 )}
               </div>
-              {/* X-axis labels */}
               <div className="grid ml-4 mt-0.5 gap-0.5" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
                 {[1, 2, 3, 4, 5].map(p => (
                   <p key={p} className="text-[8px] text-[#A8A49C] text-center">{p}</p>
                 ))}
               </div>
             </div>
-            {/* Legend */}
             <div className="flex flex-wrap gap-2 mt-3">
               {riskMatrixItems.map(r => (
                 <div key={r.id} className="flex items-center gap-1.5 text-[10px]">
@@ -348,35 +345,42 @@ export function RiskTrendsPanel() {
               ))}
             </div>
           </div>
+        </ChartPanel>
 
-          {/* Actor acceptance bar chart */}
-          <div>
-            <div className="flex items-center justify-between mb-1">
-              <p className="text-[11px] font-semibold text-[#1C1B18]">Aceptación por actor</p>
-              {indicePreparacionCiudadana !== null ? (
+        <ChartPanel
+          chartId="social-aceptacion-actores"
+          title="Aceptación por actor"
+          subtitle="% de aceptación estimada del programa de circularidad"
+          footer={
+            indicePreparacionCiudadana !== null ? (
+              <div className="px-5 py-3 border-t border-[#F0EDE5]">
                 <span className="text-[9px] font-medium text-[#3B6D11] bg-[#F4FAEC] border border-[#D7E8C0] rounded-full px-2 py-0.5">
                   Ciudadanos: dato real · {(encuestaResultados as { n_total?: number } | null)?.n_total ?? 0} enc.
                 </span>
-              ) : (
+              </div>
+            ) : (
+              <div className="px-5 py-3 border-t border-[#F0EDE5]">
                 <span className="text-[9px] text-[#A8A49C] bg-[#F7F5F0] border border-[#E8E4DC] rounded-full px-2 py-0.5">
                   Ciudadanos: benchmark SEMARNAT 2022
                 </span>
-              )}
-            </div>
-            <p className="text-[9px] text-[#A8A49C] mb-3">% de aceptación estimada del programa de circularidad</p>
+              </div>
+            )
+          }
+        >
+          <div className="px-5 pb-4">
             <ResponsiveContainer width="100%" height={160}>
               <BarChart data={[...ACTORES_ACEPTACION]} layout="vertical" margin={{ top: 0, right: 40, left: 100, bottom: 0 }}>
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-                <YAxis type="category" dataKey="actor" tick={{ fontSize: 9, fill: '#4A4740' }} tickLine={false} axisLine={false} />
-                <Tooltip formatter={(v: number) => [`${v}%`, 'Aceptación']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                <XAxis type="number" domain={[0, 100]} tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                <YAxis type="category" dataKey="actor" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                <Tooltip formatter={(v: number) => [`${v}%`, 'Aceptación']} contentStyle={CHART_TOOLTIP_STYLE} />
                 <Bar dataKey="aceptacion" radius={[0, 3, 3, 0]}>
                   {ACTORES_ACEPTACION.map((a, i) => <Cell key={i} fill={a.color} />)}
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
-        </div>
-      </section>
+        </ChartPanel>
+      </div>
 
       {/* ── Variables críticas + Monte Carlo real ─────────────────────────── */}
       <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -416,10 +420,10 @@ export function RiskTrendsPanel() {
             <>
               <ResponsiveContainer width="100%" height={120}>
                 <BarChart data={mcDist} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                  <XAxis dataKey="label" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} width={28} tickFormatter={(v: number) => `${v}%`} />
-                  <Tooltip formatter={(v: number) => [`${v}%`, 'TIR']} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="label" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} width={28} tickFormatter={(v: number) => `${v}%`} />
+                  <Tooltip formatter={(v: number) => [`${v}%`, 'TIR']} contentStyle={CHART_TOOLTIP_STYLE} />
                   <Bar dataKey="tir" radius={[3, 3, 0, 0]}>
                     {mcDist.map((d, i) => <Cell key={i} fill={d.fill} />)}
                   </Bar>

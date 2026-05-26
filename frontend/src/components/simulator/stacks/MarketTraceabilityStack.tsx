@@ -11,6 +11,11 @@ import {
   Clock, MapPin, FileText, Activity,
 } from 'lucide-react'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID,
+  CHART_TOOLTIP_STYLE,
+} from '@/lib/chartTheme'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { TRAJECTORY_UI, PRECIOS_DEFAULTS, PRECIOS_RANGO, COMPOSICION_RSU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
@@ -720,9 +725,9 @@ function Page1({ prob }: { prob: number }) {
             <p className="text-[10px] text-[#A8A49C] mb-4">Qué % del riesgo total proviene de cada categoría</p>
             <ResponsiveContainer width="100%" height={180}>
               <BarChart data={RISK_COMPOSITION} layout="vertical" margin={{ top: 0, right: 40, left: 72, bottom: 0 }}>
-                <XAxis type="number" domain={[0, 40]} tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
-                <YAxis type="category" dataKey="cat" tick={{ fontSize: 10, fill: '#4A4740' }} tickLine={false} axisLine={false} width={70} />
-                <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} formatter={(v: number) => [`${v}%`, 'Exposición']} />
+                <XAxis type="number" domain={[0, 40]} tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+                <YAxis type="category" dataKey="cat" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} width={70} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [`${v}%`, 'Exposición']} />
                 <Bar dataKey="pct" radius={[0, 4, 4, 0]}>
                   {RISK_COMPOSITION.map(d => <Cell key={d.cat} fill={CAT_COLORS[d.cat] ?? '#A8A49C'} />)}
                 </Bar>
@@ -739,9 +744,9 @@ function Page1({ prob }: { prob: number }) {
           <p className="text-[10px] text-[#A8A49C] mb-4">Estos son los principales drivers del riesgo — no métricas decorativas</p>
           <ResponsiveContainer width="100%" height={240}>
             <BarChart data={[...VARIABLES_CRITICAS_M05].sort((a, b) => b.impact - a.impact)} layout="vertical" margin={{ top: 0, right: 40, left: 180, bottom: 0 }}>
-              <XAxis type="number" domain={[0, 0.3]} tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
-              <YAxis type="category" dataKey="label" tick={{ fontSize: 9, fill: '#4A4740' }} tickLine={false} axisLine={false} width={178} />
-              <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} formatter={(v: number) => [`${(v * 100).toFixed(0)}% impacto`, 'Peso en prob.']} />
+              <XAxis type="number" domain={[0, 0.3]} tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
+              <YAxis type="category" dataKey="label" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} width={178} />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [`${(v * 100).toFixed(0)}% impacto`, 'Peso en prob.']} />
               <Bar dataKey="impact" radius={[0, 4, 4, 0]}>
                 {VARIABLES_CRITICAS_M05.map(d => <Cell key={d.label} fill={CAT_COLORS[d.cat] ?? '#A8A49C'} />)}
               </Bar>
@@ -764,14 +769,14 @@ function Page1({ prob }: { prob: number }) {
             <div>
               <ResponsiveContainer width="100%" height={180}>
                 <AreaChart data={distData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                  <XAxis dataKey="pct" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="pct" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${v}%`} />
                   <YAxis hide />
-                  <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} formatter={(v: number) => [v, 'Frecuencia']} />
-                  <ReferenceLine x={Math.round(prob * 0.78)} stroke="#C0392B" strokeDasharray="4 3" label={{ value: 'P10', position: 'top', fontSize: 8, fill: '#C0392B' }} />
-                  <ReferenceLine x={prob}                    stroke="#3B6D11" strokeDasharray="4 3" label={{ value: 'P50', position: 'top', fontSize: 8, fill: '#3B6D11' }} />
-                  <ReferenceLine x={Math.round(prob * 1.18)} stroke="#1A5FA8" strokeDasharray="4 3" label={{ value: 'P90', position: 'top', fontSize: 8, fill: '#1A5FA8' }} />
-                  <ReferenceLine x={60} stroke="#D4881E" strokeWidth={2} label={{ value: 'Umbral mín.', position: 'insideTopLeft', fontSize: 8, fill: '#D4881E' }} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} formatter={(v: number) => [v, 'Frecuencia']} />
+                  <ReferenceLine x={Math.round(prob * 0.78)} stroke="#C0392B" strokeDasharray="4 3" label={{ value: 'P10', position: 'top', fontSize: 10, fill: '#C0392B' }} />
+                  <ReferenceLine x={prob}                    stroke="#3B6D11" strokeDasharray="4 3" label={{ value: 'P50', position: 'top', fontSize: 10, fill: '#3B6D11' }} />
+                  <ReferenceLine x={Math.round(prob * 1.18)} stroke="#1A5FA8" strokeDasharray="4 3" label={{ value: 'P90', position: 'top', fontSize: 10, fill: '#1A5FA8' }} />
+                  <ReferenceLine x={60} stroke="#D4881E" strokeWidth={2} label={{ value: 'Umbral mín.', position: 'insideTopLeft', fontSize: 10, fill: '#D4881E' }} />
                   <Area type="monotone" dataKey="freq" fill="#EAF3DE" stroke="#3B6D11" strokeWidth={2} />
                 </AreaChart>
               </ResponsiveContainer>
@@ -989,9 +994,9 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
             </p>
             <ResponsiveContainer width="100%" height={200}>
               <BarChart data={SENSITIVITY_VARS} layout="vertical" margin={{ top: 0, right: 40, left: 140, bottom: 0 }}>
-                <XAxis type="number" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `${v} M`} />
-                <YAxis type="category" dataKey="variable" tick={{ fontSize: 8, fill: '#4A4740' }} tickLine={false} axisLine={false} width={138} />
-                <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }}
+                <XAxis type="number" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `${v} M`} />
+                <YAxis type="category" dataKey="variable" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} width={138} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE}
                   formatter={(v: number, n: string) => [n === 'deltaIngreso' ? `${v} M MXN` : `${v} pp`, n === 'deltaIngreso' ? 'Δ Ingreso' : 'Δ Prob.']} />
                 <ReferenceLine x={0} stroke="#E8E4DC" />
                 <Bar dataKey="deltaIngreso" name="Δ Ingreso anual (M MXN)" radius={[0, 4, 4, 0]}>
@@ -1012,8 +1017,8 @@ function Page2({ ingresoAnual }: { ingresoAnual: number }) {
             <div>
               <ResponsiveContainer width="100%" height={160}>
                 <AreaChart data={buildTriangularDist(p10Rev / 1e6, ingresoAnual / 1e6, p90Rev / 1e6)} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                  <XAxis dataKey="pct" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={v => `$${v}M`} />
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="pct" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={v => `$${v}M`} />
                   <YAxis hide />
                   <Area type="monotone" dataKey="freq" fill="#EBF3FB" stroke="#1A5FA8" strokeWidth={2} />
                 </AreaChart>

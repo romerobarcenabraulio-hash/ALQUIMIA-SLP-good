@@ -1,6 +1,7 @@
 'use client'
 import { ComposedChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { CHART_AXIS_TICK, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { fmt } from '@/lib/utils'
 
 export function WaterfallChart() {
@@ -58,7 +59,7 @@ export function WaterfallChart() {
         <ComposedChart data={data} margin={{ top: 16, right: 16, bottom: 48, left: 24 }}>
           <XAxis
             dataKey="label"
-            tick={{ fontSize: 9, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }}
+            tick={{ ...CHART_AXIS_TICK, fontFamily: 'JetBrains Mono' }}
             angle={-30}
             textAnchor="end"
             interval={0}
@@ -66,7 +67,7 @@ export function WaterfallChart() {
           />
           <YAxis
             tickFormatter={v => fmt.mxnM(v)}
-            tick={{ fontSize: 9, fill: '#A8A49C' }}
+            tick={CHART_AXIS_TICK}
             tickLine={false}
             axisLine={false}
             domain={[0, maxVal * 1.12]}
@@ -77,7 +78,7 @@ export function WaterfallChart() {
               const delta = props?.payload?.delta ?? 0
               return [fmt.mxnM(delta), props?.payload?.label ?? '']
             }}
-            contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 8, color: '#fff', fontSize: 11 }}
+            contentStyle={CHART_TOOLTIP_STYLE}
           />
           <ReferenceLine y={0} stroke="#E8E4DC" />
           {/* Transparent spacer bar */}
@@ -91,7 +92,7 @@ export function WaterfallChart() {
               dataKey="delta"
               position="top"
               formatter={(v: number) => fmt.mxnM(v)}
-              style={{ fontSize: 8, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }}
+              style={{ fontSize: 10, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }}
             />
           </Bar>
         </ComposedChart>

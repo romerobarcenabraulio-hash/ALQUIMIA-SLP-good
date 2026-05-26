@@ -3,13 +3,20 @@
 import { useMemo, useState } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell,
-  LineChart, Line, CartesianGrid, Legend, ComposedChart, Area,
+  CartesianGrid, ComposedChart, Area,
   ReferenceLine,
 } from 'recharts'
 import {
   TrendingUp, DollarSign, RefreshCcw, Clock, Shield, Download,
   FileText, Share2, Zap, ChevronDown, AlertTriangle,
 } from 'lucide-react'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID,
+  CHART_TOOLTIP_STYLE,
+  formatAxisMoneyM,
+} from '@/lib/chartTheme'
 import { cn } from '@/lib/utils'
 import { fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -328,101 +335,111 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
               )}
             </div>
 
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Valor generado y cobertura financiera</p>
-              <p className="text-[10px] text-[#A8A49C] mb-4">Flujo de valor por componente · Millones de MXN · Escenario {sv?.label}</p>
+            <ChartPanel
+              chartId="escenarios-waterfall"
+              title="Valor generado y cobertura financiera"
+              subtitle={`Flujo de valor por componente · Millones de MXN · Escenario ${sv?.label}`}
+            >
               {metrics && waterfallData.length ? (
-                <>
+                <div className="px-5 pb-4">
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={waterfallData} margin={{ top: 4, right: 8, left: 0, bottom: 20 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                      <XAxis dataKey="label" tick={{ fontSize: 8 }} interval={0} />
-                      <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${v}M`} />
-                      <Tooltip formatter={(v: number) => [`$${v}M MXN`, 'Valor']} />
+                      <CartesianGrid {...CHART_GRID} />
+                      <XAxis dataKey="label" tick={CHART_AXIS_TICK} interval={0} tickLine={false} axisLine={false} />
+                      <YAxis tick={CHART_AXIS_TICK} tickFormatter={formatAxisMoneyM} tickLine={false} axisLine={false} />
+                      <Tooltip formatter={(v: number) => [`$${v}M MXN`, 'Valor']} contentStyle={CHART_TOOLTIP_STYLE} />
                       <Bar dataKey="value" radius={[4, 4, 0, 0]}>
                         {waterfallData.map((d, i) => <Cell key={i} fill={d.color} />)}
                       </Bar>
                       <ReferenceLine y={0} stroke="#1C1B18" strokeWidth={1} />
                     </BarChart>
                   </ResponsiveContainer>
-                  <p className="text-[9px] text-[#A8A49C] mt-1">
+                  <p className="text-[9px] text-[#A8A49C] mt-1 px-5">
                     Después de cubrir todos los costos de implementación, el valor neto del programa es positivo.
                   </p>
-                </>
+                </div>
               ) : (
                 <p className="text-[11px] text-[#A8A49C] py-8 text-center">Configura el simulador para ver el flujo de valor.</p>
               )}
-            </div>
+            </ChartPanel>
           </div>
 
           {/* Retorno por escenario */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Retorno por escenario</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">TIR del proyecto (%) · VPN 20 años · Payback</p>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {r ? (
-                <>
-                  <ResponsiveContainer width="100%" height={110}>
-                    <BarChart
-                      data={SCENARIO_DEF.map(s => ({
-                        name: s.label,
-                        tir: s.tirMult > 0 ? +(r.tir * s.tirMult).toFixed(1) : 0,
-                        color: s.color,
-                      }))}
-                      layout="vertical"
-                      margin={{ top: 0, right: 40, left: 88, bottom: 0 }}
-                    >
-                      <XAxis type="number" tick={{ fontSize: 9 }} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
-                      <YAxis type="category" dataKey="name" tick={{ fontSize: 10 }} axisLine={false} tickLine={false} />
-                      <Tooltip formatter={(v: number) => [`${v}%`, 'TIR']} />
-                      <Bar dataKey="tir" radius={[0, 4, 4, 0]}>
-                        {SCENARIO_DEF.map((s, i) => <Cell key={i} fill={s.color} />)}
-                      </Bar>
-                    </BarChart>
-                  </ResponsiveContainer>
-                  <div className="space-y-2">
-                    {SCENARIO_DEF.map(s => {
-                      const pb = r.paybackDescontado ?? (r.paybackMeses ? r.paybackMeses / 12 : null)
-                      return (
-                        <div key={s.id} className={cn(
-                          'flex items-center justify-between rounded-[7px] px-3 py-2 text-[10px] border',
-                          s.id === scenarioId ? s.badge : 'bg-[#FAFAF8] border-[#F0EDE5]',
-                        )}>
-                          <div className="flex items-center gap-2">
-                            <div className="w-2 h-2 rounded-full" style={{ background: s.color }} />
-                            <span className="font-medium text-[#1C1B18]">{s.label}</span>
+          <ChartPanel
+            chartId="escenarios-tir"
+            title="Retorno por escenario"
+            subtitle="TIR del proyecto (%) · VPN 20 años · Payback"
+          >
+            <div className="px-5 pb-4">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {r ? (
+                  <>
+                    <ResponsiveContainer width="100%" height={110}>
+                      <BarChart
+                        data={SCENARIO_DEF.map(s => ({
+                          name: s.label,
+                          tir: s.tirMult > 0 ? +(r.tir * s.tirMult).toFixed(1) : 0,
+                          color: s.color,
+                        }))}
+                        layout="vertical"
+                        margin={{ top: 0, right: 40, left: 88, bottom: 0 }}
+                      >
+                        <XAxis type="number" tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} tickFormatter={v => `${v}%`} />
+                        <YAxis type="category" dataKey="name" tick={CHART_AXIS_TICK} axisLine={false} tickLine={false} />
+                        <Tooltip formatter={(v: number) => [`${v}%`, 'TIR']} contentStyle={CHART_TOOLTIP_STYLE} />
+                        <Bar dataKey="tir" radius={[0, 4, 4, 0]}>
+                          {SCENARIO_DEF.map((s, i) => <Cell key={i} fill={s.color} />)}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                    <div className="space-y-2">
+                      {SCENARIO_DEF.map(s => {
+                        const pb = r.paybackDescontado ?? (r.paybackMeses ? r.paybackMeses / 12 : null)
+                        return (
+                          <div key={s.id} className={cn(
+                            'flex items-center justify-between rounded-[7px] px-3 py-2 text-[10px] border',
+                            s.id === scenarioId ? s.badge : 'bg-[#FAFAF8] border-[#F0EDE5]',
+                          )}>
+                            <div className="flex items-center gap-2">
+                              <div className="w-2 h-2 rounded-full" style={{ background: s.color }} />
+                              <span className="font-medium text-[#1C1B18]">{s.label}</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <span className="font-mono">TIR {s.tirMult > 0 ? (r.tir * s.tirMult).toFixed(1) : '0.0'}%</span>
+                              <span className="font-mono text-[#6B6760]">{s.vpnMult > 0 ? fmt.mxnM(r.vpn * s.vpnMult) : '$0 M'}</span>
+                              <span className="font-mono text-[#6B6760]">{pb && s.tirMult > 0 ? `${(pb / s.tirMult).toFixed(1)} a` : '—'}</span>
+                              <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-semibold', s.tagBg)}>{s.tag}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <span className="font-mono">TIR {s.tirMult > 0 ? (r.tir * s.tirMult).toFixed(1) : '0.0'}%</span>
-                            <span className="font-mono text-[#6B6760]">{s.vpnMult > 0 ? fmt.mxnM(r.vpn * s.vpnMult) : '$0 M'}</span>
-                            <span className="font-mono text-[#6B6760]">{pb && s.tirMult > 0 ? `${(pb / s.tirMult).toFixed(1)} a` : '—'}</span>
-                            <span className={cn('px-1.5 py-0.5 rounded text-[9px] font-semibold', s.tagBg)}>{s.tag}</span>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </>
-              ) : (
-                <div className="col-span-2 text-[11px] text-[#A8A49C] py-4 text-center">Configura el simulador para ver el comparativo.</div>
-              )}
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <div className="col-span-2 text-[11px] text-[#A8A49C] py-4 text-center">Configura el simulador para ver el comparativo.</div>
+                )}
+              </div>
             </div>
-          </div>
+          </ChartPanel>
 
           {/* Ruta de inversión */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Ruta de inversión e implementación</p>
-            <p className="text-[10px] text-[#A8A49C] mb-3">Inversión acumulada (M MXN) por fase de despliegue · Fuente: FASES_INVERSION</p>
-            <ResponsiveContainer width="100%" height={160}>
-              <ComposedChart data={RUTA_FASES} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="fase" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 9 }} tickFormatter={v => `$${v}M`} />
-                <Tooltip formatter={(v: number) => [`$${v}M MXN`, 'Inversión acumulada']} />
-                <Area type="monotone" dataKey="acumulado" name="Inversión acumulada" fill="#DBE9FA" stroke="#1A5FA8" strokeWidth={2} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartPanel
+            chartId="escenarios-vpn"
+            title="Ruta de inversión e implementación"
+            subtitle="Inversión acumulada (M MXN) por fase de despliegue · Fuente: FASES_INVERSION"
+          >
+            <div className="px-5 pb-4">
+              <ResponsiveContainer width="100%" height={160}>
+                <ComposedChart data={RUTA_FASES} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="fase" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <YAxis tick={CHART_AXIS_TICK} tickFormatter={formatAxisMoneyM} tickLine={false} axisLine={false} />
+                  <Tooltip formatter={(v: number) => [`$${v}M MXN`, 'Inversión acumulada']} contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Area type="monotone" dataKey="acumulado" name="Inversión acumulada" fill="#DBE9FA" stroke="#1A5FA8" strokeWidth={2} />
+                </ComposedChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartPanel>
 
           {/* Financial assumptions */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts'
+import { ChartPanel } from '@/components/ui/ChartPanel'
 import {
   Camera, FolderOpen, AlertTriangle, CheckCircle, Clock,
   Shield, ChevronDown, MapPin, Wifi,
@@ -135,37 +136,43 @@ function IndiceCompletitud({ items }: { items: CheckItem[] }) {
   const pct = pctCumplido
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-      <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Índice de completitud</p>
-      <div className="flex items-center gap-3 mb-2">
-        <div className="relative shrink-0" style={{ width: 72, height: 72 }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={donutData.length ? donutData : [{ name: 'Pendiente', value: 100, color: '#E8E4DC' }]}
-                cx="50%" cy="50%" innerRadius={24} outerRadius={34} dataKey="value" strokeWidth={2} stroke="#fff">
-                {(donutData.length ? donutData : [{ color: '#E8E4DC' }]).map((e, i) => <Cell key={i} fill={e.color} />)}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <p className="font-mono text-[15px] font-bold text-[#3B6D11]">{pct}%</p>
+    <ChartPanel
+      chartId="inspeccion-completitud"
+      title="Índice de completitud"
+      subtitle="Estado del checklist mínimo de inspección"
+      expandable={false}
+    >
+      <div className="px-5 pb-4">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="relative shrink-0" style={{ width: 72, height: 72 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={donutData.length ? donutData : [{ name: 'Pendiente', value: 100, color: '#E8E4DC' }]}
+                  cx="50%" cy="50%" innerRadius={24} outerRadius={34} dataKey="value" strokeWidth={2} stroke="#fff">
+                  {(donutData.length ? donutData : [{ color: '#E8E4DC' }]).map((e, i) => <Cell key={i} fill={e.color} />)}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <p className="font-mono text-[15px] font-bold text-[#3B6D11]">{pct}%</p>
+            </div>
+          </div>
+          <div className="space-y-1.5 text-[10px]">
+            {[
+              { name: 'Completo',   value: pctCumplido,  color: '#3B6D11' },
+              { name: 'Parcial',    value: pctParcial,   color: '#D4881E' },
+              { name: 'Pendiente',  value: pctPendiente, color: '#E8E4DC' },
+            ].map(item => (
+              <div key={item.name} className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
+                <span className="text-[#4A4740]">{item.name}</span>
+                <span className="ml-auto font-mono font-medium" style={{ color: item.color }}>{item.value}%</span>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="space-y-1.5 text-[10px]">
-          {[
-            { name: 'Completo',   value: pctCumplido,  color: '#3B6D11' },
-            { name: 'Parcial',    value: pctParcial,   color: '#D4881E' },
-            { name: 'Pendiente',  value: pctPendiente, color: '#E8E4DC' },
-          ].map(item => (
-            <div key={item.name} className="flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full shrink-0" style={{ background: item.color }} />
-              <span className="text-[#4A4740]">{item.name}</span>
-              <span className="ml-auto font-mono font-medium" style={{ color: item.color }}>{item.value}%</span>
-            </div>
-          ))}
-        </div>
       </div>
-    </div>
+    </ChartPanel>
   )
 }
 

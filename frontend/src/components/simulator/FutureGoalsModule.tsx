@@ -16,6 +16,8 @@ import { getHitosForZm } from '@/data/hitosTimeline'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI } from '@/lib/constants'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 
 const CircularidadRoadmapMap = dynamic(
@@ -1185,8 +1187,8 @@ function Page3({
       </div>
 
       {/* Progression chart */}
-      <ExpandableChart chartId="m03-progression" title="Progresión acumulada" subtitle="Empleos · CO₂ · derrama · captura por año">
-        <>
+      <ChartPanel chartId="m03-progression" title="Progresión acumulada" subtitle="Empleos · CO₂ · derrama · captura por año">
+        <div className="px-5 pb-4">
           <div className="flex justify-end mb-3">
             <div className="flex gap-1">
               {([1, 3, 5, 10] as const).map(w => (
@@ -1202,10 +1204,10 @@ function Page3({
           {progData.length > 0 ? (
             <ResponsiveContainer width="100%" height={220}>
               <AreaChart data={progData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="año" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 8, background: '#fff' }} />
+                <CartesianGrid {...CHART_GRID} />
+                <XAxis dataKey="año" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
                 <Legend wrapperStyle={{ fontSize: 11 }} />
                 <Area type="monotone" dataKey="empleos"  stroke="#1A5FA8" fill="#EBF3FB" strokeWidth={2} name="Empleos directos" />
                 <Area type="monotone" dataKey="co2Acum"  stroke="#3B6D11" fill="#EAF3DE" strokeWidth={2} name="CO₂ evit. kt acum." />
@@ -1218,8 +1220,8 @@ function Page3({
               <p className="text-[12px] text-[#A8A49C]">Selecciona un municipio para ver la progresión.</p>
             </div>
           )}
-        </>
-      </ExpandableChart>
+        </div>
+      </ChartPanel>
 
       {/* Gates + Interdependency */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

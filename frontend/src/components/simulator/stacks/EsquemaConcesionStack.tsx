@@ -5,6 +5,12 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID,
+  CHART_TOOLTIP_STYLE,
+} from '@/lib/chartTheme'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { MARCO_LEGAL_CONCESION, ZMS } from '@/lib/constants'
 import { fmt, cn } from '@/lib/utils'
@@ -492,114 +498,87 @@ export function EsquemaConcesionStack() {
       </div>
 
       {/* ── Section 3: Distribución de Ingresos ──────────────────────────── */}
-      <div
-        className="rounded-[12px] border p-5"
-        style={{ borderColor: C.borderLight, background: C.bone }}
+      <ChartPanel
+        chartId="esquema-ingresos-municipio"
+        title="Ingresos al Municipio"
+        subtitle="Distribución operativa y fiscal del esquema de concesión"
       >
-        <span
-          className="text-[10px] uppercase tracking-[0.06em]"
-          style={{ color: C.textLight }}
-        >
-          Distribución de ingresos
-        </span>
-        <h3
-          className="font-serif text-[18px] mt-0.5 mb-4"
-          style={{ color: C.textDark }}
-        >
-          Ingresos al Municipio
-        </h3>
-
-        <div className="grid grid-cols-3 gap-3 mb-5">
-          <MetricCard label="Operativo al municipio" value={fmt.mxn(ingOp)} />
-          <MetricCard label="Fiscal al municipio"    value={fmt.mxn(ingFisc)} />
-          <MetricCard label="Total al municipio"     value={fmt.mxn(ingTotal)} bold />
-        </div>
-
-        {pieData.length > 0 ? (
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={90}
-                paddingAngle={2}
-                dataKey="value"
-                label={({ name, percent }) =>
-                  `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
-                }
-                labelLine={false}
-              >
-                {pieData.map((entry, i) => (
-                  <Cell key={i} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip
-                formatter={(v: number) => fmt.mxn(v)}
-                contentStyle={{
-                  background: C.bone, border: `1px solid ${C.borderLight}`,
-                  borderRadius: 8, fontSize: 12,
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
-        ) : (
-          <div
-            className="h-[120px] rounded-[10px] flex items-center justify-center text-[12px]"
-            style={{ background: C.sand, color: C.textLight }}
-          >
-            Completa la configuración para ver la distribución
+        <div className="px-5 pb-4">
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <MetricCard label="Operativo al municipio" value={fmt.mxn(ingOp)} />
+            <MetricCard label="Fiscal al municipio"    value={fmt.mxn(ingFisc)} />
+            <MetricCard label="Total al municipio"     value={fmt.mxn(ingTotal)} bold />
           </div>
-        )}
-      </div>
+
+          {pieData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={90}
+                  paddingAngle={2}
+                  dataKey="value"
+                  label={({ name, percent }) =>
+                    `${name}: ${((percent ?? 0) * 100).toFixed(0)}%`
+                  }
+                  labelLine={false}
+                >
+                  {pieData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  formatter={(v: number) => fmt.mxn(v)}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          ) : (
+            <div
+              className="h-[120px] rounded-[10px] flex items-center justify-center text-[12px]"
+              style={{ background: C.sand, color: C.textLight }}
+            >
+              Completa la configuración para ver la distribución
+            </div>
+          )}
+        </div>
+      </ChartPanel>
 
       {/* ── Section 4: Derrama por Industria y Empleos ───────────────────── */}
-      <div
-        className="rounded-[12px] border p-5"
-        style={{ borderColor: C.borderLight, background: C.bone }}
+      <ChartPanel
+        chartId="esquema-derrama-sector"
+        title="Derrama por Industria y Empleos por Sector"
+        subtitle="Impacto económico regional del esquema de concesión"
       >
-        <span
-          className="text-[10px] uppercase tracking-[0.06em]"
-          style={{ color: C.textLight }}
-        >
-          Impacto económico regional
-        </span>
-        <h3
-          className="font-serif text-[18px] mt-0.5 mb-4"
-          style={{ color: C.textDark }}
-        >
-          Derrama por Industria y Empleos por Sector
-        </h3>
+        <div className="px-5 pb-4">
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={barData} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
+              <CartesianGrid {...CHART_GRID} vertical={false} />
+              <XAxis
+                dataKey="sector"
+                tick={CHART_AXIS_TICK}
+                axisLine={false}
+                tickLine={false}
+              />
+              <YAxis
+                tick={CHART_AXIS_TICK}
+                axisLine={false}
+                tickLine={false}
+                tickFormatter={v => fmt.mxnK(v as number)}
+              />
+              <Tooltip
+                formatter={(v: number) => fmt.mxn(v)}
+                contentStyle={CHART_TOOLTIP_STYLE}
+              />
+              <Bar dataKey="value" fill={C.green} radius={[4, 4, 0, 0]} name="Derrama MXN" />
+            </BarChart>
+          </ResponsiveContainer>
 
-        <ResponsiveContainer width="100%" height={200}>
-          <BarChart data={barData} margin={{ top: 4, right: 8, left: 8, bottom: 4 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke={C.borderLight} vertical={false} />
-            <XAxis
-              dataKey="sector"
-              tick={{ fontSize: 10, fill: C.textMid }}
-              axisLine={false}
-              tickLine={false}
-            />
-            <YAxis
-              tick={{ fontSize: 10, fill: C.textLight }}
-              axisLine={false}
-              tickLine={false}
-              tickFormatter={v => fmt.mxnK(v as number)}
-            />
-            <Tooltip
-              formatter={(v: number) => fmt.mxn(v)}
-              contentStyle={{
-                background: C.bone, border: `1px solid ${C.borderLight}`,
-                borderRadius: 8, fontSize: 12,
-              }}
-            />
-            <Bar dataKey="value" fill={C.green} radius={[4, 4, 0, 0]} name="Derrama MXN" />
-          </BarChart>
-        </ResponsiveContainer>
-
-        {/* Empleos por sector chips */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
+          {/* Empleos por sector chips */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-4">
           {[
             { label: 'Centros de Acopio', value: empleos?.centrosAcopio ?? 0 },
             { label: 'Recicladoras',      value: empleos?.recicladoras  ?? 0 },
@@ -632,7 +611,8 @@ export function EsquemaConcesionStack() {
             </p>
           ))}
         </div>
-      </div>
+        </div>
+      </ChartPanel>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { AUDIENCE_MODULES } from '@/lib/audienceModules'
@@ -123,17 +123,24 @@ describe('editorial inventory', () => {
   it('catálogo QHC cubre chartId del simulador', () => {
     const ids = new Set<string>()
     const patterns = [/chartId="([^"]+)"/g, /data-chart-id="([^"]+)"/g]
+
+    const stackDir = join(process.cwd(), 'src/components/simulator/stacks')
+    const stackFiles = readdirSync(stackDir)
+      .filter(f => f.endsWith('.tsx'))
+      .map(f => `src/components/simulator/stacks/${f}`)
+
     const simulatorFiles = [
+      ...stackFiles,
       'src/components/simulator/FutureGoalsModule.tsx',
-      'src/components/simulator/stacks/MarketTraceabilityStack.tsx',
-      'src/components/simulator/stacks/InfrastructureOperationsStack.tsx',
-      'src/components/simulator/stacks/LogisticaOperativaStack.tsx',
-      'src/components/simulator/stacks/MunicipalContextStack.tsx',
-      'src/components/simulator/stacks/DictamenTecnicoStack.tsx',
-      'src/components/simulator/stacks/CityBaselineStack.tsx',
+      'src/components/simulator/ImpactoFinanciero.tsx',
       'src/components/simulator/RiskTrendsPanel.tsx',
+      'src/components/simulator/ImpactScenariosPanel.tsx',
       'src/components/simulator/ReferenciasCalculos.tsx',
+      ...readdirSync(join(process.cwd(), 'src/components/charts'))
+        .filter(f => f.endsWith('.tsx'))
+        .map(f => `src/components/charts/${f}`),
     ]
+
     for (const p of simulatorFiles) {
       const src = readFrontend(p)
       for (const pattern of patterns) {
@@ -142,5 +149,28 @@ describe('editorial inventory', () => {
     }
     const missing = [...ids].filter(id => !CHART_BRIEF_CATALOG[id])
     expect(missing, `Sin QHC en catálogo: ${missing.join(', ')}`).toEqual([])
+  })
+
+  it('gráficas Recharts no usan fontSize 8–9 en ejes (contrato EIDOS ≥10px)', () => {
+    const chartPaths = [
+      ...readdirSync(join(process.cwd(), 'src/components/simulator/stacks'))
+        .filter(f => f.endsWith('.tsx'))
+        .map(f => `src/components/simulator/stacks/${f}`),
+      'src/components/simulator/FutureGoalsModule.tsx',
+      'src/components/simulator/RiskTrendsPanel.tsx',
+      'src/components/simulator/ImpactScenariosPanel.tsx',
+      ...readdirSync(join(process.cwd(), 'src/components/charts'))
+        .filter(f => f.endsWith('.tsx'))
+        .map(f => `src/components/charts/${f}`),
+    ]
+    const axisFontPattern = /(?:tick|label)=\{\{[^}]*fontSize:\s*[89]\b/g
+    const violations: string[] = []
+    for (const p of chartPaths) {
+      const src = readFrontend(p)
+      if (!src.includes('ResponsiveContainer') && !src.includes('PlanChartFrame')) continue
+      const matches = src.match(axisFontPattern)
+      if (matches?.length) violations.push(`${p}: ${matches.length} axis/label fontSize 8–9`)
+    }
+    expect(violations, violations.join('\n')).toEqual([])
   })
 })

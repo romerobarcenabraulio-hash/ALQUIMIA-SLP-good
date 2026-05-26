@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from 'recharts'
-import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { CHART_AXIS_TICK, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import {
   ChevronRight, Scale, Shield, AlertTriangle, CheckCircle, Lock,
   FileText, ChevronDown,
@@ -823,24 +824,32 @@ export function MunicipalContextStack({
           </div>
 
           {/* Coverage bars — secondary, below map */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Diagnóstico regulatorio por municipio</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">% de cobertura actual · objetivo 85% · ordenado de mayor a menor</p>
-            <ExpandableChart
-              chartId="m02-cobertura-normativa"
-              title="Cobertura normativa por municipio"
-              subtitle="% de cobertura actual · objetivo 85%"
-            >
+          <ChartPanel
+            chartId="m02-cobertura-normativa"
+            title="Cobertura normativa por municipio"
+            subtitle="% de cobertura actual · objetivo 85% · ordenado de mayor a menor"
+            footer={(
+              <div className="flex gap-4 px-5 py-3 text-[10px]">
+                {[['#3B6D11', 'Cobertura completa (≥70%)'], ['#D4881E', 'Cobertura parcial (40-69%)'], ['#C0392B', 'Sin cobertura (<40%)']].map(([color, label]) => (
+                  <div key={label} className="flex items-center gap-1.5">
+                    <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
+                    <span className="text-[#6B6760]">{label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          >
+            <div className="px-4 pb-2">
               <ResponsiveContainer width="100%" height={Math.max(100, legal.municipios.length * 32)}>
                 <BarChart
                   data={[...legal.municipios].sort((a, b) => b.cobertura - a.cobertura)}
                   layout="vertical"
                   margin={{ top: 0, right: 48, left: 96, bottom: 0 }}
                 >
-                  <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
-                  <YAxis type="category" dataKey="nombre" tick={{ fontSize: 10, fill: '#4A4740' }} tickLine={false} axisLine={false} />
-                  <Tooltip formatter={(v: number) => [`${v}%`, 'Cobertura']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                  <ReferenceLine x={85} stroke="#D4881E" strokeDasharray="4 2" label={{ value: 'Obj. 85%', position: 'right', fontSize: 9, fill: '#D4881E' }} />
+                  <XAxis type="number" domain={[0, 100]} tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} tickFormatter={(v: number) => `${v}%`} />
+                  <YAxis type="category" dataKey="nombre" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <Tooltip formatter={(v: number) => [`${v}%`, 'Cobertura']} contentStyle={CHART_TOOLTIP_STYLE} />
+                  <ReferenceLine x={85} stroke="#D4881E" strokeDasharray="4 2" label={{ value: 'Obj. 85%', position: 'right', fontSize: CHART_AXIS_TICK.fontSize, fill: '#D4881E' }} />
                   <Bar dataKey="cobertura" radius={[0, 4, 4, 0]}>
                     {[...legal.municipios].sort((a, b) => b.cobertura - a.cobertura).map(m => (
                       <Cell key={m.nombre} fill={m.cobertura >= 70 ? '#3B6D11' : m.cobertura >= 40 ? '#D4881E' : '#C0392B'} />
@@ -848,16 +857,8 @@ export function MunicipalContextStack({
                   </Bar>
                 </BarChart>
               </ResponsiveContainer>
-            </ExpandableChart>
-            <div className="flex gap-4 mt-3 text-[10px]">
-              {[['#3B6D11', 'Cobertura completa (≥70%)'], ['#D4881E', 'Cobertura parcial (40-69%)'], ['#C0392B', 'Sin cobertura (<40%)']].map(([color, label]) => (
-                <div key={label} className="flex items-center gap-1.5">
-                  <div className="w-2.5 h-2.5 rounded-sm shrink-0" style={{ background: color }} />
-                  <span className="text-[#6B6760]">{label}</span>
-                </div>
-              ))}
             </div>
-          </div>
+          </ChartPanel>
 
           <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 text-[12px] text-[#6B6760]">
             <p className="font-medium text-[#1C1B18] mb-1">Contexto social</p>

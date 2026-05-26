@@ -4,7 +4,13 @@ import { useEffect, useMemo } from 'react'
 import { DollarSign, Users, Clock, TrendingUp, Truck } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { CapexOpexBreakdown } from '@/components/simulator/CapexOpexBreakdown'
-import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID,
+  CHART_TOOLTIP_STYLE,
+  formatAxisMoneyM,
+} from '@/lib/chartTheme'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import {
@@ -327,19 +333,24 @@ export function CostosProgramaStack() {
       )}
 
       {/* S3: Gráfica protagonista — CAPEX por fase */}
-      <ExpandableChart title="Inversión por fase" subtitle="CAPEX acumulado (M MXN) · 6 fases de escala">
-        <ResponsiveContainer width="100%" height={320}>
+      <ChartPanel
+        chartId="costos-capex-fases"
+        title="Inversión por fase"
+        subtitle="CAPEX acumulado (M MXN) · 6 fases de escala"
+      >
+        <div className="px-5 pb-4">
+          <ResponsiveContainer width="100%" height={320}>
             <BarChart data={fasesData} margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E8E4DC" vertical={false} />
+              <CartesianGrid {...CHART_GRID} vertical={false} />
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: '#5F6B5F' }}
+                tick={CHART_AXIS_TICK}
                 axisLine={false}
                 tickLine={false}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#5F6B5F' }}
-                tickFormatter={v => `$${v}M`}
+                tick={CHART_AXIS_TICK}
+                tickFormatter={formatAxisMoneyM}
                 axisLine={false}
                 tickLine={false}
               />
@@ -353,17 +364,13 @@ export function CostosProgramaStack() {
                   const f = fasesData.find(d => d.name === label)
                   return f ? `${label} — ${f.label}` : label
                 }}
-                contentStyle={{
-                  fontSize: 12,
-                  border: '1px solid #E8E4DC',
-                  borderRadius: 8,
-                  background: '#FDFCFA',
-                }}
+                contentStyle={CHART_TOOLTIP_STYLE}
               />
               <Bar dataKey="capex" fill="#2F6B1F" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
-        </ExpandableChart>
+        </div>
+      </ChartPanel>
 
       <div className="mt-4 overflow-x-auto rounded-[14px] border border-[#E7E5DC] bg-white p-5">
           <table className="w-full text-left border-collapse">

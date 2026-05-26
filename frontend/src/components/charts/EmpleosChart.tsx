@@ -2,6 +2,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { AreaChart, Area } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { fmt } from '@/lib/utils'
 
 export function EmpleosChart() {
@@ -23,9 +24,9 @@ export function EmpleosChart() {
         <div className="w-full h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} layout="vertical" margin={{ top: 4, right: 8, bottom: 0, left: 40 }}>
-              <XAxis type="number" tick={{ fontSize: 9, fill: '#A8A49C' }} />
-              <YAxis type="category" dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} width={40} />
-              <Tooltip contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 6, color: '#fff', fontSize: 10 }} />
+              <XAxis type="number" tick={CHART_AXIS_TICK} />
+              <YAxis type="category" dataKey="año" tick={CHART_AXIS_TICK} width={40} />
+              <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
               <Legend wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="CAs"         fill="#3B6D11" stackId="a" />
               <Bar dataKey="Recicladoras" fill="#1A5FA8" stackId="a" />
@@ -47,12 +48,12 @@ export function EmpleosChart() {
                   <stop offset="95%" stopColor="#3B6D11" stopOpacity={0.02} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#E8E4DC" />
-              <XAxis dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} />
-              <YAxis tickFormatter={v => fmt.mxnM(v * 12000 * 12)} tick={{ fontSize: 8, fill: '#A8A49C' }} />
+              <CartesianGrid {...CHART_GRID} />
+              <XAxis dataKey="año" tick={CHART_AXIS_TICK} />
+              <YAxis tickFormatter={v => fmt.mxnM(v * 12000 * 12)} tick={CHART_AXIS_TICK} />
               <Tooltip
                 formatter={(v: number) => [fmt.mxn(v * 12000 * 12), 'Derrama salarial']}
-                contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 6, color: '#fff', fontSize: 10 }}
+                contentStyle={CHART_TOOLTIP_STYLE}
               />
               <Area type="monotone" dataKey="CAs" stroke="#3B6D11" fill="url(#gradSal)" strokeWidth={2} />
             </AreaChart>

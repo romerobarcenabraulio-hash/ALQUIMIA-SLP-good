@@ -9,6 +9,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import { CA_CONFIG } from '@/lib/constants'
 import { ANCLA_PROGRAMA_RSU } from '@/data/organigramaMunicipalCanon'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 
 // ── Staff data per CA type ────────────────────────────────────────────────────
 
@@ -302,22 +304,26 @@ export function OrganigramaStack() {
           </div>
 
           {/* Staff composition chart */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Composición del personal por nivel y tipo de CA</p>
-            <p className="text-[10px] text-[#A8A49C] mb-4">Dirección · Supervisión · Operativo</p>
-            <ResponsiveContainer width="100%" height={180}>
-              <BarChart data={staffByLevel} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="nivel" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                <Legend wrapperStyle={{ fontSize: 10 }} />
-                <Bar dataKey="P" name="CA Pequeño" fill="#3B6D11" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="M" name="CA Mediano" fill="#1A5FA8" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="G" name="CA Grande" fill="#8B6B4A" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ChartPanel
+            chartId="m07-staff-composition"
+            title="Composición del personal por nivel y tipo de CA"
+            subtitle="Dirección · Supervisión · Operativo"
+          >
+            <div className="px-4 pb-4">
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={staffByLevel} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="nivel" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                  <Legend wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="P" name="CA Pequeño" fill="#3B6D11" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="M" name="CA Mediano" fill="#1A5FA8" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="G" name="CA Grande" fill="#8B6B4A" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </ChartPanel>
 
           {/* RACI matrix */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">

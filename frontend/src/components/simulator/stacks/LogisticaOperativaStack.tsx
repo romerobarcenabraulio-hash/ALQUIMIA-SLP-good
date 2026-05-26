@@ -24,6 +24,7 @@ import {
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { useMapCenter } from '@/hooks/useMapCenter'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { buildRecyclersKpiContract } from '@/lib/recicladorasCatalog'
 import { ResidentialRoutesPanel } from '@/components/simulator/ResidentialRoutesPanel'
@@ -166,12 +167,7 @@ export function LogisticaOperativaStack() {
           </div>
 
           {/* Map CAs + recicladoras */}
-          <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle="Rutas orgánicas · reciclables · mixtas · zonas cubiertas">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-              <div className="px-5 py-3 border-b border-[#F0EDE5]">
-                <p className="text-[12px] font-semibold text-[#1C1B18]">Mapa de rutas y cobertura operativa</p>
-                <p className="text-[10px] text-[#A8A49C]">{municipioLabel} · rutas dimensionadas · brechas críticas</p>
-              </div>
+          <ExpandableChart chartId="m08-routes" title="Mapa de rutas y cobertura operativa" subtitle={`${municipioLabel} · rutas dimensionadas · brechas críticas`}>
               <div className="p-4">
                 <CentrosAcopioMap showRecicladoras />
                 <div className="flex flex-wrap gap-3 mt-3 items-center">
@@ -201,16 +197,10 @@ export function LogisticaOperativaStack() {
                   />
                 </div>
               </div>
-            </div>
           </ExpandableChart>
 
           {/* Trucks table */}
-          <ExpandableChart chartId="m08-trucks" title="Camiones requeridos por material" subtitle="Volumen · unidades · frecuencia · riesgo logístico">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-              <div className="px-5 py-4 border-b border-[#F0EDE5]">
-                <p className="text-[12px] font-semibold text-[#1C1B18]">Camiones requeridos por material</p>
-                <p className="text-[10px] text-[#A8A49C]">Vol. t/día · unidades · frecuencia · riesgo · observación · cap. {capCamionTon} t/camión</p>
-              </div>
+          <ExpandableChart chartId="m08-trucks" title="Camiones requeridos por material" subtitle={`Vol. t/día · unidades · frecuencia · riesgo · observación · cap. ${capCamionTon} t/camión`}>
               <div className="overflow-x-auto">
                 {trucksByMaterial.length === 0 ? (
                   <p className="px-5 py-8 text-[11px] text-[#A8A49C] text-center">Complete M01 para calcular flota por material.</p>
@@ -241,36 +231,37 @@ export function LogisticaOperativaStack() {
                   </table>
                 )}
               </div>
-            </div>
           </ExpandableChart>
 
           {/* Seasonality chart */}
-          <ExpandableChart chartId="m08-seasonality" title="Estacionalidad y capacidad de servicio" subtitle="RSU mensual esperado vs. capacidad instalada (t/mes)">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-              <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Estacionalidad y capacidad de servicio</p>
-              <p className="text-[10px] text-[#A8A49C] mb-4">
-                {mesesSaturacion.length > 0
-                  ? `Meses con demanda superior a capacidad: ${mesesSaturacion.join(', ')}`
-                  : 'La capacidad instalada cubre la demanda estacional del escenario'}
-              </p>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={seasonData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                  <XAxis dataKey="mes" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                  <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                  <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }}
-                    formatter={(v: number, n: string) => [`${v.toLocaleString()} t`, n === 'rsu' ? 'RSU mensual' : 'Cap. instalada']} />
-                  <Legend wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="rsu" name="RSU mensual (t)" fill="#1A5FA8" radius={[3, 3, 0, 0]}>
-                    {seasonData.map((d, i) => (
-                      <Cell key={i} fill={d.rsu > d.cap && d.cap > 0 ? '#C0392B' : '#1A5FA8'} />
-                    ))}
-                  </Bar>
-                  <Line type="monotone" dataKey="cap" name="Cap. instalada" stroke="#3B6D11" strokeWidth={2} dot={false} />
-                </BarChart>
-              </ResponsiveContainer>
-              <p className="text-[9px] text-[#A8A49C] mt-2">Barras rojas = meses donde la demanda supera capacidad instalada ({capInstalada.toFixed(1)} t/día)</p>
-            </div>
+          <ExpandableChart
+            chartId="m08-seasonality"
+            title="Estacionalidad y capacidad de servicio"
+            subtitle={mesesSaturacion.length > 0
+              ? `Meses con demanda superior a capacidad: ${mesesSaturacion.join(', ')}`
+              : 'RSU mensual esperado vs. capacidad instalada (t/mes)'}
+          >
+              <div className="px-6 py-4">
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={seasonData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid {...CHART_GRID} />
+                    <XAxis dataKey="mes" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <Tooltip
+                      contentStyle={CHART_TOOLTIP_STYLE}
+                      formatter={(v: number, n: string) => [`${v.toLocaleString()} t`, n === 'rsu' ? 'RSU mensual' : 'Cap. instalada']}
+                    />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="rsu" name="RSU mensual (t)" fill="#1A5FA8" radius={[3, 3, 0, 0]}>
+                      {seasonData.map((d, i) => (
+                        <Cell key={i} fill={d.rsu > d.cap && d.cap > 0 ? '#C0392B' : '#1A5FA8'} />
+                      ))}
+                    </Bar>
+                    <Line type="monotone" dataKey="cap" name="Cap. instalada" stroke="#3B6D11" strokeWidth={2} dot={false} />
+                  </BarChart>
+                </ResponsiveContainer>
+                <p className="text-[9px] text-[#A8A49C] mt-2">Barras rojas = meses donde la demanda supera capacidad instalada ({capInstalada.toFixed(1)} t/día)</p>
+              </div>
           </ExpandableChart>
 
           {/* PER routes */}

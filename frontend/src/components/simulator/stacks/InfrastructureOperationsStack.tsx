@@ -13,7 +13,8 @@ import {
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI, CA_CONFIG, FASES_CA } from '@/lib/constants'
-import { ExpandableChart } from '@/components/ui/ExpandableChart'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 
 const CentrosAcopioMap = dynamic(
   () => import('@/components/simulator/CentrosAcopioMap').then(m => ({ default: m.CentrosAcopioMap })),
@@ -339,44 +340,38 @@ export function InfrastructureOperationsStack() {
           </div>
 
           {/* Phase deployment chart */}
-          <ExpandableChart chartId="m06-phase-deploy" title="Despliegue de infraestructura por fase" subtitle="Centros activos · capacidad instalada · cobertura acumulada">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5 mb-5">
-              <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Despliegue de infraestructura por fase</p>
-              <p className="text-[10px] text-[#A8A49C] mb-4">Centros activos · capacidad instalada · cobertura acumulada · CAPEX por fase</p>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                <div>
-                  <p className="text-[10px] text-[#A8A49C] mb-2">Centros activos y capacidad (t/día)</p>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={phaseData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                      <XAxis dataKey="fase" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="l" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                      <Legend wrapperStyle={{ fontSize: 10 }} />
-                      <Bar yAxisId="l" dataKey="centros" name="Centros" fill="#3B6D11" radius={[4, 4, 0, 0]} />
-                      <Bar yAxisId="r" dataKey="cap" name="Cap. t/día" fill="#1A5FA8" radius={[4, 4, 0, 0]} opacity={0.7} />
-                      {rsuDia > 0 && <ReferenceLine yAxisId="r" y={rsuDia} stroke="#C0392B" strokeDasharray="4 3" label={{ value: 'RSU obj.', position: 'right', fontSize: 8, fill: '#C0392B' }} />}
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-                <div>
-                  <p className="text-[10px] text-[#A8A49C] mb-2">Cobertura (%) y CAPEX acumulado (M MXN)</p>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={phaseData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                      <XAxis dataKey="fase" tick={{ fontSize: 10, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <Tooltip contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                      <Legend wrapperStyle={{ fontSize: 10 }} />
-                      <Bar dataKey="cobertura" name="Cobertura %" fill="#D4881E" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="capex" name="CAPEX M MXN" fill="#8B6B4A" radius={[4, 4, 0, 0]} opacity={0.7} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            </div>
-          </ExpandableChart>
+          <ChartPanel chartId="m06-phase-deploy" title="Despliegue de infraestructura por fase" subtitle="Centros activos · capacidad instalada · cobertura acumulada · CAPEX por fase" className="mb-5">
+            <ChartPanel.Grid cols={2}>
+              <ChartPanel.Cell title="Centros activos y capacidad" unit="t/día">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={phaseData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid {...CHART_GRID} />
+                    <XAxis dataKey="fase" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="l" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <YAxis yAxisId="r" orientation="right" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar yAxisId="l" dataKey="centros" name="Centros" fill="#3B6D11" radius={[4, 4, 0, 0]} />
+                    <Bar yAxisId="r" dataKey="cap" name="Cap. t/día" fill="#1A5FA8" radius={[4, 4, 0, 0]} opacity={0.7} />
+                    {rsuDia > 0 && <ReferenceLine yAxisId="r" y={rsuDia} stroke="#C0392B" strokeDasharray="4 3" label={{ value: 'RSU obj.', position: 'right', fontSize: CHART_AXIS_TICK.fontSize, fill: '#C0392B' }} />}
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartPanel.Cell>
+              <ChartPanel.Cell title="Cobertura y CAPEX" unit="% · M MXN">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={phaseData} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid {...CHART_GRID} />
+                    <XAxis dataKey="fase" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <YAxis tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                    <Tooltip contentStyle={CHART_TOOLTIP_STYLE} />
+                    <Legend wrapperStyle={{ fontSize: 10 }} />
+                    <Bar dataKey="cobertura" name="Cobertura %" fill="#D4881E" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="capex" name="CAPEX M MXN" fill="#8B6B4A" radius={[4, 4, 0, 0]} opacity={0.7} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartPanel.Cell>
+            </ChartPanel.Grid>
+          </ChartPanel>
 
           <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5">
             <p className="text-[13px] text-[#3B5F23] leading-relaxed mb-3">

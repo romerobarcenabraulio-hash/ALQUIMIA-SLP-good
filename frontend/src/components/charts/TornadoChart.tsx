@@ -3,6 +3,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ReferenceLine, ResponsiveContaine
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { tornadoAnalysis } from '@/lib/calculator'
 import { useMemo } from 'react'
+import { CHART_AXIS_TICK, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { fmt } from '@/lib/utils'
 
 export function TornadoChart() {
@@ -17,10 +18,10 @@ export function TornadoChart() {
     <div className="w-full h-56">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data} layout="vertical" margin={{ top: 4, right: 20, bottom: 0, left: 80 }}>
-          <XAxis type="number" tickFormatter={v => fmt.mxnM(v)} tick={{ fontSize: 9, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }} />
-          <YAxis type="category" dataKey="label" tick={{ fontSize: 10, fill: '#6B6760' }} width={80} />
+          <XAxis type="number" tickFormatter={v => fmt.mxnM(v)} tick={CHART_AXIS_TICK} />
+          <YAxis type="category" dataKey="label" tick={CHART_AXIS_TICK} width={80} />
           <Tooltip
-            contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 6, color: '#fff', fontSize: 11 }}
+            contentStyle={CHART_TOOLTIP_STYLE}
             formatter={(v: number) => [fmt.mxn(v), 'Impacto en VPN']}
           />
           <ReferenceLine x={0} stroke="#E8E4DC" />

@@ -1,6 +1,7 @@
 'use client'
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 
 const BENCHMARKS = [
   { name: 'Bogotá',    color: '#639922', data: [8, 22, 40, 60, 80, 95, 100] },
@@ -29,12 +30,12 @@ export function CapturaAreaChart() {
               <stop offset="95%" stopColor="#1A5FA8" stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid strokeDasharray="4 4" stroke="#E8E4DC" />
-          <XAxis dataKey="año" tick={{ fontSize: 10, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }} />
-          <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={{ fontSize: 10, fill: '#A8A49C', fontFamily: 'JetBrains Mono' }} />
+          <CartesianGrid {...CHART_GRID} />
+          <XAxis dataKey="año" tick={CHART_AXIS_TICK} />
+          <YAxis domain={[0, 100]} tickFormatter={v => `${v}%`} tick={CHART_AXIS_TICK} />
           <Tooltip
             formatter={(v: number, n: string) => [`${v}%`, n]}
-            contentStyle={{ background: '#1C1B18', border: 'none', borderRadius: 8, color: '#fff', fontSize: 12 }}
+            contentStyle={CHART_TOOLTIP_STYLE}
           />
           <Legend wrapperStyle={{ fontSize: 11, color: '#6B6760' }} />
           <Area type="monotone" dataKey="Plan" stroke="#1A5FA8" fill="url(#gradPlan)" strokeWidth={2.5} name={`Plan ${zmActiva}`} connectNulls />

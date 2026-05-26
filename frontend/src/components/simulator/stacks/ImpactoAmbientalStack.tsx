@@ -36,7 +36,7 @@ export function ImpactoAmbientalStack() {
         {kpis.map(item => (
           <div key={item.label} className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3 text-center">
             <p className="font-mono text-[14px] font-semibold" style={{ color: item.color }}>{item.value}</p>
-            <p className="text-[9px] text-[#A8A49C] mt-1">{item.label}</p>
+            <p className="text-[11px] text-[#A8A49C] mt-1">{item.label}</p>
           </div>
         ))}
       </div>

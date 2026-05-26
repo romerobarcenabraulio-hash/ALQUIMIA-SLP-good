@@ -4,7 +4,6 @@ import { useMemo, useState } from 'react'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
-  BarChart, Bar,
 } from 'recharts'
 import { Check, TrendingUp, Leaf, Heart, Users, Truck, ChevronDown } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -19,6 +18,13 @@ import {
   getOperationalHousingSegments,
 } from '@/lib/viviendaInegi'
 import { ResearchCompletenessBar } from '@/components/simulator/ResearchCompletenessBar'
+import { ImpactScenariosPanel } from '@/components/simulator/ImpactScenariosPanel'
+import { ChartPanel } from '@/components/ui/ChartPanel'
+import {
+  CHART_AXIS_TICK,
+  CHART_GRID,
+  CHART_TOOLTIP_STYLE,
+} from '@/lib/chartTheme'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -288,8 +294,6 @@ export function CityBaselineStack() {
       }
     })
   }, [horizonte, r])
-
-  const maxCaptura = comparisonTable[0]?.captura ?? 1
 
   // ── Comparative lines (multi-trajectory) ────────────────────────────────────
   const comparativeLines = useMemo(() =>
@@ -619,79 +623,64 @@ export function CityBaselineStack() {
         <div className="space-y-4">
 
           {/* Trayectoria de captura — live gráfica */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4" data-chart-id="trayectoria-captura">
-            <div className="flex items-start justify-between mb-3">
-              <div>
-                <p className="text-[12px] font-semibold text-[#1C1B18]">Trayectoria de captura</p>
-                <p className="text-[10px] text-[#A8A49C]">Perfil {activeUI?.label ?? presetTrayectoria} · {horizonte} años</p>
-              </div>
-              <div className="text-right shrink-0">
-                <p className="font-mono text-[22px] leading-none font-semibold" style={{ color: activeUI?.color ?? '#3B6D11' }}>{capturaFinal.toFixed(0)}%</p>
-                <p className="text-[9px] text-[#A8A49C]">al año {horizonte}</p>
-              </div>
+          <ChartPanel
+            chartId="trayectoria-captura"
+            title="Trayectoria de captura"
+            subtitle={`Perfil ${activeUI?.label ?? presetTrayectoria} · ${horizonte} años`}
+            expandable={false}
+            kpis={[
+              {
+                label: `Captura al año ${horizonte}`,
+                value: `${capturaFinal.toFixed(0)}%`,
+                accent: activeUI?.color ?? '#3B6D11',
+              },
+            ]}
+          >
+            <div className="px-5 pb-4">
+              <ResponsiveContainer width="100%" height={140}>
+                <LineChart data={trajectoryData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+                  <CartesianGrid {...CHART_GRID} />
+                  <XAxis dataKey="año" tick={CHART_AXIS_TICK} tickLine={false} axisLine={false} />
+                  <YAxis
+                    tick={CHART_AXIS_TICK}
+                    tickLine={false}
+                    axisLine={false}
+                    domain={[0, 100]}
+                    tickFormatter={(v: number) => `${v}%`}
+                    width={32}
+                  />
+                  <Tooltip
+                    formatter={(v: number) => [`${(v as number).toFixed(1)}%`, 'Captura RSU']}
+                    labelFormatter={(l: number) => `Año ${l}`}
+                    contentStyle={CHART_TOOLTIP_STYLE}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="captura"
+                    stroke={activeUI?.color ?? '#3B6D11'}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={{ r: 4, fill: activeUI?.color ?? '#3B6D11', stroke: '#fff', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
-            <ResponsiveContainer width="100%" height={140}>
-              <LineChart data={trajectoryData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                <XAxis dataKey="año" tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} domain={[0, 100]} tickFormatter={(v: number) => `${v}%`} width={30} />
-                <Tooltip formatter={(v: number) => [`${(v as number).toFixed(1)}%`, 'Captura RSU']} labelFormatter={(l: number) => `Año ${l}`} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                <Line type="monotone" dataKey="captura" stroke={activeUI?.color ?? '#3B6D11'} strokeWidth={2.5} dot={false} activeDot={{ r: 4, fill: activeUI?.color ?? '#3B6D11', stroke: '#fff', strokeWidth: 2 }} />
-              </LineChart>
-            </ResponsiveContainer>
-          </div>
+          </ChartPanel>
 
-          {/* 4 impact charts — 2×2 grid */}
           {impactLines && (
-            <div className="grid grid-cols-2 gap-3" data-chart-id="impactos-acumulados">
-              {[
-                { title: 'CO₂e evitado acumulado',      unit: 'ktCO₂e', data: impactLines.coChartData,    fmtV: (v: number) => `${v}K tCO₂e`, yFmt: (v: number) => `${v}k`,  color: '#1A5FA8' },
-                { title: 'Derrama económica acumulada',  unit: 'M MXN',  data: impactLines.derrChartData,  fmtV: (v: number) => `$${v}M`,      yFmt: (v: number) => `$${v}M`, color: '#D4881E' },
-                { title: 'Ahorro en salud acumulado',    unit: 'M MXN',  data: impactLines.saludChartData, fmtV: (v: number) => `$${v}M`,      yFmt: (v: number) => `$${v}M`, color: '#C0392B' },
-                { title: 'Comparativa de captura',       unit: '%',      data: impactLines.captChartData,  fmtV: (v: number) => `${v.toFixed(1)}%`, yFmt: (v: number) => `${v}%`, color: '#3B6D11' },
-              ].map(chart => (
-                <div key={chart.title} className="rounded-[12px] border border-[#E8E4DC] bg-white p-3">
-                  <p className="text-[10px] font-semibold text-[#1C1B18] mb-0.5">{chart.title}</p>
-                  <p className="text-[8px] text-[#A8A49C] mb-2">{chart.unit} · {horizonte} años</p>
-                  <ResponsiveContainer width="100%" height={110}>
-                    <LineChart data={chart.data} margin={{ top: 2, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#F0EDE5" />
-                      <XAxis dataKey="año" tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                      <YAxis tick={{ fontSize: 8, fill: '#A8A49C' }} tickLine={false} axisLine={false} tickFormatter={chart.yFmt} width={30} />
-                      <Tooltip formatter={(v: number, name: string) => [chart.fmtV(v), name]} labelFormatter={(l: number) => `Año ${l}`} contentStyle={{ fontSize: 10, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                      {impactLines.trajs.map(t => (
-                        <Line key={t.label} type="monotone" dataKey={t.label} stroke={t.color}
-                          strokeWidth={presetTrayectoria === t.presetId ? 2.5 : 1.5}
-                          strokeDasharray={presetTrayectoria === t.presetId ? undefined : '3 2'}
-                          dot={false} activeDot={{ r: 3 }}
-                        />
-                      ))}
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Shared trajectory legend */}
-          {impactLines && (
-            <div className="flex flex-wrap gap-3 justify-center py-0.5">
-              {impactLines.trajs.map(t => (
-                <div key={t.label} className="flex items-center gap-1.5">
-                  <div className="w-5 h-[2px] rounded-full" style={{ background: t.color, opacity: presetTrayectoria === t.presetId ? 1 : 0.55 }} />
-                  <span className={cn('text-[10px]', presetTrayectoria === t.presetId ? 'font-semibold' : 'text-[#6B6760]')} style={{ color: presetTrayectoria === t.presetId ? t.color : undefined }}>
-                    {t.label}{presetTrayectoria === t.presetId && ' ●'}
-                  </span>
-                </div>
-              ))}
-            </div>
+            <ImpactScenariosPanel
+              impactLines={impactLines}
+              horizonte={horizonte}
+              presetTrayectoria={presetTrayectoria}
+              activeLabel={activeUI?.label ?? presetTrayectoria}
+            />
           )}
 
           {/* Tabla comparativa ejecutiva */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
             <div className="px-4 py-3 border-b border-[#F0EDE5]">
-              <p className="text-[12px] font-semibold text-[#1C1B18]">Comparativa al año {horizonte}</p>
-              <p className="text-[9px] text-[#A8A49C]">CO₂e, derrama y salud escalados proporcionalmente</p>
+              <p className="text-[13px] font-semibold text-[#1C1B18]">Comparativa al año {horizonte}</p>
+              <p className="text-[11px] text-[#6B6760]">Valores al año {horizonte} · escenario activo resaltado</p>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-[11px]">
@@ -735,25 +724,6 @@ export function CityBaselineStack() {
                 </tbody>
               </table>
             </div>
-          </div>
-
-          {/* Índice de impacto relativo */}
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
-            <p className="text-[12px] font-semibold text-[#1C1B18] mb-0.5">Índice de impacto relativo</p>
-            <p className="text-[9px] text-[#A8A49C] mb-3">Normalizado a Ambicioso = 100 · captura final año {horizonte}</p>
-            <ResponsiveContainer width="100%" height={110}>
-              <BarChart
-                data={comparisonTable.map(row => ({ name: row.label, index: Math.round((row.captura / maxCaptura) * 100), color: row.color }))}
-                layout="vertical" margin={{ top: 0, right: 30, left: 72, bottom: 0 }}
-              >
-                <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 9, fill: '#A8A49C' }} tickLine={false} axisLine={false} />
-                <YAxis type="category" dataKey="name" tick={{ fontSize: 10, fill: '#4A4740' }} tickLine={false} axisLine={false} width={68} />
-                <Tooltip formatter={(v: number) => [`${v}`, 'Índice']} contentStyle={{ fontSize: 11, border: '1px solid #E8E4DC', borderRadius: 6 }} />
-                <Bar dataKey="index" radius={[0, 4, 4, 0]}>
-                  {comparisonTable.map((row, i) => <Cell key={i} fill={row.color} />)}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
           </div>
 
           {/* Recomendación del motor — prominente */}
