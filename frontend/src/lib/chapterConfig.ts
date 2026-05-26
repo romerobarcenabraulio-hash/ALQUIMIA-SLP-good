@@ -36,7 +36,7 @@ export const CHAPTERS: ChapterDef[] = [
       {
         id: 'ambiental',
         label: 'Ambiental',
-        modulos: ['city_baseline', 'impacto_ambiental'],
+        modulos: ['city_baseline'],
       },
       {
         id: 'social',
@@ -210,7 +210,6 @@ export const MODULE_NUMBERS: Record<string, string> = {
   guia_circularidad: '00',
   antecedentes_municipales: '00B',
   city_baseline: '01',
-  impacto_ambiental: '01B',
   social_diagnostico: '02',
   social_encuesta: '02B',
   mapeo_actores: '02C',
@@ -292,6 +291,7 @@ export const LEGACY_MODULE_ALIASES: Record<string, string> = {
   inspeccion_predios: 'inspeccion',
   monitoreo_real: 'monitoreo_operativo',
   source_traceability: 'trazabilidad',
+  impacto_ambiental: 'city_baseline',
 }
 
 export function resolveModuleId(id: string): string {

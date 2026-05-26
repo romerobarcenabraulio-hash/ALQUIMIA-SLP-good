@@ -34,16 +34,9 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   city_baseline: base({
     module_id: 'city_baseline',
     label: 'Diagnóstico municipal de RSU',
-    decision: 'Cuánto RSU genera el municipio, cuánto entierra al año y qué inversión lo recupera.',
-    evidence: 'RSU activo, composición por material, población y vivienda — fuentes INEGI/SEMARNAT.',
-    next_action: 'Validar supuestos de generación antes del diagnóstico social.',
-  }),
-  impacto_ambiental: base({
-    module_id: 'impacto_ambiental',
-    label: 'Impacto ambiental y sanitario',
-    decision: 'Cuantificar PM2.5, biogás, extensión de relleno y daño sanitario sin programa.',
-    evidence: 'Modelo OPS/INSP, emisiones CH₄, casos IRA/dengue evitados, comparativa con/sin programa.',
-    next_action: 'Usar estos KPIs en el argumento de costo de omisión y evaluación socioeconómica.',
+    decision: 'Cuánto RSU genera, cuánto entierra, qué externalidades evita y qué inversión lo recupera.',
+    evidence: 'RSU activo, composición, derrama, CO₂e, PM2.5, salud y relleno — fuentes INEGI/SEMARNAT/INECC.',
+    next_action: 'Calibre supuestos y revise impacto ambiental al pie antes de M02 social.',
   }),
   social_diagnostico: base({
     module_id: 'social_diagnostico',

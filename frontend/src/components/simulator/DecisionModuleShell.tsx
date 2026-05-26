@@ -851,7 +851,7 @@ function GuidancePanel({
                 { label: 'Supuestos', desc: 'P1–P4', active: true },
                 { label: 'Trayectoria', desc: `M${moduleNumber('city_baseline')}`, active: true },
                 { label: 'Toneladas', desc: 'capturadas', active: false },
-                { label: 'Impactos', desc: `M${moduleNumber('impacto_ambiental')}`, active: false },
+                { label: 'Impactos', desc: 'M01', active: true },
                 { label: 'Infraestr.', desc: `M${moduleNumber('infraestructura')}`, active: false },
                 { label: 'Resultados', desc: `M${moduleNumber('monitoreo_operativo')}`, active: false },
               ]).map((step, i, arr) => (

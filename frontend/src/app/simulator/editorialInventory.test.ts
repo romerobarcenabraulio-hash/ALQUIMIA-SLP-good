@@ -107,7 +107,6 @@ describe('editorial inventory', () => {
       'src/components/simulator/stacks/CapacidadInstitucionalStack.tsx',
       'src/components/simulator/stacks/DictamenTecnicoStack.tsx',
       'src/components/simulator/stacks/EvaluacionSocioeconomicaStack.tsx',
-      'src/components/simulator/stacks/ImpactoAmbientalStack.tsx',
       'src/components/simulator/stacks/InspeccionStack.tsx',
       'src/components/simulator/stacks/OrganigramaDiagnosticoStack.tsx',
       'src/components/simulator/stacks/PlanEducativoStack.tsx',

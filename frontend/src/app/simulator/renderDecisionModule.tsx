@@ -18,7 +18,6 @@ import type { DecisionModule } from '@/types'
 import type { DecisionModuleRenderContext } from '@/lib/simulator/decisionModuleRenderContext'
 import { moduleNumber, resolveModuleId } from '@/lib/chapterConfig'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { ImpactoAmbientalStack } from '@/components/simulator/stacks/ImpactoAmbientalStack'
 import { AntecedentesMunicipalesStack } from '@/components/simulator/stacks/AntecedentesMunicipalesStack'
 import { CapacidadInstitucionalStack } from '@/components/simulator/stacks/CapacidadInstitucionalStack'
 import { EvaluacionSocioeconomicaStack } from '@/components/simulator/stacks/EvaluacionSocioeconomicaStack'
@@ -270,8 +269,6 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return <AntecedentesMunicipalesStack />
     case 'city_baseline':
       return <CityBaselineStack />
-    case 'impacto_ambiental':
-      return <ImpactoAmbientalStack />
     case 'social_diagnostico':
       return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
     case 'social_encuesta':

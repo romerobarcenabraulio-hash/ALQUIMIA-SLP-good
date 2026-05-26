@@ -191,13 +191,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId: resolvedId,
         title: pyramidCityBaseline(ctx),
-        pregunta_guia: '¿Cuánto RSU genera el municipio y cuánto valor se pierde hoy?',
+        pregunta_guia: '¿Cuánto RSU genera el municipio, cuánto valor se pierde y qué externalidades evita el programa?',
         subtitulo_catchy: '',
-        situacion_actual: `${territorio} paga relleno sobre el 100% del RSU mientras el material valorizable se pierde. Ajuste generación, captura y precios antes de usar estas cifras en Cabildo.`,
-        observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación per cápita SEMARNAT, composición, precios spot y costo de disposición. Cada supuesto es editable y visible.`,
-        criterio_decision: 'Fije supuestos defendibles en generación, vivienda, captura y merma antes de cualquier meta pública.',
-        que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo. Es una lectura inicial con fuentes y supuestos visibles.',
-        siguiente_accion: 'Ajustar los supuestos principales y revisar la matriz de fuentes antes de usar cualquier cifra en presentación pública.',
+        situacion_actual: `${territorio} paga relleno sobre el 100% del RSU mientras pierde material valorizable y externalidades sanitarias. Ajuste generación, captura y precios; al pie verá CO₂e, PM2.5 y salud al horizonte.`,
+        observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación SEMARNAT, composición, precios spot, costo de disposición e impacto INECC/OPS. Cada supuesto es editable y visible.`,
+        criterio_decision: 'Fije supuestos defendibles y separe beneficio ambiental de ingreso directo antes de Cabildo o financiadores verdes.',
+        que_no_significa: 'No es estadística municipal cerrada, inventario GEI oficial ni medición de campo. Es lectura inicial con fuentes visibles.',
+        siguiente_accion: 'Revise la matriz de fuentes y el bloque de impacto ambiental al pie antes de abrir M02 social.',
         fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del simulador.',
         metodologia_editorial: {
           como_se_calcula: 'La generación total = población × tasa per cápita (kg/hab/día). El ingreso potencial = toneladas desviadas × precio spot × (1 − merma). Ambas fórmulas son visibles y editables en los sliders del panel superior.',
@@ -685,27 +685,6 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             },
           },
         ],
-      }
-
-    case 'impacto_ambiental':
-      return {
-        moduleId: resolvedId,
-        title: 'Impacto ambiental y sanitario del programa',
-        pregunta_guia: '¿Qué externalidades evita el programa y con qué supuestos?',
-        subtitulo_catchy: 'CO₂e, salud pública y vida útil del relleno — sin mezclar con ingresos de mercado',
-        situacion_actual: `En ${territorio}, las externalidades del RSU (emisiones, salud, saturación de relleno) suelen quedar fuera del expediente para Cabildo si solo se presentan ingresos por fracción valorizable.`,
-        observacion_alquimia: `${scope} Los KPIs salen del motor con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI.`,
-        criterio_decision: 'Separar beneficio ambiental de ingreso directo antes de presentar el programa a finanzas o financiadores verdes.',
-        que_no_significa: 'No es inventario GEI oficial, ni aval de PROFEPA o SEMARNAT sobre emisiones evitadas.',
-        siguiente_accion: 'Revise factores de emisión y el escenario sin programa antes de anexar cifras a un informe ESG.',
-        fuente_o_evidencia: 'INECC factores RSU, IPCC AR6, motor ALQUIMIA M01.',
-        metodologia_editorial: {
-          como_se_calcula: 'CO₂e = toneladas desviadas × factor emisión relleno × GWP. Salud = funciones documentadas sobre fracción orgánica y clima local.',
-          origen_datos: 'Factores INECC 2024, parámetros del escenario activo (M01).',
-          por_que_este_enfoque: 'El Cabildo necesita ver el costo sanitario y climático de la omisión, no solo la derrama de venta de material.',
-          supuesto_critico: 'Factor de captura de biogás en el relleno local — cambia el CO₂e evitado hasta en 60%.',
-        },
-        chart_briefs: [],
       }
 
     case 'social_diagnostico':

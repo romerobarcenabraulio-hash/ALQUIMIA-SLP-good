@@ -76,17 +76,11 @@ function buildRichTransition(
       const rsu = resultados?.rsuTotalTonDia ?? null
       const rsuStr = rsu !== null ? `${tons(rsu)}/día de RSU` : 'una cantidad significativa de RSU diaria'
       return {
-        kicker: 'La línea base cuantifica el daño ambiental',
+        kicker: 'La línea base cierra con impacto ambiental',
         title: labelFor(nextId),
-        summary: `${municipioLabel} genera ${rsuStr}. El siguiente paso traduce esa carga en PM2.5, biogás, relleno y daño sanitario evitable.`,
+        summary: `${municipioLabel} genera ${rsuStr}. Con CO₂e, PM2.5 y salud cuantificados en M01, el siguiente paso es entender quién vive en el municipio y cuánto rezago social existe.`,
       }
     }
-    case 'impacto_ambiental':
-      return {
-        kicker: 'El impacto ambiental exige lectura social',
-        title: labelFor(nextId),
-        summary: `Con el daño ambiental cuantificado, el programa debe entender quién vive en ${municipioLabel}, cuánto rezago social existe y qué tan preparada está la ciudad para separar.`,
-      }
     case 'social_diagnostico':
       return {
         kicker: 'El diagnóstico social pide validación de campo',

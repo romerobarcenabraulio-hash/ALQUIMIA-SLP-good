@@ -12,7 +12,7 @@ describe('simulator functionary surface', () => {
       'guia_circularidad',
       ...FUNCTIONARY_MODULE_ORDER,
     ])
-    expect(AUDIENCE_MODULES.functionary).toHaveLength(38)
+    expect(AUDIENCE_MODULES.functionary).toHaveLength(37)
     expect(AUDIENCE_MODULES.functionary).toContain('antecedentes_municipales')
     expect(AUDIENCE_MODULES.functionary).toContain('evm_dashboard')
     expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('gate_status')

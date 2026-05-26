@@ -19,6 +19,7 @@ import {
 } from '@/lib/viviendaInegi'
 import { ResearchCompletenessBar } from '@/components/simulator/ResearchCompletenessBar'
 import { ImpactScenariosPanel } from '@/components/simulator/ImpactScenariosPanel'
+import { BaselineImpactoAmbientalSection } from '@/components/simulator/stacks/BaselineImpactoAmbientalSection'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 import {
@@ -774,37 +775,8 @@ export function CityBaselineStack() {
             </div>
           )}
 
-          {/* Impactos acumulados detallados (colapsable) */}
-          {r && (
-            <details className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
-              <summary className="cursor-pointer px-4 py-3 flex items-center justify-between select-none hover:bg-[#FAFAF8] transition-colors text-[11px] font-medium text-[#6B6760]">
-                <span>Impactos acumulados al horizonte · {fmt.mxnM(r.ingresosBrutos)} derrama base</span>
-                <ChevronDown size={14} className="text-[#A8A49C] shrink-0" />
-              </summary>
-              <div className="px-4 pb-4 pt-2 border-t border-[#F0EDE5]">
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { label: 'CO₂e acumulado',  value: fmt.co2(r.co2eEvitadasHorizonteTon),     color: '#1A5FA8' },
-                    { label: 'PM2.5 evitado',   value: `${r.pm25EvitadoTon.toFixed(1)} t`,       color: '#5A9438' },
-                    { label: 'AVAD evitados',   value: r.avadEvitados.toFixed(0),                 color: '#C0392B' },
-                    { label: 'Biogás',          value: fmt.kwh(r.kwhBiogas),                     color: '#5A4A2A' },
-                    { label: 'Vida relleno',    value: `+${r.extensionRelleno.toFixed(1)} años`, color: '#3B6D11' },
-                    { label: 'Empleos directos', value: fmt.num0(r.empleosTotalesDirectos),       color: '#5A4A2A' },
-                  ].map(item => (
-                    <div key={item.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-2 text-center">
-                      <p className="font-mono text-[12px] font-semibold" style={{ color: item.color }}>{item.value}</p>
-                      <p className="text-[9px] text-[#A8A49C] mt-0.5 leading-snug">{item.label}</p>
-                    </div>
-                  ))}
-                </div>
-                {resultadosSinPrograma && (
-                  <div className="mt-3 rounded-[8px] bg-[#FEF7E7] border border-[#F5D98A] px-3 py-1.5 text-[10px] text-[#6B4800]">
-                    Sin programa: {fmt.kgd(resultadosSinPrograma.rsuTotalTonDia)} · {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}/año
-                  </div>
-                )}
-              </div>
-            </details>
-          )}
+          {/* Impacto ambiental y sanitario (antes M01B — integrado) */}
+          <BaselineImpactoAmbientalSection />
 
         </div>
       </div>
@@ -812,7 +784,7 @@ export function CityBaselineStack() {
       {/* ── Module bridge footer ─────────────────────────────────────────────── */}
       <div className="pt-3 border-t border-[#F0EDE5] flex items-start gap-2 text-[10px] text-[#6B6760]">
         <span className="shrink-0 text-[#3B6D11] mt-0.5 font-semibold">→</span>
-        <span>Los supuestos de vivienda, generación y trayectoria determinan las trayectorias en <strong className="text-[#1C1B18]">M02 Contexto legal</strong> y los flujos de <strong className="text-[#1C1B18]">M06 Escenarios y derrama</strong>.</span>
+        <span>Con línea base e impacto ambiental calibrados, abra <strong className="text-[#1C1B18]">M02 diagnóstico social</strong> antes de reforma reglamentaria o expediente financiero.</span>
       </div>
 
       {/* ── Footer actions ────────────────────────────────────────────────────── */}

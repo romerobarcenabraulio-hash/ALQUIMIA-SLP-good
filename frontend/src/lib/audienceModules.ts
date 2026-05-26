@@ -1,6 +1,6 @@
 /**
  * Mapa de módulos visibles por audiencia.
- * Funcionario: 37 módulos + M00 guía en 4 capítulos (ver chapterConfig.ts).
+ * Funcionario: 36 módulos + M00 guía en 4 capítulos (ver chapterConfig.ts).
  */
 
 import type { Audience } from '@/types'

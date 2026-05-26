@@ -1,5 +1,12 @@
 # Changelog EIDOS
 
+## 2026-05-26 — M01B eliminado · impacto integrado en M01
+
+### Cambio estructural
+- Rubro Ambiental: solo `city_baseline` (M01). Eliminado `impacto_ambiental` (M01B) del journey, registry y nav.
+- `BaselineImpactoAmbientalSection` al pie de `CityBaselineStack`: una rejilla KPI + nota sin programa (sin NarrativeBridge duplicado).
+- Alias legacy `impacto_ambiental` → `city_baseline` para bookmarks antiguos.
+
 ## 2026-05-22 (c) — Pyramid Principle en Modo Validar (9 módulos)
 
 ### Publicado
