@@ -11,7 +11,11 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from app.cron.jobs import job_logistics_daily_summary, job_weekly_status
+from app.cron.jobs import (
+    job_geo_denue_nacional_sync,
+    job_logistics_daily_summary,
+    job_weekly_status,
+)
 from app.db.session import get_db
 from app.repo_paths import repo_root
 
@@ -44,14 +48,20 @@ class LogisticsCronRequest(BaseModel):
     fecha: date | None = None
     persist_db: bool = True
     use_google_routes: bool = False
+    municipio_ids: list[str] | None = None
+    zm_ids: list[str] | None = None
+
+
+class GeoSyncCronRequest(BaseModel):
+    batch_size: int | None = Field(None, ge=1, le=250)
+    force_bootstrap: bool = False
 
 
 @router.get("/manifest")
 def cron_manifest() -> dict[str, Any]:
-    """Manifest público de jobs (sin secret)."""
     cfg = _load_cron_config()
     return {
-        "agent": "HERMES+KRONOS",
+        "agent": "HERMES+KRONOS+GEO",
         "jobs": cfg.get("jobs", {}),
         "auth": "Header X-Cron-Secret = CRON_SECRET env",
     }
@@ -62,8 +72,10 @@ def cron_logistics_daily_summary(
     body: LogisticsCronRequest | None = None,
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    """19:00 MX — HERMES daily_summary + AURUM AC sync."""
     req = body or LogisticsCronRequest()
+    zm_ids = req.zm_ids
+    if not zm_ids and not req.municipio_ids:
+        zm_ids = [z.strip() for z in os.getenv("HERMES_ZM_IDS", "SLP,QRO,MTY").split(",") if z.strip()]
     return job_logistics_daily_summary(
         municipio_id=req.municipio_id,
         zm_id=req.zm_id,
@@ -71,6 +83,23 @@ def cron_logistics_daily_summary(
         persist_db=req.persist_db,
         db=db,
         use_google_routes=req.use_google_routes,
+        municipio_ids=req.municipio_ids,
+        zm_ids=zm_ids if not req.municipio_ids else None,
+    )
+
+
+@router.post("/geo-denue-nacional-sync", dependencies=[Depends(verify_cron_secret)])
+def cron_geo_denue_nacional_sync(
+    body: GeoSyncCronRequest | None = None,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    req = body or GeoSyncCronRequest()
+    if db is None:
+        raise HTTPException(503, "Base de datos no disponible")
+    return job_geo_denue_nacional_sync(
+        db=db,
+        batch_size=req.batch_size,
+        force=req.force_bootstrap,
     )
 
 
@@ -79,5 +108,4 @@ def cron_weekly_status(
     municipio_id: str | None = Query("slp"),
     db: Session = Depends(get_db),
 ) -> dict[str, Any]:
-    """Semanal — genera weekly_status KRONOS."""
     return job_weekly_status(municipio_id=municipio_id, db=db)

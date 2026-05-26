@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { getCentrosAcopio, type CentroAcopio } from '@/lib/api'
+import { getCentrosAcopio, getCentrosAcopioCoverage, type CentroAcopio } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
 import { useMapCenter } from '@/hooks/useMapCenter'
@@ -89,6 +89,20 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
   const [selectedMat, setSelectedMat] = useState<string>('all')
   const [selected, setSelected]       = useState<CentroAcopio | null>(null)
   const [showOperador, setShowOperador] = useState(true)
+  const [syncStatus, setSyncStatus] = useState<string | null>(null)
+  const [coveragePct, setCoveragePct] = useState<number | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    getCentrosAcopioCoverage()
+      .then(data => {
+        if (cancelled) return
+        const pct = data.stats?.geo_coverage_pct ?? data.manifest?.geo_coverage_pct
+        if (typeof pct === 'number') setCoveragePct(pct)
+      })
+      .catch(() => { /* coverage opcional */ })
+    return () => { cancelled = true }
+  }, [])
 
   // Fetch centros
   useEffect(() => {
@@ -100,7 +114,12 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
       clave_inegi: claveInegi ?? undefined,
       incluir_operador: showOperador,
     })
-      .then(data => { if (!cancelled) setCentros(data.centros) })
+      .then(data => {
+        if (!cancelled) {
+          setCentros(data.centros)
+          setSyncStatus(data.sync_status ?? null)
+        }
+      })
       .catch(e => { if (!cancelled) setError(e instanceof Error ? e.message : 'Error cargando centros') })
       .finally(() => { if (!cancelled) setLoading(false) })
     return () => { cancelled = true }
@@ -160,6 +179,22 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
 
   return (
     <div className="space-y-3">
+      {syncStatus === 'pending' && (
+        <div className="flex items-center gap-2 rounded-[8px] border border-[#BDD7F5] bg-[#EBF3FB] px-3 py-2 text-[11px] text-[#1A5FA8]">
+          <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+          Sincronizando catálogo DENUE para este municipio…
+        </div>
+      )}
+      {syncStatus === 'sin_datos' && centros.length === 0 && (
+        <div className="rounded-[8px] border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+          Sin datos DENUE para CVE {claveInegi ?? '—'}. El cron nacional procesará este municipio en cola.
+        </div>
+      )}
+      {coveragePct != null && (
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[10px] text-[#6B6760]">
+          Cobertura geo nacional: <span className="font-bold text-[#23470A]">{coveragePct}%</span> municipios sincronizados
+        </div>
+      )}
       {operadorCount > 0 && (
         <div className="rounded-[8px] border border-[#F5C6CB] bg-[#FEF7F7] px-3 py-2 text-[11px] text-[#6B2727]">
           <div className="flex items-center gap-1.5 font-semibold">
@@ -310,8 +345,11 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
                   />
                   <span className="truncate text-[11px] font-medium text-[#1C1B18]">{c.nombre}</span>
                   {c.es_operador_principal && (
-                    <span className="ml-auto shrink-0 rounded-full bg-[#FDE8E8] px-1.5 py-0.5 text-[9px] font-bold text-[#B91C1C]">
-                      Operador
+                    <span className={cn(
+                      'ml-auto shrink-0 rounded-full px-1.5 py-0.5 text-[9px] font-bold',
+                      c.verificado ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-amber-100 text-amber-900',
+                    )}>
+                      {c.verificado ? 'Operador ✓' : 'Candidato'}
                     </span>
                   )}
                   {!c.es_operador_principal && c.verificado && (
@@ -375,8 +413,11 @@ function CentroCard({ centro: c, onClose }: { centro: CentroAcopio; onClose: () 
           </span>
         )}
         {c.es_operador_principal && (
-          <span className="rounded bg-[#FDE8E8] px-1.5 py-0.5 text-[9px] font-bold text-[#B91C1C]">
-            Operador principal
+          <span className={cn(
+            'rounded px-1.5 py-0.5 text-[9px] font-bold',
+            c.verificado ? 'bg-[#FDE8E8] text-[#B91C1C]' : 'bg-amber-100 text-amber-900',
+          )}>
+            {c.verificado ? 'Operador verificado' : 'Candidato operador'}
           </span>
         )}
         {c.verificado && (

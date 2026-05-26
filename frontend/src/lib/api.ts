@@ -1188,9 +1188,9 @@ export interface CentroAcopio {
 
 export interface CentrosAcopioCoverageResponse {
   manifest: {
-    version: string
-    updated_at: string
-    municipios: Record<string, {
+    version?: string
+    updated_at?: string
+    municipios?: Record<string, {
       clave_inegi: string
       municipio: string
       estado: string
@@ -1198,14 +1198,33 @@ export interface CentrosAcopioCoverageResponse {
       operador_instalaciones?: number
       status: string
     }>
-    totales: Record<string, number>
+    totales?: Record<string, number>
+    geo_coverage_pct?: number
+    centros_total?: number
+    municipios_con_operador_verificado?: number
+    municipios_con_operador_candidato?: number
   }
-  geo_root: string
+  stats?: Record<string, unknown>
+  geo_root?: string
+  source?: string
 }
 
 export interface CentrosAcopioListResponse {
   total:   number
   centros: CentroAcopio[]
+  sync_status?: string | null
+}
+
+export interface LogisticsDepotResponse {
+  lat: number
+  lon: number
+  label: string
+  centro_id?: string | null
+  fuente: string
+  confianza: 'verificado' | 'candidato' | 'denue' | 'fallback'
+  advertencia?: string | null
+  clave_inegi?: string
+  zm?: string
 }
 
 export async function getCentrosAcopio(params: {
@@ -1231,6 +1250,44 @@ export async function getCentrosAcopio(params: {
 export async function getCentrosAcopioCoverage(): Promise<CentrosAcopioCoverageResponse> {
   const res = await backendFetch(`${getApiUrl()}/api/v1/centros-acopio/coverage`)
   if (!res.ok) throw new Error(`Cobertura geo no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function getLogisticsDepot(params: {
+  clave_inegi?: string
+  municipio_id?: string
+  zm?: string
+}): Promise<LogisticsDepotResponse> {
+  const query = new URLSearchParams()
+  if (params.clave_inegi) query.set('clave_inegi', params.clave_inegi)
+  if (params.municipio_id) query.set('municipio_id', params.municipio_id)
+  if (params.zm) query.set('zm', params.zm)
+  const res = await backendFetch(`${getApiUrl()}/api/v1/logistics/depot?${query.toString()}`)
+  if (!res.ok) throw new Error(`Depósito logístico no disponible: ${res.status}`)
+  return res.json()
+}
+
+export async function saveResidentialRoute(plan: Record<string, unknown>): Promise<{ id: number; saved: boolean }> {
+  const res = await backendFetch(`${getApiUrl()}/api/v1/logistics/residential-routes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(plan),
+  })
+  if (!res.ok) throw new Error(`No se pudo persistir ruta: ${res.status}`)
+  return res.json()
+}
+
+export async function getResidentialRoutes(params: {
+  zm?: string
+  clave_inegi?: string
+  traced_only?: boolean
+}): Promise<{ routes: Record<string, unknown>[]; total: number }> {
+  const query = new URLSearchParams()
+  if (params.zm) query.set('zm', params.zm)
+  if (params.clave_inegi) query.set('clave_inegi', params.clave_inegi)
+  if (params.traced_only) query.set('traced_only', 'true')
+  const res = await backendFetch(`${getApiUrl()}/api/v1/logistics/residential-routes?${query.toString()}`)
+  if (!res.ok) throw new Error(`Rutas residenciales no disponibles: ${res.status}`)
   return res.json()
 }
 

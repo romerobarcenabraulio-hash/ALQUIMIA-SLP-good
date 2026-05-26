@@ -5,14 +5,14 @@ import dynamic from 'next/dynamic'
 import { AlertTriangle, Download, MapPin, Route, Save } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { useLogisticsRoutesStore } from '@/store/logisticsRoutesStore'
-import { buildTerritorialPlan } from '@/lib/api'
+import { buildTerritorialPlan, getLogisticsDepot, getResidentialRoutes, saveResidentialRoute } from '@/lib/api'
 import { useMapCenter } from '@/hooks/useMapCenter'
 import {
   buildDraftRoutesFromTerritorialPlan,
   computeRouteTotals,
   type ResidentialRoutePlan,
 } from '@/lib/residentialRouteTiming'
-import { geocodeAddress, geocodeColoniaStop, planGoogleRoute } from '@/lib/logisticsRoutesApi'
+import { geocodeColoniaStop, planGoogleRoute } from '@/lib/logisticsRoutesApi'
 import { decodePolyline } from '@/lib/polylineDecode'
 import { buildCabildoLogisticaCsv, downloadCabildoLogisticaCsv } from '@/lib/exportCabildoLogistica'
 import { ZMS } from '@/lib/constants'
@@ -35,7 +35,7 @@ type Props = {
 export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }: Props) {
   const {
     zmActiva, municipiosActivos, resultados, tiposVivienda, horizonte,
-    pctCapturaPorAño, mixCAs, cityContext,
+    pctCapturaPorAño, mixCAs, cityContext, seleccionMunicipioCatalog,
   } = useSimulatorStore()
 
   const {
@@ -51,6 +51,7 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
   const [tracing, setTracing] = useState(false)
   const [traceError, setTraceError] = useState<string | null>(null)
   const [draftError, setDraftError] = useState<string | null>(null)
+  const [depotConfianza, setDepotConfianza] = useState<string | null>(null)
 
   const zm = ZMS.find(z => z.id === zmActiva)
   const mixVerticalPct = zm?.mixVivienda.vertical ?? 0.35
@@ -99,24 +100,41 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
     }
   }, [plans.length, hasResultados, municipiosActivos.length, loadDraftRoutes])
 
+  useEffect(() => {
+    let cancelled = false
+    getResidentialRoutes({ zm: zmActiva, traced_only: true })
+      .then(({ routes }) => {
+        if (cancelled || routes.length === 0 || plans.some(p => p.traced)) return
+        const hydrated = routes.map(r => r as unknown as ResidentialRoutePlan)
+        if (hydrated.length > 0) setPlansForZm(zmActiva, hydrated)
+      })
+      .catch(() => { /* offline — localStorage cache */ })
+    return () => { cancelled = true }
+  }, [zmActiva, plans, setPlansForZm])
+
   const traceSelectedRoute = useCallback(async () => {
     if (!selectedPlan) return
     setTracing(true)
     setTraceError(null)
     try {
       const geocodedStops = await Promise.all(selectedPlan.stops.map(geocodeColoniaStop))
-      const firstMun = selectedPlan.stops[0]?.municipio_nombre ?? municipioLabel
-      const depotGeo = await geocodeAddress(`Centro de acopio, ${firstMun}, México`)
-        ?? (mapCenter ? { lat: mapCenter.lat, lon: mapCenter.lon } : null)
-
-      if (!depotGeo?.lat || !depotGeo.lon) {
-        throw new Error('No se pudo geocodificar depósito / centro de acopio')
+      const claveInegi = seleccionMunicipioCatalog?.claveInegi
+      const depotResolved = await getLogisticsDepot({
+        clave_inegi: claveInegi ?? undefined,
+        municipio_id: selectedPlan.stops[0]?.municipio_id ?? municipiosActivos[0] ?? 'slp',
+        zm: zmActiva,
+      })
+      setDepotConfianza(depotResolved.confianza)
+      const depotGeo = {
+        lat: depotResolved.lat,
+        lon: depotResolved.lon,
+        label: depotResolved.label,
       }
 
       const routeResult = await planGoogleRoute({
         zm: zmActiva,
         municipio_id: selectedPlan.stops[0]?.municipio_id ?? municipiosActivos[0] ?? 'slp',
-        depot: { lat: depotGeo.lat, lon: depotGeo.lon, label: 'CA / depósito' },
+        depot: { lat: depotGeo.lat, lon: depotGeo.lon, label: depotGeo.label },
         stops: geocodedStops,
         returnToDepot: true,
       })
@@ -134,14 +152,26 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
       const updated: ResidentialRoutePlan = {
         ...selectedPlan,
         stops: geocodedStops,
-        depot: { lat: depotGeo.lat, lon: depotGeo.lon, label: 'CA / depósito' },
+        depot: { lat: depotGeo.lat, lon: depotGeo.lon, label: depotGeo.label },
         legs: routeResult.legs,
         traced: true,
         saved_at: new Date().toISOString(),
         source: 'google_routes',
         ...totals,
       }
+      const persistPayload = {
+        ...updated,
+        clave_inegi: claveInegi ?? undefined,
+        zm: zmActiva,
+        municipio_id: selectedPlan.stops[0]?.municipio_id ?? municipiosActivos[0] ?? 'slp',
+      }
       updatePlan(zmActiva, updated)
+
+      try {
+        await saveResidentialRoute(persistPayload as unknown as Record<string, unknown>)
+      } catch {
+        /* persistencia Neon opcional — localStorage sigue activo */
+      }
 
       if (typeof window !== 'undefined') {
         const all = useLogisticsRoutesStore.getState().getPlans(zmActiva)
@@ -154,7 +184,7 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
     }
   }, [
     selectedPlan, municipioLabel, mapCenter, zmActiva, municipiosActivos, timingParams,
-    updatePlan,
+    updatePlan, seleccionMunicipioCatalog?.claveInegi,
   ])
 
   const mapMarkers = useMemo((): MapMarker[] => {
@@ -166,7 +196,7 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
         lat: selectedPlan.depot.lat,
         lon: selectedPlan.depot.lon,
         title: selectedPlan.depot.label,
-        color: '#3B6D11',
+        color: depotConfianza === 'verificado' ? '#C0392B' : depotConfianza === 'candidato' ? '#D4881E' : '#3B6D11',
       })
     }
     selectedPlan.stops.forEach((s, i) => {
@@ -253,6 +283,13 @@ export function ResidentialRoutesPanel({ municipioLabel, rsuDia, hasResultados }
 
       {draftError && <p className="text-[11px] text-red-700">{draftError}</p>}
       {traceError && <p className="text-[11px] text-red-700">{traceError}</p>}
+      {depotConfianza && (
+        <p className="text-[10px] text-[#6B6760]">
+          Depósito: <span className="font-semibold">{depotConfianza}</span>
+          {depotConfianza === 'candidato' && ' — validar operador en campo'}
+          {depotConfianza === 'fallback' && ' — sin datos geo; coordenadas aproximadas'}
+        </p>
+      )}
 
       {plans.length > 0 && (
         <>

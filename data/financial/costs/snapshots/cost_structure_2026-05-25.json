@@ -1,8 +1,8 @@
 {
-  "municipio_id": "slp",
+  "municipio_id": "jua",
   "fecha": "2026-05-25",
-  "supuesto_base": "Modelo_BASED.xlsx · ZM SLP · mayo 2026",
-  "capex_total_mxn": "161178648",
+  "supuesto_base": "Modelo_BASED.xlsx · Fase 0-1 · ZM SLP",
+  "capex_total_mxn": "153641308",
   "opex_mensual_total_mxn": "277316",
   "capex_lines": [
     {
@@ -150,6 +150,18 @@
       "notas": "CA PEQUENO — rango $7.5-30M según UV"
     },
     {
+      "concepto": "centro_acopio_pequeno_08",
+      "categoria": "CAPEX",
+      "monto_mxn": "930044",
+      "unidad": "ud",
+      "cantidad": "1",
+      "periodicidad": "unico",
+      "actor_responsable": "municipio",
+      "fuente": "aurum_baseline_tier",
+      "componente": "centros_acopio",
+      "notas": "CA PEQUENO — rango $7.5-30M según UV"
+    },
+    {
       "concepto": "centro_acopio_mediano_01",
       "categoria": "CAPEX",
       "monto_mxn": "3256972",
@@ -270,18 +282,6 @@
       "notas": "CA GRANDE — rango $7.5-30M según UV"
     },
     {
-      "concepto": "centro_acopio_grande_04",
-      "categoria": "CAPEX",
-      "monto_mxn": "8467384",
-      "unidad": "ud",
-      "cantidad": "1",
-      "periodicidad": "unico",
-      "actor_responsable": "municipio",
-      "fuente": "aurum_baseline_tier",
-      "componente": "centros_acopio",
-      "notas": "CA GRANDE — rango $7.5-30M según UV"
-    },
-    {
       "concepto": "sistema_digital",
       "categoria": "CAPEX",
       "monto_mxn": "4500000",
@@ -369,10 +369,10 @@
     }
   ],
   "no_calidad": {
-    "merma_logistica": "0.0000",
+    "merma_logistica": "0",
     "rechazo_contaminacion": "0",
     "tiempo_muerto_flota": "0",
     "costo_relleno_evitable": "0",
-    "total": "0.0000"
+    "total": "0"
   }
 }

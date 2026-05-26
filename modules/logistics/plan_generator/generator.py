@@ -25,13 +25,20 @@ COLONIA_CENTROIDS: dict[str, tuple[float, float]] = {
     "Epigmenio Gonzalez": (20.6150, -100.4200),
 }
 
-DEPOT_BY_MUNICIPIO: dict[str, str] = {
-    "slp": "Centro de acopio SLP — Tangamanga",
-    "sol": "Centro de acopio Soledad",
-    "qro": "Centro de acopio Querétaro",
-}
-
 RouteComputeFn = Callable[[float, float, float, float], dict]
+
+
+def _resolve_depot(municipio_id: str, zm_id: str | None) -> tuple[str, float, float]:
+    try:
+        from app.logistics.depot_resolver import resolve_depot_for_municipio
+
+        depot = resolve_depot_for_municipio(municipio_id, zm=zm_id)
+        label = depot.get("label") or f"Centro de acopio {municipio_id.upper()}"
+        lat = float(depot.get("lat") or 22.15)
+        lon = float(depot.get("lon") or -100.98)
+        return label, lat, lon
+    except Exception:
+        return f"Centro de acopio {municipio_id.upper()}", 22.15, -100.98
 
 
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
@@ -62,8 +69,8 @@ def generate_daily_plan(
 ) -> DailyRoutePlan:
     plan_date = fecha or date.today()
     stops_names = list(colonias or DEFAULT_COLONIAS.get(municipio_id, ["Centro"]))
-    depot = DEPOT_BY_MUNICIPIO.get(municipio_id, f"Centro de acopio {municipio_id.upper()}")
-    depot_coords = _resolve_coords(stops_names[0]) if stops_names else (22.15, -100.98)
+    depot, depot_lat, depot_lon = _resolve_depot(municipio_id, zm_id)
+    depot_coords = (depot_lat, depot_lon)
 
     stops: list[RouteStop] = []
     for idx, colonia in enumerate(stops_names):

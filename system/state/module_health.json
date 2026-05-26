@@ -53,7 +53,7 @@
     },
     "backend/app/logistics": {
       "status": "healthy",
-      "notes": "thin router"
+      "notes": "depot resolver + residential routes persist + quota guard"
     },
     "backend/app/lifecycle": {
       "status": "healthy",
@@ -96,12 +96,23 @@
   },
   "data_layers": {
     "data/": { "status": "healthy", "index": "data/README.md" },
+    "data/geo/": {
+      "status": "healthy",
+      "notes": "Neon geo_centro_acopio + sync cursor; JSON git seed"
+    },
     "data/financial/reports/": {
       "status": "healthy",
       "notes": "LOGOS QHC en reportes 2026-05-25"
     },
     "backend/data/state/": { "status": "legacy", "notes": "KOS-03 semana 2" },
     "backend/data/planning/": { "status": "legacy", "notes": "KOS-03 semana 2" }
+  },
+  "geo_hermes": {
+    "geo_coverage_pct": null,
+    "municipios_con_operador_verificado": null,
+    "rutas_traced_persistidas": null,
+    "health_endpoint": "/api/v1/logistics/health",
+    "coverage_endpoint": "/api/v1/centros-acopio/coverage"
   },
   "governance": {
     "system/state/master_plan.md": { "status": "published", "updated": "2026-05-25" },

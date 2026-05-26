@@ -1,18 +1,12 @@
 """
-CentroAcopioRepository — Almacén en memoria de Centros de Acopio.
-
-Arquitectura:
-- Tienda en memoria (dict por centro_id) + seeding de datos demo al arrancar.
-- En producción futura: reemplazar _store con una capa SQLite / Postgres.
-- Sync adapters: PlacesSync (Google Places) y DenueSync (INEGI DENUE).
-  Ambos son feature-flag controlled (PLACES_SYNC_ENABLED).
+CentroAcopioRepository — DB-first (Neon) con fallback in-memory + seed JSON git.
 
 Operaciones:
   get(centro_id)                → CentroAcopio | None
-  list(zm, municipio, material) → List[CentroAcopio]
+  list_centros(...)             → List[CentroAcopio]
   upsert(centro)                → CentroAcopio
   delete(centro_id)             → bool
-  sync_from_places(zm)          → int  (# de registros sincronizados)
+  sync_from_places(zm)          → int
 """
 from __future__ import annotations
 
@@ -26,14 +20,14 @@ from app.agents.schemas import (
     CentroAcopioMaterial,
     CentroAcopioTipo,
 )
-
-from app.centros_acopio import file_store
+from app.centros_acopio import file_store, geo_db
+from app.db.session import get_sync_db, is_db_available
 
 logger = logging.getLogger(__name__)
 
-# ─── Tienda en memoria ────────────────────────────────────────────────────────
 _store: Dict[str, CentroAcopio] = {}
 _persisted_loaded = False
+_db_seeded = False
 
 
 def _load_persisted_once() -> None:
@@ -45,8 +39,6 @@ def _load_persisted_once() -> None:
     _persisted_loaded = True
     logger.info("CentroAcopio persistidos: %d registros en store.", len(_store))
 
-
-# ─── Datos demo (seed) ───────────────────────────────────────────────────────
 
 def _seed_demo() -> None:
     """Puebla el store con centros demo para SLP, QRO, MTY."""
@@ -187,15 +179,40 @@ def _seed_demo() -> None:
     for c in demos:
         _store[c.centro_id] = c
     _load_persisted_once()
-    logger.info(f"CentroAcopio seed: {len(_store)} centros cargados (demo + persistidos).")
+    logger.info("CentroAcopio seed: %d centros cargados (demo + persistidos).")
 
 
 _seed_demo()
 
 
-# ─── CRUD ─────────────────────────────────────────────────────────────────────
+def _ensure_db_seed() -> None:
+    global _db_seeded
+    if _db_seeded or not is_db_available():
+        return
+    with get_sync_db() as db:
+        if db is None:
+            return
+        from app.models.geo import GeoCentroAcopio
+
+        count = db.query(GeoCentroAcopio).count()
+        if count == 0:
+            from app.centros_acopio.geo_worker import seed_json_to_db
+
+            seed_json_to_db(db)
+            for c in _store.values():
+                geo_db.upsert_centro(db, c)
+            db.commit()
+        _db_seeded = True
+
 
 def get(centro_id: str) -> Optional[CentroAcopio]:
+    _ensure_db_seed()
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                row = geo_db.get_centro(db, centro_id)
+                if row:
+                    return row
     return _store.get(centro_id)
 
 
@@ -210,6 +227,25 @@ def list_centros(
     solo_operador: bool = False,
 ) -> List[CentroAcopio]:
     _load_persisted_once()
+    _ensure_db_seed()
+
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                db_rows = geo_db.list_centros_db(
+                    db,
+                    zm=zm,
+                    municipio=municipio,
+                    clave_inegi=clave_inegi,
+                    material=material,
+                    acepta_empresa=acepta_empresa,
+                    verificado_only=verificado_only,
+                    incluir_operador=incluir_operador,
+                    solo_operador=solo_operador,
+                )
+                if db_rows or clave_inegi:
+                    return db_rows
+
     results = list(_store.values())
     if clave_inegi:
         cve = clave_inegi.zfill(5)
@@ -217,8 +253,7 @@ def list_centros(
     if zm:
         results = [c for c in results if c.zm and c.zm.upper() == zm.upper()]
     if municipio:
-        results = [c for c in results
-                   if municipio.lower() in c.municipio.lower()]
+        results = [c for c in results if municipio.lower() in c.municipio.lower()]
     if solo_operador:
         results = [c for c in results if c.es_operador_principal]
     elif not incluir_operador:
@@ -229,7 +264,6 @@ def list_centros(
         results = [c for c in results if c.acepta_empresa == acepta_empresa]
     if verificado_only:
         results = [c for c in results if c.verificado]
-    # Operador principal primero, luego score
     results.sort(
         key=lambda c: (c.es_operador_principal, c.verificado, c.score_confianza),
         reverse=True,
@@ -240,30 +274,63 @@ def list_centros(
 def upsert(centro: CentroAcopio) -> CentroAcopio:
     centro.updated_at = datetime.now(timezone.utc)
     _store[centro.centro_id] = centro
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                geo_db.upsert_centro(db, centro)
+                db.commit()
     return centro
 
 
 def delete(centro_id: str) -> bool:
-    if centro_id in _store:
+    found = centro_id in _store
+    if found:
         del _store[centro_id]
-        return True
-    return False
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                from app.models.geo import GeoCentroAcopio
+
+                db.query(GeoCentroAcopio).filter(GeoCentroAcopio.centro_id == centro_id).delete()
+                db.commit()
+                return True
+    return found
 
 
 def count() -> int:
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                from app.models.geo import GeoCentroAcopio
+
+                return db.query(GeoCentroAcopio).count()
     return len(_store)
 
 
-# ─── Sync adapters ────────────────────────────────────────────────────────────
+def coverage_stats() -> dict:
+    if is_db_available():
+        with get_sync_db() as db:
+            if db is not None:
+                return geo_db.coverage_stats(db)
+    summary = file_store.coverage_summary()
+    manifest = summary.get("manifest", {})
+    totales = manifest.get("totales", {})
+    catalogados = totales.get("municipios_catalogados", 0)
+    con_datos = totales.get("con_datos", 0)
+    return {
+        "municipios_catalogados": catalogados,
+        "municipios_synced": con_datos,
+        "municipios_sin_datos": totales.get("sin_datos", 0),
+        "municipios_pending": max(0, catalogados - con_datos),
+        "geo_coverage_pct": round(con_datos / catalogados * 100, 2) if catalogados else 0.0,
+        "centros_total": len(_store),
+        "municipios_con_operador_verificado": 0,
+        "municipios_con_operador_candidato": 0,
+        "source": "file_manifest",
+    }
+
 
 async def sync_from_places(zm: str, api_key: str) -> int:
-    """
-    Sincroniza CentroAcopio desde Google Places API para la ZM dada.
-    Busca 'centro de reciclaje', 'punto verde', 'chatarreria' en la zona.
-    Retorna el número de registros nuevos/actualizados.
-
-    NOTE: Feature-flag controlled via PLACES_SYNC_ENABLED.
-    """
     try:
         import httpx
     except ImportError:
@@ -290,7 +357,7 @@ async def sync_from_places(zm: str, api_key: str) -> int:
                 data = resp.json()
                 for place in data.get("results", [])[:5]:
                     centro_id = f"places-{place.get('place_id', str(uuid.uuid4())[:8])}"
-                    location  = place.get("geometry", {}).get("location", {})
+                    location = place.get("geometry", {}).get("location", {})
                     centro = CentroAcopio(
                         centro_id=centro_id,
                         nombre=place.get("name", "Sin nombre"),
@@ -301,7 +368,7 @@ async def sync_from_places(zm: str, api_key: str) -> int:
                         zm=zm.upper(),
                         lat=location.get("lat"),
                         lon=location.get("lng"),
-                        materiales=[],  # no inferible solo de Places
+                        materiales=[],
                         fuente="places_api",
                         verificado=False,
                         score_confianza=0.65,
@@ -309,9 +376,9 @@ async def sync_from_places(zm: str, api_key: str) -> int:
                     upsert(centro)
                     synced += 1
             except Exception as exc:
-                logger.warning(f"Places sync error for '{query}': {exc}")
+                logger.warning("Places sync error for '%s': %s", query, exc)
 
-    logger.info(f"Places sync: {synced} centros sincronizados para ZM={zm}")
+    logger.info("Places sync: %d centros sincronizados para ZM=%s", synced, zm)
     return synced
 
 
@@ -323,9 +390,7 @@ def _infer_tipo(types: List[str]) -> CentroAcopioTipo:
 
 
 def _extract_municipio(address: str) -> str:
-    """Extrae el nombre de municipio de una dirección formateada."""
     parts = [p.strip() for p in address.split(",")]
-    # La ciudad suele estar en posición -3 o -2 antes del código postal
     if len(parts) >= 3:
         return parts[-3] if len(parts) >= 3 else parts[-2]
     return address.split(",")[0] if "," in address else address

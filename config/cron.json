@@ -1,13 +1,19 @@
 {
   "$schema": "alquimia/config/cron.v1",
-  "updated": "2026-05-22",
-  "owner": "HERMES+KRONOS",
+  "updated": "2026-05-26",
+  "owner": "HERMES+KRONOS+GEO",
   "jobs": {
+    "geo_denue_nacional_sync": {
+      "schedule_utc": "0 10 * * *",
+      "schedule_local_mx": "04:00 America/Mexico_City",
+      "endpoint": "POST /api/v1/cron/geo-denue-nacional-sync",
+      "description": "GeoNacionalWorker — ~50 CVE/día DENUE + candidatos operador"
+    },
     "logistics_daily_summary": {
       "schedule_utc": "0 19 * * *",
       "schedule_local_mx": "13:00 America/Mexico_City",
       "endpoint": "POST /api/v1/cron/logistics-daily-summary",
-      "description": "HERMES publica daily_summary → AURUM sincroniza AC → KRONOS"
+      "description": "HERMES multi-ZM daily_summary → AURUM AC → KRONOS"
     },
     "weekly_status": {
       "schedule_utc": "0 14 * * 1",
