@@ -56,3 +56,24 @@
 - `getChartBrief()` + `ExpandableChart.tsx` — guía auto por chartId
 - `CityBaselineStack.tsx` — data-chart-id en 4 bloques M01
 - `editorialInventory.test.ts` — CI exige cobertura catálogo = chartIds JSX
+
+## 2026-05-25 · Pulido editorial QHC simulador (LOGOS)
+
+### Documentación
+- `docs/audit/charts_inventory.md` — inventario 65 gráficas (módulo, tipo, QHC, cifras)
+- `docs/style/cinco_angulos_aplicados.md` — un ejemplo por ángulo de entrada
+- `docs/style/editorial_pattern_canonico.md` — patrón canónico (rejilla M13 + contrastes tornado/Monte Carlo)
+
+### Catálogo y generación
+- `frontend/src/data/chartBriefCatalog.ts` — reescritura editorial completa (tono financiero, no documentación)
+- `frontend/scripts/logos-chart-briefs.mjs` — generador con rotación de 5 ángulos sin repetición adyacente
+- Nuevas entradas M13: `m13-waterfall-valor`, `m13-monte-carlo-tir`, `m13-tornado-vpn`, `m13-cashflow`, `m13-rejilla-stress`, `m13-monte-carlo-vpn`
+
+### UI M13
+- `ImpactoFinanciero.tsx` — `ChartPanel` + `chartId` en waterfall, Monte Carlo TIR, tornado VPN, cashflow, rejilla stress; bloque maestro TIR múltiples (base vs C/D)
+- `ScenariosExportStack.tsx` — bloque maestro TIR antes de `escenarios-tir`; Monte Carlo VPN y tornado con `ChartPanel`
+
+### Ejemplos comparativos aplicados
+- Tornado M13: jerarquía WACC / captura año 1 (sustituye párrafo genérico)
+- Monte Carlo TIR: entrada por método (Los Álamos → 2 000 corridas → percentiles)
+- Rejilla: patrón canónico EIDOS preservado y reforzado en catálogo

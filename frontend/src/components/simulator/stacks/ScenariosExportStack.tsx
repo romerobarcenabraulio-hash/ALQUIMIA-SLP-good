@@ -364,6 +364,18 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
             </ChartPanel>
           </div>
 
+          {/* Bloque maestro TIR múltiples */}
+          {r && (
+            <div className="rounded-[12px] border border-[#B0D0F5] bg-[#EBF3FB] px-4 py-3.5 text-[11px] text-[#0D3B7A] leading-relaxed">
+              <p className="font-semibold text-[#1A5FA8] mb-1.5">Varias TIR en este módulo — no son inconsistentes</p>
+              <p>
+                Miden cosas distintas del mismo proyecto. La <strong>TIR base ({r.tir.toFixed(1)}%)</strong> es el rendimiento del caso central del modelo y responde la pregunta corta sobre rentabilidad.
+                Las TIR de los escenarios acelerado, conservador y sin intervención simulan variación de captura y precio; en la página de sensibilidad, los escenarios <strong>C</strong> y <strong>D</strong> estresan bloqueo del concesionario (+12 meses) y costos operativos (+20%).
+                Para la decisión del Cabildo, la cifra de referencia es la TIR base; las otras son medidas de robustez del proyecto ante condiciones adversas.
+              </p>
+            </div>
+          )}
+
           {/* Retorno por escenario */}
           <ChartPanel
             chartId="escenarios-tir"
@@ -481,20 +493,27 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
 
           {/* Monte Carlo + Tornado side by side */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Distribución Monte Carlo del VPN (20 años)</p>
-              <p className="text-[10px] text-[#A8A49C] mb-3">2 000 iteraciones · motor calcular() · distribución triangular</p>
-              <MonteCarloVpnChart />
-            </div>
-            <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-              <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Análisis de sensibilidad (tornado) — Impacto en el VPN</p>
-              <p className="text-[10px] text-[#A8A49C] mb-1">Variación del VPN respecto al caso base por variable · ±20% · OAT</p>
-              <p className="text-[9px] text-[#1A5FA8] mb-3">
-                Este tornado mide sensibilidad del <strong>VPN del proyecto</strong>.
-                Ver también: sensibilidad del <strong>ingreso por materiales</strong> en M10 · Trazabilidad de Mercado.
-              </p>
-              <TornadoChart />
-            </div>
+            <ChartPanel
+              chartId="m13-monte-carlo-vpn"
+              title="Distribución Monte Carlo del VPN (20 años)"
+              subtitle="2 000 iteraciones · distribución triangular"
+            >
+              <div className="px-5 pb-4">
+                <MonteCarloVpnChart />
+              </div>
+            </ChartPanel>
+            <ChartPanel
+              chartId="m13-tornado-vpn"
+              title="Sensibilidad (tornado) — impacto en el VPN"
+              subtitle="±20% por variable · OAT · VPN del proyecto"
+            >
+              <div className="px-5 pb-4">
+                <p className="text-[10px] text-[#1A5FA8] mb-3">
+                  Sensibilidad del <strong>VPN del proyecto</strong>. Ingreso por materiales: M10 · Trazabilidad de mercado.
+                </p>
+                <TornadoChart />
+              </div>
+            </ChartPanel>
           </div>
 
           {/* Scenario comparison table */}
