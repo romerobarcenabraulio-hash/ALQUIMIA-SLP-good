@@ -142,7 +142,7 @@ function buildRichTransition(
       return {
         kicker: 'El costo de la omisión habilita la evaluación fiscal-social',
         title: labelFor(nextId),
-        summary: 'El contrafactual abre la conversación de presupuesto; ahora hay que traducir empleos, pobreza y deuda estatal en beneficios fiscales trazables.',
+        summary: 'El costo acumulado de no actuar abre la conversación de presupuesto; ahora hay que traducir empleos, pobreza y deuda estatal en beneficios fiscales trazables.',
       }
     case 'evaluacion_socioeconomica': {
       const horizonte = resultados?.serieAnual?.length ?? null

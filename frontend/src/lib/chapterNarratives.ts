@@ -78,7 +78,7 @@ export const CHAPTER_NARRATIVES: Record<
       'Generación diaria de RSU por material, con fuente SEMARNAT/INEGI',
       'Índice de Preparación Ciudadana y encuesta de aceptación por tipo de vivienda',
       'Brechas del reglamento vigente y dictamen técnico de la reforma',
-      'Costo contrafactual de no actuar en 10 años y evaluación socioeconómica',
+      'Costo de no actuar en 10 años y evaluación socioeconómica',
       'Teoría de cambio que conecta diagnóstico con planificación',
     ],
   },

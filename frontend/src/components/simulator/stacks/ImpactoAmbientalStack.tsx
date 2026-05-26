@@ -46,7 +46,7 @@ export function ImpactoAmbientalStack() {
 
       <NarrativeBridge
         variant="bridge"
-        summary={`Si el contrafactual sin programa supera ${fmt.kgd(resultadosSinPrograma?.rsuTotalTonDia ?? r.rsuTotalTonDia)} RSU/día, lleve estas cifras a M04 costo de omisión; si falta dato de relleno, baje confianza antes de anexar a informe oficial.`}
+        summary={`Si el escenario sin programa supera ${fmt.kgd(resultadosSinPrograma?.rsuTotalTonDia ?? r.rsuTotalTonDia)} RSU/día, lleve estas cifras a M04 costo de omisión; si falta dato de relleno, baje confianza antes de anexar a informe oficial.`}
         evidence={[
           { label: 'CO₂e horizonte', value: fmt.co2(r.co2eEvitadasHorizonteTon) },
           { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} t` },
@@ -61,7 +61,7 @@ export function ImpactoAmbientalStack() {
       />
 
       {resultadosSinPrograma && (
-        <MarginalNote prefix="Contrafactual sin programa">
+        <MarginalNote prefix="Sin programa">
           {fmt.kgd(resultadosSinPrograma.rsuTotalTonDia)} RSU/día ·{' '}
           {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}/año ingresos no capturados
         </MarginalNote>
