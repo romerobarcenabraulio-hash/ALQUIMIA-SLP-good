@@ -279,7 +279,7 @@ function ModuleNavItem({
           {m.label}
         </p>
         <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
-          {blocked ? 'Requiere acción' : m.audience_mode ?? 'Disponible'}
+          {blocked ? 'Requiere acción' : m.nav_subtitle ?? m.audience_mode ?? 'Disponible'}
         </p>
       </div>
 

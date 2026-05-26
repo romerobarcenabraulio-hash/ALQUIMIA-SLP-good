@@ -26,6 +26,7 @@ import { TeoriaCambioStack } from '@/components/simulator/stacks/TeoriaCambioSta
 import { PlanEducativoStack } from '@/components/simulator/stacks/PlanEducativoStack'
 import { OrganigramaDiagnosticoStack } from '@/components/simulator/stacks/OrganigramaDiagnosticoStack'
 import ProyectoVivoPortal from '@/components/simulator/ProyectoVivoPortal'
+import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDataAwaitingBanner'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -358,8 +359,34 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
 
 function MapeoActoresBridge() {
   const { municipiosActivos, zmActiva } = useSimulatorStore()
+  const indicePreparacionCiudadana = useSimulatorStore(s =>
+    (s as typeof s & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana ?? null
+  )
   const munId = municipiosActivos[0] ?? zmActiva?.toLowerCase() ?? 'slp'
-  return <ProyectoVivoPortal proyectoId={`sim-${munId}`} municipioId={munId} />
+  return (
+    <div className="space-y-4">
+      <MunicipioDataAwaitingBanner
+        moduleLabel="Mapa de actores y legitimidad política"
+        moduleCode="M02C"
+        dato="proxy"
+        assumptions={[
+          {
+            label: 'IPC usado en M14 (hasta mapa completo)',
+            value:
+              indicePreparacionCiudadana !== null
+                ? `${indicePreparacionCiudadana.toFixed(0)}/100`
+                : '70/100 benchmark SEMARNAT',
+          },
+          {
+            label: 'Actores registrados',
+            value: 'Proyecto Vivo — edición en curso',
+          },
+        ]}
+        ctaLabel="Programar levantamiento con el municipio"
+      />
+      <ProyectoVivoPortal proyectoId={`sim-${munId}`} municipioId={munId} />
+    </div>
+  )
 }
 
 function M03Notice() {

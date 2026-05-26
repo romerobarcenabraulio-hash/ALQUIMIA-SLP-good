@@ -28,6 +28,7 @@ import {
 } from '@/lib/recicladorasCatalog'
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import type { MaterialBuyer } from '@/types'
 
 // ── Triangular distribution helper ───────────────────────────────────────────
@@ -335,7 +336,7 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
   return (
     <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
       <div className="rounded-[8px] bg-[#FEF7E7] border border-[#FDE68A] px-3 py-2 mb-3 text-[10px] text-[#92400E]">
-        Los valores de aceptación social provienen del estudio sociodemográfico (M02C). Sin ese módulo, se usan supuestos preliminares.
+        Los valores de aceptación social provienen del estudio sociodemográfico (M02B) o del supuesto preliminar documentado en M02C. Sin estudio cargado, M14 muestra el benchmark que alimenta el score — no lo oculta.
       </div>
       <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
         {[
@@ -360,9 +361,9 @@ function RiskKpiRow({ prob, riskScore, mktRisk, socialRisk, opRisk }: {
   const chips = [
     { label: 'Prob. implementación exitosa', value: `${prob}%`,     sub: 'Mercado, aceptación, operación, regulación', icon: TrendingUp,    color: '#3B6D11' },
     { label: 'Riesgo total ponderado',        value: `${riskScore}/100`, sub: 'Exposición agregada antes de mitigaciones', icon: Shield,       color: riskScore >= 50 ? '#C0392B' : '#D4881E' },
-    { label: 'Riesgo de mercado',             value: mktRisk,       sub: 'Precio, compradores y calidad del material', icon: DollarSign,    color: '#1A5FA8' },
+    { label: 'Riesgo de mercado',             value: mktRisk,       sub: 'Precio, compradores y pureza de fracción', icon: DollarSign,    color: '#1A5FA8' },
     { label: 'Riesgo social / aceptación',    value: socialRisk,    sub: 'Participación, confianza y hábitos ciudadanos', icon: Users,       color: '#C0392B' },
-    { label: 'Riesgo operativo',              value: opRisk,        sub: 'Capacidad, rutas, concesionario y centros',   icon: Activity,     color: '#D4881E' },
+    { label: 'Riesgo operativo',              value: opRisk,        sub: 'Capacidad, rutas, concesionario y centros de acopio',   icon: Activity,     color: '#D4881E' },
     { label: 'Confianza del modelo',          value: 'Condicionada', sub: 'Datos sociales y de mercado pendientes',     icon: Target,       color: '#A8A49C' },
   ]
   return (
@@ -1347,7 +1348,24 @@ export function MarketTraceabilityStack({ pageOnly }: { pageOnly?: 1 | 2 | 3 } =
             compact={page > 1}
           />
           {page === 1 && (
-            <RiskKpiRow prob={prob} riskScore={riskScore} mktRisk="Medio" socialRisk="Alto" opRisk="Medio-alto" />
+            <>
+              <RiskKpiRow prob={prob} riskScore={riskScore} mktRisk="Medio" socialRisk="Alto" opRisk="Medio-alto" />
+              <NarrativeBridge
+                variant={prob >= 60 ? 'bridge' : 'warning'}
+                summary={`Con probabilidad de implementación ${prob}% y score agregado ${riskScore}/100, la mitigación prioritaria en ALQUIMIA no es mercado si riesgo social figura Alto: condicione M13 (ingresos) hasta validar IPC en M02B o supuesto preliminar documentado. Si prob < 60%, congele promesa de TIR ante Cabildo hasta LOI de comprador en M10.`}
+                evidence={[
+                  { label: 'Prob. éxito', value: `${prob}%` },
+                  { label: 'Score riesgo', value: `${riskScore}/100` },
+                  { label: 'Riesgo social', value: 'Alto' },
+                  { label: 'Riesgo mercado', value: 'Medio' },
+                ]}
+                source={{
+                  fuente: 'Matriz M14 — aceptación social desde M02/M02C o supuesto preliminar',
+                  incertidumbre: 'Sin encuesta local, el score social usa benchmark transparente.',
+                }}
+                nextStep={{ label: 'Revisar matriz de riesgos y mitigaciones' }}
+              />
+            </>
           )}
           {page === 1 && <Page1 prob={prob} />}
           {page === 2 && <Page2 ingresoAnual={ingresoAnual} />}

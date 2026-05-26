@@ -11,6 +11,7 @@ import { StressTest } from '@/components/charts/StressTest'
 import { Slider } from '@/components/ui/Slider'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { ChartPanel } from '@/components/ui/ChartPanel'
 import { describeMaterialPriceReference, PRICE_RESEARCH_SOURCE_LABEL } from '@/data/materialPriceResearch'
 import type { AñoResultados } from '@/types'
 
@@ -216,6 +217,24 @@ export function ImpactoFinanciero() {
         ))}
       </div>
 
+      {r && (
+        <NarrativeBridge
+          variant={r.vpn >= 0 ? 'bridge' : 'warning'}
+          summary={`Con TIR ${r.tir.toFixed(1)}% y VPN ${fmt.mxnK(r.vpn)} a WACC ${wacc}%, el escenario base aguanta ante Cabildo si el P10 de Monte Carlo (más abajo) no cae bajo el costo de capital. Si VPN < 0, el primer ajuste no es comunicación: es captura o precio PET — use el tornado antes de fijar el expediente M15.`}
+          evidence={[
+            { label: 'TIR base', value: `${r.tir.toFixed(1)}%` },
+            { label: 'VPN base', value: fmt.mxnK(r.vpn) },
+            { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
+            { label: 'WACC activo', value: `${wacc}%` },
+          ]}
+          source={{
+            fuente: 'Modelo calculator.ts / Modelo_BASED.xlsx — proyección, no garantía de retorno',
+            incertidumbre: 'Captura ciudadana, pureza de fracción y tarifa de relleno.',
+          }}
+          nextStep={{ label: 'Revisar Monte Carlo y rejilla de stress' }}
+        />
+      )}
+
       {/* Controles financieros */}
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 mb-6">
         <p className="text-[12px] font-medium text-[#6B6760] mb-4">Supuestos del modelo financiero</p>
@@ -262,9 +281,15 @@ export function ImpactoFinanciero() {
       </div>
 
       {/* Gráfica Waterfall */}
-      <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Valor acumulado — venta base y escenario ampliado</p>
-        <WaterfallChart />
+      <ChartPanel
+        chartId="m13-waterfall-valor"
+        title="Valor acumulado — venta base y escenario ampliado"
+        subtitle="Componentes del VPN · escenario activo"
+        className="mb-6"
+      >
+        <div className="px-5 pb-4">
+          <WaterfallChart />
+        </div>
         {r && (
           <NarrativeBridge
             variant={r.vpn >= 0 ? 'result' : 'warning'}
@@ -281,14 +306,18 @@ export function ImpactoFinanciero() {
             nextStep={{ label: 'Lee la sensibilidad (Tornado)' }}
           />
         )}
-      </div>
+      </ChartPanel>
 
       {/* Monte Carlo */}
-      <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">
-          Distribución Monte Carlo TIR · 2,000 simulaciones
-        </p>
-        <MonteCarloCChart />
+      <ChartPanel
+        chartId="m13-monte-carlo-tir"
+        title="Distribución Monte Carlo TIR"
+        subtitle="2,000 simulaciones · percentiles 10 / 50 / 90"
+        className="mb-6"
+      >
+        <div className="px-5 pb-4">
+          <MonteCarloCChart />
+        </div>
         {r && mcPercentiles && (
           <NarrativeBridge
             variant={mcPercentiles.p10 < wacc ? 'warning' : 'result'}
@@ -305,25 +334,30 @@ export function ImpactoFinanciero() {
               { label: 'TIR mediana', value: `${mcPercentiles.p50.toFixed(1)}%` },
               { label: 'TIR P90', value: `${mcPercentiles.p90.toFixed(1)}%` },
             ]}
-            source={{ fuente: '2,000 corridas: precios y captura% perturbados con distribución normal ±σ; se reportan percentiles 10/50/90 del TIR resultante', incertidumbre: 'Perturbación ± en precios commodity y trayectoria de captura.' }}
+            source={{ fuente: 'Monte Carlo triangular: 2,000 escenarios con precios commodity y captura perturbados; percentiles 10/50/90 de TIR', incertidumbre: 'Cola inferior frente a WACC del escenario.' }}
             nextStep={{ label: 'Compara con Tornado de sensibilidad' }}
           />
         )}
-      </div>
+      </ChartPanel>
 
       {/* Tornado */}
-      <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Análisis de sensibilidad ±20% en VPN</p>
-        <div className="mb-5">
+      <ChartPanel
+        chartId="m13-tornado-vpn"
+        title="Análisis de sensibilidad ±20% en VPN"
+        subtitle="Impacto en valor presente neto · una variable a la vez"
+        className="mb-6"
+      >
+        <div className="px-5 pb-4">
           <TornadoChart />
         </div>
         {tornadoRows.length > 0 && (
+          <div className="px-5 pb-4 border-t border-[#F0EDE5]">
           <NarrativeBridge
             variant="bridge"
             summary={
               tornadoRows.length >= 2
-                ? 'El tornado ordena factores por cuánto desplazan el VPN ante variaciones del 20%: suele bastar con vigilar un grupo reducido de palancas antes de afinar el resto. La gráfica y la rejilla de referencia recogen el ranking y las magnitudes; aquí el foco es la lectura ejecutiva del reparto de riesgo.'
-                : 'El tornado muestra qué factor más mueve el VPN bajo choques del 20%; usa la gráfica y la rejilla para ver el orden y la escala del barrido. Prioriza acotar esa incertidumbre antes de ajustes menores en otros supuestos.'
+                ? `WACC y la captura del año 1 suelen encabezar el ranking (±20%: ${fmt.mxnM(tornadoRows[0]?.range ?? 0)} en la primera palanca). La tornado prioriza costo de capital y arranque de campaña antes que afinar contratos material por material.`
+                : 'El tornado muestra qué factor más mueve el VPN bajo choques del 20%; cruza con la rejilla de combinaciones para choques coordinados.'
             }
             evidence={[
               { label: 'Variable 1 · mayor rango', value: tornadoRows[0]?.label ?? '—' },
@@ -334,13 +368,20 @@ export function ImpactoFinanciero() {
             source={{ fuente: 'Cada variable varía ±20% independientemente; el VPN resultante menos el VPN base mide el desplazamiento; las variables se ordenan por magnitud de rango', unidad: 'MXN', incertidumbre: '±20% por variable manteniendo el resto constante.' }}
             nextStep={{ label: 'Revisa el cashflow proyectado' }}
           />
+          </div>
         )}
-      </div>
+      </ChartPanel>
 
       {/* Cashflow */}
-      <div className="mb-6">
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Flujo de caja acumulado · 3 escenarios</p>
-        <CashflowChart />
+      <ChartPanel
+        chartId="m13-cashflow"
+        title="Flujo de caja acumulado"
+        subtitle="Tres trayectorias de captura · horizonte del plan"
+        className="mb-6"
+      >
+        <div className="px-5 pb-4">
+          <CashflowChart />
+        </div>
         {r && (
           <NarrativeBridge
             variant="bridge"
@@ -355,7 +396,7 @@ export function ImpactoFinanciero() {
             nextStep={{ label: 'Explora el stress adversarial' }}
           />
         )}
-      </div>
+      </ChartPanel>
 
       {/* Monthly cashflow breakdown */}
       {r?.serieAnual && r.serieAnual.length > 0 && (
@@ -373,10 +414,27 @@ export function ImpactoFinanciero() {
         </details>
       )}
 
-      {/* Stress test */}
-      <div>
-        <p className="text-[12px] font-medium text-[#6B6760] mb-3">Grid de stress test</p>
-        <StressTest />
+      {/* Bloque maestro TIR múltiples + stress */}
+      {r && (
+        <div className="mb-4 rounded-[12px] border border-[#B0D0F5] bg-[#EBF3FB] px-4 py-3.5 text-[11px] text-[#0D3B7A] leading-relaxed">
+          <p className="font-semibold text-[#1A5FA8] mb-1.5">Varias TIR en este módulo — no son inconsistentes</p>
+          <p>
+            Miden cosas distintas del mismo proyecto. La <strong>TIR base ({r.tir.toFixed(1)}%)</strong> es el rendimiento del caso central y responde la pregunta corta sobre rentabilidad.
+            Los escenarios de estrés <strong>C</strong> (bloqueo del concesionario 12 meses) y <strong>D</strong> (costos operativos +20%) simulan adversidad operativa;
+            las barras acelerado/base/conservador arriba exploran captura y precio nominal.
+            Para la decisión del Cabildo, la cifra de referencia es la TIR base; las demás son medidas de robustez ante condiciones adversas.
+          </p>
+        </div>
+      )}
+
+      <ChartPanel
+        chartId="m13-rejilla-stress"
+        title="Rejilla de combinaciones — stress test"
+        subtitle="Escenarios A–D · TIR y VPN vs caso base"
+      >
+        <div className="px-5 pb-4">
+          <StressTest />
+        </div>
         {r && (
           <NarrativeBridge
             variant={r.vpn >= 0 ? 'bridge' : 'warning'}
@@ -387,10 +445,10 @@ export function ImpactoFinanciero() {
               { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
               { label: 'DSCR', value: `${r.dscr.toFixed(2)}×` },
             ]}
-            source={{ fuente: 'Rejilla de combinaciones discretas: volumen de captura × precio promedio ponderado; cada celda recalcula VPN completo con el resto de parámetros fijos', incertidumbre: 'Combinaciones discretas; no sustituye simulación completa.' }}
+            source={{ fuente: 'Rejilla de combinaciones: choques discretos de captura y precio; escenarios C y D recalculan TIR completa', incertidumbre: 'Complementa tornado univariado — no sustituye Monte Carlo.' }}
           />
         )}
-      </div>
+      </ChartPanel>
     </div>
   )
 }

@@ -1,5 +1,24 @@
 # Changelog EIDOS
 
+## 2026-05-22 (b) — Auditoría Modo Validar
+
+### Publicado
+- `docs/audit/simulator_editorial_inventory.md` — inventario de 19 módulos (Cap. 1 + Cap. 3)
+- `docs/audit/simulator_editorial_diffs.md` — registro de cambios aplicados
+- `docs/style/editorial_pattern_canonico.md` — patrón M13/rejilla (cifra + condicional + conclusión)
+
+### Correcciones ejecutadas (copy + QHC)
+- `ImpactoAmbientalStack.tsx` — NarrativeBridge post 8 KPIs (M01B)
+- `ImpactoFinanciero.tsx` — NarrativeBridge post 4 KPIs financieros (M13)
+- `MarketTraceabilityStack.tsx` — NarrativeBridge post 6 chips riesgo (M14); terminología fracción/CA
+- `SocialDemographicContextPanel.tsx` — headers M02/M02B; banner datos municipales
+- `MunicipioDataAwaitingBanner.tsx` — aviso PASO 3 + supuestos + CTA hub
+- `renderDecisionModule.tsx` — M02C bridge con banner
+- `moduleEditorialBriefs.ts` — P1/P4 en M03B, M15, antecedentes, social, organigrama, M13
+- `CostoOmisionStack.tsx` — etiqueta valorización de fracciones
+- `page.tsx` + `DecisionModuleShell` — tag nav «Esperando datos del municipio»
+- `types/index.ts` — campo opcional `nav_subtitle`
+
 ## 2026-05-22
 
 ### Publicado

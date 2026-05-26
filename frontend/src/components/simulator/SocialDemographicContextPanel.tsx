@@ -17,7 +17,9 @@ import { SocialRiskMatrixCards } from '@/components/simulator/SocialRiskMatrixCa
 import { SocialContextHandoffPanel } from '@/components/simulator/SocialContextHandoffPanel'
 import { SocialAceptacionEncuesta } from '@/components/simulator/SocialAceptacionEncuesta'
 import { CapacitacionTab } from '@/components/simulator/CapacitacionTab'
+import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDataAwaitingBanner'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { moduleNumber } from '@/lib/chapterConfig'
 import { cn } from '@/lib/utils'
 
 export type SocialView = 'diagnostico' | 'encuesta' | 'educacion' | 'impacto'
@@ -50,6 +52,21 @@ const DATO_LABEL: Record<SociodemographicDisplayBlock['dato'], string> = {
   no_disponible:   'Sin dato integrado en esta versión',
 }
 
+const MODULE_TITLES: Record<string, { kicker: string; title: string }> = {
+  social_diagnostico: {
+    kicker: 'Diagnóstico demográfico · M02',
+    title: 'Diagnóstico demográfico y vulnerabilidad',
+  },
+  social_encuesta: {
+    kicker: 'Encuesta ciudadana · M02B',
+    title: 'Encuesta de aceptación y preparación ciudadana',
+  },
+  mapeo_actores: {
+    kicker: 'Actores políticos · M02C',
+    title: 'Mapa de actores y legitimidad política',
+  },
+}
+
 export function SocialDemographicContextPanel({
   block,
   moduleAnchor,
@@ -68,6 +85,29 @@ export function SocialDemographicContextPanel({
     block.dato === 'no_disponible' &&
     (block.fuente_declarada?.trim().length ?? 0) === 0
 
+  const headerMeta = MODULE_TITLES[moduleAnchor] ?? {
+    kicker: `Contexto social · M${moduleNumber(moduleAnchor)}`,
+    title: 'Estudio social y participación ciudadana',
+  }
+
+  const preliminaryAssumptions = [
+    {
+      label: 'IPC ciudadano (supuesto)',
+      value:
+        indicePreparacionCiudadana !== null
+          ? `${indicePreparacionCiudadana.toFixed(0)}/100`
+          : '70/100 benchmark SEMARNAT',
+    },
+    {
+      label: 'Fuente declarada',
+      value: block.fuente_declarada?.trim() || 'Sin archivo municipal',
+    },
+    {
+      label: 'Alcance geográfico',
+      value: GEO_LABEL[block.geo_scope],
+    },
+  ]
+
   return (
     <section
       data-testid="social-context-root"
@@ -75,17 +115,32 @@ export function SocialDemographicContextPanel({
       className={cn('space-y-4', className)}
       aria-labelledby="social-demographic-context-title"
     >
+      <MunicipioDataAwaitingBanner
+        moduleLabel={headerMeta.title}
+        moduleCode={`M${moduleNumber(moduleAnchor)}`}
+        dato={block.dato}
+        assumptions={preliminaryAssumptions}
+        ctaLabel={
+          view === 'encuesta'
+            ? 'Programar levantamiento de encuesta'
+            : 'Cargar estudio sociodemográfico'
+        }
+      />
+
       {/* Header */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">Módulo Social · M06</p>
+        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">{headerMeta.kicker}</p>
         <h3 id="social-demographic-context-title" className="font-serif text-[20px] text-[#1C1B18]">
-          Estudio Social y Educación Ciudadana
+          {headerMeta.title}
         </h3>
         <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-          El programa de separación tiene dos hemisferios: <span className="font-medium text-[#1C1B18]">condominios y privadas</span> (Adendos 1-11)
-          y <span className="font-medium text-[#1C1B18]">casas en vía pública</span> (Adendo 12, en desarrollo).
-          Este módulo genera la evidencia social para justificar políticamente ambos ante cabildo.
-          Los datos de campo capturados aquí alimentan el módulo de riesgos del escenario.
+          El programa de separación en ALQUIMIA distingue{' '}
+          <span className="font-medium text-[#1C1B18]">condominios y privadas</span> (Adendos 1–11)
+          de <span className="font-medium text-[#1C1B18]">vía pública</span> (Adendo 12).
+          {view === 'encuesta'
+            ? ' La encuesta cierra la brecha entre benchmark y disposición real antes de fijar captura en M13.'
+            : ' Este módulo documenta rezago y vulnerabilidad antes de comprometer oleadas territoriales.'}
+          Los supuestos visibles aquí alimentan el score de riesgo social en M14.
         </p>
 
         {/* Indicadores rápidos */}

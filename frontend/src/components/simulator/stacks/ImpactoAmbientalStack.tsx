@@ -3,6 +3,7 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
+import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 
 export function ImpactoAmbientalStack() {
   const resultados = useSimulatorStore(s => s.resultados)
@@ -40,6 +41,22 @@ export function ImpactoAmbientalStack() {
           </div>
         ))}
       </div>
+
+      <NarrativeBridge
+        variant="bridge"
+        summary={`Con ${fmt.co2(r.co2eEvitadasHorizonteTon)} CO₂e evitadas en ${horizonte} años y ${r.pm25EvitadoTon.toFixed(1)} t PM2.5, el argumento ambiental en ALQUIMIA solo es defendible si el factor de emisión del relleno local está acotado. Si el contrafactual sin programa supera ${fmt.kgd(resultadosSinPrograma?.rsuTotalTonDia ?? r.rsuTotalTonDia)} RSU/día, lleve estas cifras a M04 costo de omisión; si falta dato de relleno, baje confianza antes de anexar a informe oficial.`}
+        evidence={[
+          { label: 'CO₂e horizonte', value: fmt.co2(r.co2eEvitadasHorizonteTon) },
+          { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} t` },
+          { label: 'IRA evitados', value: fmt.num0(r.casosIRAEvitados) },
+          { label: 'Extensión relleno', value: `+${r.extensionRelleno.toFixed(1)} años` },
+        ]}
+        source={{
+          fuente: 'OPS/INSP · INECC · calculator.ts — biogás informativo, no en ingresos base',
+          incertidumbre: 'Factor de emisión del relleno y captura de biogás local.',
+        }}
+        nextStep={{ label: 'Abrir M04 — Costo de la omisión' }}
+      />
 
       {resultadosSinPrograma && (
         <div className="rounded-[10px] bg-[#FEF7E7] border border-[#F5D98A] px-4 py-3 text-[12px] text-[#6B4800]">

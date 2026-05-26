@@ -1065,6 +1065,8 @@ export interface DecisionModule {
   status: DecisionModuleStatus
   blocker?: string | null
   next_action: string
+  /** Etiqueta secundaria en nav lateral (p. ej. espera de datos municipales). */
+  nav_subtitle?: string | null
 }
 
 export interface MunicipioContext {

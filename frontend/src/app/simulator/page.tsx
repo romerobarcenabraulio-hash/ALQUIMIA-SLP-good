@@ -117,10 +117,23 @@ export default function SimulatorPage() {
     [portalJourneyWithTraceability, visibleIds],
   )
 
+  const sociodemographicBlock = useMemo(
+    () => buildSociodemographicScaffoldBlock(municipiosActivos),
+    [municipiosActivos],
+  )
+
   const journeyFilteredModules = useMemo(() => {
     if (audience !== 'functionary') return filteredModules
-    return filteredModules.filter(m => isModuleVisibleInJourneyMode(m.module_id, journeyMode))
-  }, [audience, filteredModules, journeyMode])
+    const visible = filteredModules.filter(m => isModuleVisibleInJourneyMode(m.module_id, journeyMode))
+    const awaitingIds = new Set(['social_diagnostico', 'social_encuesta', 'mapeo_actores'])
+    const socioAwaiting =
+      sociodemographicBlock?.dato !== 'disponible' && sociodemographicBlock?.dato !== 'manual_usuario'
+    return visible.map(m =>
+      awaitingIds.has(m.module_id) && socioAwaiting
+        ? { ...m, nav_subtitle: 'Esperando datos del municipio' }
+        : m,
+    )
+  }, [audience, filteredModules, journeyMode, sociodemographicBlock?.dato])
 
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
   const shellNavRef = useRef<{
@@ -139,11 +152,6 @@ export default function SimulatorPage() {
   const activeModule = useMemo(
     () => journeyFilteredModules.find(m => m.module_id === activeModuleId) ?? journeyFilteredModules[0] ?? null,
     [activeModuleId, journeyFilteredModules],
-  )
-
-  const sociodemographicBlock = useMemo(
-    () => buildSociodemographicScaffoldBlock(municipiosActivos),
-    [municipiosActivos],
   )
 
   const needsClientOnboarding =

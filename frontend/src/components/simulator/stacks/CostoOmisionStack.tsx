@@ -198,7 +198,7 @@ export function CostoOmisionStack() {
             <p className="text-[12px] font-semibold text-[#1A4200] mb-3">Externalidades positivas con programa (waterfall)</p>
             <div className="space-y-2">
               {[
-                { label: 'Ingresos por valorización', value: fmt.mxn(ingresoAnual), color: '#3B6D11' },
+                { label: 'Ingresos por valorización de fracciones', value: fmt.mxn(ingresoAnual), color: '#3B6D11' },
                 { label: 'CO₂e evitado (valor SCE)', value: fmt.mxn(co2eAnual * PRECIO_SOCIAL_CARBONO_MXN), color: '#4A1C7A' },
                 { label: 'Empleos directos', value: resultados?.empleosTotalesDirectos ? `${resultados.empleosTotalesDirectos} plazas` : '—', color: '#1A5FA8' },
                 { label: 'Vida útil relleno extendida', value: `+${Math.round(rellenoAños * 0.25)} años est.`, color: '#8B6B4A' },
