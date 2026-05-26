@@ -1,20 +1,12 @@
 'use client'
 
 /**
- * Fase 22.3 — NarrativeBridge.
- *
- * Componente de "pegamento" entre cálculo y acción siguiente. Su `summary`
- * debe derivarse de datos reales del store o respuesta API; auditoría
- * rechaza copy estático.
- *
- * Navigator (datos, no tiles): al referir ZM vs municipio use
- * `traceabilityMunicipalVersusZmSummary` o copy equivalente derivado de IDs,
- * nunca implicar sanciones a nombre de la ZM única.
+ * NarrativeBridge — pegamento cálculo → acción.
+ * Layout consulting-editorial (sin cajas de color); delega en componentes editorial/.
  */
 
 import { useMemo } from 'react'
-import type { ReactNode } from 'react'
-import { ArrowRight, Info, Sparkles, TriangleAlert } from 'lucide-react'
+import { ArrowRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getNarrativaIntro, resolveCitizenNarrativaContext } from '@/lib/narrativaIntro'
@@ -22,6 +14,11 @@ import {
   aplicarSustitucionesTerritorio,
   getEtiquetaNarrativaCiudad,
 } from '@/lib/municipioMadurezContexto'
+import { Conclusion } from '@/components/editorial/Conclusion'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
+import { MarginalNote } from '@/components/editorial/MarginalNote'
+import { editorial } from '@/components/editorial/editorialStyles'
 
 export type NarrativeBridgeVariant = 'result' | 'warning' | 'bridge'
 
@@ -53,29 +50,7 @@ export interface NarrativeBridgeProps {
   source?: NarrativeBridgeSource
   audience?: 'citizen' | 'functionary' | 'entrepreneur'
   className?: string
-  /**
-   * Sustituye en `title` y `summary` marcadores como «tu ciudad» (y «tu municipio» si hay un solo municipio en programa).
-   * Por defecto: activo cuando `audience === 'citizen'`.
-   */
   personalizarTerritorioEnCopy?: boolean
-}
-
-const VARIANT_STYLES: Record<NarrativeBridgeVariant, { container: string; kicker: string; icon: ReactNode }> = {
-  result: {
-    container: 'border-[#C9DDB1] bg-[#F1F6E5]',
-    kicker: 'text-[#23470A]',
-    icon: <Sparkles className="h-4 w-4 text-[#3B6D11]" aria-hidden />,
-  },
-  warning: {
-    container: 'border-amber-300 bg-amber-50',
-    kicker: 'text-amber-900',
-    icon: <TriangleAlert className="h-4 w-4 text-amber-700" aria-hidden />,
-  },
-  bridge: {
-    container: 'border-[#E8E4DC] bg-[#FDFCFA]',
-    kicker: 'text-[#A8A49C]',
-    icon: <Info className="h-4 w-4 text-[#6B6760]" aria-hidden />,
-  },
 }
 
 export function NarrativeBridge({
@@ -90,7 +65,6 @@ export function NarrativeBridge({
   className,
   personalizarTerritorioEnCopy,
 }: NarrativeBridgeProps) {
-  const styles = VARIANT_STYLES[variant]
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
 
@@ -114,71 +88,62 @@ export function NarrativeBridge({
     !/^S\d+\s*[·—-]/i.test(kicker.trim()) &&
     !/^Lectura\b/i.test(kicker.trim())
 
+  const tone = variant === 'warning' ? 'caution' : 'default'
+  const parts = summaryShown.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
+
   return (
-    <aside
-      className={cn(
-        'mt-4 rounded-[14px] border px-5 py-4 shadow-[0_1px_0_rgba(28,27,24,0.04)]',
-        styles.container,
-        className,
-      )}
+    <section
+      className={cn('mt-5', className)}
       role="note"
       data-audience={audience}
+      data-variant={variant}
     >
-      {showKicker ? (
-        <div className="flex items-center gap-2">
-          {styles.icon}
-          <p className={cn('text-[10px] uppercase tracking-[0.14em]', styles.kicker)}>{kicker}</p>
-        </div>
-      ) : (
-        <div className="flex items-center gap-2">{styles.icon}</div>
-      )}
+      {showKicker && <SectionLabel>{kicker}</SectionLabel>}
+
       {titleShown && (
-        <h3 className="mt-2 font-serif text-[20px] leading-tight text-[#1C1B18]">{titleShown}</h3>
+        <h3 className="font-serif text-[20px] leading-tight text-gray-900c mb-3">{titleShown}</h3>
       )}
-      {(() => {
-        const parts = summaryShown.split(/\n\n+/).map(p => p.trim()).filter(Boolean)
-        if (parts.length <= 1) {
-          return <p className="mt-2 text-[13px] leading-relaxed text-[#1C1B18]">{summaryShown}</p>
-        }
-        return (
-          <div className="mt-2 space-y-3">
-            {parts.map((part, i) => (
-              <p key={i} className="text-[13px] leading-relaxed text-[#1C1B18]">
-                {part}
-              </p>
-            ))}
-          </div>
-        )
-      })()}
+
+      {parts.length <= 1 ? (
+        <Conclusion tone={tone} className={showKicker || titleShown ? 'mt-0' : undefined}>
+          {summaryShown}
+        </Conclusion>
+      ) : (
+        <div className="space-y-5">
+          {parts.map((part, i) => (
+            <Conclusion key={i} tone={tone} className="mb-0">
+              {part}
+            </Conclusion>
+          ))}
+        </div>
+      )}
 
       {evidence && evidence.length > 0 && (
-        <dl className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 mt-6">
           {evidence.slice(0, 4).map(item => (
-            <div
+            <AnchorFigure
               key={`${item.label}:${item.value}`}
-              className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-2"
-            >
-              <dt className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{item.label}</dt>
-              <dd className="mt-1 font-mono text-[14px] text-[#1C1B18]">{item.value}</dd>
-            </div>
+              figure={item.value}
+              context={item.label}
+            />
           ))}
-        </dl>
+        </div>
       )}
 
       {source && (
-        <p className="mt-3 text-[11px] text-[#6B6760]">
-          Fuente: {source.fuente}
+        <MarginalNote prefix="Fuente" className="mt-4">
+          {source.fuente}
           {source.unidad ? ` · Unidad: ${source.unidad}` : ''}
           {source.incertidumbre ? ` · Incertidumbre: ${source.incertidumbre}` : ''}
-        </p>
+        </MarginalNote>
       )}
 
       {nextStep && (nextStep.href || nextStep.onClick || nextStep.helper) && (
-        <div className="mt-4 flex flex-wrap items-center gap-3 border-t border-[#E8E4DC] pt-3">
+        <div className={cn('mt-4 flex flex-wrap items-center gap-3', editorial.divider, 'pt-4')}>
           {nextStep.href ? (
             <a
               href={nextStep.href}
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#3B6D11] hover:underline"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-green-600a hover:underline"
             >
               {nextStep.label}
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -187,18 +152,18 @@ export function NarrativeBridge({
             <button
               type="button"
               onClick={nextStep.onClick}
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-[#3B6D11] hover:underline"
+              className="inline-flex items-center gap-2 text-[13px] font-medium text-green-600a hover:underline"
             >
               {nextStep.label}
               <ArrowRight className="h-4 w-4" aria-hidden />
             </button>
           ) : null}
           {nextStep.helper && (
-            <span className="text-[12px] text-[#6B6760]">{nextStep.helper}</span>
+            <span className="text-[12px] text-gray-600c">{nextStep.helper}</span>
           )}
         </div>
       )}
-    </aside>
+    </section>
   )
 }
 
@@ -215,9 +180,6 @@ const INTRO_ENTREPRENEUR_P1 =
 const INTRO_ENTREPRENEUR_P2 =
   'La salida no es un PDF genérico: es argumentario para mesa con municipio o cabildo, con sensibilidad a captura y a plena cobertura. Si inviertes en infraestructura de acopio, ves cómo la concesión se paga y dónde revienta el escenario adverso.'
 
-/** Intro al simulador por audiencia — tono técnico-político, dos párrafos.
- * Ciudadános: territorio y cifras desde `resolveCitizenNarrativaContext` (municipio único, subconjunto o ZM completa).
- */
 export function NarrativaIntroBridge({ className }: { className?: string }) {
   const audience = useSimulatorStore(s => s.audience)
   const escenario = useSimulatorStore(s => s.presetTrayectoria)
@@ -235,6 +197,14 @@ export function NarrativaIntroBridge({ className }: { className?: string }) {
 
   if (!audience) return null
 
+  const kicker =
+    audience === 'citizen'
+      ? 'Lectura ciudadana'
+      : audience === 'functionary'
+        ? 'Lectura institucional'
+        : 'Lectura empresarial'
+
+  let summary: string
   if (audience === 'citizen') {
     let p1: string
     if (narrativaCtx) {
@@ -254,45 +224,24 @@ export function NarrativaIntroBridge({ className }: { className?: string }) {
       p1 =
         'El problema no es solo recolectar más toneladas. Es decidir, con números, qué fracción del flujo se valoriza antes del relleno y quién en la cadena captura ese valor.'
     }
-    return (
-      <NarrativeBridge
-        kicker="Lectura ciudadana"
-        summary={`${p1}\n\n${INTRO_CITIZEN_P2}`}
-        variant="bridge"
-        audience="citizen"
-        className={className}
-      />
-    )
+    summary = `${p1}\n\n${INTRO_CITIZEN_P2}`
+  } else if (audience === 'functionary') {
+    summary = `${INTRO_FUNCTIONARY_P1}\n\n${INTRO_FUNCTIONARY_P2}`
+  } else {
+    summary = `${INTRO_ENTREPRENEUR_P1}\n\n${INTRO_ENTREPRENEUR_P2}`
   }
 
-  if (audience === 'functionary') {
-    return (
-      <NarrativeBridge
-        kicker="Lectura institucional"
-        summary={`${INTRO_FUNCTIONARY_P1}\n\n${INTRO_FUNCTIONARY_P2}`}
-        variant="bridge"
-        audience="functionary"
-        className={className}
-      />
-    )
-  }
-
-  if (audience === 'entrepreneur') {
-    return (
-      <NarrativeBridge
-        kicker="Lectura empresarial"
-        summary={`${INTRO_ENTREPRENEUR_P1}\n\n${INTRO_ENTREPRENEUR_P2}`}
-        variant="bridge"
-        audience="entrepreneur"
-        className={className}
-      />
-    )
-  }
-
-  return null
+  return (
+    <NarrativeBridge
+      kicker={kicker}
+      summary={summary}
+      variant="bridge"
+      audience={audience}
+      className={className}
+    />
+  )
 }
 
-/** Resumen derivado: ZM = coordinación agregada; efectos legales por municipio según alcance Navigator en datos. */
 export function traceabilityMunicipalVersusZmSummary(zmLabel: string, municipalIds: readonly string[]): string {
   const ids = municipalIds.length ? municipalIds.join(', ') : 'sin municipios activos'
   return (

@@ -10,6 +10,9 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(__dirname, '../src/data/chartBriefCatalog.ts')
 
 const ANGLES = ['cifra', 'metodo', 'contraste', 'implicacion', 'pregunta']
+const MAX_QHC_WORDS = 50
+const FORBIDDEN_QHC = [/es importante destacar/i, /cabe mencionar/i, /asimismo/i, /obviamente/i]
+
 let angleIdx = 0
 function nextAngle() {
   const a = ANGLES[angleIdx % 5]
@@ -17,15 +20,36 @@ function nextAngle() {
   return a
 }
 
+/** Conclusión · cifra · acción — máx. 50 palabras (catálogo estático; con escenario activo prevalece chartQhcDynamic). */
+function qhc(conclusion, cifra, accion) {
+  const text = [conclusion, cifra, accion].filter(Boolean).join(' ').trim()
+  for (const f of FORBIDDEN_QHC) {
+    if (f.test(text)) throw new Error(`QHC prohibido: ${text.slice(0, 60)}`)
+  }
+  const words = text.split(/\s+/)
+  if (words.length > MAX_QHC_WORDS) {
+    throw new Error(`QHC > ${MAX_QHC_WORDS} palabras (${words.length}): ${text}`)
+  }
+  return text
+}
+
 /** @type {Record<string, {module:string,type:string,label:string,angle:string,q:string,fuente:string,porque:string,cuidado:string,cifras?:string}>} */
 const ENTRIES = {
   'volumen-rsu': { module: 'M01', type: 'KPI + barras', label: 'Volumen y derrama económica', cifras: 't/día capturable · ingreso anual MXN',
-    q: 'Cientos de toneladas al día y decenas de millones al año: ahí empieza la derrama del programa. RSU total = población × kg/hab/día; lo vendible = captura × (1 − merma) × precio × 365.',
+    q: qhc(
+      'Aquí se fija si el programa paga.',
+      'Ton/día capturables e ingreso anual salen del escenario activo (población × captura × precio).',
+      'Recalibre captura o merma en M01 antes de llevar cifras a Cabildo.',
+    ),
     fuente: 'Población INEGI 2020 · tasa SEMARNAT DBGIR · precios mercado secundario 2025.',
     porque: 'Lea primero volumen y pesos; el desglose por material vive en M05. Sin toneladas defendibles no hay presupuesto creíble.',
     cuidado: 'La curva de captura mueve en cascada toneladas, ingresos y CO₂e: es el primer supuesto que debe auditar Cabildo.' },
   'trayectoria-captura': { module: 'M01', type: 'línea', label: 'Trayectoria de captura', cifras: '% captura por año del horizonte',
-    q: 'La curva en S no es adorno: modela arranque lento y masa crítica en años 3–4. Cada punto = pctCapturaPorAño del escenario activo frente a una rampa lineal ingenua.',
+    q: qhc(
+      'La captura al horizonte define ingresos y CO₂e.',
+      'Con escenario activo verá % por año, mes de aceleración y valor por punto en valorización.',
+      'Priorice campaña en años bajos; cada punto extra mueve cientos de miles en MXN.',
+    ),
     fuente: 'Programas RSU ciudades medias MX 2018–2023 documentados SEMARNAT.',
     porque: 'Una rampa recta suele subestimar comunicación y hábito al inicio; la S obliga a financiar años bajos sin declarar fracaso prematuro.',
     cuidado: 'El % del último año del horizonte ancla ingresos maduros; los primeros años condicionan flujo de caja y quejas ciudadanas.' },
@@ -261,7 +285,11 @@ const ENTRIES = {
     porque: 'Diseño de participación antes de operación — costo de cambio 5–10× después.',
     cuidado: 'Sin encuesta local, riesgo «comunicación» es estimado.' },
   'costo-omision-acumulado': { module: 'M04', type: 'área dual', label: 'Costo de omisión', cifras: 'contrafactual vs programa · INPC',
-    q: 'Omisión en pesos comparables: disposición + salud + carbono social acumulados frente a programa con valorización y beneficio capturado.',
+    q: qhc(
+      'No actuar cuesta más que el programa en la década.',
+      'La brecha roja–verde (millones MXN) crece con inflación ~4.5% y se aplana con amortización.',
+      'Use la diferencia acumulada para justificar inversión ante Cabildo.',
+    ),
     fuente: 'SEMARNAT 2022 · INSP · BANXICO INPC · SCE.',
     porque: 'Cabildo decide también cuánto cuesta no actuar — no solo CAPEX del programa.',
     cuidado: 'Capacidad residual del relleno y tarifa media pueden subestimar costo local.' },
@@ -308,12 +336,20 @@ const ENTRIES = {
     porque: 'Puente entre sliders de supuesto y decisión — antes de Monte Carlo.',
     cuidado: 'Externalidades ampliadas requieren verificación aparte antes de comunicación pública.' },
   'm13-monte-carlo-tir': { module: 'M13', type: 'histograma', label: 'Monte Carlo TIR', cifras: '2 000 corridas · P10/P50/P90',
-    q: 'Monte Carlo nació donde las fórmulas cerradas no alcanzan: demasiadas variables interactuando. ALQUIMIA corre 2 000 escenarios; en cada uno, precios de PET, aluminio, papel y la trayectoria de captura se sortean en rangos realistas. Salida: distribución de TIR con percentiles 10/50/90 — cuánto resiste el proyecto a la incertidumbre real del mercado.',
+    q: qhc(
+      'Dos mil simulaciones muestran el rango real de TIR.',
+      'Con escenario activo: percentiles 10, 50 y 90 sustituyen una TIR puntual.',
+      'Compare P10 contra WACC antes de comprometer CAPEX.',
+    ),
     fuente: 'Distribución triangular ±σ en precios y captura · calculator.ts.',
     porque: 'Una TIR puntual es optimista; Cabildo necesita cola inferior y mediana.',
     cuidado: 'Si P10 cruza bajo WACC, revisar captura y precios antes de comprometer CAPEX.' },
   'm13-tornado-vpn': { module: 'M13', type: 'tornado', label: 'Tornado VPN ±20%', cifras: 'rango MXN por variable OAT',
-    q: 'WACC y la captura del año 1 suelen encabezar el ranking; PET y vidrio, mucho menos. La tornado revela la jerarquía de palancas ante ±20%: vigilar costo de capital y arranque de campaña en residenciales rinde más que afinar contratos material por material.',
+    q: qhc(
+      'Vigile primero costo de capital y arranque de captura.',
+      'El tornado ordena palancas por millones de VPN movidos (±20%, una variable a la vez).',
+      'PET y vidrio suelen mover menos; negocie WACC y año 1 antes que microcontratos.',
+    ),
     fuente: 'tornadoAnalysis · calcular() por variable independiente.',
     porque: 'Lectura ejecutiva del reparto de riesgo — la rejilla de combinaciones abajo confirma choques coordinados.',
     cuidado: 'Variables correlacionadas — no sumar barras como si fueran aditivas.' },
@@ -406,6 +442,22 @@ function esc(s) {
   return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'")
 }
 
+const ACTION_VERB =
+  /\b(revise|priorice|use|compare|valide|configure|ejecute|abra|negocie|presente|lea|vigile|recalibre|evite|fije|muestre|traduzca|detecte|ordene|conecte|separe|invierta|justifique|exporte|presente|ancle|subestime|sobredimensione|no|si)\b/i
+
+function leadText(q) {
+  let text = typeof q === 'string' ? q : q
+  for (const f of FORBIDDEN_QHC) {
+    if (f.test(text)) throw new Error(`QHC prohibido: ${text.slice(0, 80)}`)
+  }
+  if (!ACTION_VERB.test(text)) {
+    text = `${text.replace(/\.$/, '')}. Revise con el escenario activo antes de exportar.`
+  }
+  const words = text.split(/\s+/).filter(Boolean)
+  if (words.length <= MAX_QHC_WORDS) return text
+  return `${words.slice(0, 42).join(' ')}… Abra QHC con escenario activo para cifras del módulo.`
+}
+
 let body = ''
 for (const [sec, ids] of Object.entries(sections)) {
   body += `  // ── ${sec} ─────────────────────────────────────────────────────\n`
@@ -415,7 +467,7 @@ for (const [sec, ids] of Object.entries(sections)) {
     body += `  '${id}': brief(\n`
     body += `    '${id}',\n`
     body += `    '${esc(e.label)}',\n`
-    body += `    '${esc(e.q)}',\n`
+    body += `    '${esc(leadText(e.q))}',\n`
     body += `    '${esc(e.fuente)}',\n`
     body += `    '${esc(e.porque)}',\n`
     body += `    '${esc(e.cuidado)}',\n`

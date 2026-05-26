@@ -9,8 +9,14 @@ import { TornadoChart } from '@/components/charts/TornadoChart'
 import { CashflowChart } from '@/components/charts/CashflowChart'
 import { StressTest } from '@/components/charts/StressTest'
 import { Slider } from '@/components/ui/Slider'
-import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
-import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import {
+  AnchorFigure,
+  Conclusion,
+  EditorialClose,
+  MarginalNote,
+  Recommendation,
+  SectionLabel,
+} from '@/components/editorial'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
 import { describeMaterialPriceReference, PRICE_RESEARCH_SOURCE_LABEL } from '@/data/materialPriceResearch'
@@ -179,62 +185,77 @@ export function ImpactoFinanciero() {
     return { p10: q(0.1), p50: q(0.5), p90: q(0.9) }
   }, [tirDistribution])
 
+  const ebitdaPromedio = r
+    ? fmt.mxnK(r.ebitda / Math.max(1, horizonte))
+    : '—'
+
   return (
     <div>
-      <details className="mb-4 text-[11px] rounded-[10px] border border-[#E8E4DC] overflow-hidden">
-        <summary className="cursor-pointer px-4 py-2.5 text-[#6B6760] hover:text-[#1C1B18] hover:bg-[#FAFAF8] transition-colors select-none">
+      <details className="mb-8 border-b border-[0.5px] border-gray-200c pb-4">
+        <summary className="cursor-pointer text-[12px] text-gray-600c hover:text-gray-900c transition-colors select-none list-none">
           Metodología del modelo financiero
         </summary>
-        <div className="border-t border-[#F0EDE5]">
-          <ContextoModulo
-            variante="financiero"
-            titulo="¿Cómo está construido el modelo financiero?"
-            cuerpo={`El modelo calcula flujos de caja desde venta de materiales separados (precio × volumen capturable × días operativos), ahorro de disposición ${costoDisposicionActivo ? `con supuesto editable de ${fmt.mxn(costoDisposicionPorTon)}/ton enterrada evitada` : 'desactivado en este escenario'} e ingresos ambientales condicionados. Contra eso proyecta inversión inicial y costos operativos. EBITDA, VPN, TIR y payback son proyecciones del escenario, no garantías de retorno ni presupuesto aprobado.`}
-            puntos={[
-              'WACC base: 20% (Bootstrap §0). Ajustable con crédito verde BID/BM desde 6.5%.',
-              'Monte Carlo: 2,000 simulaciones con variación ±20% en precios, captura y costos operativos.',
-              'Stress test: 4 escenarios adversos (PET -40%, adopción lenta, bloqueo concesionario, costos operativos +20%).',
-              'TIR proyecto CA-G: 212% · CA-M: 155.6% · CA-P: 109.5% (Modelo_BASED.xlsx, Año 3).',
-              'Payback típico: 5-7 meses para CA en régimen. El payback del programa global depende de inversión inicial, contenedores y comunicación.',
-            ]}
-            fuente={`Modelo financiero: calculator.ts / Modelo_BASED.xlsx. Precios: ${PRICE_RESEARCH_SOURCE_LABEL}. Crédito carbono: VCS Market 2024 / SEMARNAT SCE.`}
-            advertencia="Los resultados son proyecciones de modelo, no garantías de retorno. La TIR real depende de la adopción ciudadana, el comportamiento del concesionario y la pureza del material entregado."
-          />
+        <div className="pt-5">
+          <SectionLabel>Construcción del modelo</SectionLabel>
+          <Conclusion className="text-[18px] md:text-[20px] mb-5">
+            {`El modelo proyecta flujos desde venta de materiales separados y ahorro de disposición ${costoDisposicionActivo ? `(${fmt.mxn(costoDisposicionPorTon)}/ton evitada)` : '(desactivado en este escenario)'}; VPN, TIR y payback son proyección del escenario, no presupuesto aprobado.`}
+          </Conclusion>
+          <ul className="font-sans text-[14px] leading-[1.55] text-gray-600c space-y-2 max-w-[620px] list-disc pl-4 mb-4">
+            <li>WACC base 20% (Bootstrap §0); crédito verde BID/BM desde 6.5%.</li>
+            <li>Monte Carlo: 2,000 corridas con ±20% en precios, captura y OPEX.</li>
+            <li>Rejilla A–D: PET −40%, adopción lenta, bloqueo concesionario, OPEX +20%.</li>
+            <li>TIR por tipo de CA (Modelo_BASED Año 3): G 212% · M 155.6% · P 109.5%.</li>
+          </ul>
+          <MarginalNote prefix="Fuente">
+            {`calculator.ts / Modelo_BASED.xlsx · Precios: ${PRICE_RESEARCH_SOURCE_LABEL} · Carbono: VCS 2024 / SEMARNAT SCE`}
+          </MarginalNote>
+          <MarginalNote className="mt-2 italic">
+            La TIR real depende de adopción ciudadana, conducta del concesionario y pureza de fracción.
+          </MarginalNote>
         </div>
       </details>
 
-      {/* KPIs financieros */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {[
-          { l: 'TIR del proyecto',   v: r ? `${r.tir.toFixed(1)}%`        : '—', c: 'text-[#3B6D11]' },
-          { l: 'VPN — valor presente neto',     v: r ? fmt.mxnK(r.vpn)              : '—', c: 'text-[#3B6D11]' },
-          { l: 'EBITDA promedio anual',     v: r ? fmt.mxnK(r.ebitda / Math.max(1, useSimulatorStore.getState().horizonte)) : '—', c: '' },
-          { l: 'Recuperación — meses',        v: r ? `${r.paybackMeses.toFixed(0)} meses` : '—', c: '' },
-        ].map(item => (
-          <div key={item.l} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
-            <p className="text-[10px] uppercase text-[#A8A49C] tracking-wide mb-1">{item.l}</p>
-            <p className={`font-mono text-[22px] font-medium ${item.c || 'text-[#1C1B18]'}`}>{item.v}</p>
-          </div>
-        ))}
-      </div>
+      <section className="mb-8">
+        <SectionLabel>Escenario financiero activo</SectionLabel>
+        {r ? (
+          <Conclusion tone={r.vpn >= 0 ? 'default' : 'caution'}>
+            {`Con TIR ${r.tir.toFixed(1)}% y VPN ${fmt.mxnK(r.vpn)} a WACC ${wacc}%, el escenario ${r.vpn >= 0 ? 'aguanta' : 'no aguanta'} ante Cabildo si el P10 de Monte Carlo no cae bajo el costo de capital.`}
+          </Conclusion>
+        ) : (
+          <Conclusion>Ajuste supuestos o active municipios para calcular TIR y VPN del escenario.</Conclusion>
+        )}
 
-      {r && (
-        <NarrativeBridge
-          variant={r.vpn >= 0 ? 'bridge' : 'warning'}
-          summary={`Con TIR ${r.tir.toFixed(1)}% y VPN ${fmt.mxnK(r.vpn)} a WACC ${wacc}%, el escenario base aguanta ante Cabildo si el P10 de Monte Carlo (más abajo) no cae bajo el costo de capital. Si VPN < 0, el primer ajuste no es comunicación: es captura o precio PET — use el tornado antes de fijar el expediente M15.`}
-          evidence={[
-            { label: 'TIR base', value: `${r.tir.toFixed(1)}%` },
-            { label: 'VPN base', value: fmt.mxnK(r.vpn) },
-            { label: 'Payback', value: `${r.paybackMeses.toFixed(0)} meses` },
-            { label: 'WACC activo', value: `${wacc}%` },
-          ]}
-          source={{
-            fuente: 'Modelo calculator.ts / Modelo_BASED.xlsx — proyección, no garantía de retorno',
-            incertidumbre: 'Captura ciudadana, pureza de fracción y tarifa de relleno.',
-          }}
-          nextStep={{ label: 'Revisar Monte Carlo y rejilla de stress' }}
-        />
-      )}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 mb-5">
+          <AnchorFigure
+            figure={r ? `${r.tir.toFixed(1)}%` : '—'}
+            context="TIR del proyecto"
+            figureClassName={r && r.tir >= wacc ? 'text-green-600a' : undefined}
+          />
+          <AnchorFigure
+            figure={r ? fmt.mxnK(r.vpn) : '—'}
+            context="VPN — valor presente neto"
+            figureClassName={r && r.vpn >= 0 ? 'text-green-600a' : undefined}
+          />
+          <AnchorFigure figure={ebitdaPromedio} context="EBITDA promedio anual" />
+          <AnchorFigure
+            figure={r ? `${r.paybackMeses.toFixed(0)}` : '—'}
+            context="Recuperación (meses)"
+          />
+        </div>
+
+        {r && (
+          <>
+            <MarginalNote prefix="Incertidumbre">
+              Captura ciudadana, pureza de fracción y tarifa de relleno. Si VPN es negativo, priorice captura o precio PET antes que comunicación (tornado → M15).
+            </MarginalNote>
+            {r.vpn < 0 && (
+              <p className="mt-3 text-[13px] text-gray-600c max-w-[580px]">
+                Siguiente paso: revisar Monte Carlo y rejilla de stress antes de fijar expediente a Cabildo.
+              </p>
+            )}
+          </>
+        )}
+      </section>
 
       {/* Controles financieros */}
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 mb-6">
@@ -292,7 +313,7 @@ export function ImpactoFinanciero() {
           <WaterfallChart />
         </div>
         {r && (
-          <NarrativeBridge
+          <EditorialClose
             variant={r.vpn >= 0 ? 'result' : 'warning'}
             summary={r.vpn >= 0
               ? `Los componentes positivos sostienen un VPN de ${fmt.mxnK(r.vpn)} con TIR ${r.tir.toFixed(1)}%. El proyecto crea valor con la WACC actual (${wacc}%).`
@@ -320,7 +341,7 @@ export function ImpactoFinanciero() {
           <MonteCarloCChart />
         </div>
         {r && mcPercentiles && (
-          <NarrativeBridge
+          <EditorialClose
             variant={mcPercentiles.p10 < wacc ? 'warning' : 'result'}
             summary={
               `En 2,000 corridas aleatorias, el TIR cae en el percentil 10 a ${mcPercentiles.p10.toFixed(1)}%, la mediana queda en ${mcPercentiles.p50.toFixed(1)}% y el percentil 90 llega a ${mcPercentiles.p90.toFixed(1)}%. ` +
@@ -352,9 +373,9 @@ export function ImpactoFinanciero() {
           <TornadoChart />
         </div>
         {tornadoRows.length > 0 && (
-          <div className="px-5 pb-4 border-t border-[#F0EDE5]">
-          <NarrativeBridge
+          <EditorialClose
             variant="bridge"
+            className="px-0"
             summary={
               tornadoRows.length >= 2
                 ? `WACC y la captura del año 1 suelen encabezar el ranking (±20%: ${fmt.mxnM(tornadoRows[0]?.range ?? 0)} en la primera palanca). La tornado prioriza costo de capital y arranque de campaña antes que afinar contratos material por material.`
@@ -369,7 +390,6 @@ export function ImpactoFinanciero() {
             source={{ fuente: 'Cada variable varía ±20% independientemente; el VPN resultante menos el VPN base mide el desplazamiento; las variables se ordenan por magnitud de rango', unidad: 'MXN', incertidumbre: '±20% por variable manteniendo el resto constante.' }}
             nextStep={{ label: 'Revisa el cashflow proyectado' }}
           />
-          </div>
         )}
       </ChartPanel>
 
@@ -384,7 +404,7 @@ export function ImpactoFinanciero() {
           <CashflowChart />
         </div>
         {r && (
-          <NarrativeBridge
+          <EditorialClose
             variant="bridge"
             summary={`En ${horizonte} años el modelo acumula derrama bruta ${fmt.mxnK(r.ingresosBrutos)} —inversión inicial ${fmt.mxnK(r.capexTotal)} y EBITDA acumulado ${fmt.mxnK(r.ebitda)}. La forma del flujo dice si hace falta refinanciamiento temprano o si la captura sostiene la deuda.`}
             evidence={[
@@ -401,14 +421,13 @@ export function ImpactoFinanciero() {
 
       {/* Monthly cashflow breakdown */}
       {r?.serieAnual && r.serieAnual.length > 0 && (
-        <details className="mb-6 rounded-[12px] border border-[#E8E4DC] overflow-hidden">
-          <summary className="cursor-pointer bg-[#F6FAEF] px-4 py-3 text-[11px] font-medium text-[#3B6D11] select-none list-none flex items-center justify-between hover:bg-[#EDF7E0] transition-colors">
-            <span>Desglose mes a mes · CAPEX / OPEX / Ingreso / FCF</span>
-            <span className="text-[9px] text-[#8CAA7A]">▾</span>
+        <details className="mb-6 border-b border-[0.5px] border-gray-200c pb-4">
+          <summary className="cursor-pointer text-[12px] font-medium text-gray-900c select-none list-none">
+            Desglose mes a mes · CAPEX / OPEX / Ingreso / FCF
           </summary>
-          <div className="p-4 border-t border-[#D7E8C0] bg-white">
-            <p className="text-[11px] text-[#6B6760] mb-3 leading-snug">
-              El primer año concentra la inversión en capital (CAPEX) en los meses de arranque, mientras el ingreso crece con la adopción ciudadana. Las filas en rojo indican meses con flujo negativo — esperable hasta alcanzar el punto de equilibrio.
+          <div className="pt-4">
+            <p className="font-sans text-[14px] text-gray-600c mb-4 max-w-[620px] leading-[1.55]">
+              El primer año concentra CAPEX en arranque; el ingreso crece con la adopción. Filas en rojo: flujo negativo hasta equilibrio.
             </p>
             <MensualCostTable serieAnual={r.serieAnual} />
           </div>
@@ -428,7 +447,7 @@ export function ImpactoFinanciero() {
           <StressTest />
         </div>
         {r && (
-          <NarrativeBridge
+          <EditorialClose
             variant={r.vpn >= 0 ? 'bridge' : 'warning'}
             summary={`La rejilla contrasta choques de volumen y precios respecto al caso base (VPN ${fmt.mxnK(r.vpn)}, TIR ${r.tir.toFixed(1)}%). Si la mayoría de celdas permanece verde, la estructura aguanta shocks coordinados; si predominan tonos adversos, prioriza contratos indexados o hedges simples.`}
             evidence={[
@@ -441,6 +460,14 @@ export function ImpactoFinanciero() {
           />
         )}
       </ChartPanel>
+
+      {r && (
+        <Recommendation className="mt-10">
+          {r.vpn >= 0 && mcPercentiles && mcPercentiles.p10 >= wacc
+            ? `Presente a Cabildo la TIR base ${r.tir.toFixed(1)}% y VPN ${fmt.mxnK(r.vpn)} como caso central; use Monte Carlo y la rejilla solo si le preguntan por adversidad. No mezcle TIR de escenario C/D con la cifra de apertura.`
+            : `No comprometa inversión inicial hasta que el P10 de Monte Carlo supere WACC ${wacc}% o documente mitigación contractual (captura año 1, indexación PET). La TIR base ${r.tir.toFixed(1)}% no basta si el tramo inferior del riesgo cruza el costo de capital.`}
+        </Recommendation>
+      )}
     </div>
   )
 }

@@ -15,6 +15,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import type { TerritorialImplementationPlan, TerritorialPlanRequest } from '@/types'
 import { cn } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { Conclusion, EditorialCallout, MarginalNote, SectionLabel } from '@/components/editorial'
 
 const SOURCE = {
   source_id: 'alquimia-12-2-territorial-ui',
@@ -143,9 +144,9 @@ export function ImplementacionEspacioTiempo() {
     <section className="space-y-5">
       <div>
         <h2 className="mt-2 font-serif text-[24px] text-[#1C1B18]">Ruta territorial por oleadas</h2>
-        <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
+        <Conclusion as="div" className="mt-2 text-[15px] md:text-[16px]">
           Convierte el horizonte en zonas, municipios, colonias piloto propuestas, trimestres y metas parciales para RSU municipal.
-        </p>
+        </Conclusion>
       </div>
 
       <div className="grid gap-3 md:grid-cols-3">
@@ -190,12 +191,12 @@ export function ImplementacionEspacioTiempo() {
 
       <TimelineHitosEspacioTiempo empleoBase={empleoBasePert} zmId={zmActiva} horizonteAnios={horizonte} />
 
-      <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] p-4">
-        <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Oleadas territoriales (servicio)</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+      <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
+        <SectionLabel>Oleadas territoriales (servicio)</SectionLabel>
+        <MarginalNote className="mt-1 max-w-none">
           Complementa el PERT de arriba con zonas y colonias piloto desde el API. El cálculo no se dispara solo al abrir el módulo: usa el
           botón para evitar saturar la pestaña. Si el servicio no responde, el PERT y las gráficas siguen disponibles en la otra pestaña.
-        </p>
+        </MarginalNote>
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="button"
@@ -211,9 +212,9 @@ export function ImplementacionEspacioTiempo() {
           )}
         </div>
         {!canFetchTerritorialPlan && !blockedDemo && (
-          <p className="mt-3 rounded-[6px] border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] text-amber-950">
+          <EditorialCallout tone="caution" className="mt-3 pt-3">
             Selecciona al menos un municipio activo y asegura RSU modelado &gt; 0 para calcular oleadas territoriales.
-          </p>
+          </EditorialCallout>
         )}
         {loading && (
           <div className="mt-3">
@@ -428,19 +429,12 @@ function TimelineHitosEspacioTiempo({
         </aside>
       </div>
 
-      <div className="mt-4 rounded-[8px] border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-2.5">
-        <p className="text-[11px] leading-relaxed text-[#6B6760]">
-          <Info className="mr-1 inline h-3.5 w-3.5 shrink-0 align-text-bottom text-[#7B7366]" aria-hidden />
-          Esta línea de tiempo es una{' '}
-          <span className="font-medium text-[#403E3A]">ilustración orientativa</span>
-          {' '}del simulador: fechas PERT y KPI acumulados son{' '}
-          <span className="font-medium text-[#403E3A]">proyecciones del modelo</span>
-          , no calendario oficial, programa de cabildo ni acto de autoridad. Los entregables municipales requieren validación local.
-        </p>
-        <p className="mt-1.5 text-[10px] leading-relaxed text-[#8A857C]">
-          Etiqueta «Modelo» en cada hito: el día del deslizador alcanzó o superó la esperanza PERT; es coherente con lo sumado en los KPI de arriba. «Pte.»: aún no entra en ese acumulado.
-        </p>
-      </div>
+      <MarginalNote className="mt-4">
+        <Info className="mr-1 inline h-3.5 w-3.5 shrink-0 align-text-bottom text-[#7B7366]" aria-hidden />
+        Esta línea de tiempo es una ilustración orientativa del simulador: fechas PERT y KPI acumulados son proyecciones del modelo,
+        no calendario oficial, programa de cabildo ni acto de autoridad. Los entregables municipales requieren validación local.
+        Etiqueta «Modelo» en cada hito: el día del deslizador alcanzó o superó la esperanza PERT; «Pte.»: aún no entra en ese acumulado.
+      </MarginalNote>
     </div>
   )
 }

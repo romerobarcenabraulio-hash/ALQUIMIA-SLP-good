@@ -1,5 +1,19 @@
 # Changelog EIDOS
 
+## 2026-05-22 (c) — Pyramid Principle en Modo Validar (9 módulos)
+
+### Publicado
+- `frontend/src/lib/pyramidEditorialMetrics.ts` — cifras dinámicas para titulares (entierro, omisión, TIR)
+- `frontend/src/lib/moduleEditorialContext.ts` — hook único de contexto editorial + métricas del store
+
+### Reescritura editorial (Minto / SCQA)
+- `moduleEditorialBriefs.ts` — titulares pyramid en M01, M02, M02C, M02D, M03B, M04, M13, M14, M15; subtítulos verdes vacíos; voz activa y frases cortas
+- `clientModuleRegistry.ts` — labels y decisiones alineados al nuevo copy
+- `DecisionModuleShell.tsx` + `ModuleEditorialBrief.tsx` — métricas del escenario activo en briefs
+
+### Limpieza R3
+- Eliminado «contrafactual», «habilitador», «facilitador» en módulos pyramid y stacks relacionados (`ImpactoAmbientalStack`, `renderDecisionModule`, `ExpedienteCabildoStack`)
+
 ## 2026-05-22 (b) — Auditoría Modo Validar
 
 ### Publicado

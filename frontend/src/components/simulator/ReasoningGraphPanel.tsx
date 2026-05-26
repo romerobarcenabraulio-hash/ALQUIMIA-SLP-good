@@ -64,7 +64,7 @@ export default function ReasoningGraphPanel() {
   }
 
   return (
-    <div className="space-y-4 rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6">
+    <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="mb-1 text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">

@@ -8,6 +8,7 @@
  */
 
 import { cn } from '@/lib/utils'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
 
 export type TimelineTone = 'neutral' | 'positive' | 'warning' | 'critical'
 
@@ -43,10 +44,8 @@ export function EditorialTimeline({ title, kicker, milestones, className }: Edit
     )
   }
   return (
-    <div className={cn('rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-5', className)}>
-      {kicker && (
-        <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-[#A8A49C]">{kicker}</p>
-      )}
+    <div className={cn('border-t border-[#E8E4DC] pt-5', className)}>
+      {kicker && <SectionLabel>{kicker}</SectionLabel>}
       {title && (
         <h3 className="mb-4 font-serif text-[20px] leading-tight text-[#1C1B18]">{title}</h3>
       )}

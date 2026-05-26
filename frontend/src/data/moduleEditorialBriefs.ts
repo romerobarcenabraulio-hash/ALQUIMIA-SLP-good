@@ -1,11 +1,18 @@
 import type { MunicipioMadurezVista } from '@/lib/municipioMadurezContexto'
-import { getCatalogChartBrief } from '@/data/chartBriefCatalog'
+import { resolveChartBrief } from '@/lib/chartQhcDynamic'
+import type { useSimulatorStore } from '@/store/simulatorStore'
 import {
   FUNCTIONARY_MODULE_ORDER,
   moduleNumber,
   resolveModuleId,
 } from '@/lib/chapterConfig'
 import { M00B_NEXT_ACTION, M01_NEXT_ACTION } from '@/lib/editorialRailLabels'
+import {
+  fmtMillonesEditorial,
+  fmtViviendasEditorial,
+  type PyramidEditorialMetrics,
+} from '@/lib/pyramidEditorialMetrics'
+import { fmt } from '@/lib/utils'
 
 /**
  * Guía de estilo editorial (simulador funcionario):
@@ -65,6 +72,46 @@ export type ModuleEditorialContext = {
   scope: 'sin_municipio' | 'municipio' | 'zm'
   municipio?: MunicipioMadurezVista | null
   municipiosCount: number
+  metrics?: Partial<PyramidEditorialMetrics>
+}
+
+function pyramidCityBaseline(ctx: ModuleEditorialContext): string {
+  const t = ctx.territorio
+  const m = ctx.metrics
+  if (m?.enterradoAnual != null && m.capexTotal != null && m.capexTotal > 0) {
+    return `${t} entierra ${fmt.mxnM(m.enterradoAnual)} al año. Recupere con ${fmt.mxnM(m.capexTotal)} en centros de acopio.`
+  }
+  return `${t} entierra valor cada día que el RSU llega mezclado al relleno — calibre M01 para ver la cifra exacta.`
+}
+
+function pyramidSocialDiagnostico(ctx: ModuleEditorialContext): string {
+  const m = ctx.metrics
+  if (m?.vivActivas != null && m.vivActivas > 0) {
+    return `${fmtViviendasEditorial(m.vivActivas)} separarán residuos si tres condiciones se cumplen: educación mes uno, infraestructura mes tres, incentivos mes seis.`
+  }
+  return 'Las viviendas activas separarán residuos si educación arranca mes uno, infraestructura mes tres e incentivos mes seis.'
+}
+
+function pyramidCostoOmision(ctx: ModuleEditorialContext): string {
+  const t = ctx.territorio
+  const m = ctx.metrics
+  if (m?.costoOmisionTotalM != null && m.horizonte != null) {
+    const ahorro = m.ahorroSaludProgramaM != null ? fmtMillonesEditorial(m.ahorroSaludProgramaM) : '—'
+    return `${fmtMillonesEditorial(m.costoOmisionTotalM)}. Eso le costará a ${t} no hacer nada durante ${m.horizonte} años. Con programa, recupera ${ahorro} solo en ahorro de salud pública.`
+  }
+  return `${t} paga más cada año que posterga un programa de separación — abra M04 con territorio calibrado para ver el acumulado.`
+}
+
+function pyramidEscenariosFinancieros(ctx: ModuleEditorialContext): string {
+  const m = ctx.metrics
+  if (m?.tir != null && m.paybackMeses != null) {
+    const payback =
+      m.paybackMeses < 12
+        ? `${Math.max(1, Math.round(m.paybackMeses))} meses`
+        : `${(m.paybackMeses / 12).toFixed(1)} años`
+    return `El proyecto rinde ${m.tir.toFixed(1)}% TIR y se paga en ${payback}. Solo un escenario lo hunde: bloqueo del concesionario por más de un año.`
+  }
+  return 'El proyecto rinde por encima del costo de capital cuando la captura arranca — calibre el escenario activo para ver TIR y payback.'
 }
 
 function scopeText(ctx: ModuleEditorialContext): string {
@@ -84,11 +131,12 @@ function scopeText(ctx: ModuleEditorialContext): string {
 export function getChartBrief(
   brief: ModuleEditorialBrief | null,
   chartId: string | null,
+  state?: ReturnType<typeof useSimulatorStore.getState> | null,
 ): ChartBrief | null {
   if (!chartId) return null
   const fromModule = brief?.chart_briefs.find((c) => c.chart_id === chartId)
   if (fromModule) return fromModule
-  return getCatalogChartBrief(chartId)
+  return resolveChartBrief(chartId, state)
 }
 
 export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialContext): ModuleEditorialBrief | null {
@@ -142,12 +190,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'city_baseline':
       return {
         moduleId: resolvedId,
-        title: 'El problema en números: cuánto generamos y cuánto perdemos',
+        title: pyramidCityBaseline(ctx),
         pregunta_guia: '¿Cuánto RSU genera el municipio y cuánto valor se pierde hoy?',
-        subtitulo_catchy: '¿Cuántos kilos genera este municipio y qué valor deja de capturarse hoy?',
-        situacion_actual: `En ${territorio}, el punto de partida es entender cuánto RSU se genera, cuánto se puede separar y qué costo público aparece cuando todo llega mezclado.`,
+        subtitulo_catchy: '',
+        situacion_actual: `${territorio} paga relleno sobre el 100% del RSU mientras el material valorizable se pierde. Ajuste generación, captura y precios antes de usar estas cifras en Cabildo.`,
         observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación per cápita SEMARNAT, composición, precios spot y costo de disposición. Cada supuesto es editable y visible.`,
-        criterio_decision: 'Antes de hablar de metas, el equipo debe ajustar generación, vivienda, captura, merma y precios para que la conversación empiece desde un escenario defendible.',
+        criterio_decision: 'Fije supuestos defendibles en generación, vivienda, captura y merma antes de cualquier meta pública.',
         que_no_significa: 'No es estadística municipal cerrada, cifra autorizada ni medición de campo. Es una lectura inicial con fuentes y supuestos visibles.',
         siguiente_accion: 'Ajustar los supuestos principales y revisar la matriz de fuentes antes de usar cualquier cifra en presentación pública.',
         fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del simulador.',
@@ -237,14 +285,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'mapeo_actores':
       return {
         moduleId: resolvedId,
-        title: 'Mapa de actores y legitimidad política',
+        title: 'Quince actores deciden si el proyecto avanza. Cinco lo apoyan. Tres lo bloquean. Siete son neutrales que se mueven con presupuesto o reforma legal.',
         pregunta_guia: '¿Quién debe estar en la mesa antes de comprometer el programa?',
-        subtitulo_catchy: 'Pepenadores, concesionario, Cabildo y sociedad civil — mapa previo al arranque',
-        situacion_actual: `En ${territorio}, los programas RSU fracasan con frecuencia por actores ausentes o en conflicto, no por falta de tecnología.`,
+        subtitulo_catchy: '',
+        situacion_actual: `En ${territorio}, los programas RSU fracasan con actores ausentes o en conflicto — no por falta de tecnología.`,
         observacion_alquimia: `${scope} El mapeo es cualitativo y editable. No sustituye análisis político ni convenios formales.`,
-        criterio_decision: 'Identificar bloqueadores y aliados con estrategia de incorporación antes de licitar o reformar reglamento.',
+        criterio_decision: 'Identifique bloqueadores y aliados con estrategia de incorporación antes de licitar o reformar reglamento.',
         que_no_significa: 'No es registro de partidos, ni diagnóstico electoral oficial, ni acta de Cabildo.',
-        siguiente_accion: 'Completar fichas de actores críticos y definir primer encuentro facilitado.',
+        siguiente_accion: 'Complete fichas de actores críticos y defina el primer encuentro con quienes bloquean o condicionan el avance.',
         fuente_o_evidencia: 'Proyecto Vivo ALQUIMIA, literatura de programas RSU LATAM 2010–2024.',
         metodologia_editorial: {
           como_se_calcula: 'Matriz poder/interés + rutas de influencia documentadas por el equipo consultor.',
@@ -258,12 +306,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'organigrama_diagnostico':
       return {
         moduleId: resolvedId,
-        title: 'Organigrama actual — gobernanza operativa as-is',
+        title: 'Tres decisiones requieren voto del Cabildo. Dos requieren decreto del Presidente. Una requiere enmienda fiscal. El cuello de botella es la reforma reglamentaria — 45 días en el Periódico Oficial.',
         pregunta_guia: '¿Quién decide hoy desde la queja ciudadana hasta Cabildo?',
-        subtitulo_catchy: 'Municipio y concesionario sin suposiciones — checklist de campo persistido',
+        subtitulo_catchy: '',
         situacion_actual: `Antes de diseñar el organigrama objetivo (M07), ${territorio} debe documentar titularidades reales de limpia, ecología, tesorería y operador.`,
         observacion_alquimia: `${scope} Las verificaciones y checklist se guardan en el simulador. Hasta validar en campo, la plantilla es referencia metodológica, no organigrama oficial.`,
-        criterio_decision: 'Cerrar vacíos de titular y de interfaz municipio–operador antes de comprometer CAPEX o reforma reglamentaria.',
+        criterio_decision: 'Cierre vacíos de titular e interfaz municipio–operador antes de comprometer CAPEX o reforma reglamentaria.',
         que_no_significa: 'No es el organigrama aprobado por RH ni la estructura objetivo del programa.',
         siguiente_accion: 'Completar checklist de campo y marcar eslabones confirmados. Luego abrir M07 Planificación.',
         fuente_o_evidencia: 'Plantilla ALQUIMIA M02D, organigramas PDF municipio/concesionario, contrato de limpia.',
@@ -301,12 +349,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'municipal_context':
       return {
         moduleId: resolvedId,
-        title: 'El reglamento que habilita o bloquea el programa',
+        title: 'El reglamento actual permite operar pero no obliga a ciudadanos a separar. Faltan tres artículos: definir fracciones, sancionar mezcla, autorizar incentivos.',
         pregunta_guia: '¿El reglamento actual permite operar el programa o necesita reforma?',
-        subtitulo_catchy: 'El marco legal que lo frena o lo habilita todo — qué dice el reglamento hoy',
+        subtitulo_catchy: '',
         situacion_actual: normativa ?? `${territorio} requiere lectura municipal del reglamento aplicable antes de convertir el programa en obligaciones locales.`,
         observacion_alquimia: `${scope} La brecha no suele estar en que falten principios federales, sino en traducirlos a reglas municipales operables: separación, contenedores, rutas, evidencia y responsabilidades.`,
-        criterio_decision: 'El equipo debe alinear el reglamento vigente con las obligaciones operables: qué puede ejecutarse hoy y qué requiere reforma, lineamiento o revisión jurídica competente.',
+        criterio_decision: 'Separe qué puede ejecutarse hoy y qué requiere reforma, lineamiento o revisión jurídica competente.',
         que_no_significa: 'No es resolución de autoridad, acto administrativo ni validación jurídica definitiva.',
         siguiente_accion: 'Abrir la fuente municipal, revisar artículos relevantes y separar propuesta expositiva de documento aprobable.',
         fuente_o_evidencia: 'Reglamento municipal localizado, manifest de fuente, diagnóstico legal y mapa de inserción normativa.',
@@ -546,12 +594,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'riesgos_modelo':
       return {
         moduleId: resolvedId,
-        title: 'Los cuatro riesgos que determinan si el programa llega al Cabildo',
+        title: 'El riesgo más alto es social, no financiero. La ciudadanía no separa sin educación en los primeros seis meses de operación.',
         pregunta_guia: '¿Qué puede salir mal y cómo se mitiga cada riesgo crítico?',
-        subtitulo_catchy: 'Los riesgos que pueden hundir el programa — y cómo medimos cada uno',
+        subtitulo_catchy: '',
         situacion_actual: `${territorio} enfrenta cuatro dimensiones de riesgo que deben medirse antes de comprometer inversión o presentar el programa al Cabildo.`,
         observacion_alquimia: `${scope} El score de riesgo no es una opinión — es una fórmula documentada con cuatro dimensiones ponderadas por relevancia política en el contexto municipal mexicano.`,
-        criterio_decision: 'Identificar qué dimensión de riesgo es más alta y diseñar mitigaciones específicas antes de avanzar a la fase de implementación.',
+        criterio_decision: 'Priorice la dimensión con score más alto y diseñe mitigaciones con responsable y fecha antes de avanzar a arranque.',
         que_no_significa: 'No es una garantía de éxito ni un análisis exhaustivo de riesgos empresariales. Es un diagnóstico de los riesgos específicos de programas RSU municipales en México.',
         siguiente_accion: 'Priorizar la dimensión con score más alto y definir al menos una acción de mitigación concreta con responsable y fecha.',
         fuente_o_evidencia: 'Datos de placement (riesgo mercado), mapa de actores (riesgo político), PERT slack (riesgo operativo), compliance LGPGIR (riesgo regulatorio).',
@@ -610,12 +658,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'escenarios_financieros':
       return {
         moduleId: resolvedId,
-        title: 'El expediente de Cabildo: escenarios, derrama y sustento',
+        title: pyramidEscenariosFinancieros(ctx),
         pregunta_guia: '¿Qué escenario financiero es viable para llevar a sesión de Cabildo?',
-        subtitulo_catchy: 'El expediente listo para el Cabildo — números, supuestos y sensibilidad',
-        situacion_actual: `El valor económico de ${territorio} debe separarse: venta base de materiales, pago evitable por entierro, efectos ambientales y sensibilidad financiera.`,
+        subtitulo_catchy: '',
+        situacion_actual: `El valor económico de ${territorio} debe separarse: derrama base de materiales, pago evitable por entierro y externalidades ambientales.`,
         observacion_alquimia: `${scope} La derrama base solo considera material separado vendido a la industria con precios del escenario. Las externalidades amplían la lectura, pero no deben mezclarse con ingreso directo.`,
-        criterio_decision: 'Comparar escenarios por captura, precio, merma, costo de disposición, sensibilidad y riesgo antes de exportar un borrador de trabajo.',
+        criterio_decision: 'Compare escenarios por captura, precio, merma, costo de disposición y riesgo antes de exportar un borrador de trabajo.',
         que_no_significa: 'No es garantía de ingreso, cifra autorizada, licitación ni autorización financiera.',
         siguiente_accion: 'Revisar Monte Carlo, waterfall, tornado y matriz de fuentes antes de presentar el escenario a terceros.',
         fuente_o_evidencia: 'Motor financiero, investigación de precios, matriz de fuentes, WACC editable y escenarios de sensibilidad.',
@@ -649,7 +697,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         observacion_alquimia: `${scope} Los KPIs salen del motor con factores INECC/IPCC documentados. No son medición de campo ni inventario oficial de GEI.`,
         criterio_decision: 'Separar beneficio ambiental de ingreso directo antes de presentar el programa a finanzas o financiadores verdes.',
         que_no_significa: 'No es inventario GEI oficial, ni aval de PROFEPA o SEMARNAT sobre emisiones evitadas.',
-        siguiente_accion: 'Revisar factores de emisión y contrafactual sin programa antes de anexar cifras a un informe ESG.',
+        siguiente_accion: 'Revise factores de emisión y el escenario sin programa antes de anexar cifras a un informe ESG.',
         fuente_o_evidencia: 'INECC factores RSU, IPCC AR6, motor ALQUIMIA M01.',
         metodologia_editorial: {
           como_se_calcula: 'CO₂e = toneladas desviadas × factor emisión relleno × GWP. Salud = funciones documentadas sobre fracción orgánica y clima local.',
@@ -664,12 +712,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'social_study':
       return {
         moduleId: resolvedId,
-        title: 'Estudio demográfico y contexto social',
+        title: pyramidSocialDiagnostico(ctx),
         pregunta_guia: '¿Quiénes son las personas que deben participar y qué barreras enfrentan?',
-        subtitulo_catchy: 'Quiénes son las personas que deben separar — sin inventar cifras municipales',
-        situacion_actual: `En ${territorio}, el diseño del programa de separación requiere leer el contexto sociodemográfico antes de comprometer metas de participación. La heterogeneidad de rezago social, el tamaño del sector informal de recuperación y los riesgos reputacionales no son homogéneos en la ZM.`,
-        observacion_alquimia: `${scope} Los indicadores son referencias INEGI/CONEVAL/ENOE, no diagnóstico municipal validado. Deben declararse como estimación con supuestos explícitos en comunicación pública.`,
-        criterio_decision: 'Identificar grupos prioritarios, colonias de rezago, pepenadores a integrar y riesgos de reputación antes de cerrar el diseño de la estrategia de participación ciudadana.',
+        subtitulo_catchy: '',
+        situacion_actual: `En ${territorio}, la adopción depende de rezago social, tipo de vivienda y sector informal — no del promedio metropolitano.`,
+        observacion_alquimia: `${scope} Los indicadores son referencias INEGI/CONEVAL/ENOE, no diagnóstico municipal validado. Declárelos como estimación con supuestos explícitos en comunicación pública.`,
+        criterio_decision: 'Identifique colonias piloto, pepenadores a integrar y riesgos de reputación antes de fijar metas de participación ciudadana.',
         que_no_significa: 'No equivale a encuesta de aceptación ciudadana, diagnóstico sociológico validado por instituto ni padrón de beneficiarios.',
         siguiente_accion: 'Revisar la matriz de riesgos sociales, documentar supuestos en la bitácora y cerrar brechas con evidencia de campo antes de presentar el programa a Cabildo.',
         fuente_o_evidencia: 'INEGI Censo de Población y Vivienda 2020; CONEVAL Índice de Rezago Social 2022; INEGI ENOE T1 2024 (sector informal); INEGI ENIGH 2022; INE calendario electoral 2024–2027.',
@@ -949,14 +997,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'costo_omision':
       return {
         moduleId: resolvedId,
-        title: 'El costo acumulado de no hacer nada en los próximos 10 años',
+        title: pyramidCostoOmision(ctx),
         pregunta_guia: '¿Cuánto le cuesta al municipio cada año que pasa sin un programa de RSU?',
-        subtitulo_catchy: 'La omisión tiene precio — y crece con la inflación sin fecha de fin',
+        subtitulo_catchy: '',
         situacion_actual: `Sin programa de separación, ${territorio} seguirá pagando la tarifa de disposición sobre el 100% del RSU generado, con inflación compuesta y sin recuperar valor de los materiales.`,
         observacion_alquimia: `${scope} La pérdida acumulada suma disposición en relleno, daño sanitario, multas LGPGIR y pérdida de elegibilidad para financiamiento verde.`,
-        criterio_decision: 'Reencuadrar la conversación presupuestal: el programa no es un gasto, es el mecanismo para evitar un costo mayor y creciente.',
+        criterio_decision: 'Reencuadre la conversación presupuestal: el programa evita un costo mayor y creciente — no es solo un gasto nuevo.',
         que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, calculado con las mismas fuentes del simulador.',
-        siguiente_accion: 'Presentar el análisis contrafactual como el primer argumento ante el Cabildo antes de mostrar el CAPEX del programa.',
+        siguiente_accion: 'Presente este costo acumulado antes de discutir el CAPEX del programa en Cabildo.',
         fuente_o_evidencia: 'Tarifa media relleno sanitario nacional (SEMARNAT). Costo salud OPS/INSP México. INPC BANXICO. LGPGIR sanciones Art. 10.',
         metodologia_editorial: {
           como_se_calcula: 'Costo acumulado = Σ(RSU_año × costo_disposición × factor_INPC^año) + daño_salud. Daño salud = fracción_orgánica × costo_OPS_ton. Saturación relleno = capacidad_residual ÷ ritmo_disposición.',
@@ -1012,12 +1060,12 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'expediente_cabildo':
       return {
         moduleId: resolvedId,
-        title: 'El paquete completo para la sesión de Cabildo que autoriza la inversión',
+        title: 'Cabildo tiene la evidencia técnica completa. Recomendación: aprobar con cláusula anti-bloqueo de doce meses y revisión semestral.',
         pregunta_guia: '¿El expediente tiene todo lo que el Cabildo necesita para votar con información?',
-        subtitulo_catchy: 'Del simulador al salón de sesiones — el expediente que convierte el análisis en decisión',
+        subtitulo_catchy: '',
         situacion_actual: `El análisis de ${territorio} en modo validar (Cap. 1 Diagnóstico + Cap. 3 Modelo de negocio) está listo para consolidarse. Este módulo genera el paquete institucional presentable ante Cabildo, Contraloría y financiadores.`,
         observacion_alquimia: `${scope} El expediente incluye análisis financiero documentado, cotización recomendada, plan de gobernanza, checklist de arranque y documentos exportables (PDF, Excel, URL). Cada documento enlaza su cadena de custodia de evidencia hacia la fuente en ALQUIMIA.`,
-        criterio_decision: 'Confirmar que el expediente responde las 6 preguntas que todo regidor hace: ¿cuánto cuesta?, ¿quién paga?, ¿quién opera?, ¿cuál es el riesgo?, ¿cuál es el beneficio?, ¿cuándo empezamos?',
+        criterio_decision: 'Confirme que el expediente responde las seis preguntas del regidor: costo, quién paga, quién opera, riesgo, beneficio y fecha de arranque.',
         que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
         siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
         fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por flujo AGORA.`,

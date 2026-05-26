@@ -25,6 +25,7 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { ModuleEditorialBrief } from '@/components/simulator/ModuleEditorialBrief'
 import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
+import { useModuleEditorialContext } from '@/lib/moduleEditorialContext'
 import { GlosarioTooltip } from '@/components/ui/GlosarioTooltip'
 import { buscarTermino } from '@/data/glosario'
 import type { ChartBrief, MetodologiaEditorial } from '@/data/moduleEditorialBriefs'
@@ -466,18 +467,9 @@ function ModuleContextHeader({
   moduleId: string
   onOpenChapterIndex?: () => void
 }) {
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope =
-    municipiosActivos.length === 0 ? ('sin_municipio' as const) : municipiosActivos.length === 1 ? ('municipio' as const) : ('zm' as const)
-  const brief = getModuleEditorialBrief(moduleId, {
-    territorio,
-    scope,
-    municipio,
-    municipiosCount: municipiosActivos.length,
-  })
+  const briefCtx = useModuleEditorialContext()
+  const { territorio } = briefCtx
+  const brief = getModuleEditorialBrief(moduleId, briefCtx)
   const num = moduleNumber(moduleId)
   const chapter = getChapterForModule(moduleId)
   const title = brief?.title ?? module.label
@@ -687,18 +679,10 @@ function ModuleMetodologiaMobile({
   moduleId: string
   activeChartId: string | null
 }) {
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
-  const brief = getModuleEditorialBrief(moduleId, {
-    territorio,
-    scope,
-    municipio,
-    municipiosCount: municipiosActivos.length,
-  })
-  const chartBrief = getChartBrief(brief, activeChartId)
+  const briefCtx = useModuleEditorialContext()
+  const brief = getModuleEditorialBrief(moduleId, briefCtx)
+  const simState = useSimulatorStore()
+  const chartBrief = getChartBrief(brief, activeChartId, simState)
   const metodologia = chartBrief?.metodologia ?? brief?.metodologia_editorial
   if (!metodologia) return null
 
@@ -772,20 +756,13 @@ function GuidancePanel({
 }) {
   const lectura = getLecturaEjecutiva(moduleId)
 
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const briefCtx = useModuleEditorialContext()
+  const { territorio } = briefCtx
   const propuestaSlots = useSimulatorStore(s => s.propuestaSlots)
   const propuestaActivaIdx = useSimulatorStore(s => s.propuestaActivaIdx)
-  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
-  const brief = getModuleEditorialBrief(moduleId, {
-    territorio,
-    scope,
-    municipio,
-    municipiosCount: municipiosActivos.length,
-  })
-  const chartBrief = getChartBrief(brief, activeChartId)
+  const brief = getModuleEditorialBrief(moduleId, briefCtx)
+  const simState = useSimulatorStore()
+  const chartBrief = getChartBrief(brief, activeChartId, simState)
   const metodologia = chartBrief?.metodologia ?? brief?.metodologia_editorial
   const conf = MODULE_CONFIDENCE[moduleId]
 

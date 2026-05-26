@@ -3,6 +3,7 @@
 import type { EscenarioGuardado } from '@/types'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
+import { MarginalNote } from '@/components/editorial'
 
 const SLOT_LABELS = ['Propuesta A', 'Propuesta B', 'Propuesta C'] as const
 
@@ -31,14 +32,14 @@ export function PropuestasSimulatorBar() {
   return (
     <section
       id="propuestas-simulador"
-      className="rounded-[12px] border border-[#D7E8C0] bg-[#FDFCFA] px-4 py-3 mb-2 scroll-mt-[120px]"
+      className="mb-2 scroll-mt-[120px] border-t border-[#E8E4DC] pt-4"
       aria-labelledby="propuestas-simulator-title"
     >
       <div className="flex items-center justify-between gap-2 mb-2">
         <h2 id="propuestas-simulator-title" className="text-[13px] font-semibold text-[#1C1B18]">
           Propuestas de escenario
         </h2>
-        <span className="text-[10px] text-[#A8A49C]">Guarda hasta 3 · Activar restaura los sliders</span>
+        <MarginalNote className="mt-0 text-[10px]">Guarda hasta 3 · Activar restaura los sliders</MarginalNote>
       </div>
       <div className="mt-2 grid gap-2 md:grid-cols-3">
         {SLOT_LABELS.map((label, slot) => {

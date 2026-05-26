@@ -8,6 +8,7 @@ import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
 import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { cn } from '@/lib/utils'
+import { MarginalNote, SectionLabel } from '@/components/editorial'
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -36,8 +37,7 @@ export function ExpedienteCabildoStack() {
   return (
     <div className="space-y-5 pb-4">
 
-      <div className="rounded-[12px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-            <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
               {[
                 { label: 'PDF ejecutivo', icon: FileText, color: '#C0392B', bg: 'bg-[#FDE8E8]' },
                 { label: 'Excel con supuestos', icon: Download, color: '#1A5FA8', bg: 'bg-[#EBF3FB]' },
@@ -65,14 +65,13 @@ export function ExpedienteCabildoStack() {
                   </span>
                 </button>
               ))}
-            </div>
       </div>
 
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <p className="text-[12px] font-semibold text-[#1C1B18] mb-3">Contenido del expediente</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+      <div>
+        <SectionLabel>Contenido del expediente</SectionLabel>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
           {[
-            { num: '01', title: 'Diagnóstico municipal RSU', desc: 'Generación, composición, contrafactual', fuente: 'M01 + M04' },
+            { num: '01', title: 'Diagnóstico municipal RSU', desc: 'Generación, composición, costo de omisión', fuente: 'M01 + M04' },
             { num: '02', title: 'Marco legal y metas', desc: 'LGPGIR, NOM-083, calendario de implementación', fuente: 'M03 + M05' },
             { num: '03', title: 'Infraestructura propuesta', desc: 'Centros, organigrama, logística', fuente: 'M06 + M07 + M08' },
             { num: '04', title: 'Modelo financiero', desc: 'CAPEX, OPEX, TIR, escenarios, riesgos', fuente: 'M09 + M13 + M14' },
@@ -101,9 +100,9 @@ export function ExpedienteCabildoStack() {
       <GovernancePanel />
       <LaunchChecklist />
 
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
-        <p className="text-[12px] font-semibold text-[#1C1B18] mb-4">Ruta de contratación (LAASSP)</p>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div className="border-t border-[#E8E4DC] pt-5">
+        <SectionLabel>Ruta de contratación (LAASSP)</SectionLabel>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4 mt-3">
           {[
             { route: 'Licitación pública', when: 'CAPEX > $2M MXN', plazo: '4–8 meses', docs: 'Bases, dictamen técnico, suficiencia' },
             { route: 'Invitación restringida', when: '3 proveedores calificados', plazo: '2–4 meses', docs: 'Criterios de selección, cotizaciones' },
@@ -125,9 +124,9 @@ export function ExpedienteCabildoStack() {
         </ol>
       </div>
 
-      <p className="text-[11px] text-[#6B6760] px-1">
+      <MarginalNote className="px-1">
         TIR, VPN y Monte Carlo: M13 · M14
-      </p>
+      </MarginalNote>
     </div>
   )
 }

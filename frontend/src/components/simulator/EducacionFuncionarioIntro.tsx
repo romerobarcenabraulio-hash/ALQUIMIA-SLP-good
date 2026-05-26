@@ -1,6 +1,7 @@
 'use client'
 
 import { ArrowRight, BookOpen, CircleDollarSign, Scale } from 'lucide-react'
+import { Conclusion, SectionLabel } from '@/components/editorial'
 
 const EDUCATION_CARDS = [
   {
@@ -31,21 +32,22 @@ const EDUCATION_CARDS = [
 
 export function EducacionFuncionarioIntro() {
   return (
-    <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4" aria-labelledby="educacion-funcionario-title">
-      <h2 id="educacion-funcionario-title" className="font-serif text-[24px] text-[#1C1B18]">
+    <section aria-labelledby="educacion-funcionario-title">
+      <SectionLabel>Educación previa a la decisión</SectionLabel>
+      <h2 id="educacion-funcionario-title" className="font-serif text-[24px] text-[#1C1B18] mb-4">
         Lo que debe entenderse antes de decidir
       </h2>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2">
         {EDUCATION_CARDS.map(({ title, body, tag, Icon }) => (
-          <article key={title} className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+          <article key={title} className="border-t border-[#E8E4DC] pt-4">
             <div className="flex items-start gap-3">
               <span className="mt-0.5 inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#EAF3DE] text-[#3B6D11]">
                 <Icon size={16} aria-hidden />
               </span>
               <div>
-                <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{tag}</p>
-                <h3 className="mt-1 font-serif text-[18px] text-[#1C1B18]">{title}</h3>
-                <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">{body}</p>
+                <SectionLabel>{tag}</SectionLabel>
+                <h3 className="font-serif text-[18px] text-[#1C1B18]">{title}</h3>
+                <Conclusion className="text-[15px] md:text-[16px] mb-0 mt-2">{body}</Conclusion>
               </div>
             </div>
           </article>

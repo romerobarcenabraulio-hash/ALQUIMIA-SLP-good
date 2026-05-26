@@ -15,6 +15,7 @@ import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI, CA_CONFIG, FASES_CA } from '@/lib/constants'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
+import { Conclusion, EditorialCallout, KpiAnchorGrid } from '@/components/editorial'
 
 const CentrosAcopioMap = dynamic(
   () => import('@/components/simulator/CentrosAcopioMap').then(m => ({ default: m.CentrosAcopioMap })),
@@ -153,7 +154,7 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 
 function RightRail() {
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+    <div className="border-t border-[#E8E4DC] pt-6">
       <div className="flex items-center justify-between mb-3 px-1">
         <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
         <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#EAF3DE] text-[#2D5A0D]">Confianza 58%</span>
@@ -234,21 +235,15 @@ export function InfrastructureOperationsStack() {
           />
 
           {hasBrecha && (
-            <div className="rounded-[10px] border border-[#FDE68A] bg-[#FEF7E7] px-4 py-3 mb-5 flex items-center gap-3">
-              <AlertTriangle className="w-4 h-4 text-[#D4881E] shrink-0" />
-              <p className="text-[12px] text-[#6B4800]">
-                Acción requerida: instalar <strong>{targetCA} centros</strong> para cerrar la brecha de {fmt.kgd(brecha)}/día.
-              </p>
-            </div>
+            <EditorialCallout tone="caution" label="Acción requerida" className="mb-5">
+              Instalar <strong>{targetCA} centros</strong> para cerrar la brecha de {fmt.kgd(brecha)}/día.
+            </EditorialCallout>
           )}
 
-          <div className="rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3 mb-5">
-            <p className="text-[11px] font-semibold text-[#1A5FA8]">Dónde se propone la infraestructura</p>
-            <p className="text-[11px] text-[#3D5A7A] mt-1 leading-relaxed">
-              El mapa y la tabla muestran ubicaciones propuestas y gates de habilitación. Para rutas por colonia vaya a{' '}
-              <strong>M08 Logística</strong>; para progresión mes a mes por zona, <strong>05C Oleadas territoriales</strong>.
-            </p>
-          </div>
+          <EditorialCallout label="Dónde se propone la infraestructura" className="mb-5">
+            El mapa y la tabla muestran ubicaciones propuestas y gates de habilitación. Para rutas por colonia vaya a{' '}
+            <strong>M08 Logística</strong>; para progresión mes a mes por zona, <strong>05C Oleadas territoriales</strong>.
+          </EditorialCallout>
 
           {/* Mapa y tabla — visibles arriba (no enterrados tras portafolio) */}
           <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden mb-5">
@@ -373,25 +368,21 @@ export function InfrastructureOperationsStack() {
             </ChartPanel.Grid>
           </ChartPanel>
 
-          <div className="rounded-[12px] border-2 border-[#3B6D11] bg-[#F4FAEC] px-6 py-5">
-            <p className="text-[13px] text-[#3B5F23] leading-relaxed mb-3">
+          <div className="space-y-4 border-t border-[#E8E4DC] pt-4">
+            <Conclusion as="div" className="text-[16px] md:text-[17px]">
               Brecha <strong>{fmt.kgd(brecha)}</strong> · {targetCA} centros en F3–F5 capturan{' '}
               {FASES_CA.find(f => f.esOptimo)?.coberturaPct ?? 61}% del potencial.
               Ver M07 (operación), M08 (rutas), M09 (CAPEX).
-            </p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {[
-                  { label: 'Recomendación', value: 'Plan moderado F3–F5', color: '#3B6D11' },
-                  { label: 'Riesgo principal', value: 'Predios y permisos', color: '#C0392B' },
-                  { label: 'Condición crítica', value: 'Operador contratado', color: '#D4881E' },
-                  { label: 'Siguiente paso', value: 'Ver M07 Organigrama', color: '#1A5FA8' },
-                ].map(c => (
-                  <div key={c.label} className="rounded-[8px] border border-[#C4DFA0] bg-white px-2.5 py-2">
-                    <p className="text-[8px] uppercase text-[#A8A49C]">{c.label}</p>
-                    <p className="text-[11px] font-semibold" style={{ color: c.color }}>{c.value}</p>
-                  </div>
-                ))}
-            </div>
+            </Conclusion>
+            <KpiAnchorGrid
+              columns={4}
+              items={[
+                { label: 'Recomendación', value: 'Plan moderado F3–F5' },
+                { label: 'Riesgo principal', value: 'Predios y permisos', figureClassName: 'text-red-800' },
+                { label: 'Condición crítica', value: 'Operador contratado', figureClassName: 'text-amber-800' },
+                { label: 'Siguiente paso', value: 'Ver M07 Organigrama', figureClassName: 'text-[20px]' },
+              ]}
+            />
           </div>
         </div>
         <RightRail />

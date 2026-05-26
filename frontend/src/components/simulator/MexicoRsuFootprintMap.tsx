@@ -5,6 +5,7 @@ import type { RsuFootprintMapResponse } from '@/types'
 import { getRsuFootprintMap } from '@/lib/api'
 import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
 import { getGoogleMapsApiKey, GOOGLE_MAPS_MISSING_MSG } from '@/lib/googleMaps'
+import { EditorialCallout, MarginalNote, SectionLabel } from '@/components/editorial'
 
 // ── Static fallback ───────────────────────────────────────────────────────────
 // Geographic reference only (cabeceras municipales, EPSG:4326).
@@ -92,15 +93,13 @@ export default function MexicoRsuFootprintMap() {
   }
 
   return (
-    <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-3" aria-labelledby="rsu-map-title">
+    <section className="space-y-3 border-t border-[#E8E4DC] pt-4" aria-labelledby="rsu-map-title">
       <div>
-        <p id="rsu-map-title" className="text-[13px] font-semibold text-[#1C1B18]">
-          Huella RSU · catálogo piloto
-        </p>
+        <h2 id="rsu-map-title" className="mb-0">
+          <SectionLabel as="span">Huella RSU · catálogo piloto</SectionLabel>
+        </h2>
         {!isFallback && (
-          <p className="mt-0.5 text-[11px] text-[#6B6760]">
-            {displayPayload.feature_count} municipios (SLP, QRO, MTY)
-          </p>
+          <MarginalNote>{displayPayload.feature_count} municipios (SLP, QRO, MTY)</MarginalNote>
         )}
       </div>
 
@@ -111,19 +110,18 @@ export default function MexicoRsuFootprintMap() {
         </div>
       )}
       {!loading && isFallback && (
-        <div className="rounded-[8px] border border-[#F5D98A] bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#6B4800]">
+        <EditorialCallout tone="caution">
           Vista de referencia geográfica — volúmenes RSU pendientes de carga.
-        </div>
+        </EditorialCallout>
       )}
       {!isFallback && (
-        <div className="rounded-[10px] border border-[#D4881E]/35 bg-[#FEF7E7] px-3 py-2 text-[11px] leading-relaxed text-[#6B6760]">
-          <strong className="text-[#1C1B18]">Simulación — no es censo ni GEI oficial.</strong>{' '}
+        <EditorialCallout tone="caution" label="Simulación — no es censo ni GEI oficial">
           {displayPayload.disclaimer}
-        </div>
+        </EditorialCallout>
       )}
 
       {!isFallback && (
-        <p className="text-[11px] text-[#8A857C]">{displayPayload.methodology_summary}</p>
+        <MarginalNote>{displayPayload.methodology_summary}</MarginalNote>
       )}
 
       <div className="flex flex-wrap gap-4 text-[11px] text-[#6B6760]">

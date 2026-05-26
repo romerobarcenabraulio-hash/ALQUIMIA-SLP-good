@@ -12,6 +12,7 @@
 import { Boxes, Mail } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 
 export function ContainersProvider() {
   const zmActiva = useSimulatorStore(s => s.zmActiva)
@@ -19,7 +20,7 @@ export function ContainersProvider() {
   const totalToneladas = macroSummary?.total_ton_anio ?? null
 
   return (
-    <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
+    <section className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
@@ -35,14 +36,17 @@ export function ContainersProvider() {
         </span>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-3">
-        <Tile label="Estado" value="Próximamente" tone="warning" />
-        <Tile
-          label="Volumen empresarial estimado"
-          value={totalToneladas != null ? `${totalToneladas.toFixed(1)} t/año` : 'Calcula impacto macro'}
-        />
-        <Tile label="Cobertura piloto" value="2 corredores" />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: 'Estado', value: 'Próximamente', figureClassName: 'text-amber-800' },
+          {
+            label: 'Volumen empresarial estimado',
+            value: totalToneladas != null ? `${totalToneladas.toFixed(1)} t/año` : '—',
+          },
+          { label: 'Cobertura piloto', value: '2 corredores' },
+        ]}
+      />
 
       <NarrativeBridge
         variant="bridge"
@@ -73,13 +77,3 @@ export function ContainersProvider() {
   )
 }
 
-function Tile({ label, value, tone }: { label: string; value: string; tone?: 'warning' }) {
-  return (
-    <div
-      className={`rounded-[10px] border p-3 ${tone === 'warning' ? 'border-amber-200 bg-amber-50' : 'border-[#E8E4DC] bg-white'}`}
-    >
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
-      <p className="mt-1 font-mono text-[14px] text-[#1C1B18]">{value}</p>
-    </div>
-  )
-}

@@ -19,6 +19,12 @@ import { fmt } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { TraceRibbon } from '@/components/ui/TraceRibbon'
 import { CORTE_UI } from '@/lib/progresionUiConstants'
+import {
+  Conclusion,
+  KpiAnchorGrid,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 
 function hitosTraceFuente(zmId: string, catalogLabel: string | null): string {
   if (catalogLabel) {
@@ -105,14 +111,14 @@ export function ProgresionPlanMunicipalTiempo() {
   if (!resultados || serie.length === 0) {
     return (
       <section
-        className="rounded-[12px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-6 text-[12px] text-[#6B6760]"
+        className="border border-dashed border-[#E8E4DC] px-4 py-6 text-[12px] text-[#6B6760]"
         data-testid="progresion-plan-empty"
       >
-        <p className="font-medium text-[#1C1B18]">Progresión temporal no disponible aún</p>
-        <p className="mt-2">
+        <Conclusion className="text-[17px] mb-2">Progresión temporal no disponible aún</Conclusion>
+        <MarginalNote>
           Confirma municipio activo y baseline cargado arriba; el motor recalcula al entrar. Si persiste, ajusta horizonte o
           generación per cápita en el panel RSU.
-        </p>
+        </MarginalNote>
         <button
           type="button"
           onClick={() => recalcular()}
@@ -131,22 +137,22 @@ export function ProgresionPlanMunicipalTiempo() {
           Progresión del Plan Municipal en el Tiempo
         </h2>
         <ScopeAnclaKicker className="mt-2" />
-        <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760] max-w-3xl">
+        <MarginalNote className="max-w-3xl">
           Infraestructura, economía circular y cobeneficios en el mismo eje temporal — horizonte {horizonte}a,
           generación {Number(genPercapita ?? 0).toFixed(2)} kg/hab/día, trayectoria {presetTrayectoria}.
-        </p>
+        </MarginalNote>
       </header>
 
-      <div className="rounded-[14px] border border-[#C8D9B8] bg-[#F4F9EF] p-4 space-y-3">
+      <section className="space-y-3 border-t border-[#E8E4DC] pt-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <p className="font-serif text-[18px] text-[#1C1B18]">
+          <Conclusion className="text-[18px] md:text-[19px] mb-0">
             Mes {mesVista} de {totalMeses}
             {instantanea && (
               <span className="ml-2 text-[13px] font-sans font-normal text-[#6B6760]">
                 ({instantanea.etiqueta})
               </span>
             )}
-          </p>
+          </Conclusion>
           <button
             type="button"
             onClick={() => setMesVista(mesMadurez.mes)}
@@ -164,52 +170,35 @@ export function ProgresionPlanMunicipalTiempo() {
           className="w-full h-2 accent-[#3B6D11] cursor-pointer"
           aria-label={`Mes del plan: ${mesVista} de ${totalMeses}`}
         />
-        <p className="text-[11px] leading-relaxed text-[#3D4F33]">
+        <MarginalNote>
           Cada municipio tiene madurez distinta en separación y marco de limpia. La línea verde punteada en las gráficas marca el mes
           equivalente orientativo a la circularidad de referencia del API para esta ciudad (
           {baselinePct != null ? `${baselinePct.toFixed(1)}%` : 'sin dato'}
           → mes ~{mesMadurez.mes}). La línea oscura sigue el mes que eliges. Es supuesto de lectura, no calendario de cabildo.
-        </p>
+        </MarginalNote>
         {instantanea && (
-          <dl className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-x-3 gap-y-2 border-t border-[#C8D9B8] pt-3 text-[11px]">
-            <div>
-              <dt className="text-[#5A6B52]">CAs acum.</dt>
-              <dd className="font-mono text-[#1C1B18]">{instantanea.caAcumulados}</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">Recicladoras</dt>
-              <dd className="font-mono text-[#1C1B18]">{instantanea.recicladorasAcumuladas}</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">Empleos formales</dt>
-              <dd className="font-mono text-[#1C1B18]">{instantanea.empleosFormalesAcum.toFixed(0)}</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">Derrama acum.</dt>
-              <dd className="font-mono text-[#1C1B18]">{fmt.mxnM(instantanea.derramaAcumuladaMxN)}</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">Tons captura / mes</dt>
-              <dd className="font-mono text-[#1C1B18]">{instantanea.toneladasCapturadasMes.toFixed(1)} t</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">CO₂e acum.</dt>
-              <dd className="font-mono text-[#1C1B18]">{(instantanea.co2eEvitadasAcumTon / 1000).toFixed(2)} kt</dd>
-            </div>
-            <div>
-              <dt className="text-[#5A6B52]">Circularidad comp.</dt>
-              <dd className="font-mono text-[#1C1B18]">{instantanea.circularidadCompuestaPct.toFixed(1)}%</dd>
-            </div>
-          </dl>
+          <KpiAnchorGrid
+            columns={4}
+            className="border-t border-[#E8E4DC] pt-3"
+            items={[
+              { label: 'CAs acum.', value: String(instantanea.caAcumulados) },
+              { label: 'Recicladoras', value: String(instantanea.recicladorasAcumuladas) },
+              { label: 'Empleos formales', value: instantanea.empleosFormalesAcum.toFixed(0) },
+              { label: 'Derrama acum.', value: fmt.mxnM(instantanea.derramaAcumuladaMxN) },
+              { label: 'Tons captura / mes', value: `${instantanea.toneladasCapturadasMes.toFixed(1)} t` },
+              { label: 'CO₂e acum.', value: `${(instantanea.co2eEvitadasAcumTon / 1000).toFixed(2)} kt` },
+              { label: 'Circularidad comp.', value: `${instantanea.circularidadCompuestaPct.toFixed(1)}%` },
+            ]}
+          />
         )}
-      </div>
+      </section>
 
-      <section className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Gráficas interactivas (opcional)</p>
-        <p className="mt-1 text-[11px] text-[#6B6760]">
+      <section className="border-t border-[#E8E4DC] pt-4">
+        <SectionLabel>Gráficas interactivas (opcional)</SectionLabel>
+        <MarginalNote className="mb-3">
           Las curvas usan Recharts en un bloque aparte para no tumbar la pestaña del navegador. La tabla de hitos y el deslizador de mes
           funcionan sin cargar este bloque.
-        </p>
+        </MarginalNote>
         {!showCharts ? (
           <button
             type="button"
@@ -232,11 +221,11 @@ export function ProgresionPlanMunicipalTiempo() {
       </section>
 
       {/* Tabla hitos */}
-      <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 overflow-x-auto">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Resumen por hitos escalados al horizonte</p>
-        <p className="text-[11px] text-[#6B6760] mt-0.5 mb-3">
+      <div className="border-t border-[#E8E4DC] pt-4 overflow-x-auto">
+        <SectionLabel>Resumen por hitos escalados al horizonte</SectionLabel>
+        <MarginalNote className="mb-3">
           Fechas en meses relativos al plan; deltas del catálogo; columna de acumulados orientativa.
-        </p>
+        </MarginalNote>
         <table className="w-full min-w-[640px] text-left text-[11px]">
           <thead>
             <tr className="border-b border-[#E8E4DC] text-[#A8A49C]">

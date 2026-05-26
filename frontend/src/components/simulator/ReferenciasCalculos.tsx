@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { BookOpenCheck, ClipboardCheck, Filter, X } from 'lucide-react'
+import { BookOpenCheck, Filter, X } from 'lucide-react'
 import { SOURCE_VERIFICATION_MATRIX, SOURCE_VERIFICATION_STATUS_LABEL } from '@/data/sourceVerificationMatrix'
 import type { SourceVerificationStatus } from '@/data/sourceVerificationMatrix'
 import { FuentesDatos } from '@/components/simulator/FuentesDatos'
@@ -9,6 +9,12 @@ import { SocialContextExportPreviewSection } from '@/components/simulator/Social
 import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt, cn } from '@/lib/utils'
+import {
+  Conclusion,
+  KpiAnchorGrid,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 
 const STATUS_CLASS: Record<SourceVerificationStatus, string> = {
   verificado: 'border-[#3B6D11]/30 bg-[#EAF3DE] text-[#23470A]',
@@ -53,28 +59,34 @@ export function ReferenciasCalculos() {
 
   return (
     <section className="section" aria-labelledby="referencias-calculos-title" data-testid="referencias-calculos">
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+      <header className="mb-4">
+        <SectionLabel>Matriz de trazabilidad de fuentes</SectionLabel>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">
-              Matriz de trazabilidad de fuentes
-            </p>
-            <h2 id="referencias-calculos-title" className="mt-1 font-serif text-[24px] text-[#1C1B18]">
+            <h2 id="referencias-calculos-title" className="font-serif text-[24px] text-[#1C1B18]">
               Bibliografía y cálculos
             </h2>
-            <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
-              Esta matriz no solo lista bibliografía: conecta cada afirmación del simulador con su fuente, su estado de
-              verificación, la fórmula usada, la acción correctiva pendiente y el responsable de cierre.
-            </p>
+            <Conclusion className="text-[16px] md:text-[17px] mb-0 mt-2">
+              Esta matriz conecta cada afirmación del simulador con su fuente, estado de
+              verificación, fórmula, acción correctiva y responsable de cierre.
+            </Conclusion>
           </div>
-          <div className="inline-flex items-center gap-2 rounded-[999px] border border-[#D7E8C0] bg-[#F4FAEC] px-3 py-1 text-[11px] text-[#3B6D11]">
+          <div className="inline-flex items-center gap-2 text-[11px] text-[#3B6D11]">
             <BookOpenCheck size={13} aria-hidden />
             Source Verification Matrix
           </div>
         </div>
 
-        {/* Status summary + interactive filter buttons */}
-        <div className="mt-4 grid gap-2 sm:grid-cols-4">
+        <KpiAnchorGrid
+          className="mt-4"
+          columns={4}
+          items={(Object.keys(counts) as SourceVerificationStatus[]).map(status => ({
+            label: SOURCE_VERIFICATION_STATUS_LABEL[status],
+            value: String(counts[status]),
+            figureClassName: activeFilter === status ? 'text-[#3B6D11]' : undefined,
+          }))}
+        />
+        <div className="mt-2 flex flex-wrap gap-2">
           {(Object.keys(counts) as SourceVerificationStatus[]).map(status => {
             const isActive = activeFilter === status
             return (
@@ -84,33 +96,23 @@ export function ReferenciasCalculos() {
                 onClick={() => setActiveFilter(isActive ? null : status)}
                 aria-pressed={isActive}
                 className={cn(
-                  'rounded-[8px] border px-3 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
+                  'rounded-[8px] border px-3 py-1 text-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
                   isActive ? STATUS_ACTIVE_BTN[status] : STATUS_CLASS[status],
                   'hover:opacity-90',
                 )}
               >
-                <p className="text-[10px] uppercase tracking-[0.06em] opacity-80">{SOURCE_VERIFICATION_STATUS_LABEL[status]}</p>
-                <p className="mt-1 font-mono text-[18px]">{counts[status]}</p>
+                Filtrar: {SOURCE_VERIFICATION_STATUS_LABEL[status]}
               </button>
             )
           })}
         </div>
 
-        <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
-          <div className="flex items-start gap-2">
-            <ClipboardCheck size={15} className="mt-0.5 text-[#3B6D11]" aria-hidden />
-            <div className="text-[11px] leading-relaxed text-[#6B6760]">
-              <p>
-                Lectura actual: {resultados ? `${fmt.kgd(resultados.rsuTotalTonDia)} con ${genPercapita.toFixed(2)} kg/hab/día` : 'sin cálculo activo'}.
-                Precios usados: PET ${precios.pet.toFixed(2)}, HDPE ${precios.hdpe.toFixed(2)}, papel ${precios.papel.toFixed(2)},
-                vidrio ${precios.vidrio.toFixed(2)}, aluminio ${precios.aluminio.toFixed(2)}, orgánico ${precios.organico.toFixed(2)} MXN/kg.
-              </p>
-              <p className="mt-1">
-                Baseline circularidad: {circularityBaseline ? `${circularityBaseline.current_circularity_pct.toFixed(1)}% con confianza ${Math.round(circularityBaseline.confidence * 100)}%` : 'pendiente de ciudad'}.
-              </p>
-            </div>
-          </div>
-        </div>
+        <MarginalNote className="mt-4">
+          Lectura actual: {resultados ? `${fmt.kgd(resultados.rsuTotalTonDia)} con ${genPercapita.toFixed(2)} kg/hab/día` : 'sin cálculo activo'}.
+          Precios usados: PET ${precios.pet.toFixed(2)}, HDPE ${precios.hdpe.toFixed(2)}, papel ${precios.papel.toFixed(2)},
+          vidrio ${precios.vidrio.toFixed(2)}, aluminio ${precios.aluminio.toFixed(2)}, orgánico ${precios.organico.toFixed(2)} MXN/kg.
+          Baseline circularidad: {circularityBaseline ? `${circularityBaseline.current_circularity_pct.toFixed(1)}% con confianza ${Math.round(circularityBaseline.confidence * 100)}%` : 'pendiente de ciudad'}.
+        </MarginalNote>
 
         {/* Active filter indicator */}
         {activeFilter && (
@@ -168,7 +170,7 @@ export function ReferenciasCalculos() {
             </tbody>
           </table>
         </div>
-      </div>
+      </header>
 
       <SocialContextExportPreviewSection
         block={socialBlock}
@@ -177,7 +179,7 @@ export function ReferenciasCalculos() {
         className="mt-8"
       />
 
-      <div className="mt-8 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4" data-testid="fuentes-datos-bibliografia">
+      <div className="mt-8" data-testid="fuentes-datos-bibliografia">
         <FuentesDatos variant="embedded" />
       </div>
     </section>

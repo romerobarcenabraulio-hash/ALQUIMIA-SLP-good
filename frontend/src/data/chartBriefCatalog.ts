@@ -21,7 +21,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'volumen-rsu': brief(
     'volumen-rsu',
     'Volumen y derrama económica',
-    'Cientos de toneladas al día y decenas de millones al año: ahí empieza la derrama del programa. RSU total = población × kg/hab/día; lo vendible = captura × (1 − merma) × precio × 365.',
+    'Aquí se fija si el programa paga. Ton/día capturables e ingreso anual salen del escenario activo (población × captura × precio). Recalibre captura o merma en M01 antes de llevar cifras a Cabildo.',
     'Población INEGI 2020 · tasa SEMARNAT DBGIR · precios mercado secundario 2025.',
     'Lea primero volumen y pesos; el desglose por material vive en M05. Sin toneladas defendibles no hay presupuesto creíble.',
     'La curva de captura mueve en cascada toneladas, ingresos y CO₂e: es el primer supuesto que debe auditar Cabildo.',
@@ -29,7 +29,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'trayectoria-captura': brief(
     'trayectoria-captura',
     'Trayectoria de captura',
-    'La curva en S no es adorno: modela arranque lento y masa crítica en años 3–4. Cada punto = pctCapturaPorAño del escenario activo frente a una rampa lineal ingenua.',
+    'La captura al horizonte define ingresos y CO₂e. Con escenario activo verá % por año, mes de aceleración y valor por punto en valorización. Priorice campaña en años bajos; cada punto extra mueve cientos de miles en MXN.',
     'Programas RSU ciudades medias MX 2018–2023 documentados SEMARNAT.',
     'Una rampa recta suele subestimar comunicación y hábito al inicio; la S obliga a financiar años bajos sin declarar fracaso prematuro.',
     'El % del último año del horizonte ancla ingresos maduros; los primeros años condicionan flujo de caja y quejas ciudadanas.',
@@ -37,7 +37,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'composicion-rsu': brief(
     'composicion-rsu',
     'Composición del RSU',
-    'Más plástico y menos orgánico suben ingreso por kg; más orgánico eleva costo de disposición evitada. El donut traduce composición nacional en toneladas y precio por material.',
+    'Más plástico y menos orgánico suben ingreso por kg; más orgánico eleva costo de disposición evitada. El donut traduce composición nacional en toneladas y precio por material. Revise con el escenario activo antes de exportar.',
     'SEMARNAT Diagnóstico Básico GIR 2020 — ciudades medias.',
     'Sin caracterización local, SEMARNAT es la fuente más defendible y comparable entre municipios.',
     'Un punto porcentual en orgánicos puede mover millones en ingreso potencial — validar con muestreo antes de Cabildo.',
@@ -45,7 +45,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'impactos-acumulados': brief(
     'impactos-acumulados',
     'Impactos acumulados',
-    'El proyecto resiste la lectura solo financiera cuando las toneladas desviadas se traducen en CO₂e comparables con metas climáticas municipales.',
+    'El proyecto resiste la lectura solo financiera cuando las toneladas desviadas se traducen en CO₂e comparables con metas climáticas municipales. Revise con el escenario activo antes de exportar.',
     'INECC factores RSU 2024 · IPCC AR6 GWP₁₀₀ CH₄ = 27.9.',
     'CO₂e permite dialogar con financiamiento verde sin mezclarla con ingreso por venta de material.',
     'Si el relleno captura biogás activo, el factor baja y el beneficio ambiental también — declararlo en el expediente.',
@@ -55,7 +55,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'diagnostico-juridico': brief(
     'diagnostico-juridico',
     'Diagnóstico jurídico',
-    '¿Qué obligación del LGPGIR queda sin regla local operable? El % de cobertura separa artículos con resolución vigente de citas sin instrumento de aplicación.',
+    '¿Qué obligación del LGPGIR queda sin regla local operable? El % de cobertura separa artículos con resolución vigente de citas sin instrumento de aplicación. Revise con el escenario activo antes de exportar.',
     'LGPGIR DOF 2022 · reglamento municipal cargado.',
     'Detectar vacíos antes de operar evita multas y convenios sin base — error frecuente en arranques apresurados.',
     'PDF incompleto del reglamento sobreestima cobertura: exija versión consolidada firmada.',
@@ -63,7 +63,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'cobertura-normativa': brief(
     'cobertura-normativa',
     'Cobertura normativa',
-    '85% es la meta recomendada sobre artículos clave LGPGIR: debajo, el expediente muestra huecos antes de la sesión de Cabildo.',
+    '85% es la meta recomendada sobre artículos clave LGPGIR: debajo, el expediente muestra huecos antes de la sesión de Cabildo. Revise con el escenario activo antes de exportar.',
     'Artículos 10, 17, 18, 19, 22, 25, 28, 36, 95–103 LGPGIR.',
     'Convierte análisis jurídico en KPI comparable entre municipios y años de gobierno.',
     '«Operable» exige lineamiento o resolución — la cita sin reglamento de aplicación no cuenta.',
@@ -71,7 +71,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm02-cobertura-normativa': brief(
     'm02-cobertura-normativa',
     'Cobertura normativa por municipio',
-    'En vista ZM, cada barra conserva jurisdicción propia: mezclar sanción entre municipios invalida el dictamen territorial.',
+    'En vista ZM, cada barra conserva jurisdicción propia: mezclar sanción entre municipios invalida el dictamen territorial. Revise con el escenario activo antes de exportar.',
     'Reglamentos cargados · taxonomía ALQUIMIA de obligaciones operables.',
     'El comparativo obliga a cerrar rezagos municipales antes de acuerdos metropolitanos genéricos.',
     'Reglamento anterior a 2014 puede dejar separación en origen como propuesta, no obligación vigente.',
@@ -105,7 +105,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'pert-ruta-critica': brief(
     'pert-ruta-critica',
     'PERT — Ruta crítica',
-    'Holgura cero: ahí se concentra supervisión. La red cuantifica retraso en permisos en lugar de ignorarlo en un calendario fijo.',
+    'Holgura cero: ahí se concentra supervisión. La red cuantifica retraso en permisos en lugar de ignorarlo en un calendario fijo. Revise con el escenario activo antes de exportar.',
     'Dependencias catálogo · estimados documentados.',
     'El PERT traduce dependencias en semanas de riesgo — lectura que el Gantt solo no da.',
     'Estimados pesimistas de permisos dominan en municipios con capacidad administrativa baja.',
@@ -113,7 +113,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-pert-summary': brief(
     'm03-pert-summary',
     'PERT resumido G1–G5',
-    '¿Qué bloquea qué antes del detalle técnico? Una pantalla para alcalde: fases G1–G5 y tareas críticas sin abrir la red completa.',
+    '¿Qué bloquea qué antes del detalle técnico? Una pantalla para alcalde: fases G1–G5 y tareas críticas sin abrir la red completa. Revise con el escenario activo antes de exportar.',
     'Gate definitions KRONOS · precedencias Gantt.',
     'Separa gates políticos de tareas de obra — confusión frecuente en expedientes municipales.',
     'No sustituye holgura numérica: abrir ruta crítica para cifras de semanas.',
@@ -121,7 +121,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-pert-full': brief(
     'm03-pert-full',
     'Red PERT completa',
-    'Nodos verdes, holgura cero: el equipo de supervisión vive ahí. Clic en nodo: duración esperada y responsable RACI.',
+    'Nodos verdes, holgura cero: el equipo de supervisión vive ahí. Clic en nodo: duración esperada y responsable RACI. Revise con el escenario activo antes de exportar.',
     'Estimados β-PERT · RACI organigrama objetivo.',
     'El grafo completo es la evidencia PMO; el resumen es la narrativa Cabildo.',
     'Varianza del proyecto = Σ(σ²) solo de tareas críticas — no promediar holguras.',
@@ -129,7 +129,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-critical-table': brief(
     'm03-critical-table',
     'Ruta crítica (tabla)',
-    'Tabla accionable: tarea, responsable, impacto. Traduce el grafo en checklist con dueño antes de sesión.',
+    'Tabla accionable: tarea, responsable, impacto. Traduce el grafo en checklist con dueño antes de sesión. Revise con el escenario activo antes de exportar.',
     'Cálculo PERT · roles organigrama.',
     'Sin responsable nombrado, la ruta crítica es diagrama decorativo.',
     'Responsable «por definir» invalida la tabla — cerrar en M07 antes de Cabildo.',
@@ -137,7 +137,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-raci': brief(
     'm03-raci',
     'Matriz RACI',
-    '¿Quién firma bitácora PER y reportes GRI? Un solo A por actividad — ambigüedad mata programas con buena ingeniería.',
+    '¿Quién firma bitácora PER y reportes GRI? Un solo A por actividad — ambigüedad mata programas con buena ingeniería. Revise con el escenario activo antes de exportar.',
     'PMBOK 6 · plantilla organigrama programa CA.',
     'Elimina la respuesta «eso lo ve otra dirección» en incidentes operativos.',
     'Tabulador salarial municipal puede diferir del benchmark — recalcular OPEX nómina.',
@@ -153,7 +153,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-map': brief(
     'm03-map',
     'Mapa territorial de despliegue',
-    '¿Dónde encender el programa primero? Despliegue secuenciado evita colapsar operación y comunicación en día uno.',
+    '¿Dónde encender el programa primero? Despliegue secuenciado evita colapsar operación y comunicación en día uno. Revise con el escenario activo antes de exportar.',
     'Plan territorial M06 · colonias CONEVAL/INEGI.',
     'La oleada 1 define credibilidad ciudadana para toda la curva de captura.',
     'Oleada mal elegida invalida la curva S de todo el municipio.',
@@ -161,7 +161,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-progression': brief(
     'm03-progression',
     'Progresión acumulada',
-    'Años 3–5: efecto de masa crítica visible. Las series muestran por qué el Cabildo debe sostener inversión antes del «punto cómodo».',
+    'Años 3–5: efecto de masa crítica visible. Las series muestran por qué el Cabildo debe sostener inversión antes del «punto cómodo». Revise con el escenario activo antes de exportar.',
     'Motor simulador · serieAnual del escenario.',
     'Narrativa de retorno político — sin ella, solo se ven costos del año 1.',
     'Empleos directos ≠ formalizados: distinguir en comunicación pública.',
@@ -169,7 +169,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm03-gates': brief(
     'm03-gates',
     'Condiciones G1–G5',
-    '¿Qué gate político falta antes de obra? Separar G1–G5 de tareas G01–G14 evita votar inversión sin prerequisitos institucionales.',
+    '¿Qué gate político falta antes de obra? Separar G1–G5 de tareas G01–G14 evita votar inversión sin prerequisitos institucionales. Revise con el escenario activo antes de exportar.',
     'gate_tracker KRONOS · narrative.py.',
     'Error frecuente: mezclar licitación con aprobación de Cabildo en la misma fecha.',
     'Gate inferido del primer no cruzado; en Fase 0–1 todos pueden estar NO_INICIADO.',
@@ -187,7 +187,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'precio-materiales': brief(
     'precio-materiales',
     'Precios por material',
-    'PET + HDPE ≈ 65–70% del ingreso: −20% en PET ≈ −15% en ingreso total. Barras = ton × precio × (1 − merma).',
+    'PET + HDPE ≈ 65–70% del ingreso: −20% en PET ≈ −15% en ingreso total. Barras = ton × precio × (1 − merma). Revise con el escenario activo antes de exportar.',
     'Investigación precios RSU MX 2025 · constants.ts.',
     'Mercado secundario ±20–35% anual — precio fijo sin rango subestima riesgo de Cabildo.',
     'Validar cotización local antes de anexar a licitación o contrato marco.',
@@ -195,7 +195,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'riesgo-mercado': brief(
     'riesgo-mercado',
     'Riesgo de mercado',
-    'Volumen sin comprador confirmado pesa más que programa pequeño con contrato: R_mercado usa (1 − colocación) × volumen × precio × 0.35.',
+    'Volumen sin comprador confirmado pesa más que programa pequeño con contrato: R_mercado usa (1 − colocación) × volumen × precio × 0.35. Revise con el escenario activo antes de exportar.',
     'market/placement.py · benchmarks 2019–2024.',
     'Traduce offtaker en número — finanzas pregunta por colocación, no por toneladas teóricas.',
     'Default 85% colocación; a 60% el riesgo financiero se triplica.',
@@ -203,7 +203,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-risk-matrix': brief(
     'm05-risk-matrix',
     'Matriz de riesgo',
-    '¿Dónde se concentran los rojos antes del Cabildo? Doce riesgos en probabilidad × impacto con color PMBOK.',
+    '¿Dónde se concentran los rojos antes del Cabildo? Doce riesgos en probabilidad × impacto con color PMBOK. Revise con el escenario activo antes de exportar.',
     'Registro R01–R06 + riesgos mercado y operación.',
     'Visualiza concentración — celdas vacías no significan cero riesgo.',
     'Riesgos no registrados siguen existiendo aunque la celda esté vacía.',
@@ -211,7 +211,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-actors': brief(
     'm05-actors',
     'Aceptación por actor',
-    'La captura de años 1–2 depende más de condominio y vía pública que de tonelaje de planta: IPC por segmento con bandas.',
+    'La captura de años 1–2 depende más de condominio y vía pública que de tonelaje de planta: IPC por segmento con bandas. Revise con el escenario activo antes de exportar.',
     'Encuesta municipal o benchmark SEMARNAT · mapa actores M02C.',
     'Sin aceptación medida, el modelo asume adopción optimista.',
     'Sin encuesta local, severidad de comunicación es estimada, no medida.',
@@ -219,7 +219,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-donut': brief(
     'm05-donut',
     'Composición del riesgo',
-    'Político 40%, mercado 30%: el donut muestra la dimensión dominante sin leer cuatro tablas.',
+    'Político 40%, mercado 30%: el donut muestra la dimensión dominante sin leer cuatro tablas. Revise con el escenario activo antes de exportar.',
     'Desglose score compuesto M14.',
     'Un vistazo para regiduría — prioriza conversación con actores correctos.',
     'Dimensiones correlacionadas: mitigar político puede bajar operativo.',
@@ -235,7 +235,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-prob-dist': brief(
     'm05-prob-dist',
     'Monte Carlo éxito',
-    'Quinientas corridas triangulares: un solo número de éxito oculta la cola. Percentiles obligatorios para inversionista y Cabildo.',
+    'Quinientas corridas triangulares: un solo número de éxito oculta la cola. Percentiles obligatorios para inversionista y Cabildo. Revise con el escenario activo antes de exportar.',
     'Perturbación precios y captura ±σ del escenario.',
     'La mediana no basta si P10 cae bajo umbral político de viabilidad.',
     'Triangular asume simetría — colas reales pueden ser más gruesas.',
@@ -243,7 +243,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-buyers': brief(
     'm05-buyers',
     'Compradores y colocación',
-    'Sin offtaker nombrado, el ingreso es proyección. Tabla: comprador · material · precio · estatus · riesgo rechazo.',
+    'Sin offtaker nombrado, el ingreso es proyección. Tabla: comprador · material · precio · estatus · riesgo rechazo. Revise con el escenario activo antes de exportar.',
     'DENUE/recicladoras · placement rules.',
     'Finanzas distingue flujo asegurado de «en negociación».',
     '«En negociación» no cuenta como colocación para el score de riesgo.',
@@ -251,7 +251,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-price-bands': brief(
     'm05-price-bands',
     'Bandas de precio',
-    'P10 y P90 antes de fijar tarifa con operador: upside y downside por fracción frente al precio del escenario base.',
+    'P10 y P90 antes de fijar tarifa con operador: upside y downside por fracción frente al precio del escenario base. Revise con el escenario activo antes de exportar.',
     'Cotizaciones mercado secundario · volatilidad trimestral.',
     'Evita licitar con precio spot que no se sostiene doce meses.',
     'Spot ≠ contrato anual — validar carta de intención de compra.',
@@ -259,7 +259,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-tornado': brief(
     'm05-tornado',
     'Tornado ingreso',
-    '¿Qué palanca negociar con concesionario primero? Barras = cambio en ingreso anual y probabilidad de éxito por variable ±20–30%.',
+    '¿Qué palanca negociar con concesionario primero? Barras = cambio en ingreso anual y probabilidad de éxito por variable ±20–30%. Revise con el escenario activo antes de exportar.',
     'Motor financiero · precio, captura, combustible, WACC.',
     'Este tornado mide ingreso por materiales — distinto del VPN en M13.',
     'Variables correlacionadas — no sumar impactos como independientes.',
@@ -267,7 +267,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-revenue': brief(
     'm05-revenue',
     'Derrama anual probabilística',
-    'Distribución de ingreso bruto anual: separa venta de material de ahorro en disposición y externalidades (ver M04).',
+    'Distribución de ingreso bruto anual: separa venta de material de ahorro en disposición y externalidades (ver M04). Revise con el escenario activo antes de exportar.',
     'Flujos simulador · precios y captura M01.',
     'Cabildo necesita rango, no solo cifra central.',
     'No incluye externalidades ni ingreso fiscal indirecto.',
@@ -291,7 +291,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm05-conditions': brief(
     'm05-conditions',
     'Condiciones para proceder',
-    '¿Se puede declarar viable sin prerequisitos abiertos? Diez condiciones legal, mercado y operación antes de implementación.',
+    '¿Se puede declarar viable sin prerequisitos abiertos? Diez condiciones legal, mercado y operación antes de implementación. Revise con el escenario activo antes de exportar.',
     'Checklist ALQUIMIA pre-Cabildo · gates G1–G2.',
     'Evita votar inversión con huecos que el síndico detectará en revisión.',
     'Condición cumplida exige evidencia archivada — no autodeclaración.',
@@ -301,7 +301,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'mapa-centros-acopio': brief(
     'mapa-centros-acopio',
     'Centros de acopio',
-    'Más de 2 km entre generación y CA puede caer participación ~40%: puntos verificados vs propuesta en mapa.',
+    'Más de 2 km entre generación y CA puede caer participación ~40%: puntos verificados vs propuesta en mapa. Revise con el escenario activo antes de exportar.',
     'Google Places/DENUE · optimización ALQUIMIA.',
     'Accesibilidad condiciona captura real más que campaña sin infraestructura cercana.',
     'Propuestas son simulación — no predios confirmados ni uso de suelo aprobado.',
@@ -309,7 +309,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm06-phase-deploy': brief(
     'm06-phase-deploy',
     'Despliegue por fase',
-    'Capacidad instalada sin flujo material es el error más común: oleadas alinean CAPEX con toneladas capturables del escenario.',
+    'Capacidad instalada sin flujo material es el error más común: oleadas alinean CAPEX con toneladas capturables del escenario. Revise con el escenario activo antes de exportar.',
     'CA_CONFIG · plan M03 · toneladas M01.',
     'Instalar todo el año 1 con captura año 1 baja destruye TIR percibida.',
     'Encender/apagar un CA redistribuye rutas y viabilidad de colonias.',
@@ -317,7 +317,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm06-center-table': brief(
     'm06-center-table',
     'Centros y gates sitio',
-    'Score de sitio bajo 60% raramente obtiene permiso: tabla cruza uso de suelo, conectividad y prioridad antes de Cabildo.',
+    'Score de sitio bajo 60% raramente obtiene permiso: tabla cruza uso de suelo, conectividad y prioridad antes de Cabildo. Revise con el escenario activo antes de exportar.',
     'Checklist NOM-161 · reglamento uso de suelo.',
     'Evita desgaste político de predios técnicamente inviables.',
     'Uso de suelo incompatible (30% del score) es criterio no negociable.',
@@ -327,7 +327,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'logistica-estacionalidad': brief(
     'logistica-estacionalidad',
     'Estacionalidad RSU',
-    'Diciembre +15% sobre promedio: diseñar solo para promedio anual deja sin capacidad en picos de escrutinio ciudadano.',
+    'Diciembre +15% sobre promedio: diseñar solo para promedio anual deja sin capacidad en picos de escrutinio ciudadano. Revise con el escenario activo antes de exportar.',
     'SEMARNAT DBGIR · ENIGH 2022 · SIDUE/SEMAG 2021–2023.',
     'La flota y turnos deben sobrevivir diciembre–enero, no solo julio tranquilo.',
     'ZM ±20%; municipio pequeño puede ser ±5% — validar con operador.',
@@ -335,7 +335,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm08-seasonality': brief(
     'm08-seasonality',
     'Estacionalidad y capacidad',
-    'RSU mensual vs capacidad t/mes: detecta meses en rojo antes de firmar contrato de recolección.',
+    'RSU mensual vs capacidad t/mes: detecta meses en rojo antes de firmar contrato de recolección. Revise con el escenario activo antes de exportar.',
     'Factores SEMARNAT · flota dimensionada M08.',
     'Picos dic–ene exigen flota extra — el promedio anual miente.',
     'Capacidad = camiones × viajes × ton/viaje; validar en campo.',
@@ -343,7 +343,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm08-residential-routes': brief(
     'm08-residential-routes',
     'Rutas por colonia',
-    'Modelo casa a casa antes de VRP completo: tiempos, combustible y export Cabildo por colonia piloto.',
+    'Modelo casa a casa antes de VRP completo: tiempos, combustible y export Cabildo por colonia piloto. Revise con el escenario activo antes de exportar.',
     'Heurística ITDP 2023 · capacidad referencia ciudades medias México.',
     'Inputs estructurados para OR-Tools o ArcGIS después.',
     'Densidad heterogénea mueve km/ruta ±30% vs modelo.',
@@ -351,7 +351,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm08-routes': brief(
     'm08-routes',
     'Mapa de rutas',
-    'Cobertura real vs colonias sin servicio diferenciado: rutas sobre zonas piloto con distancias y hook Google Routes.',
+    'Cobertura real vs colonias sin servicio diferenciado: rutas sobre zonas piloto con distancias y hook Google Routes. Revise con el escenario activo antes de exportar.',
     'Colonias piloto M03 · haversine + Routes API.',
     'Visualiza brechas antes del primer día de operación.',
     'Haversine subestima desvíos — factor tortuga 1.3× aplicado.',
@@ -359,7 +359,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm08-trucks': brief(
     'm08-trucks',
     'Camiones por material',
-    'Unidades = volumen_fracción / capacidad / frecuencia: subdimensionar flota genera incumplimiento en temporada alta.',
+    'Unidades = volumen_fracción / capacidad / frecuencia: subdimensionar flota genera incumplimiento en temporada alta. Revise con el escenario activo antes de exportar.',
     'Benchmarks operadores urbanos MX 2023 · frecuencias SEMARNAT.',
     'Traduce toneladas en chasis negociables con concesionario.',
     'Disponibilidad real de chasis puede limitar unidades calculadas.',
@@ -369,7 +369,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'dictamen-captura-5v3': brief(
     'dictamen-captura-5v3',
     '5 vs 3 fracciones',
-    'La decisión normativa en pesos: ingreso con 5 fracciones (12% contaminación) vs 3 fracciones (25%) × volumen × precio × 365.',
+    'La decisión normativa en pesos: ingreso con 5 fracciones (12% contaminación) vs 3 fracciones (25%) × volumen × precio × 365. Revise con el escenario activo antes de exportar.',
     'materialPriceResearch.ts · volCapturablePorMat.',
     'Tesorería y regiduría entienden el costo de exigir más fracciones en origen.',
     'Precios documentales — validar localmente antes de presupuesto.',
@@ -385,7 +385,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'criterios-aptitud': brief(
     'criterios-aptitud',
     'Aptitud del predio',
-    'Score < 60%: raramente hay permiso. Suma acceso, uso de suelo, área, servicios y distancia a generación.',
+    'Score < 60%: raramente hay permiso. Suma acceso, uso de suelo, área, servicios y distancia a generación. Revise con el escenario activo antes de exportar.',
     'NOM-161-SEMARNAT-2011 · reglamentos uso de suelo.',
     'Evaluar antes de proponer al Cabildo evita desgaste sin salida técnica.',
     'Uso de suelo incompatible invalida el predio aunque el resto puntúe alto.',
@@ -401,7 +401,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'social-risk-matrix': brief(
     'social-risk-matrix',
     'Riesgos sociales',
-    '¿Cuáles tres riesgos sociales explotan en semanas 1–4 sin encuesta? Fichas cualitativas desde literatura RSU LATAM 2010–2024.',
+    '¿Cuáles tres riesgos sociales explotan en semanas 1–4 sin encuesta? Fichas cualitativas desde literatura RSU LATAM 2010–2024. Revise con el escenario activo antes de exportar.',
     'CONEVAL · INE · LGPGIR · ENOE 2024.',
     'Diseño de participación antes de operación — costo de cambio 5–10× después.',
     'Sin encuesta local, riesgo «comunicación» es estimado.',
@@ -409,7 +409,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'costo-omision-acumulado': brief(
     'costo-omision-acumulado',
     'Costo de omisión',
-    'Omisión en pesos comparables: disposición + salud + carbono social acumulados frente a programa con valorización y beneficio capturado.',
+    'No actuar cuesta más que el programa en la década. La brecha roja–verde (millones MXN) crece con inflación ~4.5% y se aplana con amortización. Use la diferencia acumulada para justificar inversión ante Cabildo.',
     'SEMARNAT 2022 · INSP · BANXICO INPC · SCE.',
     'Cabildo decide también cuánto cuesta no actuar — no solo CAPEX del programa.',
     'Capacidad residual del relleno y tarifa media pueden subestimar costo local.',
@@ -417,7 +417,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'social-aceptacion-actores': brief(
     'social-aceptacion-actores',
     'Aceptación por actor',
-    'Barras de aceptación: años 1–2 dependen más de ciudadanos y operador que de tonelaje de planta — IPC cuando hay encuesta.',
+    'Barras de aceptación: años 1–2 dependen más de ciudadanos y operador que de tonelaje de planta — IPC cuando hay encuesta. Revise con el escenario activo antes de exportar.',
     'Encuesta IPC M02B · benchmarks SEMARNAT 24 municipios.',
     'Leer antes del score político agregado en M14.',
     'Sin encuesta local, severidad de comunicación es estimada.',
@@ -425,7 +425,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'doble-materialidad-grid': brief(
     'doble-materialidad-grid',
     'Doble materialidad ESRS',
-    'Impacto ambiental/social vs relevancia financiera (ESRS E5): prioriza temas para reporte ESG y deuda verde.',
+    'Impacto ambiental/social vs relevancia financiera (ESRS E5): prioriza temas para reporte ESG y deuda verde. Revise con el escenario activo antes de exportar.',
     'EFRAG ESRS E5 2023 · GRI 306 · literatura RSU.',
     'Evita reportar todo con igual peso — enfoque estratégico.',
     '«Resistencia ciudadana» se mueve con IPC — revisar tras encuesta M02B.',
@@ -433,7 +433,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm09-source-matrix': brief(
     'm09-source-matrix',
     'Matriz fuentes CAPEX/OPEX',
-    'Cada peso de inversión con trazabilidad: línea, fuente, fecha y fórmula — Cabildo audita total y detalle.',
+    'Cada peso de inversión con trazabilidad: línea, fuente, fecha y fórmula — Cabildo audita total y detalle. Revise con el escenario activo antes de exportar.',
     'Centros_Acopio_v2.xlsx · marketplaces mayo 2026 · IMSS Rama 37.',
     'Total CAPEX sin fuente no sobrevive revisión de finanzas municipales.',
     'Precios mayo 2026 son referencia; cotización local ±10%.',
@@ -441,7 +441,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'costos-capex-fases': brief(
     'costos-capex-fases',
     'CAPEX por fase',
-    'Desembolso por fases F1–F6 alinea inversión con captura real — evita pagar madurez completa en año 1.',
+    'Desembolso por fases F1–F6 alinea inversión con captura real — evita pagar madurez completa en año 1. Revise con el escenario activo antes de exportar.',
     'Centros_Acopio_v2.xlsx · mix CAs escenario activo.',
     'Finanzas municipales negocian por fase, no por monolito.',
     'No extrapolar CAPEX de otro municipio sin recalcular mix M06 del escenario activo.',
@@ -451,7 +451,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'escenarios-waterfall': brief(
     'escenarios-waterfall',
     'Flujo de valor',
-    'VPN neto en millones: barras desglosan ahorros, ingresos y costo de implementación antes de la decisión de Cabildo.',
+    'VPN neto en millones: barras desglosan ahorros, ingresos y costo de implementación antes de la decisión de Cabildo. Revise con el escenario activo antes de exportar.',
     'Motor financiero · proporciones M06/M04.',
     'Muestra de dónde nace el valor — no solo el total verde.',
     'Proporciones heurísticas — validar con modelo municipal cerrado.',
@@ -467,7 +467,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'escenarios-vpn': brief(
     'escenarios-vpn',
     'Ruta de inversión',
-    'Área de inversión acumulada por fase F1–F5: calendario de desembolso que condiciona VPN y payback descontado.',
+    'Área de inversión acumulada por fase F1–F5: calendario de desembolso que condiciona VPN y payback descontado. Revise con el escenario activo antes de exportar.',
     'FASES_INVERSION · capexTotalSistema.',
     'Inversión acumulada ≠ erogación anual — ver flujo de caja en expediente.',
     'Fase óptima depende de mix M06 del escenario activo.',
@@ -483,7 +483,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm13-monte-carlo-tir': brief(
     'm13-monte-carlo-tir',
     'Monte Carlo TIR',
-    'Monte Carlo nació donde las fórmulas cerradas no alcanzan: demasiadas variables interactuando. ALQUIMIA corre 2 000 escenarios; en cada uno, precios de PET, aluminio, papel y la trayectoria de captura se sortean en rangos realistas. Salida: distribución de TIR con percentiles 10/50/90 — cuánto resiste el proyecto a la incertidumbre real del mercado.',
+    'Dos mil simulaciones muestran el rango real de TIR. Con escenario activo: percentiles 10, 50 y 90 sustituyen una TIR puntual. Compare P10 contra WACC antes de comprometer CAPEX.',
     'Distribución triangular ±σ en precios y captura · calculator.ts.',
     'Una TIR puntual es optimista; Cabildo necesita cola inferior y mediana.',
     'Si P10 cruza bajo WACC, revisar captura y precios antes de comprometer CAPEX.',
@@ -491,7 +491,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm13-tornado-vpn': brief(
     'm13-tornado-vpn',
     'Tornado VPN ±20%',
-    'WACC y la captura del año 1 suelen encabezar el ranking; PET y vidrio, mucho menos. La tornado revela la jerarquía de palancas ante ±20%: vigilar costo de capital y arranque de campaña en residenciales rinde más que afinar contratos material por material.',
+    'Vigile primero costo de capital y arranque de captura. El tornado ordena palancas por millones de VPN movidos (±20%, una variable a la vez). PET y vidrio suelen mover menos; negocie WACC y año 1 antes que microcontratos.',
     'tornadoAnalysis · calcular() por variable independiente.',
     'Lectura ejecutiva del reparto de riesgo — la rejilla de combinaciones abajo confirma choques coordinados.',
     'Variables correlacionadas — no sumar barras como si fueran aditivas.',
@@ -507,7 +507,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm13-rejilla-stress': brief(
     'm13-rejilla-stress',
     'Rejilla de combinaciones',
-    'La rejilla contrasta choques de volumen y precios respecto al caso base. Mayoría verde: estructura aguanta shocks coordinados; predominio rojo: priorizar contratos indexados o coberturas simples antes de Cabildo.',
+    'La rejilla contrasta choques de volumen y precios respecto al caso base. Mayoría verde: estructura aguanta shocks coordinados; predominio rojo: priorizar contratos indexados o coberturas simples antes de Cabildo. Revise con el escenario activo antes de exportar.',
     'Combinaciones discretas captura × precio ponderado; VPN completo por celda.',
     'Estándar editorial M13 — complementa tornado univariado con choques coordinados.',
     'Combinaciones discretas; no sustituye Monte Carlo completo.',
@@ -525,7 +525,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'esquema-ingresos-municipio': brief(
     'esquema-ingresos-municipio',
     'Ingresos al municipio',
-    'El donut traduce cláusulas de concesión en flujo verificable: reparto ingreso operativo vs fiscal según % socio público.',
+    'El donut traduce cláusulas de concesión en flujo verificable: reparto ingreso operativo vs fiscal según % socio público. Revise con el escenario activo antes de exportar.',
     'Parámetros concesión · MARCO_LEGAL_CONCESION.',
     'Cabildo vota reparto, no siglas contractuales.',
     'Ingresos fiscales dependen de recaudación efectiva — no solo tarifa nominal.',
@@ -533,7 +533,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'esquema-derrama-sector': brief(
     'esquema-derrama-sector',
     'Derrama por sector',
-    'Derrama regional más allá del ingreso directo municipal: empleos y multiplicadores sectoriales documentados.',
+    'Derrama regional más allá del ingreso directo municipal: empleos y multiplicadores sectoriales documentados. Revise con el escenario activo antes de exportar.',
     'CANACERO/SAGARPA · empleos mix M06.',
     'Conecta concesión con argumento económico regional.',
     'Empleos inducidos no incluidos — solo directos en catálogo.',
@@ -541,7 +541,7 @@ export const CHART_BRIEF_CATALOG: Record<string, ChartBrief> = {
   'm07-staff-composition': brief(
     'm07-staff-composition',
     'Composición de personal',
-    'Plazas directas por rol operativo: traduce capacidad instalada en contratación verificable para Cabildo.',
+    'Plazas directas por rol operativo: traduce capacidad instalada en contratación verificable para Cabildo. Revise con el escenario activo antes de exportar.',
     'ORGANIGRAMA · ratios personal/ton escenario.',
     'Sin plazas, el organigrama es organigrama de papel.',
     'Indirectos (recicladores) en derrama M01, no aquí.',

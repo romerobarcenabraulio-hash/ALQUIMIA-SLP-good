@@ -6,22 +6,19 @@ import type { CoverageStatus, MunicipioProfile } from '@/types'
 import { getNationalCoverage, getNationalMunicipios } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 
 const MexicoRsuFootprintMap = dynamic(() => import('@/components/simulator/MexicoRsuFootprintMap'), {
   ssr: false,
   loading: () => (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-6 text-[13px] text-[#6B6760]">
-      Preparando vista mapa RSU…
-    </div>
+    <p className="py-6 text-[13px] text-[#6B6760]">Preparando vista mapa RSU…</p>
   ),
 })
 
 const ZmCircularityHeatmapMap = dynamic(() => import('@/components/simulator/ZmCircularityHeatmapMap'), {
   ssr: false,
   loading: () => (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAF8F4] px-4 py-6 text-[13px] text-[#6B6760]">
-      Preparando mapa circularidad…
-    </div>
+    <p className="py-6 text-[13px] text-[#6B6760]">Preparando mapa circularidad…</p>
   ),
 })
 
@@ -129,7 +126,7 @@ export default function CoberturaNacional() {
   }
 
   return (
-    <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
+    <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <p className="text-[13px] font-semibold text-[#1C1B18]">
           Cobertura legal · {zmActiva}
@@ -156,30 +153,27 @@ export default function CoberturaNacional() {
       {coverage && agg && (
         <>
           <ZmCoverageSchematic coverage={coverage} />
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <div className="rounded-lg border border-[#E8E4DC] bg-white p-3">
-              <p className="text-[10px] uppercase text-[#A8A49C]">Municipios</p>
-              <p className="font-mono text-xl text-[#1C1B18] mt-1">{agg.total}</p>
-            </div>
-            <div className="rounded-lg border border-[#C9DDB1] bg-[#F1F6E5] p-3">
-              <p className="text-[10px] uppercase text-[#23470A]">Legal verificado</p>
-              <p className="font-mono text-xl text-[#1C1B18] mt-1">
-                {agg.legalVerificado}{' '}
-                <span className="text-sm font-sans text-[#6B6760]">({agg.pct(agg.legalVerificado)}%)</span>
-              </p>
-            </div>
-            <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
-              <p className="text-[10px] uppercase text-amber-900">Legal estimado</p>
-              <p className="font-mono text-xl text-amber-950 mt-1">
-                {agg.legalEstimado}{' '}
-                <span className="text-sm font-sans text-amber-900">({agg.pct(agg.legalEstimado)}%)</span>
-              </p>
-            </div>
-            <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-              <p className="text-[10px] uppercase text-red-900">AGORA bloqueado</p>
-              <p className="font-mono text-xl text-red-950 mt-1">{agg.agoraBloqueados}</p>
-            </div>
-          </div>
+          <KpiAnchorGrid
+            columns={4}
+            items={[
+              { label: 'Municipios', value: String(agg.total) },
+              {
+                label: 'Legal verificado',
+                value: `${agg.legalVerificado} (${agg.pct(agg.legalVerificado)}%)`,
+                figureClassName: 'text-[#3B6D11]',
+              },
+              {
+                label: 'Legal estimado',
+                value: `${agg.legalEstimado} (${agg.pct(agg.legalEstimado)}%)`,
+                figureClassName: 'text-amber-900',
+              },
+              {
+                label: 'AGORA bloqueado',
+                value: String(agg.agoraBloqueados),
+                figureClassName: 'text-red-800',
+              },
+            ]}
+          />
         </>
       )}
 

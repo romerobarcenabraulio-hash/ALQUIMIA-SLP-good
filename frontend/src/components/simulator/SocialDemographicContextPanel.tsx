@@ -21,6 +21,13 @@ import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDat
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { moduleNumber } from '@/lib/chapterConfig'
 import { cn } from '@/lib/utils'
+import {
+  Conclusion,
+  EditorialCallout,
+  KpiAnchorGrid,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 
 export type SocialView = 'diagnostico' | 'encuesta' | 'educacion' | 'impacto'
 
@@ -128,44 +135,37 @@ export function SocialDemographicContextPanel({
       />
 
       {/* Header */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">{headerMeta.kicker}</p>
+      <header>
+        <SectionLabel>{headerMeta.kicker}</SectionLabel>
         <h3 id="social-demographic-context-title" className="font-serif text-[20px] text-[#1C1B18]">
           {headerMeta.title}
         </h3>
-        <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+        <Conclusion className="text-[18px] md:text-[19px] mb-4">
           El programa de separación en ALQUIMIA distingue{' '}
           <span className="font-medium text-[#1C1B18]">condominios y privadas</span> (Adendos 1–11)
           de <span className="font-medium text-[#1C1B18]">vía pública</span> (Adendo 12).
           {view === 'encuesta'
             ? ' La encuesta cierra la brecha entre benchmark y disposición real antes de fijar captura en M13.'
             : ' Este módulo documenta rezago y vulnerabilidad antes de comprometer oleadas territoriales.'}
-          Los supuestos visibles aquí alimentan el score de riesgo social en M14.
-        </p>
-
-        {/* Indicadores rápidos */}
-        <div className="mt-3 grid grid-cols-3 gap-2">
-          <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2">
-            <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">Municipio</p>
-            <p className="text-[12px] font-medium text-[#1C1B18] truncate">{municipio?.nombre ?? '—'}</p>
-          </div>
-          <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2">
-            <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">IPC ciudadano</p>
-            <p className={cn(
-              'text-[12px] font-bold',
-              indicePreparacionCiudadana === null ? 'text-[#A8A49C]' :
-              indicePreparacionCiudadana >= 70 ? 'text-[#3B6D11]' :
-              indicePreparacionCiudadana >= 50 ? 'text-[#D4881E]' : 'text-[#C0392B]',
-            )}>
-              {indicePreparacionCiudadana !== null ? `${indicePreparacionCiudadana.toFixed(0)}/100` : 'Sin campo'}
-            </p>
-          </div>
-          <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2">
-            <p className="text-[9px] uppercase tracking-[0.06em] text-[#A8A49C]">Dato socio</p>
-            <p className="text-[12px] font-medium text-[#1C1B18]">{DATO_LABEL[block.dato]}</p>
-          </div>
-        </div>
-      </div>
+          {' '}Los supuestos visibles aquí alimentan el score de riesgo social en M14.
+        </Conclusion>
+        <KpiAnchorGrid
+          columns={3}
+          items={[
+            { label: 'Municipio', value: municipio?.nombre ?? '—' },
+            {
+              label: 'IPC ciudadano',
+              value: indicePreparacionCiudadana !== null ? `${indicePreparacionCiudadana.toFixed(0)}/100` : 'Sin campo',
+              figureClassName: cn(
+                indicePreparacionCiudadana === null ? 'text-[#A8A49C]' :
+                indicePreparacionCiudadana >= 70 ? 'text-[#3B6D11]' :
+                indicePreparacionCiudadana >= 50 ? 'text-[#D4881E]' : 'text-[#C0392B]',
+              ),
+            },
+            { label: 'Dato socio', value: DATO_LABEL[block.dato] },
+          ]}
+        />
+      </header>
 
       {/* Tabs — ocultos cuando el módulo tiene view fijo */}
       {!view && (
@@ -192,25 +192,29 @@ export function SocialDemographicContextPanel({
       {tabActivo === 'diagnostico' && (
         <div className="space-y-4">
           {/* Alcance geográfico y estado del dato */}
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
-              <dt className="text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">Alcance geográfico declarado</dt>
-              <dd className="mt-1 text-[13px] font-medium text-[#1C1B18]" data-testid="social-context-geo-scope">
-                {GEO_LABEL[block.geo_scope]}
-              </dd>
-            </div>
-            <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3">
-              <dt className="text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">Estado del dato</dt>
-              <dd className="mt-1 text-[13px] font-medium text-[#1C1B18]" data-testid="social-context-dato-estado">
-                {DATO_LABEL[block.dato]}
-              </dd>
-            </div>
-            <div className="rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-3 sm:col-span-2 xl:col-span-1">
-              <dt className="text-[10px] uppercase tracking-[0.06em] text-[#6B6760]">Fuente declarada</dt>
-              <dd className="mt-1 text-[13px] text-[#1C1B18]" data-testid="social-context-fuente-declarada">
-                {block.fuente_declarada.trim().length > 0 ? block.fuente_declarada : '—'}
-              </dd>
-            </div>
+          <KpiAnchorGrid
+            columns={3}
+            items={[
+              {
+                label: 'Alcance geográfico declarado',
+                value: GEO_LABEL[block.geo_scope],
+              },
+              {
+                label: 'Estado del dato',
+                value: DATO_LABEL[block.dato],
+              },
+              {
+                label: 'Fuente declarada',
+                value: block.fuente_declarada.trim().length > 0 ? block.fuente_declarada : '—',
+              },
+            ]}
+          />
+          <div className="sr-only">
+            <span data-testid="social-context-geo-scope">{GEO_LABEL[block.geo_scope]}</span>
+            <span data-testid="social-context-dato-estado">{DATO_LABEL[block.dato]}</span>
+            <span data-testid="social-context-fuente-declarada">
+              {block.fuente_declarada.trim().length > 0 ? block.fuente_declarada : '—'}
+            </span>
           </div>
 
           {isEmptyPublic && (
@@ -223,13 +227,13 @@ export function SocialDemographicContextPanel({
             </div>
           )}
 
-          <div
+          <EditorialCallout
             data-testid="social-context-disclaimer"
-            className="rounded-[8px] border border-[#D4881E]/25 bg-[#FEF7E7]/80 px-3 py-3 text-[11px] leading-relaxed text-[#5C5740]"
+            tone="caution"
+            label="Antes de KPIs o inferencias sociales (Auditoría ALQUIMIA)"
           >
-            <p className="font-medium text-[#1C1B18]">Antes de KPIs o inferencias sociales (Auditoría ALQUIMIA)</p>
-            <p className="mt-1" data-testid="social-context-disclaimer-body">{SOCIAL_DEMOGRAPHIC_UI_DISCLAIMER}</p>
-            <details className="mt-3 rounded-[6px] border border-[#E8E4DC] bg-white/90 px-2 py-2 text-[#6B6760]" open>
+            <p data-testid="social-context-disclaimer-body">{SOCIAL_DEMOGRAPHIC_UI_DISCLAIMER}</p>
+            <details className="mt-3 border-t border-[#E8E4DC] pt-2 text-[#6B6760]" open>
               <summary className="cursor-pointer select-none text-[11px] font-medium text-[#1C1B18]">
                 Guía de redacción pública y revisión Legal
               </summary>
@@ -254,7 +258,7 @@ export function SocialDemographicContextPanel({
                 </ul>
               </div>
             </details>
-          </div>
+          </EditorialCallout>
 
           <OfficialSourcesReadingDisclosure variant="full" />
           <SocialOfficialStatsSection />
@@ -291,15 +295,15 @@ export function SocialDemographicContextPanel({
       {/* Tab: Estudio de impacto */}
       {tabActivo === 'impacto' && (
         <div className="space-y-4">
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-            <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">Documento para cabildo</p>
+          <section>
+            <SectionLabel>Documento para cabildo</SectionLabel>
             <h3 className="font-serif text-[18px] text-[#1C1B18] mb-2">Estudio de Impacto Social</h3>
-            <p className="text-[12px] text-[#6B6760] leading-relaxed">
-              El Estudio de Impacto Social es el documento que convierte los datos de la encuesta de campo
+            <Conclusion className="text-[17px] md:text-[18px] mb-4">
+              El Estudio de Impacto Social convierte los datos de la encuesta de campo
               en evidencia jurídico-política para justificar el Adendo 12 (casas en vía pública)
               y el Anexo B (Programa de Capacitación Ciudadana) ante cabildo.
-            </p>
-          </div>
+            </Conclusion>
+          </section>
 
           {/* Estructura del documento */}
           <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
@@ -333,14 +337,11 @@ export function SocialDemographicContextPanel({
             </div>
           </div>
 
-          <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 text-[12px] text-[#6B6760]">
-            <p className="font-medium text-[#1C1B18] mb-1">Export de documento completo</p>
-            <p className="leading-relaxed">
-              El export a PDF del Estudio de Impacto Social está disponible desde el módulo de Escenarios y Export (M09),
-              donde se integra con el paquete de cotización y los adendos para entrega a cabildo.
-              Completa la encuesta de campo (Tab "Encuesta ciudadana") para que §3 tenga datos reales.
-            </p>
-          </div>
+          <MarginalNote prefix="Export de documento completo">
+            El export a PDF del Estudio de Impacto Social está disponible desde el módulo de Escenarios y Export (M09),
+            donde se integra con el paquete de cotización y los adendos para entrega a cabildo.
+            Completa la encuesta de campo (Tab &quot;Encuesta ciudadana&quot;) para que §3 tenga datos reales.
+          </MarginalNote>
         </div>
       )}
     </section>

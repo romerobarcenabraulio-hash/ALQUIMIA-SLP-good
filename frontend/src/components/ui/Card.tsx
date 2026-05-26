@@ -1,14 +1,16 @@
 'use client'
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
-
+import { EditorialMetric } from '@/components/editorial/EditorialMetric'
 interface CardProps {
-  children: React.ReactNode
+  children: ReactNode
   optimo?: boolean
   blocked?: boolean
   className?: string
   onClick?: () => void
 }
 
+/** Contenedor interactivo (selección, hover) — no usar para copy editorial plano. */
 export function Card({ children, optimo, blocked, className, onClick }: CardProps) {
   return (
     <div
@@ -20,7 +22,7 @@ export function Card({ children, optimo, blocked, className, onClick }: CardProp
         optimo && 'border-[#F6C84B] bg-[#FEF7E7]',
         blocked && 'opacity-35 pointer-events-none',
         onClick && 'cursor-pointer',
-        className
+        className,
       )}
     >
       {children}
@@ -33,28 +35,35 @@ interface KpiCardProps {
   value: string
   sub?: string
   color?: string
-  icon?: React.ReactNode
+  icon?: ReactNode
   source?: string
   sourceType?: 'live' | 'fallback'
 }
 
+/** KPI sin card — layout consulting-editorial. */
 export function KpiCard({ label, value, sub, color, icon, source, sourceType }: KpiCardProps) {
   return (
-    <Card>
-      <div className="flex items-start justify-between mb-2">
-        {icon && <span className="text-[#A8A49C]">{icon}</span>}
-        {source && (
-          <span className={cn(
-            'text-[10px] uppercase tracking-wide',
-            sourceType === 'live' ? 'text-[#3B6D11]' : 'text-[#D4881E]'
-          )}>
-            {sourceType === 'live' ? '● ' : '○ '}{source}
-          </span>
-        )}
-      </div>
-      <p className="text-[11px] text-[#A8A49C] uppercase tracking-wide mb-1">{label}</p>
-      <p className={cn('font-mono text-2xl font-medium', color ?? 'text-[#1C1B18]')}>{value}</p>
-      {sub && <p className="text-[12px] text-[#6B6760] mt-1">{sub}</p>}
-    </Card>
+    <div className="min-w-0">
+      {icon && <span className="text-gray-400c mb-2 block">{icon}</span>}
+      <EditorialMetric
+        label={label}
+        value={value}
+        sub={sub}
+        figureClassName={cn('text-[26px] tabular-nums', color)}
+        headerRight={
+          source ? (
+            <span
+              className={cn(
+                'text-[10px] uppercase tracking-wide',
+                sourceType === 'live' ? 'text-green-600a' : 'text-amber-500a',
+              )}
+            >
+              {sourceType === 'live' ? '● ' : '○ '}
+              {source}
+            </span>
+          ) : undefined
+        }
+      />
+    </div>
   )
 }

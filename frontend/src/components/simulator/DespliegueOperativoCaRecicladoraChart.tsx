@@ -17,6 +17,7 @@ import {
   buildDespliegueOperativoSeries,
   empleoFormalDirectoCierre,
 } from '@/lib/despliegueOperativoSeries'
+import { KpiAnchorGrid, SectionLabel } from '@/components/editorial'
 
 export function DespliegueOperativoCaRecicladoraChart() {
   const horizonte = useSimulatorStore(s => s.horizonte)
@@ -43,24 +44,20 @@ export function DespliegueOperativoCaRecicladoraChart() {
   if (!series.length || !last) return null
 
   return (
-    <div className="mt-8 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-      <p className="text-[13px] font-semibold text-[#1C1B18] mb-3">
+    <div className="mt-8 border-t border-[#E8E4DC] pt-5">
+      <SectionLabel>
         Despliegue CA + recicladoras · {horizonte}a · {presetTrayectoria}
-      </p>
+      </SectionLabel>
 
-      <div className="mb-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <KpiPill label="CA al cierre" value={fmt.num0(last.caAcumulados)} sub="Centros acumulados (§2.4)" />
-        <KpiPill
-          label="Recicladoras al cierre"
-          value={fmt.num0(last.recicladorasAcumuladas)}
-          sub="Offtake activo (modelo visual)"
-        />
-        <KpiPill
-          label="Empleo formal est. al cierre"
-          value={fmt.num0(empleoCierre)}
-          sub="Directos CA + línea recicladoras (80)"
-        />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        className="mb-5"
+        items={[
+          { label: 'Centros acumulados (§2.4)', value: fmt.num0(last.caAcumulados) },
+          { label: 'Offtake activo (modelo visual)', value: fmt.num0(last.recicladorasAcumuladas) },
+          { label: 'Directos CA + línea recicladoras (80)', value: fmt.num0(empleoCierre) },
+        ]}
+      />
 
       <div className="h-[260px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -129,16 +126,6 @@ export function DespliegueOperativoCaRecicladoraChart() {
       <p className="mt-3 text-[10px] text-[#8A857C] leading-snug">
         Eje X: fases F1…Fn distribuidas en ~{horizonte * 12} meses del horizonte. Recicladoras: derivación interna por cobertura e infraestructura; no sustituye catálogo contractual. Empleo: mix P/M/G de §2.4 + 80 directos recicladoras como en el motor de referencia.
       </p>
-    </div>
-  )
-}
-
-function KpiPill({ label, value, sub }: { label: string; value: string; sub: string }) {
-  return (
-    <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3 shadow-[0_1px_0_rgba(28,27,24,0.03)]">
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
-      <p className="mt-1 font-mono text-[22px] font-semibold text-[#1C1B18]">{value}</p>
-      <p className="mt-0.5 text-[10px] text-[#8A857C]">{sub}</p>
     </div>
   )
 }

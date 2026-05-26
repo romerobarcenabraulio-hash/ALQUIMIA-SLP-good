@@ -24,6 +24,14 @@ import { useMemo } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_CA } from '@/lib/constants'
 import { fmt as fmtObj } from '@/lib/utils'
+import {
+  AnchorFigure,
+  Conclusion,
+  EditorialCallout,
+  KpiAnchorGrid,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 const fmt = fmtObj.mxn
 
 // ── Constantes educativas documentadas ────────────────────────────────────────
@@ -133,102 +141,76 @@ export function CapacitacionTab() {
     <div className="space-y-5">
 
       {/* Encabezado */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">Capacitación y transferencia de conocimiento</p>
+      <header>
+        <SectionLabel>Capacitación y transferencia de conocimiento</SectionLabel>
         <h3 className="font-serif text-[18px] text-[#1C1B18] mb-2">Plan de formación por fase</h3>
-        <p className="text-[12px] leading-relaxed text-[#6B6760]">
+        <Conclusion className="text-[16px] md:text-[17px] mb-4">
           La capacitación no es un accesorio del programa — es el factor que determina si el CAPEX se recupera.
-          Según <span className="font-medium text-[#1C1B18]">Anaya-Palacios (2024)</span>, sin formación estructurada
-          la tasa de captura cae 40% en el segundo trimestre. El costo educativo es proporcional al IPC actual
-          y al porcentaje de casas en vía pública (Hemisferio 2), que requieren brigadas presenciales.
-        </p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 rounded-[8px] border border-[#E8E4DC] bg-white px-2.5 py-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#3B6D11]" />
-            <span className="text-[11px] text-[#1C1B18]">Curva S de adopción — LATAM</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-[8px] border border-[#E8E4DC] bg-white px-2.5 py-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#1A5FA8]" />
-            <span className="text-[11px] text-[#1C1B18]">Participación ≥ 70% meta mínima</span>
-          </div>
-          <div className="flex items-center gap-1.5 rounded-[8px] border border-[#E8E4DC] bg-white px-2.5 py-1.5">
-            <div className="w-2 h-2 rounded-full bg-[#D4881E]" />
-            <span className="text-[11px] text-[#1C1B18]">{'< '}30% abandono trimestre 1</span>
-          </div>
+          Según Anaya-Palacios (2024), sin formación estructurada la tasa de captura cae 40% en el segundo trimestre.
+          El costo educativo es proporcional al IPC actual y al porcentaje de casas en vía pública (Hemisferio 2).
+        </Conclusion>
+        <div className="flex flex-wrap gap-x-6 gap-y-2 text-[11px] text-[#6B6760]">
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#3B6D11]" />Curva S de adopción — LATAM</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#1A5FA8]" />Participación ≥ 70% meta mínima</span>
+          <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#D4881E]" />{'< '}30% abandono trimestre 1</span>
         </div>
-      </div>
+      </header>
 
       {/* Ventana de implementación */}
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-        <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Ventana de educación recomendada antes de lanzar el CA</p>
+      <section className="border-t border-[#E8E4DC] pt-4">
+        <SectionLabel>Ventana de educación recomendada antes de lanzar el CA</SectionLabel>
         <div className="flex items-center gap-4">
+          <AnchorFigure
+            figure={String(ventanaSemanas)}
+            context="semanas antes del lanzamiento"
+            figureClassName="text-[#3B6D11]"
+          />
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <div className="text-[28px] font-bold text-[#3B6D11] font-mono">{ventanaSemanas}</div>
-              <div>
-                <p className="text-[12px] font-medium text-[#1C1B18]">semanas</p>
-                <p className="text-[10px] text-[#A8A49C]">antes del lanzamiento</p>
-              </div>
-            </div>
             <p className="text-[11px] text-[#6B6760] leading-relaxed">
               IPC actual: <span className="font-medium" style={{ color: ipc >= 70 ? '#3B6D11' : ipc >= 50 ? '#D4881E' : '#C0392B' }}>{ipc.toFixed(0)}/100</span>
               {!isRealData && <span className="text-[#A8A49C]"> (benchmark — sin encuesta de campo)</span>}
             </p>
           </div>
-          <div className="text-right">
-            <div className="text-[10px] text-[#A8A49C] mb-0.5">Fuente metodológica</div>
-            <div className="text-[10px] text-[#6B6760]">SEMARNAT 2021 · INECC</div>
-            <div className="text-[10px] text-[#6B6760]">Anaya-Palacios 2024</div>
-          </div>
+          <MarginalNote className="text-right mt-0">
+            SEMARNAT 2021 · INECC · Anaya-Palacios 2024
+          </MarginalNote>
         </div>
-      </div>
+      </section>
 
       {/* Modelo de costo educativo */}
       {costoEduc && (
-        <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-          <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">Modelo de costo educativo segmentado</p>
-          <p className="text-[10px] text-[#A8A49C] mb-3">
+        <section className="border-t border-[#E8E4DC] pt-4 space-y-3">
+          <SectionLabel>Modelo de costo educativo segmentado</SectionLabel>
+          <MarginalNote>
             Referencia: BANOBRAS (2019) $80 MXN/hogar/año brigada básica · Factor VP: 3.5× (brigadas puerta a puerta)
-          </p>
-          <div className="grid grid-cols-2 gap-3 mb-3">
-            <div className="rounded-[8px] bg-[#F4FAEC] border border-[#D7E8C0] p-3">
-              <p className="text-[9px] uppercase tracking-[0.06em] text-[#3B6D11] mb-1">Hemisferio 1 — Condominio / Privada</p>
-              <p className="font-mono text-[15px] font-bold text-[#1C1B18]">{fmt(costoEduc.costoH1_año1)}</p>
-              <p className="text-[9px] text-[#6B6760] mt-0.5">Año 1 · {costoEduc.hogaresH1.toLocaleString('es-MX')} hogares</p>
-              <p className="text-[9px] text-[#A8A49C]">Capacitar al administrador → alcance masivo</p>
-            </div>
-            <div className="rounded-[8px] bg-[#FEF7E7]/80 border border-[#D4881E]/30 p-3">
-              <p className="text-[9px] uppercase tracking-[0.06em] text-[#D4881E] mb-1">Hemisferio 2 — Vía pública (VP)</p>
-              <p className="font-mono text-[15px] font-bold text-[#1C1B18]">{fmt(costoEduc.costoVP_año1)}</p>
-              <p className="text-[9px] text-[#6B6760] mt-0.5">Año 1 · {costoEduc.hogaresVP.toLocaleString('es-MX')} hogares</p>
-              <p className="text-[9px] text-[#A8A49C]">Brigadas puerta a puerta · 3.5× más costoso</p>
-            </div>
-          </div>
-          <div className="flex items-center justify-between rounded-[8px] border border-[#E8E4DC] bg-[#F7F5F0] px-3 py-2">
-            <div>
-              <p className="text-[10px] text-[#6B6760]">Total año 1</p>
-              <p className="font-mono text-[14px] font-bold text-[#1C1B18]">{fmt(costoEduc.costoTotal_año1)}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-[10px] text-[#6B6760]">Mantenimiento años 2+</p>
-              <p className="font-mono text-[13px] font-medium text-[#3B6D11]">{fmt(costoEduc.costoMantenimiento)}</p>
-            </div>
-          </div>
-          <div className="mt-2 rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2.5 py-2 text-[10px] text-[#6B6760]">
-            <span className="font-medium text-[#D4881E]">Grandes Generadores: </span>
+          </MarginalNote>
+          <KpiAnchorGrid
+            columns={2}
+            items={[
+              {
+                label: `Hemisferio 1 — Año 1 · ${costoEduc.hogaresH1.toLocaleString('es-MX')} hogares`,
+                value: fmt(costoEduc.costoH1_año1),
+              },
+              {
+                label: `Hemisferio 2 VP — Año 1 · ${costoEduc.hogaresVP.toLocaleString('es-MX')} hogares`,
+                value: fmt(costoEduc.costoVP_año1),
+              },
+              { label: 'Total año 1', value: fmt(costoEduc.costoTotal_año1) },
+              { label: 'Mantenimiento años 2+', value: fmt(costoEduc.costoMantenimiento) },
+            ]}
+          />
+          <EditorialCallout tone="caution" label="Grandes Generadores">
             Los comercios, hoteles e industria son auto-responsables (LGPGIR Art. 42). La estrategia
-            educativa aplica únicamente a vivienda residencial. Ver adendo "Grandes Generadores".
-          </div>
-        </div>
+            educativa aplica únicamente a vivienda residencial. Ver adendo &quot;Grandes Generadores&quot;.
+          </EditorialCallout>
+        </section>
       )}
 
       {/* Adopción proyectada vs. meta */}
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
+      <section className="border-t border-[#E8E4DC] pt-4">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-[11px] font-semibold text-[#1C1B18]">Adopción proyectada por año (M03)</p>
-          <span className="text-[9px] text-[#A8A49C] border border-[#E8E4DC] rounded-full px-2 py-0.5">
-            Tasa de captura M03
-          </span>
+          <SectionLabel>Adopción proyectada por año (M03)</SectionLabel>
+          <span className="text-[9px] text-[#A8A49C]">Tasa de captura M03</span>
         </div>
         <div className="space-y-2">
           {pctCapturaPorAño.slice(0, horizonte).map((pct, idx) => {
@@ -252,12 +234,12 @@ export function CapacitacionTab() {
             )
           })}
         </div>
-        <p className="mt-2 text-[9px] text-[#A8A49C]">
+        <MarginalNote>
           Adopción año 1 ({pctCapturaPorAño[0]?.toFixed(0) ?? '—'}%) determina la velocidad de la curva S.
           Programas con adopción &lt; 25% en F1 requieren refuerzo de comunicación antes de pasar a F2.
           Ref: Anaya-Palacios (2024).
-        </p>
-      </div>
+        </MarginalNote>
+      </section>
 
       {/* Plan por fase */}
       <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -315,14 +297,13 @@ export function CapacitacionTab() {
       </div>
 
       {/* Nota metodológica */}
-      <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-3 text-[10px] text-[#6B6760] leading-relaxed">
-        <span className="font-medium text-[#1C1B18]">Nota metodológica: </span>
+      <MarginalNote prefix="Nota metodológica">
         El costo base de $80 MXN/hogar/año es un estimado derivado de BANOBRAS (2019) para brigadas presenciales básicas en municipios mexicanos.
         El factor de 3.5× para casas VP refleja el mayor esfuerzo de contacto directo sin intermediario administrador.
         Las curvas de adopción son referencias bibliográficas — SEMARNAT (2021), INECC, Anaya-Palacios (2024) — no garantías contractuales.
         El municipio debe adaptar el plan a su calendario político y disponibilidad presupuestal.
         Fuentes completas disponibles en Bibliografía y cálculos (M09).
-      </div>
+      </MarginalNote>
     </div>
   )
 }

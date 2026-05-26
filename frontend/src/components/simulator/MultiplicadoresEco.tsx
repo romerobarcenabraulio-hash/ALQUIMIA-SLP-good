@@ -2,6 +2,11 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
+import { Conclusion } from '@/components/editorial/Conclusion'
+import { MarginalNote } from '@/components/editorial/MarginalNote'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
+
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -11,46 +16,43 @@ export function MultiplicadoresEco() {
   const r = resultados
 
   const items = r ? [
-    { label: 'Cadena de suministro',     value: r.cadenaProveedores,  fuente: 'S&P sector reciclaje', mult: '0.25x' },
-    { label: 'Revenue fiscal',           value: r.revenueFiscal,      fuente: 'IMCO',                mult: '0.16x' },
-    { label: 'Valor de propiedad',       value: r.valorPropiedad,     fuente: 'BBVA Research',        mult: '0.12x' },
-    { label: 'Inversión privada atraída', value: r.inversionPrivada,  fuente: 'BID Economía Circular', mult: '1.40x' },
-    { label: 'Ahorro salud pública',     value: r.ahorroSalud,        fuente: 'OMS-OPS LATAM',        mult: '$145/hab' },
-    { label: 'Derrama salarial total',   value: r.derramaSalarial,    fuente: 'Deloitte LATAM',       mult: '1.8x' },
+    { label: 'Cadena de suministro', value: fmt.mxnK(r.cadenaProveedores), mult: '0.25×' },
+    { label: 'Revenue fiscal', value: fmt.mxnK(r.revenueFiscal), mult: '0.16×' },
+    { label: 'Valor de propiedad', value: fmt.mxnK(r.valorPropiedad), mult: '0.12×' },
+    { label: 'Inversión privada atraída', value: fmt.mxnK(r.inversionPrivada), mult: '1.40×' },
+    { label: 'Ahorro salud pública', value: fmt.mxnK(r.ahorroSalud), mult: '$145/hab' },
+    { label: 'Derrama salarial total', value: fmt.mxnK(r.derramaSalarial), mult: '1.8×' },
   ] : []
 
   return (
     <div>
-      {/* KPI strip */}
       {r && (
-        <div className="bg-gradient-to-r from-[#EAF3DE] to-[#EBF3FB] rounded-[14px] p-5 mb-6">
-          <p className="text-[11px] uppercase tracking-wide text-[#3B6D11] mb-2">Derrama base por venta de materiales</p>
-          <p className="font-mono text-[38px] text-[#3B6D11]">{fmt.mxnM(r.ingresosBrutos)}</p>
-          <p className="text-[13px] text-[#6B6760]">sobre el horizonte del plan · solo valorización material, sin externalidades</p>
-        </div>
+        <section className="mb-8">
+          <SectionLabel>Derrama base por venta de materiales</SectionLabel>
+          <AnchorFigure
+            figure={fmt.mxnM(r.ingresosBrutos)}
+            context="Sobre el horizonte del plan · solo valorización material, sin externalidades"
+            figureClassName="text-green-600a"
+          />
+        </section>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
         {items.map(item => (
-          <div key={item.label} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
-            <div className="flex justify-between items-start mb-2">
-              <p className="text-[12px] font-medium text-[#1C1B18]">{item.label}</p>
-              <span className="text-[10px] text-[#A8A49C] font-mono">{item.mult}</span>
-            </div>
-            <p className="font-mono text-[20px] text-[#3B6D11]">{fmt.mxnK(item.value)}</p>
-            <p className="text-[10px] text-[#A8A49C] mt-1">{item.fuente}</p>
+          <div key={item.label} className="border-b border-[0.5px] border-gray-200c pb-5">
+            <AnchorFigure figure={item.value} context={`${item.label} · ${item.mult}`} />
+            <MarginalNote className="mt-2 text-[11px]">
+              Multiplicador de sensibilidad — no suma automática a ingreso operativo.
+            </MarginalNote>
           </div>
         ))}
       </div>
 
       {r && (
-        <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Escenario ampliado separado</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-            Las siguientes cifras son externalidades y multiplicadores de sensibilidad. No se suman a la derrama base como
-            ingreso disponible del programa sin fuente o convenio adicional.
-          </p>
-        </div>
+        <Conclusion className="mt-8 text-[18px]">
+          Las cifras siguientes son externalidades y multiplicadores de sensibilidad. No se suman a la derrama base
+          como ingreso disponible del programa sin fuente o convenio adicional.
+        </Conclusion>
       )}
 
       {r && (

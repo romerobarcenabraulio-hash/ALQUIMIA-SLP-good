@@ -28,6 +28,7 @@ import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartThe
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { buildRecyclersKpiContract } from '@/lib/recicladorasCatalog'
 import { ResidentialRoutesPanel } from '@/components/simulator/ResidentialRoutesPanel'
+import { EditorialCallout, MarginalNote } from '@/components/editorial'
 
 const CentrosAcopioMap = dynamic(
   () => import('@/components/simulator/CentrosAcopioMap').then(m => m.CentrosAcopioMap),
@@ -126,14 +127,11 @@ export function LogisticaOperativaStack() {
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
         <div className="space-y-5">
 
-          <div className="rounded-[10px] border border-[#C4DFA0] bg-[#F4FAEC] px-4 py-3">
-            <p className="text-[11px] font-semibold text-[#23470A]">Rutas y cobertura operativa</p>
-            <p className="text-[11px] text-[#3B5F23] mt-1 leading-relaxed">
-              {!hasResultados
-                ? 'Complete M01 Baseline (RSU modelado) y M06 Infraestructura para dimensionar rutas y trazar en mapa.'
-                : 'Use el panel de rutas por colonia para trazar recorridos. Centros propuestos en M06; progresión mes a mes en 05C Oleadas territoriales.'}
-            </p>
-          </div>
+          <EditorialCallout label="Rutas y cobertura operativa">
+            {!hasResultados
+              ? 'Complete M01 Baseline (RSU modelado) y M06 Infraestructura para dimensionar rutas y trazar en mapa.'
+              : 'Use el panel de rutas por colonia para trazar recorridos. Centros propuestos en M06; progresión mes a mes en 05C Oleadas territoriales.'}
+          </EditorialCallout>
 
           {/* Rutas residenciales por colonia — trazado + Cabildo */}
           <section className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
@@ -312,13 +310,13 @@ export function LogisticaOperativaStack() {
           </div>
 
           {/* Cross-reference to VPN tornado */}
-          <div className="rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3 text-[11px] text-[#1A5FA8]">
-            <span className="font-semibold">Ver también:</span> La sensibilidad del <strong>VPN</strong> ante cambios en variables operativas se analiza en M13 · Retorno Financiero → Análisis de riesgo.
-          </div>
+          <MarginalNote prefix="Ver también">
+            La sensibilidad del <strong>VPN</strong> ante cambios en variables operativas se analiza en M13 · Retorno Financiero → Análisis de riesgo.
+          </MarginalNote>
         </div>
 
         {/* Right rail */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+        <div className="border-t border-[#E8E4DC] pt-6">
           <div className="flex items-center justify-between mb-3 px-1">
             <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
             <span className={cn(

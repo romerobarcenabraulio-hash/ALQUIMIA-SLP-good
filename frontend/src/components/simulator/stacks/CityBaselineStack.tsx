@@ -20,6 +20,7 @@ import {
 import { ResearchCompletenessBar } from '@/components/simulator/ResearchCompletenessBar'
 import { ImpactScenariosPanel } from '@/components/simulator/ImpactScenariosPanel'
 import { ChartPanel } from '@/components/ui/ChartPanel'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 import {
   CHART_AXIS_TICK,
   CHART_GRID,
@@ -338,17 +339,18 @@ export function CityBaselineStack() {
               const ocup = distribution?.stateAvgOccupants2020 ?? ocupantesBase
               const isApiData = !!seleccionMunicipioCatalog
               return (
-                <div className="grid grid-cols-3 gap-1.5 mb-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
                   {[
                     { label: 'Población',          value: fmt.num0(poblacion),       source: isApiData ? 'API' : 'INEGI ZM' },
                     { label: 'Viviendas habitadas', value: fmt.num0(viviendas),       source: isApiData ? 'Estimado' : 'INEGI ZM' },
                     { label: 'Ocup./viv. base',     value: ocup.toFixed(1),           source: 'INEGI Censo' },
                   ].map(c => (
-                    <div key={c.label} className="rounded-[7px] border border-[#E8E4DC] bg-[#FDFCFA] px-2 py-1.5 text-center">
-                      <p className="text-[8px] uppercase tracking-[0.04em] text-[#A8A49C] leading-tight">{c.label}</p>
-                      <p className="mt-0.5 font-mono text-[11px] font-semibold text-[#1C1B18]">{c.value}</p>
-                      <p className="text-[7px] text-[#C8C4BC]">{c.source}</p>
-                    </div>
+                    <AnchorFigure
+                      key={c.label}
+                      figure={c.value}
+                      context={`${c.label} · ${c.source}`}
+                      figureClassName="text-[22px]"
+                    />
                   ))}
                 </div>
               )

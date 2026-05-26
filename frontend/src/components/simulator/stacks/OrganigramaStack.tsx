@@ -11,6 +11,7 @@ import { CA_CONFIG } from '@/lib/constants'
 import { ANCLA_PROGRAMA_RSU } from '@/data/organigramaMunicipalCanon'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
+import { Conclusion, EditorialCallout, KpiAnchorGrid } from '@/components/editorial'
 
 // ── Staff data per CA type ────────────────────────────────────────────────────
 
@@ -169,11 +170,9 @@ export function OrganigramaStack() {
           </div>
 
           {/* Ancla al ejecutivo municipal (M02D → M07) */}
-          <div className="rounded-[12px] border border-[#BDD7F5] bg-[#EBF3FB]/50 px-4 py-2.5 mb-4">
-            <p className="text-[11px] text-[#1A5FA8]">
-              Reporta a <strong>{ANCLA_PROGRAMA_RSU.titulo}</strong> (validar vs. {ANCLA_PROGRAMA_RSU.alternativaTitulo} en campo).
-            </p>
-          </div>
+          <EditorialCallout label="Ancla institucional" className="mb-4">
+            Reporta a <strong>{ANCLA_PROGRAMA_RSU.titulo}</strong> (validar vs. {ANCLA_PROGRAMA_RSU.alternativaTitulo} en campo).
+          </EditorialCallout>
 
           {/* Org chart visual — programa (to-be) */}
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
@@ -217,25 +216,21 @@ export function OrganigramaStack() {
 
           {/* Gobernanza metropolitana */}
           {municipiosActivos.length > 1 && (
-            <div className="rounded-[12px] border border-[#BDD7F5] bg-[#EBF3FB] px-6 py-5">
-              <p className="text-[12px] font-semibold text-[#1A5FA8] mb-1">Gobernanza metropolitana</p>
-              <p className="text-[11px] text-[#4A4740] mb-4 leading-relaxed">
-                ZM {zmActiva}: {municipiosActivos.length} municipios comparten infraestructura. El reparto de costos
-                sigue generación de RSU proporcional; la gobernanza opera vía consejo metropolitano + comité técnico.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {[
-                  { label: 'Municipios activos', value: String(municipiosActivos.length), sub: 'en el escenario' },
-                  { label: 'CAs compartidos', value: String((mixCAs.P + mixCAs.M + mixCAs.G) > 2 ? 1 : 0), sub: 'infraestructura ZM' },
-                  { label: 'Fórmula reparto', value: 'Por RSU', sub: 'ton/día por municipio' },
-                ].map(c => (
-                  <div key={c.label} className="rounded-[8px] border border-[#BDD7F5] bg-white px-3 py-2.5">
-                    <p className="text-[9px] uppercase text-[#A8A49C]">{c.label}</p>
-                    <p className="text-[16px] font-bold text-[#1A5FA8]">{c.value}</p>
-                    <p className="text-[9px] text-[#6B6760]">{c.sub}</p>
-                  </div>
-                ))}
-              </div>
+            <div className="space-y-4">
+              <EditorialCallout label="Gobernanza metropolitana">
+                <Conclusion as="div" className="text-[16px] md:text-[17px]">
+                  ZM {zmActiva}: {municipiosActivos.length} municipios comparten infraestructura. El reparto de costos
+                  sigue generación de RSU proporcional; la gobernanza opera vía consejo metropolitano + comité técnico.
+                </Conclusion>
+              </EditorialCallout>
+              <KpiAnchorGrid
+                columns={3}
+                items={[
+                  { label: 'Municipios activos · en el escenario', value: String(municipiosActivos.length) },
+                  { label: 'CAs compartidos · infraestructura ZM', value: String((mixCAs.P + mixCAs.M + mixCAs.G) > 2 ? 1 : 0) },
+                  { label: 'Fórmula reparto · ton/día por municipio', value: 'Por RSU' },
+                ]}
+              />
             </div>
           )}
 
@@ -417,7 +412,7 @@ export function OrganigramaStack() {
         </div>
 
         {/* Right rail */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+        <div className="border-t border-[#E8E4DC] pt-6">
           <div className="flex items-center justify-between mb-3 px-1">
             <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
             <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#EAF3DE] text-[#2D5A0D]">Confianza 65%</span>

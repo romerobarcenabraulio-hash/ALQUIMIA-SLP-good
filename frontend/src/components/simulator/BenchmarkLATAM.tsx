@@ -4,6 +4,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { EditorialTimeline, type TimelineMilestone } from '@/components/simulator/EditorialTimeline'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { aplicarSustitucionesTerritorio, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 
 const HITOS: Array<{ ciudad: string; año: number; evento: string; tone: 'neutral' | 'positive' | 'warning' }> = [
   { ciudad: 'Curitiba', año: 2000, evento: 'Programa Câmbio Verde iniciado', tone: 'neutral' },
@@ -13,7 +15,6 @@ const HITOS: Array<{ ciudad: string; año: number; evento: string; tone: 'neutra
   { ciudad: 'S. Paulo', año: 2019, evento: 'Política Nacional Residuos Sólidos implementada', tone: 'neutral' },
 ]
 
-/** Valores numéricos para comparar con `zmActiva` (grid y NarrativeBridge). */
 const PEER_BENCHMARK = [
   { ciudad: 'Bogotá',   año3Pct: 40, año5Pct: 100, empleo: 18000, co2Kton: 450 },
   { ciudad: 'B. Aires', año3Pct: 30, año5Pct: 75,  empleo: 12000, co2Kton: 310 },
@@ -62,32 +63,23 @@ export function BenchmarkLATAM() {
 
   return (
     <div>
-      <h2 className="font-serif text-[24px] text-[#1C1B18] mb-2">Contexto regional</h2>
-      <p className="text-[13px] text-[#6B6760] mb-6">
+      <h2 className="font-serif text-[24px] text-gray-900c mb-2">Contexto regional</h2>
+      <p className="text-[14px] text-gray-600c mb-6 max-w-[620px]">
         Compara el plan de {zmActiva} con ciudades que lideraron la transición circular en América Latina.
       </p>
 
-      <EditorialTimeline
-        title={tituloTimeline}
-        milestones={milestones}
-      />
+      <EditorialTimeline title={tituloTimeline} milestones={milestones} />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-8">
+      <SectionLabel className="mt-8">Panel de referencia LATAM</SectionLabel>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-4">
         {PEER_BENCHMARK.map(b => (
-          <div key={b.ciudad} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
-            <p className="text-[13px] font-medium text-[#1C1B18] mb-2">{b.ciudad}</p>
-            <div className="grid grid-cols-4 gap-2 text-center">
-              {[
-                ['Año 3', `${b.año3Pct}%`],
-                ['Año 5', `${b.año5Pct}%`],
-                ['Empleo', `+${fmtK(b.empleo)}`],
-                ['CO₂e', `${fmtK(b.co2Kton)} t`],
-              ].map(([k, v]) => (
-                <div key={k as string}>
-                  <p className="text-[9px] text-[#A8A49C]">{k}</p>
-                  <p className="font-mono text-[11px] text-[#1C1B18]">{v}</p>
-                </div>
-              ))}
+          <div key={b.ciudad} className="space-y-4 border-b border-[0.5px] border-gray-200c pb-6 md:border-0 md:pb-0">
+            <p className="font-serif text-[18px] text-gray-900c">{b.ciudad}</p>
+            <div className="grid grid-cols-2 gap-4">
+              <AnchorFigure figure={`${b.año3Pct}%`} context="Circularidad año 3" />
+              <AnchorFigure figure={`${b.año5Pct}%`} context="Circularidad año 5" />
+              <AnchorFigure figure={`+${fmtK(b.empleo)}`} context="Empleo formal est." />
+              <AnchorFigure figure={`${fmtK(b.co2Kton)} t`} context="CO₂e ref." />
             </div>
           </div>
         ))}
@@ -98,7 +90,7 @@ export function BenchmarkLATAM() {
         audience="entrepreneur"
         kicker="Benchmark · síntesis numérica"
         title={`${zmActiva} frente al panel LATAM`}
-        summary={`Tu captura circular modelada (~${localCircularityPct.toFixed(1)}%${circularityBaseline ? ' · baseline' : ' · trayectoria año seleccionado'}) queda ${deltaVsAvgAño5 >= 0 ? 'por encima' : 'por debajo'} del promedio del grid (${avgAño5.toFixed(0)}% en año 5 de las tres ciudades: Bogotá, Buenos Aires, Curitiba). Frente a Curitiba (referencia ${curitiba.año5Pct}% año 5, ${curitiba.año3Pct}% año 3), la brecha es ${deltaVsCuritibaAño5 >= 0 ? '+' : ''}${deltaVsCuritibaAño5.toFixed(1)} puntos porcentuales. Promedio del panel: año 3 ${avgAño3.toFixed(0)}%, empleos formales estimados ~+${fmtK(avgEmpleo)}, CO₂e anual de referencia ~${fmtK(avgCo2)} kt.`}
+        summary={`Tu captura circular modelada (~${localCircularityPct.toFixed(1)}%${circularityBaseline ? ' · baseline' : ' · trayectoria año seleccionado'}) queda ${deltaVsAvgAño5 >= 0 ? 'por encima' : 'por debajo'} del promedio del panel (${avgAño5.toFixed(0)}% en año 5 de las tres ciudades: Bogotá, Buenos Aires, Curitiba). Frente a Curitiba (referencia ${curitiba.año5Pct}% año 5, ${curitiba.año3Pct}% año 3), la brecha es ${deltaVsCuritibaAño5 >= 0 ? '+' : ''}${deltaVsCuritibaAño5.toFixed(1)} puntos porcentuales. Promedio del panel: año 3 ${avgAño3.toFixed(0)}%, empleos formales estimados ~+${fmtK(avgEmpleo)}, CO₂e anual de referencia ~${fmtK(avgCo2)} kt.`}
         evidence={[
           { label: `${zmActiva} (modelo)`, value: `${localCircularityPct.toFixed(1)}%` },
           { label: 'Promedio año 5', value: `${avgAño5.toFixed(0)}%` },

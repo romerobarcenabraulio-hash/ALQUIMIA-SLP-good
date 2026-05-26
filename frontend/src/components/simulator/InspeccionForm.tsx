@@ -15,6 +15,7 @@ import type {
   NivelSancion,
 } from '@/types/predios'
 import { ExpedientePDF } from '@/components/simulator/ExpedientePDF'
+import { EditorialCallout, MarginalNote } from '@/components/editorial'
 
 const USO_SUELO = ['habitacional', 'comercial', 'industrial', 'baldío', 'otro'] as const
 
@@ -276,11 +277,11 @@ export function InspeccionForm() {
   return (
     <div className="space-y-6">
       {!escaleraSoloSlpCapital && (
-        <div className="rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3 text-[12px] text-amber-950">
+        <EditorialCallout tone="caution" label="Alcance de expediente">
           Municipio del predio seleccionado: <span className="font-mono">{municipioExpediente}</span>. La API no generará expediente con
           cálculo UMA si el predio no está en <span className="font-mono">slp</span> (error 422 con detalle legible). Elija{' '}
           <span className="font-mono">slp</span> para obtener el borrador de expediente capital.
-        </div>
+        </EditorialCallout>
       )}
 
       <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-4 space-y-4">
@@ -351,13 +352,13 @@ export function InspeccionForm() {
             </svg>
           </a>
         ) : (
-          <div className="rounded-[8px] border border-dashed border-[#C8C4BC] bg-[#FAFAF8] px-3 py-4 flex items-center gap-3 text-[10px] text-[#A8A49C]">
+          <MarginalNote className="rounded-[8px] border border-dashed border-[#C8C4BC] px-3 py-4 flex items-center gap-3">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0 text-[#C8C4BC]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
             <span>Captura coordenadas para ver la ubicación del predio en mapa · Orientativo, no constituye registro catastral oficial.</span>
-          </div>
+          </MarginalNote>
         )}
         <label className="block">
           <span className="text-[11px] font-medium text-[#6B6760]">Uso de suelo declarado</span>
@@ -473,10 +474,10 @@ export function InspeccionForm() {
       <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.06em] text-[#A8A49C]">3. Sanción orientativa</p>
         {filaPreview && filaPreview.verificado_clc === false ? (
-          <div className="rounded-[8px] border border-amber-200 bg-amber-50 px-3 py-2 text-[12px] leading-relaxed text-amber-950">
+          <EditorialCallout tone="caution" label="Verificación legal pendiente">
             Los artículos del reglamento están pendientes de verificación legal (CLC). Este expediente es orientativo hasta que el equipo
             jurídico confirme los artículos exactos.
-          </div>
+          </EditorialCallout>
         ) : null}
 
         {!filaPreview ? (

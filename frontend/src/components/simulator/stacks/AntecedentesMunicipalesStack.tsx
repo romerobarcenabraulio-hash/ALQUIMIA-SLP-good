@@ -85,7 +85,7 @@ export function AntecedentesMunicipalesStack() {
 
   if (municipiosActivos.length === 0) {
     return (
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] px-5 py-4">
+      <div className="border-t border-[#E8E4DC] pt-6">
         <p className="text-[13px] leading-relaxed text-[#6B6760]">
           Elija un municipio en la barra superior para generar el reportaje de antecedentes RSU.
         </p>

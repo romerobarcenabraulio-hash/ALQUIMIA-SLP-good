@@ -5,6 +5,7 @@ import { ZMS, alquimiaHideGdlFromUi, GDL_ZM_SELECTOR_FOOTNOTE } from '@/lib/cons
 import { fmt } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 
 export function SelectorZM() {
   const [gdlBlockedOpen, setGdlBlockedOpen] = useState(false)
@@ -52,20 +53,24 @@ export function SelectorZM() {
       </div>
 
       {/* Info ZM activa — valores reactivos según municipios seleccionados */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        {[
-          { l: 'Población activa', v: fmt.num0(popActiva) + ' hab', dim: !allActive },
-          { l: 'Viviendas activas', v: fmt.num0(vivActivas), dim: !allActive },
-          { l: 'Gen/cápita',        v: `${zm.genKgDia} kg/hab/día`, dim: false },
-          { l: 'Crecimiento',       v: `${zm.crecPct}% anual`, dim: false },
-        ].map(item => (
-          <div key={item.l} className={cn('bg-[#FDFCFA] border rounded-[10px] p-3 transition-colors', item.dim ? 'border-amber-300' : 'border-[#E8E4DC]')}>
-            <p className="text-[10px] uppercase text-[#A8A49C] tracking-wide">{item.l}</p>
-            <p className={cn('font-mono text-[15px] mt-1', item.dim ? 'text-amber-800' : 'text-[#1C1B18]')}>{item.v}</p>
-            {item.dim && <p className="text-[9px] text-amber-600 mt-0.5">parcial · {muniActivos.length}/{zm.municipios.length} mun.</p>}
-          </div>
-        ))}
-      </div>
+      <KpiAnchorGrid
+        className="mb-6"
+        columns={4}
+        items={[
+          {
+            label: allActive ? 'Población activa' : `Población activa · parcial ${muniActivos.length}/${zm.municipios.length} mun.`,
+            value: `${fmt.num0(popActiva)} hab`,
+            figureClassName: allActive ? undefined : 'text-amber-800',
+          },
+          {
+            label: allActive ? 'Viviendas activas' : `Viviendas activas · parcial ${muniActivos.length}/${zm.municipios.length} mun.`,
+            value: fmt.num0(vivActivas),
+            figureClassName: allActive ? undefined : 'text-amber-800',
+          },
+          { label: 'Gen/cápita', value: `${zm.genKgDia} kg/hab/día` },
+          { label: 'Crecimiento', value: `${zm.crecPct}% anual` },
+        ]}
+      />
 
       {/* Checkboxes municipios */}
       <div>

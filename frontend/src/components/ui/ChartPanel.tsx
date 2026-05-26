@@ -3,7 +3,9 @@
 import { useState, useCallback, type ReactNode } from 'react'
 import { Expand, Info, X } from 'lucide-react'
 import type { ChartBrief } from '@/data/moduleEditorialBriefs'
-import { getCatalogChartBrief } from '@/data/chartBriefCatalog'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
+import { resolveChartBrief } from '@/lib/chartQhcDynamic'
+import { useSimulatorStore } from '@/store/simulatorStore'
 import { CHART_PANEL_CLASS, CHART_SUBTITLE, CHART_TITLE } from '@/lib/chartTheme'
 import { cn } from '@/lib/utils'
 
@@ -68,17 +70,14 @@ function BriefPanel({ brief, compact = false }: { brief: ChartBrief; compact?: b
 function KpiStrip({ kpis }: { kpis: ChartPanelKpi[] }) {
   if (!kpis.length) return null
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 px-5 py-3 border-b border-[#F0EDE5] bg-[#FAFAF8]">
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-4 px-5 py-4 border-b border-[0.5px] border-gray-200c">
       {kpis.map(k => (
-        <div key={k.label} className="min-w-0">
-          <p className="text-[11px] text-[#6B6760] truncate">{k.label}</p>
-          <p
-            className="font-mono text-[13px] font-semibold tabular-nums truncate"
-            style={{ color: k.accent ?? '#1C1B18' }}
-          >
-            {k.value}
-          </p>
-        </div>
+        <AnchorFigure
+          key={k.label}
+          figure={k.value}
+          context={k.label}
+          figureClassName="text-[22px] tabular-nums"
+        />
       ))}
     </div>
   )
@@ -163,7 +162,8 @@ function ChartPanelRoot({
 }: ChartPanelProps) {
   const [open, setOpen] = useState(false)
   const [briefOpen, setBriefOpen] = useState(false)
-  const resolvedBrief = brief ?? (chartId ? getCatalogChartBrief(chartId) : null)
+  const simState = useSimulatorStore()
+  const resolvedBrief = brief ?? (chartId ? resolveChartBrief(chartId, simState) : null)
 
   const handleOpen = useCallback((e: React.MouseEvent) => {
     if (!expandable) return

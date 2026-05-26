@@ -2,11 +2,7 @@
 
 import { getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import { getRailActionLabel } from '@/lib/editorialRailLabels'
-import {
-  getEtiquetaNarrativaCiudad,
-  getMunicipioMadurezVista,
-} from '@/lib/municipioMadurezContexto'
-import { useSimulatorStore } from '@/store/simulatorStore'
+import { useModuleEditorialContext } from '@/lib/moduleEditorialContext'
 
 export function ModuleEditorialBrief({
   moduleId,
@@ -15,17 +11,8 @@ export function ModuleEditorialBrief({
   moduleId: string
   suppressTitle?: boolean
 }) {
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const territorio = getEtiquetaNarrativaCiudad(municipiosActivos, zmActiva)
-  const municipio = municipiosActivos.length === 1 ? getMunicipioMadurezVista(municipiosActivos[0] ?? '') : null
-  const scope = municipiosActivos.length === 0 ? 'sin_municipio' : municipiosActivos.length === 1 ? 'municipio' : 'zm'
-  const brief = getModuleEditorialBrief(moduleId, {
-    territorio,
-    scope,
-    municipio,
-    municipiosCount: municipiosActivos.length,
-  })
+  const briefCtx = useModuleEditorialContext()
+  const brief = getModuleEditorialBrief(moduleId, briefCtx)
 
   if (!brief) return null
 

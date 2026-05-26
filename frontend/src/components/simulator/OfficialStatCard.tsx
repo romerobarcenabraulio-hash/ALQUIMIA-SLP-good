@@ -7,6 +7,7 @@ import {
 } from '@/lib/social/aggregatedKpiCopy'
 import { OFFICIAL_INDICATOR_FORMAT_SPEC } from '@/lib/social/officialStatsReadingFramework'
 import { cn } from '@/lib/utils'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 
 export const SOCIAL_STAT_MISMATCH_AUDITOR_COPY =
   'No hay fila municipal para el CVE activo en este dataset; el valor proviene de otro ámbito territorial explícito en las etiquetas. No lo cite como dato del municipio solicitado sin revisión documental.'
@@ -72,10 +73,7 @@ export function OfficialStatCard({
       data-testid="social-context-official-stat-card"
       data-availability={availability}
       data-indicator-id={slice.indicatorId}
-      className={cn(
-        'rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3 shadow-[0_1px_0_rgba(28,27,24,0.02)]',
-        className,
-      )}
+      className={cn('pt-1', className)}
     >
       {showMismatch && (
         <div
@@ -90,15 +88,18 @@ export function OfficialStatCard({
 
       <h5 className="text-[14px] font-semibold text-[#1C1B18]">{slice.label}</h5>
       <p
-        className="mt-2 rounded-[6px] border border-[#E8E4DC] bg-[#FAFAF8] px-2 py-1.5 text-[10px] leading-snug text-[#64748B]"
+        className="mt-2 text-[10px] leading-snug text-[#64748B]"
         data-testid="social-official-pre-numeric-disclaimer"
       >
         {OFFICIAL_STAT_PRE_NUMERIC_DISCLAIMER}
       </p>
-      <p className="mt-2 font-mono text-[22px] font-semibold text-[#1C1B18]">
-        {valueDisplay}
-        <span className="ml-1 text-[13px] font-normal text-[#6B6760]">{slice.unit}</span>
-      </p>
+      <div className="mt-3">
+        <AnchorFigure
+          figure={valueDisplay}
+          context={slice.unit}
+          figureClassName="font-mono text-[22px] font-semibold"
+        />
+      </div>
       {precisionNote && (
         <p className="mt-1 text-[10px] leading-snug text-[#64748B]" data-testid="social-official-precision-note">
           {precisionNote}

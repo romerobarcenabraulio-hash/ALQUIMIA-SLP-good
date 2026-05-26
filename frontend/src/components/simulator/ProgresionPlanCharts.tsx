@@ -14,6 +14,7 @@ import { PlanChartFrame } from '@/components/charts/PlanChartFrame'
 import { fmt } from '@/lib/utils'
 import { TraceRibbon } from '@/components/ui/TraceRibbon'
 import { CORTE_UI } from '@/lib/progresionUiConstants'
+import { MarginalNote, SectionLabel } from '@/components/editorial'
 
 export type ProgresionChartPoint = Record<string, unknown> & {
   mes: number
@@ -44,12 +45,12 @@ export function ProgresionPlanCharts({
   return (
     <>
       {/* Gráfica 1 */}
-      <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Infraestructura y personas formales (acumulado)</p>
-        <p className="text-[11px] text-[#6B6760] mt-0.5">
+      <div className="border-t border-[#E8E4DC] pt-4">
+        <SectionLabel>Infraestructura y personas formales (acumulado)</SectionLabel>
+        <MarginalNote className="mb-3">
           CAs y recicladoras activas según catálogo operativo; empleos directos CA + línea reciclaje (80); recuperación de base
           escalada al horizonte.
-        </p>
+        </MarginalNote>
         <PlanChartFrame height={320}>
           {(w, h) => (
             <LineChart width={w} height={h} data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
@@ -100,11 +101,11 @@ export function ProgresionPlanCharts({
       </div>
 
       {/* Gráfica 2 */}
-      <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Economía y material</p>
-        <p className="text-[11px] text-[#6B6760] mt-0.5">
+      <div className="border-t border-[#E8E4DC] pt-4">
+        <SectionLabel>Economía y material</SectionLabel>
+        <MarginalNote className="mb-3">
           Derrama acumulada vía factor derrema/ingresos del motor; toneladas capturadas por mes; ingreso valorización; desvío modelado vs RSU total.
-        </p>
+        </MarginalNote>
         <PlanChartFrame height={320}>
           {(w, h) => (
             <LineChart width={w} height={h} data={chartData} margin={{ top: 8, right: 16, left: 0, bottom: 0 }}>
@@ -161,13 +162,15 @@ export function ProgresionPlanCharts({
       </div>
 
       {/* Gráfica 3 — dos paneles (escalas heterogéneas) */}
-      <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4 space-y-4">
-        <p className="text-[11px] font-semibold text-[#1C1B18]">Impacto público y síntesis</p>
-        <p className="text-[11px] text-[#6B6760]">
-          CO₂e evitadas (acumulado por mes); ahorro en salud acumulado; cumplimiento normativo estimado e indicador compuesto de
-          circularidad. También se muestra % RSU capturado como métrica separada para no mezclar términos. El deslizador superior fija
-          el mes de consulta sobre el mismo eje que el resto del plan.
-        </p>
+      <div className="border-t border-[#E8E4DC] pt-4 space-y-4">
+        <div>
+          <SectionLabel>Impacto público y síntesis</SectionLabel>
+          <MarginalNote>
+            CO₂e evitadas (acumulado por mes); ahorro en salud acumulado; cumplimiento normativo estimado e indicador compuesto de
+            circularidad. También se muestra % RSU capturado como métrica separada para no mezclar términos. El deslizador superior fija
+            el mes de consulta sobre el mismo eje que el resto del plan.
+          </MarginalNote>
+        </div>
         <PlanChartFrame height={220}>
           {(w, h) => (
             <LineChart width={w} height={h} data={chartData} margin={{ top: 8, right: 20, left: 4, bottom: 0 }}>

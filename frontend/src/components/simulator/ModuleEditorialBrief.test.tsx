@@ -112,6 +112,42 @@ describe('ModuleEditorialBrief', () => {
     expect(text).toContain('externalidades')
   })
 
+  it('modulos pyramid no usan jerga prohibida R3', () => {
+    const pyramidModules = [
+      'city_baseline',
+      'social_diagnostico',
+      'mapeo_actores',
+      'organigrama_diagnostico',
+      'marco_legal',
+      'costo_omision',
+      'escenarios_financieros',
+      'riesgos_modelo',
+      'expediente_cabildo',
+    ]
+    const forbidden = /contrafactual|operacionalizar|instrumento|habilitador|facilitador|implementación robusta/i
+    for (const moduleId of pyramidModules) {
+      const brief = getModuleEditorialBrief(moduleId, {
+        territorio: 'San Luis Potosí',
+        scope: 'municipio',
+        municipio: null,
+        municipiosCount: 1,
+        metrics: {
+          enterradoAnual: 26_600_000,
+          capexTotal: 48_000_000,
+          vivActivas: 254_000,
+          costoOmisionTotalM: 2239,
+          ahorroSaludProgramaM: 437,
+          tir: 52.7,
+          paybackMeses: 6,
+          horizonte: 10,
+        },
+      })
+      const text = JSON.stringify(brief)
+      expect(text).not.toMatch(forbidden)
+      expect(brief?.subtitulo_catchy).toBe('')
+    }
+  })
+
   it('bibliografia se presenta como matriz de trazabilidad', () => {
     const brief = getModuleEditorialBrief('trazabilidad', {
       territorio: 'San Luis Potosí',

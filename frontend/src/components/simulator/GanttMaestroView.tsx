@@ -5,6 +5,7 @@ import { AlertTriangle, RefreshCw, CheckCircle2, Clock, Download, Calendar } fro
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { buildPlanningAll, type GanttPlan, type PertPlan, type RACIPlan } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 
 type InnerTab = 'gantt' | 'pert' | 'raci'
 
@@ -175,15 +176,17 @@ function GanttTable({ gantt }: { gantt: GanttPlan }) {
 
   return (
     <div className="space-y-3">
-      {/* KPI header */}
-      <div className="grid grid-cols-3 gap-3">
-        <KpiCard label="Duración total" value={`${maxSemana} sem.`} />
-        <KpiCard label="Costo planificado" value={`$${(gantt.costo_total_mxn / 1_000_000).toFixed(1)}M`} />
-        <KpiCard
-          label="Tareas críticas"
-          value={`${gantt.tasks.filter(t => t.es_critica).length} / ${gantt.tasks.length}`}
-        />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: 'Duración total', value: `${maxSemana} sem.` },
+          { label: 'Costo planificado', value: `$${(gantt.costo_total_mxn / 1_000_000).toFixed(1)}M` },
+          {
+            label: 'Tareas críticas',
+            value: `${gantt.tasks.filter(t => t.es_critica).length} / ${gantt.tasks.length}`,
+          },
+        ]}
+      />
 
       {/* Gantt bars */}
       <div className="overflow-x-auto rounded-[10px] border border-[#E8E4DC]">
@@ -258,10 +261,13 @@ function PertNetwork({ pert }: { pert: PertPlan }) {
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3">
-        <KpiCard label="Duración total" value={`${pert.duracion_total_semanas} sem.`} />
-        <KpiCard label="Nodos críticos" value={`${criticos.length} / ${pert.nodes.length}`} />
-      </div>
+      <KpiAnchorGrid
+        columns={2}
+        items={[
+          { label: 'Duración total', value: `${pert.duracion_total_semanas} sem.` },
+          { label: 'Nodos críticos', value: `${criticos.length} / ${pert.nodes.length}` },
+        ]}
+      />
 
       <div className="rounded-[10px] border border-orange-200 bg-orange-50 p-3">
         <p className="mb-2 text-[11px] font-semibold text-orange-800">Ruta crítica — holgura = 0</p>
@@ -412,11 +418,3 @@ function RaciChip({ code, label }: { code: string; label: string }) {
   )
 }
 
-function KpiCard({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-3">
-      <p className="text-[10px] text-[#8A857C]">{label}</p>
-      <p className="mt-0.5 text-[15px] font-bold text-[#23470A]">{value}</p>
-    </div>
-  )
-}

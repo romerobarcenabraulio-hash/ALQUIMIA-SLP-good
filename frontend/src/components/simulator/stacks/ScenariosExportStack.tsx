@@ -7,8 +7,8 @@ import {
   ReferenceLine,
 } from 'recharts'
 import {
-  TrendingUp, DollarSign, RefreshCcw, Clock, Shield, Download,
-  FileText, Share2, Zap, ChevronDown, AlertTriangle,
+  TrendingUp, DollarSign, RefreshCcw, Clock, Download,
+  Share2, Zap, ChevronDown,
 } from 'lucide-react'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import {
@@ -32,6 +32,7 @@ import { FASES_INVERSION } from '@/lib/capexOpexData'
 import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
 import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
+import { Conclusion, EditorialCallout, KpiAnchorGrid, MarginalNote } from '@/components/editorial'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -219,19 +220,16 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
       )}
 
       {riesgoOperativo && riesgoOperativo !== 'Bajo' && (
-        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 mb-5 text-[12px] text-amber-900 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          <span>
-            Riesgo operativo <strong>{riesgoOperativo}</strong> desde M08
-            {logisticsContract && logisticsContract.kpis_logisticos.brecha_ton_dia > 0
-              ? ` (brecha ${logisticsContract.kpis_logisticos.brecha_ton_dia.toFixed(1)} t/día)`
-              : ''}
-            {logisticsContract && logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.length > 0
-              ? ` · saturación en ${logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.join(', ')}`
-              : ''}
-            . Escenario conservador aplica factor de estrés {(stressMult * 100).toFixed(0)}%.
-          </span>
-        </div>
+        <EditorialCallout tone="caution" label="Riesgo operativo" className="mb-5">
+          Riesgo operativo <strong>{riesgoOperativo}</strong> desde M08
+          {logisticsContract && logisticsContract.kpis_logisticos.brecha_ton_dia > 0
+            ? ` (brecha ${logisticsContract.kpis_logisticos.brecha_ton_dia.toFixed(1)} t/día)`
+            : ''}
+          {logisticsContract && logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.length > 0
+            ? ` · saturación en ${logisticsContract.kpis_logisticos.estacionalidad_meses_saturacion.join(', ')}`
+            : ''}
+          . Escenario conservador aplica factor de estrés {(stressMult * 100).toFixed(0)}%.
+        </EditorialCallout>
       )}
 
       {/* ── Scenario selector (pages 1 and 2) ───────────────────────────── */}
@@ -273,9 +271,10 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
               <p className="text-[9px] text-[#A8A49C] mt-0.5">{sub}</p>
             </div>
           )) : (
-            <div className="col-span-6 rounded-[10px] border border-[#F5D98A] bg-[#FEF7E7] px-4 py-3 text-[10px] text-[#6B4800] flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-[#D4881E]" />
-              Completa el simulador en Módulo 1 para ver métricas financieras del escenario.
+            <div className="col-span-6">
+              <EditorialCallout tone="caution" label="Métricas pendientes">
+                Completa el simulador en Módulo 1 para ver métricas financieras del escenario.
+              </EditorialCallout>
             </div>
           )}
         </div>
@@ -287,20 +286,16 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
       {page === 1 && (
         <div className="space-y-5">
           {/* Reading cards row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
             {[
-              { icon: TrendingUp, title: '¿Qué valor genera?',         body: 'Sustentabilidad económica, ambiental y social con trazabilidad para el municipio.',                                      color: '#3B6D11', bg: 'bg-[#F4FAEC] border-[#D7E8C0]' },
-              { icon: DollarSign, title: '¿Qué cuesta implementar?',   body: r ? `Inversión inicial CAPEX de ${fmt.mxnM(metrics?.capex ?? 0)} MXN y operación anual OPEX de ${fmt.mxnM(metrics?.opexAnual ?? 0)} MXN.` : 'Configura el simulador para ver el desglose de costos.', color: '#D4881E', bg: 'bg-[#FEF7E7] border-[#F5D98A]' },
-              { icon: Shield,     title: '¿Qué depende de supuestos?', body: 'WACC, precios de materiales, captura efectiva, tipo de cambio y mercado de carbono.',                                  color: '#1A5FA8', bg: 'bg-[#EBF3FB] border-[#B0D0F5]' },
-              { icon: FileText,   title: 'Fuente y evidencia',         body: 'Datos: INEGI, SEMARNAT, Banco Mundial y literatura especializada de economía circular.',                               color: '#5A4A2A', bg: 'bg-[#F4F2ED] border-[#E8E4DC]' },
-            ].map(({ icon: Icon, title, body, color, bg }) => (
-              <div key={title} className={cn('rounded-[10px] border p-4', bg)}>
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Icon className="w-3.5 h-3.5 shrink-0" style={{ color }} strokeWidth={2} />
-                  <p className="text-[10px] font-semibold" style={{ color }}>{title}</p>
-                </div>
-                <p className="text-[11px] text-[#6B6760] leading-relaxed">{body}</p>
-              </div>
+              { title: '¿Qué valor genera?', body: 'Sustentabilidad económica, ambiental y social con trazabilidad para el municipio.' },
+              { title: '¿Qué cuesta implementar?', body: r ? `Inversión inicial CAPEX de ${fmt.mxnM(metrics?.capex ?? 0)} MXN y operación anual OPEX de ${fmt.mxnM(metrics?.opexAnual ?? 0)} MXN.` : 'Configura el simulador para ver el desglose de costos.' },
+              { title: '¿Qué depende de supuestos?', body: 'WACC, precios de materiales, captura efectiva, tipo de cambio y mercado de carbono.' },
+              { title: 'Fuente y evidencia', body: 'Datos: INEGI, SEMARNAT, Banco Mundial y literatura especializada de economía circular.' },
+            ].map(({ title, body }) => (
+              <EditorialCallout key={title} label={title}>
+                {body}
+              </EditorialCallout>
             ))}
           </div>
 
@@ -460,25 +455,20 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
       {page === 2 && (
         <div className="space-y-5">
           {/* Confidence header */}
-          <div className="rounded-[10px] border border-[#F5D98A] bg-[#FEF7E7] px-4 py-3 text-[10px] text-[#6B4800] flex items-start gap-3">
-            <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-[#D4881E]" />
-            <div>
-              <p className="font-semibold mb-0.5">Resultados probabilísticos basados en modelos y supuestos. No son resultados garantizados.</p>
-              <p>Los resultados de política, legal, técnica y presupuestal pueden alterar los resultados.</p>
-            </div>
-          </div>
+          <EditorialCallout tone="caution" label="Lectura probabilística">
+            Resultados basados en modelos y supuestos — no son resultados garantizados. Los cambios de política, legal, técnica y presupuestal pueden alterar los resultados.
+          </EditorialCallout>
 
           {/* Key verdict cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             {[
-              { title: '¿Qué tan robusto?', body: r ? `TIR base ${r.tir.toFixed(1)}% — escenario conservador genera TIR ${(r.tir * 0.72).toFixed(1)}%. Viable en los tres escenarios analíticos.` : 'Configura el simulador para ver análisis de robustez.', color: '#3B6D11', bg: 'border-[#D7E8C0] bg-[#F4FAEC]' },
-              { title: 'Principal riesgo',   body: 'Variación en precios de materiales frena captura efectiva. Monitorear índice ANIPAC mensual.', color: '#D4881E', bg: 'border-[#F5D98A] bg-[#FEF7E7]' },
-              { title: 'Decisión sugerida', body: r && r.tir > 0 ? 'Proceder con implementación condicionada. El proyecto genera valor incluso en escenario conservador.' : 'Configura el simulador para ver la recomendación.', color: '#1A5FA8', bg: 'border-[#B0D0F5] bg-[#EBF3FB]' },
+              { title: '¿Qué tan robusto?', body: r ? `TIR base ${r.tir.toFixed(1)}% — escenario conservador genera TIR ${(r.tir * 0.72).toFixed(1)}%. Viable en los tres escenarios analíticos.` : 'Configura el simulador para ver análisis de robustez.' },
+              { title: 'Principal riesgo', body: 'Variación en precios de materiales frena captura efectiva. Monitorear índice ANIPAC mensual.' },
+              { title: 'Decisión sugerida', body: r && r.tir > 0 ? 'Proceder con implementación condicionada. El proyecto genera valor incluso en escenario conservador.' : 'Configura el simulador para ver la recomendación.' },
             ].map(c => (
-              <div key={c.title} className={cn('rounded-[10px] border p-4', c.bg)}>
-                <p className="text-[10px] font-semibold uppercase tracking-wide mb-2" style={{ color: c.color }}>{c.title}</p>
-                <p className="text-[11px] text-[#4A4740]">{c.body}</p>
-              </div>
+              <EditorialCallout key={c.title} label={c.title}>
+                {c.body}
+              </EditorialCallout>
             ))}
           </div>
 

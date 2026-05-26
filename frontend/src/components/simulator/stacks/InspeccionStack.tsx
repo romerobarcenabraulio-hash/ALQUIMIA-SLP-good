@@ -13,6 +13,11 @@ import { EXPEDIENTE_PDF_EVENT } from '@/components/simulator/ExpedientePDF'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import { cn } from '@/lib/utils'
+import {
+  EditorialCallout,
+  EditorialStatusLabel,
+  badgeToneFromLegacy,
+} from '@/components/editorial'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -94,13 +99,9 @@ function EstadoExpediente({
           <div key={row.label} className="flex items-start justify-between gap-2">
             <span className="text-[10px] text-[#A8A49C] shrink-0">{row.label}</span>
             {row.badge ? (
-              <span className={cn(
-                'text-[10px] px-1.5 py-0.5 rounded font-medium text-right',
-                row.badge === 'green' ? 'bg-[#EAF3DE] text-[#23470A]' :
-                row.badge === 'yellow' ? 'bg-[#FEF7E7] text-[#6B4800]' :
-                row.badge === 'red' ? 'bg-[#FDE8E8] text-[#B91C1C]' :
-                'bg-[#F4F2ED] text-[#6B6760]',
-              )}>{row.value}</span>
+              <EditorialStatusLabel tone={badgeToneFromLegacy(row.badge)} className="text-right normal-case tracking-normal">
+                {row.value}
+              </EditorialStatusLabel>
             ) : (
               <span className={cn(
                 'text-[10px] text-right text-[#1C1B18] font-medium break-all',
@@ -217,7 +218,7 @@ function ChecklistMinimo({
 
 function RightEditorialRail({ confidence }: { confidence: number }) {
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+    <div className="border-t border-[#E8E4DC] pt-6">
       <div className="flex items-center justify-between mb-3 px-1">
         <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
         <span className={cn('text-[9px] font-bold px-2 py-0.5 rounded',
@@ -289,11 +290,7 @@ function InspectionStepProgress({ steps }: { steps: Step[] }) {
     s === 'requiere_validacion'  ? 'bg-[#D4881E] text-white border-[#D4881E]' :
     'bg-[#E8E4DC] text-[#A8A49C] border-[#E8E4DC]'
 
-  const cardColor = (s: StepState) =>
-    s === 'completado'           ? 'border-[#D7E8C0] bg-[#F4FAEC]' :
-    s === 'en_progreso'          ? 'border-[#BDD7F5] bg-[#EBF3FB]' :
-    s === 'requiere_validacion'  ? 'border-[#FDE68A] bg-[#FEF7E7]' :
-    'border-[#E8E4DC] bg-[#FAFAF8]'
+  const cardColor = () => 'border-[#E8E4DC] bg-transparent'
 
   const stateLabel = (s: StepState) =>
     s === 'completado' ? 'Completado' : s === 'en_progreso' ? 'En progreso' :
@@ -302,7 +299,7 @@ function InspectionStepProgress({ steps }: { steps: Step[] }) {
   return (
     <div className="grid grid-cols-5 gap-1.5">
       {steps.map((s, idx) => (
-        <div key={s.n} className={cn('rounded-[8px] border p-2.5 text-center relative', cardColor(s.state))}>
+        <div key={s.n} className={cn('rounded-[8px] border p-2.5 text-center relative', cardColor())}>
           {idx < steps.length - 1 && (
             <div className="absolute right-[-7px] top-1/2 -translate-y-1/2 z-10 text-[#A8A49C] text-[8px] font-bold hidden sm:block">›</div>
           )}
@@ -489,13 +486,10 @@ export function InspeccionStack() {
           <ChecklistMinimo items={checklist} onCycle={cycleCheck} />
 
           {/* Legal disclaimer */}
-          <div className="rounded-[10px] border border-[#F5D98A] bg-[#FEF7E7] p-3 text-[10px] text-[#6B4800]">
-            <p className="font-semibold mb-1">Nota legal obligatoria</p>
-            <p className="leading-relaxed">
-              El expediente debe someterse al derecho de audiencia del presunto infractor antes de cualquier sanción.
-              La validación jurídica es obligatoria. Ningún dato en esta pantalla implica sanción definitiva.
-            </p>
-          </div>
+          <EditorialCallout label="Nota legal obligatoria" tone="caution" className="text-[10px]">
+            El expediente debe someterse al derecho de audiencia del presunto infractor antes de cualquier sanción.
+            La validación jurídica es obligatoria. Ningún dato en esta pantalla implica sanción definitiva.
+          </EditorialCallout>
 
           {/* Right editorial rail */}
           <RightEditorialRail confidence={confidence} />
@@ -506,10 +500,10 @@ export function InspeccionStack() {
       <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-3">
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {([
-            { label: 'Guardar borrador',   sub: 'Guardar sin enviar',          color: '#3B6D11', bg: 'bg-[#EAF3DE] border-[#D7E8C0]', disabled: false },
-            { label: 'Adjuntar evidencia', sub: 'Fotos, documentos, videos',   color: '#1A5FA8', bg: 'bg-[#EBF3FB] border-[#B0D0F5]', disabled: false },
-            { label: 'Enviar expediente',  sub: 'Enviar a validación jurídica', color: canSubmit ? '#D4881E' : '#A8A49C', bg: canSubmit ? 'bg-[#FEF7E7] border-[#F5D98A]' : 'bg-[#F4F2ED] border-[#E8E4DC]', disabled: !canSubmit },
-            { label: 'Generar PDF',        sub: 'Descargar acta de inspección', color: '#5A4A2A', bg: 'bg-[#F4F2ED] border-[#E8E4DC]', disabled: false },
+            { label: 'Guardar borrador',   sub: 'Guardar sin enviar',          disabled: false },
+            { label: 'Adjuntar evidencia', sub: 'Fotos, documentos, videos',   disabled: false },
+            { label: 'Enviar expediente',  sub: 'Enviar a validación jurídica', disabled: !canSubmit },
+            { label: 'Generar PDF',        sub: 'Descargar acta de inspección', disabled: false },
           ] as const).map(btn => (
             <button
               key={btn.label}

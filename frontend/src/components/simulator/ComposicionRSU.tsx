@@ -3,6 +3,7 @@ import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
 import { Badge } from '@/components/ui/Badge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 
 const MATERIALS = [
   { key: 'organico',  pct: 45, extra: 'Fracción orgánica; metano potencial si llega a relleno',  color: MATERIAL_COLORS.organico },
@@ -16,9 +17,9 @@ const MATERIALS = [
 export function ComposicionRSU() {
   return (
     <div>
-      <div className="flex items-center gap-3 mb-4">
-        <h2 className="font-serif text-[24px] text-[#1C1B18]">Fracción de residuos</h2>
-        <Badge variant="info">Referencia documental</Badge>
+      <div className="mb-4">
+        <h2 className="font-serif text-[24px] text-gray-900c">Fracción de residuos</h2>
+        <p className="text-[11px] uppercase tracking-[0.14em] text-gray-400c mt-1">Referencia documental</p>
       </div>
       <details className="mb-3 text-[11px]">
         <summary className="cursor-pointer text-[#6B6760] hover:text-[#1C1B18] select-none">
@@ -42,20 +43,18 @@ export function ComposicionRSU() {
         </div>
       </details>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {MATERIALS.map(m => (
-          <div key={m.key} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-[12px] font-medium text-[#1C1B18]">
-                {MATERIAL_LABELS[m.key]}
-              </span>
-              <span className="font-mono text-[22px]" style={{ color: m.color }}>{m.pct}%</span>
-            </div>
-            {/* Barra */}
-            <div className="h-1.5 bg-[#E2DED6] rounded-full mb-3">
+          <div key={m.key} className="border-b border-[0.5px] border-gray-200c pb-5">
+            <AnchorFigure
+              figure={`${m.pct}%`}
+              context={MATERIAL_LABELS[m.key]}
+              figureClassName="tabular-nums"
+            />
+            <div className="h-1.5 bg-gray-200c rounded-full mt-3 mb-2 max-w-[200px]">
               <div className="h-full rounded-full" style={{ width: `${m.pct * 2}%`, background: m.color }} />
             </div>
-            <p className="text-[10px] text-[#A8A49C]">{m.extra}</p>
+            <p className="font-sans text-[12px] text-gray-600c leading-[1.5]">{m.extra}</p>
           </div>
         ))}
       </div>

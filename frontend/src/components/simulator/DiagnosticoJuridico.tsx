@@ -13,6 +13,8 @@
 import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
+import { EditorialCallout } from '@/components/editorial/EditorialCallout'
 import { FuenteReglamentoIcon } from '@/components/reglamento/FuenteReglamentoIcon'
 import { getApiUrl } from '@/lib/api'
 import { LEGAL_PDF_UPLOADED_EVENT, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
@@ -487,55 +489,47 @@ export function DiagnosticoJuridico() {
   return (
     <div className="space-y-5">
       {diagnosticoTituloTeaser()}
-      <div className="rounded-[12px] border border-[#1A5FA8]/25 bg-[#EBF3FB]/40 p-4">
-        <p className="text-[12px] font-semibold text-[#1C1B18]">Paquete ZM = coordinación; artículos y scores = municipio</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+      <EditorialCallout label="Paquete ZM = coordinación; artículos y scores = municipio">
+        <p>
           El paquete metropolitano resume convenios, datos e infraestructura compartida; los artículos del reglamento,
-          el score legal y las banderas de sanciones/documento oficial se
-          evalúan por municipio. Fuentes no validadas o referencias de catálogo se muestran según el API; validar con
-          jurídico institucional antes de actos de autoridad.
+          el score legal y las banderas de sanciones/documento oficial se evalúan por municipio. Fuentes no validadas o
+          referencias de catálogo se muestran según el API; validar con jurídico institucional antes de actos de autoridad.
         </p>
-        <p className="mt-2 text-[11px] text-[#8A857C]">
+        <p className="mt-2 text-[12px] text-[#8A857C]">
           Sin municipio activo explícito en la simulación no hay alcance para evaluar propuestas sancionatorias desde esta vista.
         </p>
-      </div>
+      </EditorialCallout>
 
-      {/* ── Resumen ZM ──────────────────────────────────────────────────── */}
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+      <div className="space-y-2">
         <p className="text-[12px] font-medium text-[#1C1B18]">Legal municipal independiente</p>
-        <p className="mt-1 text-[12px] leading-relaxed text-[#6B6760]">
+        <p className="text-[12px] leading-relaxed text-[#6B6760]">
           La ZM coordina territorio; no sustituye reglamentos municipales. Cada tarjeta conserva fuente,
           manifest, validacion juridica, restricciones y accion siguiente por municipio. ALQUIMIA genera
           simulaciones e insumos expositivos, no dictamen legal ni documento oficial.
         </p>
       </div>
 
-      {/* ── Resumen ZM ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-3 text-center">
-          <p className="font-mono text-[22px] font-medium text-[#1C1B18]">{paquete.total_municipios}</p>
-          <p className="text-[10px] text-[#A8A49C]">municipios ZM</p>
-        </div>
-        <div className={cn(
-          'rounded-[10px] p-3 text-center border',
-          legalBloqueados.length > 0 ? 'bg-[#F3EAF5] border-[#7B3FA0]/20' : 'bg-[#EAF3DE] border-[#3B6D11]/20'
-        )}>
-          <p className={cn('font-mono text-[22px] font-medium',
-            legalBloqueados.length > 0 ? 'text-[#7B3FA0]' : 'text-[#3B6D11]'
-          )}>
-            {legalBloqueados.length}
-          </p>
-          <p className="text-[10px] text-[#A8A49C]">sin validacion legal</p>
-        </div>
-        <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-3 text-center">
-          <p className={cn('font-mono text-[22px] font-medium',
-            paquete.score_legal_zm >= 70 ? 'text-[#3B6D11]' : paquete.score_legal_zm >= 45 ? 'text-[#D4881E]' : 'text-[#C0392B]'
-          )}>
-            {paquete.score_legal_zm}
-          </p>
-          <p className="text-[10px] text-[#A8A49C]">score jurídico ZM</p>
-        </div>
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: 'municipios ZM', value: String(paquete.total_municipios) },
+          {
+            label: 'sin validacion legal',
+            value: String(legalBloqueados.length),
+            figureClassName: legalBloqueados.length > 0 ? 'text-[#7B3FA0]' : 'text-[#3B6D11]',
+          },
+          {
+            label: 'score jurídico ZM',
+            value: String(paquete.score_legal_zm),
+            figureClassName:
+              paquete.score_legal_zm >= 70
+                ? 'text-[#3B6D11]'
+                : paquete.score_legal_zm >= 45
+                  ? 'text-[#D4881E]'
+                  : 'text-[#C0392B]',
+          },
+        ]}
+      />
 
       {/* ── Aviso global si hay municipios activos con restricciones ────── */}
       {diagnosticables.some(dm => !dm.diagnostic.can_enable_sanctions || !dm.diagnostic.can_generate_official_document) && (

@@ -5,6 +5,7 @@ import type { CircularityHeatmapResponse } from '@/types'
 import { getCircularityHeatmap } from '@/lib/api'
 import { GoogleMapCanvas } from '@/components/maps/GoogleMapCanvas'
 import { getGoogleMapsApiKey, GOOGLE_MAPS_MISSING_MSG } from '@/lib/googleMaps'
+import { EditorialCallout, MarginalNote, SectionLabel } from '@/components/editorial'
 
 type HeatMode = 'actual' | 'projected'
 
@@ -95,18 +96,15 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
   }
 
   return (
-    <section
-      className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-3"
-      aria-labelledby="circularity-map-title"
-    >
+    <section className="space-y-3 border-t border-[#E8E4DC] pt-4" aria-labelledby="circularity-map-title">
       <div>
-        <p id="circularity-map-title" className="text-[13px] font-semibold text-[#1C1B18]">
-          Circularidad modelada · ZM {zmId}
-        </p>
+        <h2 id="circularity-map-title" className="mb-0">
+          <SectionLabel as="span">Circularidad modelada · ZM {zmId}</SectionLabel>
+        </h2>
         {hasFeatures && (
-          <p className="mt-0.5 text-[11px] text-[#6B6760]">
+          <MarginalNote>
             Actual vs proyectado · {payload!.feature_count} celdas · {payload!.jurisdiction_scope}
-          </p>
+          </MarginalNote>
         )}
       </div>
 
@@ -117,20 +115,20 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
         </div>
       )}
       {!loading && isFallbackMap && (
-        <div className="rounded-[8px] border border-[#F5D98A] bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#6B4800]">
+        <EditorialCallout tone="caution">
           Vista de referencia — datos de circularidad pendientes de carga.
-        </div>
+        </EditorialCallout>
       )}
       {hasFeatures && (
-        <div className="rounded-[10px] border border-[#D4881E]/35 bg-[#FEF7E7] px-3 py-2 text-[11px] leading-relaxed text-[#6B6760]">
-          <strong className="text-[#1C1B18]">Simulación — geometría proxy pendiente MGN INEGI.</strong> {payload!.disclaimer}
-        </div>
+        <EditorialCallout tone="caution" label="Simulación — geometría proxy pendiente MGN INEGI">
+          {payload!.disclaimer}
+        </EditorialCallout>
       )}
 
       {hasFeatures && payload && (
         <>
-          <p className="text-[11px] text-[#8A857C]">{payload.geometry_note}</p>
-          <p className="text-[11px] text-[#8A857C]">{payload.methodology_summary}</p>
+          <MarginalNote>{payload.geometry_note}</MarginalNote>
+          <MarginalNote>{payload.methodology_summary}</MarginalNote>
         </>
       )}
 

@@ -81,3 +81,17 @@
 ### Territorio dinámico (cualquier ciudad)
 - `TirMultipleExplainer.tsx` — TIR base + etiqueta de `getEtiquetaNarrativaCiudad` (municipio único, ZM multi-ancla o «tu ciudad»)
 - Catálogo QHC sin nombres de ciudad piloto; referencias operativas genéricas («ciudades medias MX»)
+
+## 2026-05-25 · QHC compacto (conclusión · cifra · acción)
+
+### Patrón editorial
+- Conclusión primero · cifra ancla · implicación operativa · **≤50 palabras** en `como_se_calcula`
+- Sin «es importante destacar», «cabe mencionar», «asimismo»
+- Verbo de acción obligatorio (catálogo + CI)
+
+### Implementación
+- `frontend/src/lib/chartQhcDynamic.ts` — QHC vivo con cifras del escenario (M01 trayectoria/volumen, M04 omisión, M13 Monte Carlo/tornado, etc.)
+- `ChartPanel` + `getChartBrief()` → `resolveChartBrief(chartId, store)`
+- `frontend/scripts/logos-chart-briefs.mjs` — `qhc()` + recorte automático; catálogo regenerado
+- `frontend/src/lib/costoOmisionContrafactual.ts` — contrafactual compartido M04
+- `chartQhcWords.test.ts` — límite 60 palabras y cifras en dinámicos

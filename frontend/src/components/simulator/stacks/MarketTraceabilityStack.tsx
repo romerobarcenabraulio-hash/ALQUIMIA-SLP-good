@@ -29,6 +29,7 @@ import {
 import { infraOperativaFromStore } from '@/lib/infraOperativaSummary'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { EditorialCallout, KpiAnchorGrid, MarginalNote } from '@/components/editorial'
 import type { MaterialBuyer } from '@/types'
 
 // ── Triangular distribution helper ───────────────────────────────────────────
@@ -320,37 +321,26 @@ function DecisionCommitBar({ municipio, horizonte, trayectoria, rsuDia, compact 
   function fmt(n: number) { return `${n.toFixed(1)} t/día` }
   if (compact) {
     return (
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-4">
-        <div className="flex flex-wrap gap-2 text-[10px]">
-          <span className="rounded-[6px] border border-[#D7E8C0] bg-[#F4FAEC] px-2.5 py-1">
-            <span className="text-[#3B6D11] font-semibold">M1:</span>{' '}<span className="text-[#4A4740]">{municipio} · {horizonte}a · {trayectoria} · {fmt(rsuDia)} capturable</span>
-          </span>
-          <span className="rounded-[6px] border border-[#BDD7F5] bg-[#EBF3FB] px-2.5 py-1">
-            <span className="text-[#1A5FA8] font-semibold">M06:</span>{' '}
-            <span className="text-[#4A4740]">{infra.label} · {infra.sub}</span>
-          </span>
-        </div>
-      </div>
+      <MarginalNote className="mb-4">
+        <span className="text-[#3B6D11] font-semibold">M1:</span> {municipio} · {horizonte}a · {trayectoria} · {fmt(rsuDia)} capturable
+        {' · '}
+        <span className="text-[#1A5FA8] font-semibold">M06:</span> {infra.label} · {infra.sub}
+      </MarginalNote>
     )
   }
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <div className="rounded-[8px] bg-[#FEF7E7] border border-[#FDE68A] px-3 py-2 mb-3 text-[10px] text-[#92400E]">
+    <div className="mb-5 space-y-3 border-t border-[#E8E4DC] pt-4">
+      <EditorialCallout tone="caution">
         Los valores de aceptación social provienen del estudio sociodemográfico (M02B) o del supuesto preliminar documentado en M02C. Sin estudio cargado, M14 muestra el benchmark que alimenta el score — no lo oculta.
-      </div>
-      <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
-        {[
-          { label: 'M1 · Escenario', color: '#3B6D11', bg: '#F4FAEC', border: '#D7E8C0', body: `${municipio} · ${horizonte} años · ${trayectoria}`, sub: `${fmt(rsuDia)} capturable` },
-          { label: 'M6 · Infraestructura', color: '#1A5FA8', bg: '#EBF3FB', border: '#BDD7F5', body: infra.label, sub: infra.sub },
-          { label: 'M5 · Decisión', color: '#A8A49C', bg: '#FAFAF8', border: '#E8E4DC', body: 'Viabilidad de mercado y aceptación', sub: 'Proceder / Condicionado / No proceder' },
-        ].map(b => (
-          <div key={b.label} className="flex-1 min-w-[150px] rounded-[10px] border px-4 py-3" style={{ borderColor: b.border, background: b.bg }}>
-            <p className="text-[9px] uppercase tracking-[0.07em] font-bold mb-1" style={{ color: b.color }}>{b.label}</p>
-            <p className="text-[13px] font-semibold text-[#1C1B18]">{b.body}</p>
-            <p className="text-[11px] text-[#5A5750]">{b.sub}</p>
-          </div>
-        ))}
-      </div>
+      </EditorialCallout>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: `${municipio} · ${horizonte} años · ${trayectoria}`, value: fmt(rsuDia), figureClassName: 'text-[20px]' },
+          { label: infra.sub, value: infra.label, figureClassName: 'text-[16px]' },
+          { label: 'Proceder / Condicionado / No proceder', value: 'M5', figureClassName: 'text-[16px]' },
+        ]}
+      />
     </div>
   )
 }
@@ -359,23 +349,22 @@ function RiskKpiRow({ prob, riskScore, mktRisk, socialRisk, opRisk }: {
   prob: number; riskScore: number; mktRisk: string; socialRisk: string; opRisk: string
 }) {
   const chips = [
-    { label: 'Prob. implementación exitosa', value: `${prob}%`,     sub: 'Mercado, aceptación, operación, regulación', icon: TrendingUp,    color: '#3B6D11' },
-    { label: 'Riesgo total ponderado',        value: `${riskScore}/100`, sub: 'Exposición agregada antes de mitigaciones', icon: Shield,       color: riskScore >= 50 ? '#C0392B' : '#D4881E' },
-    { label: 'Riesgo de mercado',             value: mktRisk,       sub: 'Precio, compradores y pureza de fracción', icon: DollarSign,    color: '#1A5FA8' },
-    { label: 'Riesgo social / aceptación',    value: socialRisk,    sub: 'Participación, confianza y hábitos ciudadanos', icon: Users,       color: '#C0392B' },
-    { label: 'Riesgo operativo',              value: opRisk,        sub: 'Capacidad, rutas, concesionario y centros de acopio',   icon: Activity,     color: '#D4881E' },
-    { label: 'Confianza del modelo',          value: 'Condicionada', sub: 'Datos sociales y de mercado pendientes',     icon: Target,       color: '#A8A49C' },
+    { label: 'Mercado, aceptación, operación, regulación', value: `${prob}%`, sub: 'Prob. implementación exitosa' },
+    { label: 'Exposición agregada antes de mitigaciones', value: `${riskScore}/100`, sub: 'Riesgo total ponderado' },
+    { label: 'Precio, compradores y pureza de fracción', value: mktRisk, sub: 'Riesgo de mercado' },
+    { label: 'Participación, confianza y hábitos ciudadanos', value: socialRisk, sub: 'Riesgo social / aceptación' },
+    { label: 'Capacidad, rutas, concesionario y centros de acopio', value: opRisk, sub: 'Riesgo operativo' },
+    { label: 'Datos sociales y de mercado pendientes', value: 'Condicionada', sub: 'Confianza del modelo' },
   ]
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 mb-5">
-      {chips.map(c => (
-        <div key={c.label} className="rounded-[10px] border border-[#E8E4DC] bg-white p-3.5">
-          <div className="flex items-center gap-1.5 mb-1.5"><c.icon className="w-3.5 h-3.5" style={{ color: c.color }} /><p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">{c.label}</p></div>
-          <p className="font-bold text-[22px]" style={{ color: c.color }}>{c.value}</p>
-          <p className="text-[9px] text-[#A8A49C] mt-0.5">{c.sub}</p>
-        </div>
-      ))}
-    </div>
+    <KpiAnchorGrid
+      columns={3}
+      className="mb-5"
+      items={chips.map(c => ({
+        label: `${c.sub} · ${c.label}`,
+        value: c.value,
+      }))}
+    />
   )
 }
 
@@ -491,9 +480,9 @@ function RightRail({ page }: { page: number }) {
 
   return (
     // sticky + max-h so the rail scrolls independently — never pushes the page
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] sticky top-4 overflow-y-auto"
+    <div className="sticky top-4 overflow-y-auto border-l border-[#E8E4DC] pl-4"
       style={{ maxHeight: 'calc(100vh - 120px)' }}>
-      <div className="p-4">
+      <div>
         <div className="flex items-center justify-between mb-3 px-1">
           <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Consideraciones</p>
           <span className={cn('text-[9px] font-bold px-2 py-0.5 rounded', c >= 60 ? 'bg-[#EAF3DE] text-[#2D5A0D]' : 'bg-[#FEF3C7] text-[#92400E]')}>

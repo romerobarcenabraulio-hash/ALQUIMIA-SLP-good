@@ -15,6 +15,12 @@ import { fmt } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { TraceRibbon } from '@/components/ui/TraceRibbon'
 import { CORTE_UI } from '@/lib/progresionUiConstants'
+import {
+  Conclusion,
+  KpiAnchorGrid,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 import type {
   Action30_60_90,
   OrganizationalCircularityRequest,
@@ -166,17 +172,17 @@ export function PortalEmpresarial() {
   const isEmpty = !loading && !error && !result && payload === null
 
   return (
-    <section className="space-y-5 rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5 shadow-[0_1px_0_rgba(28,27,24,0.03)]">
+    <section className="space-y-5">
       <header>
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C]">Empresa · plan operativo básico</p>
-        <h2 className="mt-1 font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h2>
+        <SectionLabel>Empresa · plan operativo básico</SectionLabel>
+        <h2 className="font-serif text-[24px] text-[#1C1B18]">Plan por giro (vista resumida)</h2>
         <ScopeAnclaKicker className="mt-2" />
-        <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+        <Conclusion className="text-[16px] md:text-[17px] mb-2">
           Lectura accionable alineada al escenario municipal; sin tableros analíticos extendidos.
-        </p>
-        <p className="mt-3 text-[10px] leading-snug text-[#8A857C]">
+        </Conclusion>
+        <MarginalNote>
           Módulo básico de transición. Plataforma empresarial avanzada se desarrolla aparte.
-        </p>
+        </MarginalNote>
       </header>
 
       <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3">
@@ -200,26 +206,23 @@ export function PortalEmpresarial() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiTile
-          label="% separación objetivo (plan)"
-          value={kpis.pctSeparacion != null ? `${Math.round(kpis.pctSeparacion)}%` : '—'}
-          hint="Último año del horizonte en el simulador."
-          formula="pct_captura_por_año[horizonte]"
-        />
-        <KpiTile
-          label="Reducción a relleno (modelo)"
-          value={kpis.reduccionRellenoPct != null ? `${kpis.reduccionRellenoPct}%` : '—'}
-          hint="Captura modelada vs. generación diaria RSU."
-          formula="captura_modelada / RSU_total"
-        />
-        <KpiTile
-          label="Ahorro estimado disposición"
-          value={kpis.ahorroMxn != null ? fmt.mxnM(kpis.ahorroMxn) : '—'}
-          hint="Suma del escenario (simulación)."
-          formula="ton_desviadas * costo_disposición_evitable"
-        />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          {
+            label: 'Último año del horizonte en el simulador',
+            value: kpis.pctSeparacion != null ? `${Math.round(kpis.pctSeparacion)}%` : '—',
+          },
+          {
+            label: 'Captura modelada vs. generación diaria RSU',
+            value: kpis.reduccionRellenoPct != null ? `${kpis.reduccionRellenoPct}%` : '—',
+          },
+          {
+            label: 'Suma del escenario (simulación)',
+            value: kpis.ahorroMxn != null ? fmt.mxnM(kpis.ahorroMxn) : '—',
+          },
+        ]}
+      />
 
       <TraceRibbon
         hecho="El plan empresarial se ancla al municipio activo y al escenario RSU municipal vigente en el simulador."
@@ -253,12 +256,11 @@ export function PortalEmpresarial() {
         />
       )}
 
-      <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-4">
-        <p className="text-[12px] font-medium text-[#1C1B18]">Siguiente paso</p>
-        <p className="mt-1 text-[11px] text-[#6B6760]">
-          El borrador descargable incluye anexos del simulador municipal. Avance al módulo de exportación o use el vínculo
-          directo.
-        </p>
+      <section className="border-t border-[#E8E4DC] pt-4">
+        <SectionLabel>Siguiente paso</SectionLabel>
+        <MarginalNote className="mb-3">
+          El borrador descargable incluye anexos del simulador municipal. Avance al módulo de exportación o use el vínculo directo.
+        </MarginalNote>
         <a
           href="#sim-export-empresa-plan"
           className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#1C1B18] bg-[#1C1B18] px-5 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#3B6D11] hover:border-[#3B6D11]"
@@ -266,22 +268,12 @@ export function PortalEmpresarial() {
           <Download className="h-4 w-4" aria-hidden />
           Descargar plan por giro (borrador operativo)
         </a>
-      </div>
+      </section>
 
-      <p className="text-[10px] text-[#A8A49C]">
+      <MarginalNote>
         Módulo básico de transición. Plataforma empresarial avanzada se desarrolla aparte.
-      </p>
+      </MarginalNote>
     </section>
-  )
-}
-
-function KpiTile({ label, value, hint, formula }: { label: string; value: string; hint: string; formula: string }) {
-  return (
-    <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3" title={formula}>
-      <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">{label}</p>
-      <p className="mt-1 font-mono text-[20px] font-semibold text-[#1C1B18]">{value}</p>
-      <p className="mt-1 text-[10px] leading-snug text-[#8A857C]">{hint}</p>
-    </div>
   )
 }
 

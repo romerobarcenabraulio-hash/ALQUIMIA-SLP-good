@@ -9,42 +9,36 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
   </p>
   <div
-    class="mb-4"
+    class="mb-4 space-y-4"
   >
     <p
-      class="text-[11px] font-medium text-[#6B6760] mb-2"
+      class="font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-gray-400c mb-2.5"
     >
       Fases del programa municipal
     </p>
     <div
-      class="flex flex-col gap-2"
+      class="flex flex-col gap-4"
     >
-      <div
-        class="flex items-start gap-3 px-4 py-3 rounded-[10px] border border-[#D4881E]/40 bg-[#FEF7E7]"
+      <aside
+        class="pt-4 border-[0.5px] border-gray-200c"
       >
-        <span
-          class="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#D4881E] text-white"
+        <p
+          class="font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-gray-400c mb-2.5"
         >
-          F
-          1
-        </span>
-        <div>
-          <p
-            class="text-[12px] font-medium text-[#1C1B18]"
-          >
-            Alineación institucional y jurídica
-          </p>
-          <p
-            class="text-[11px] text-[#6B6760]"
-          >
+          F1 · Alineación institucional y jurídica
+        </p>
+        <div
+          class="font-sans text-[14px] leading-[1.55] max-w-[620px] text-amber-900"
+        >
+          <p>
             0–6
              · 
             Reforma reglamentaria aprobada
           </p>
         </div>
-      </div>
+      </aside>
       <div
-        class="flex items-start gap-3 px-4 py-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA]"
+        class="flex items-start gap-3 border-t border-[#E8E4DC] pt-4"
       >
         <span
           class="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#E2DED6] text-[#6B6760]"
@@ -68,7 +62,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
         </div>
       </div>
       <div
-        class="flex items-start gap-3 px-4 py-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA]"
+        class="flex items-start gap-3 border-t border-[#E8E4DC] pt-4"
       >
         <span
           class="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#E2DED6] text-[#6B6760]"
@@ -92,7 +86,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
         </div>
       </div>
       <div
-        class="flex items-start gap-3 px-4 py-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA]"
+        class="flex items-start gap-3 border-t border-[#E8E4DC] pt-4"
       >
         <span
           class="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#E2DED6] text-[#6B6760]"
@@ -116,7 +110,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista ciudadana — snap
         </div>
       </div>
       <div
-        class="flex items-start gap-3 px-4 py-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA]"
+        class="flex items-start gap-3 border-t border-[#E8E4DC] pt-4"
       >
         <span
           class="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#E2DED6] text-[#6B6760]"
@@ -153,23 +147,34 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
     Ámbito modelado: San Pedro Garza García (único municipio en programa).
   </p>
   <div
-    class="mb-6 rounded-[12px] border border-[#E8E4DC] bg-[#F8F6F1] p-5"
+    class="mb-6 space-y-4"
   >
-    <p
-      class="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium mb-3 bg-[#FEF7E7] text-[#8B5A00]"
+    <aside
+      class="pt-4 border-[0.5px] border-gray-200c"
     >
-      En regularización jurídica
-    </p>
+      <p
+        class="font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-gray-400c mb-2.5"
+      >
+        En regularización jurídica
+      </p>
+      <div
+        class="font-sans text-[14px] leading-[1.55] max-w-[620px] text-amber-900"
+      >
+        <p>
+          Acciones requeridas por fase antes de habilitar sanciones y documentos oficiales.
+        </p>
+      </div>
+    </aside>
     <p
-      class="text-[11px] font-medium text-[#6B6760] mb-2"
+      class="font-sans text-[11px] font-medium uppercase tracking-[0.14em] text-gray-400c mb-2.5"
     >
       Acciones requeridas por fase
     </p>
     <ul
-      class="space-y-2 mb-4"
+      class="space-y-0 mb-4"
     >
       <li
-        class="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2"
+        class="border-t border-[#E8E4DC] py-3"
       >
         <p
           class="text-[12px] text-[#1C1B18]"
@@ -192,7 +197,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
         </p>
       </li>
       <li
-        class="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2"
+        class="border-t border-[#E8E4DC] py-3"
       >
         <p
           class="text-[12px] text-[#1C1B18]"
@@ -215,7 +220,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
         </p>
       </li>
       <li
-        class="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2"
+        class="border-t border-[#E8E4DC] py-3"
       >
         <p
           class="text-[12px] text-[#1C1B18]"
@@ -238,7 +243,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
         </p>
       </li>
       <li
-        class="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2"
+        class="border-t border-[#E8E4DC] py-3"
       >
         <p
           class="text-[12px] text-[#1C1B18]"
@@ -261,7 +266,7 @@ exports[`MarcoLegal · P2-5 objetivos institucionales > vista funcionario — sn
         </p>
       </li>
       <li
-        class="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2"
+        class="border-t border-[#E8E4DC] py-3"
       >
         <p
           class="text-[12px] text-[#1C1B18]"

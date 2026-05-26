@@ -31,7 +31,7 @@ export function HorizonteCircularidad() {
       </div>
 
       {/* Mes de inicio */}
-      <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4">
+      <div className="border-t border-[#E8E4DC] pt-4">
         <p className="text-[12px] font-medium text-[#6B6760] mb-3">Mes de inicio del programa (estacionalidad)</p>
         <div className="grid grid-cols-6 sm:grid-cols-12 gap-1">
           {MESES.map((m, i) => (

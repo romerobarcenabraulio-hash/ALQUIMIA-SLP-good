@@ -4,6 +4,12 @@ import { useEffect, useMemo, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from 'recharts'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
+import {
+  Conclusion,
+  EditorialCallout,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { monteCarloTriangular, tornadoAnalysis, calcularScoresRiesgo } from '@/lib/calculator'
 import type { TrendscapeAxis, TrendscapeBaselineResponse, TrendscapeTrendItem } from '@/data/trendscapeBaseline'
@@ -220,23 +226,19 @@ export function RiskTrendsPanel() {
   return (
     <div className="space-y-6">
       {/* ── Panel de fórmulas documentadas ────────────────────────────── */}
-      <section
-        className="rounded-[12px] border border-[#D7E8C0] bg-[#F6FAEF] p-5 space-y-4"
-        data-chart-id="score-riesgo-total"
-      >
+      <section className="space-y-4" data-chart-id="score-riesgo-total">
         <div>
-          <h3 className="font-serif text-[18px] text-[#1C1B18]">Cómo se calculan los riesgos</h3>
-          <p className="text-[11px] text-[#5A6347] mt-1">
-            Cada dimensión tiene una fórmula documentada. No hay scores sin respaldo — ALQUIMIA es analítico, no especulativo.
-          </p>
+          <SectionLabel>Metodología de riesgo</SectionLabel>
+          <Conclusion className="text-[18px] md:text-[19px] mb-2">
+            Cada dimensión tiene una fórmula documentada — ALQUIMIA es analítico, no especulativo.
+          </Conclusion>
         </div>
 
         {RIESGO_DIMENSIONES.map(dim => (
-          <div key={dim.id} className="rounded-[10px] border border-[#E8E4DC] bg-white p-4 space-y-2">
-            {/* Header con nombre y ponderación */}
+          <div key={dim.id} className="border-t border-[#E8E4DC] pt-4 space-y-2">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.07em] text-[#A8A49C]">Dimensión</p>
+                <SectionLabel>Dimensión</SectionLabel>
                 <p className="font-semibold text-[13px] text-[#1C1B18]">{dim.label}</p>
               </div>
               <span className="shrink-0 px-2.5 py-1 rounded-full text-[10px] font-mono font-semibold bg-[#EAF3DE] text-[#23470A]">
@@ -244,25 +246,17 @@ export function RiskTrendsPanel() {
               </span>
             </div>
 
-            {/* Fórmula */}
             <div className="rounded-[7px] bg-[#1C1B18]/5 px-3 py-2 font-mono text-[10px] text-[#1C1B18] overflow-x-auto whitespace-pre">
               {dim.formula_aplicada}
             </div>
 
-            {/* Descripción */}
             <p className="text-[11px] text-[#6B6760] leading-relaxed">{dim.descripcion}</p>
 
-            {/* Fuente */}
-            <p className="text-[9px] text-[#A8A49C] flex items-center gap-1">
-              <span className="font-semibold text-[#8CAA7A]">Fuente:</span>
-              {dim.fuente_datos}
-            </p>
+            <MarginalNote prefix="Fuente">{dim.fuente_datos}</MarginalNote>
           </div>
         ))}
 
-        {/* Score total */}
-        <div className="rounded-[10px] border border-[#3B6D11]/25 bg-[#F0F7E8] px-4 py-3">
-          <p className="text-[10px] uppercase tracking-[0.07em] text-[#8CAA7A] mb-1">Score total ponderado</p>
+        <EditorialCallout label="Score total ponderado">
           <p className="font-mono text-[11px] text-[#1C1B18]">
             R_total = 0.30 × R_mercado + 0.40 × R_político + 0.20 × R_operativo + 0.10 × R_regulatorio
           </p>
@@ -278,11 +272,11 @@ export function RiskTrendsPanel() {
               </span>
             ))}
           </div>
-        </div>
+        </EditorialCallout>
 
-        <p className="text-[10px] text-[#A8A49C]">
+        <MarginalNote>
           No sustituye dictamen jurídico ni estudio de campo; vincula el simulador a conversación de consultoría con riesgos explícitos.
-        </p>
+        </MarginalNote>
       </section>
 
       {/* ── Risk probability/impact heatmap matrix ─────────────────────── */}
@@ -383,13 +377,10 @@ export function RiskTrendsPanel() {
       </div>
 
       {/* ── Variables críticas + Monte Carlo real ─────────────────────────── */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* Variables críticas — análisis tornado calculado dinámicamente */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Variables críticas del modelo</p>
-          <p className="text-[9px] text-[#A8A49C] mb-4">
-            Sensibilidad del VPN a variación ±20%
-          </p>
+      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <SectionLabel>Variables críticas del modelo</SectionLabel>
+          <MarginalNote>Sensibilidad del VPN a variación ±20%</MarginalNote>
           {tornado.length === 0 && (
             <p className="text-[11px] text-[#A8A49C] italic">Calculando…</p>
           )}
@@ -406,15 +397,16 @@ export function RiskTrendsPanel() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-[9px] text-[#A8A49C]">Fuente: re-ejecución de calcular() con supuestos perturbados ±20%. Rank por rango absoluto de VPN.</p>
+          <MarginalNote prefix="Fuente">
+            Re-ejecución de calcular() con supuestos perturbados ±20%. Rank por rango absoluto de VPN.
+          </MarginalNote>
         </div>
 
-        {/* Monte Carlo TIR — distribución triangular real */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-          <p className="text-[12px] font-semibold text-[#1C1B18] mb-1">Monte Carlo — TIR del proyecto</p>
-          <p className="text-[9px] text-[#A8A49C] mb-3">
+        <div className="space-y-3">
+          <SectionLabel>Monte Carlo — TIR del proyecto</SectionLabel>
+          <MarginalNote>
             500 simulaciones · distribución triangular · parámetros: precios ±30%, captura (−40%/+20%), merma ±25%
-          </p>
+          </MarginalNote>
           {!mc && <p className="text-[11px] text-[#A8A49C] italic">Esperando resultados del simulador…</p>}
           {mc && (
             <>
@@ -437,9 +429,9 @@ export function RiskTrendsPanel() {
                   <span className="ml-auto text-[#5A6347] font-medium">~{pctRobustez}% TIR positivo</span>
                 )}
               </div>
-              <p className="mt-2 text-[9px] text-[#A8A49C]">
-                Ref: Al-Salem et al. (2024) DOI: 10.3390/su16031127 · distribución triangular (no gaussiana).
-              </p>
+              <MarginalNote prefix="Ref">
+                Al-Salem et al. (2024) DOI: 10.3390/su16031127 · distribución triangular (no gaussiana).
+              </MarginalNote>
             </>
           )}
         </div>
@@ -481,13 +473,13 @@ export function RiskTrendsPanel() {
         </div>
       </section>
 
-      <section className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
+      <section className="space-y-4">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <h3 className="font-serif text-[18px] text-[#1C1B18]">Tendencias externas agregadas</h3>
-            <p className="mt-1 text-[12px] text-[#6B6760]">
-              Limpieza urbana, salud pública, calidad de vida y gestión de residuos. Fuente según banner inferior.
-            </p>
+            <SectionLabel>Tendencias externas</SectionLabel>
+            <Conclusion className="text-[18px] md:text-[19px] mb-0">
+              Limpieza urbana, salud pública, calidad de vida y gestión de residuos — fuente según banner inferior.
+            </Conclusion>
           </div>
           {loading && <p className="text-[12px] text-[#A8A49C]">Sincronizando…</p>}
         </div>
@@ -501,7 +493,7 @@ export function RiskTrendsPanel() {
               {baseline.trends.map(t => (
                 <li
                   key={t.id}
-                  className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4"
+                  className="border-t border-[#E8E4DC] pt-4"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>

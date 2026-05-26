@@ -10,6 +10,7 @@
 
 import { useMemo } from 'react'
 import type { ReasoningGraph } from '@/types'
+import { MarginalNote } from '@/components/editorial/MarginalNote'
 
 interface ReasoningGraphCanvasProps {
   graph: ReasoningGraph
@@ -34,14 +35,14 @@ export function ReasoningGraphCanvas({ graph, height = 280 }: ReasoningGraphCanv
   const positioned = useMemo(() => layoutGraph(graph), [graph])
   if (positioned.nodes.length === 0) {
     return (
-      <div className="rounded-[12px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-4 py-6 text-center text-[12px] text-[#6B6760]">
+      <MarginalNote className="text-center border border-dashed border-[#E8E4DC] px-4 py-6">
         Construye el grafo para ver nodos y relaciones causales.
-      </div>
+      </MarginalNote>
     )
   }
   const { nodes, width } = positioned
   return (
-    <div className="overflow-x-auto rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+    <div className="overflow-x-auto border-t border-[#E8E4DC] pt-4">
       <svg
         role="img"
         aria-label="Grafo causal del razonamiento"

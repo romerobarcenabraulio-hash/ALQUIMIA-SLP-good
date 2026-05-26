@@ -21,6 +21,7 @@ import {
 import type { SocialAssumptionsLogProps } from '@/components/simulator/SocialAssumptionsLog'
 import type { SocialBacklogElementoMinimo } from '@/types/socialBacklogHandoff'
 import { cn } from '@/lib/utils'
+import { Conclusion, MarginalNote, SectionLabel } from '@/components/editorial'
 
 const GEO_LABEL: Record<SociodemographicDisplayBlock['geo_scope'], string> = {
   municipio_cve: 'Municipio (clave / CVE inequívoca)',
@@ -145,7 +146,7 @@ export function SocialContextHandoffPanel({
         {liveMsg}
       </div>
 
-      <p className="text-[10px] uppercase tracking-[0.08em] text-[#6B6760]">Handoff de backlog (PR5)</p>
+      <SectionLabel>Handoff de backlog (PR5)</SectionLabel>
       <h4
         ref={titleRef}
         id="social-context-handoff-title"
@@ -154,14 +155,14 @@ export function SocialContextHandoffPanel({
       >
         Artefacto reproducible ({PR5_HANDOFF_EXPORT_FORMAT})
       </h4>
-      <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#6B6760]">
+      <Conclusion as="div" className="mt-2 text-[14px] md:text-[15px] max-w-3xl">
         Elementos mínimos para actas o sistemas externos sin CRM integrado: título, origen de capa, severidad interna en texto,
         responsable opcional vacío y ancla interna. Un solo formato de salida en PR5: Markdown.
-      </p>
-      <p className="mt-2 max-w-3xl text-[12px] leading-relaxed text-[#5C5740]">
+      </Conclusion>
+      <MarginalNote className="max-w-3xl">
         <span className="font-medium text-[#1C1B18]">Export masivo del histórico completo de bitácora:</span>{' '}
         {PR5_BULK_EXPORT_BITACORA_RAZON_UNA_LINEA}
-      </p>
+      </MarginalNote>
 
       <details className="mt-3 rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#6B6760]">
         <summary className="cursor-pointer font-medium text-[#1C1B18]">Flujo de producto (12 pasos)</summary>

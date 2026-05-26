@@ -8,6 +8,8 @@ import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getMadurezMensajeMultiAncla, getMunicipioMadurezVista, getEtiquetaNarrativaCiudad } from '@/lib/municipioMadurezContexto'
 import type { FuenteTipo, ResultadosCalculados } from '@/types'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
+import { EditorialMetric } from '@/components/editorial/EditorialMetric'
+import { EditorialCallout } from '@/components/editorial/EditorialCallout'
 
 const GENTILICIO_POR_TERRITORIO: Record<string, string> = {
   SLP: 'potosinos',
@@ -270,20 +272,17 @@ interface MetricGlobalProps {
 
 function MetricGlobal({ label, value, sub, color, provenance, provenanceFuente, compare }: MetricGlobalProps) {
   return (
-    <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-4 shadow-sm">
-      <div className="flex items-center justify-between mb-1">
-        <p className="text-[10px] uppercase tracking-wide text-[#A8A49C]">{label}</p>
-        {provenance && (
-          <ProvenanceBadge
-            tipo={provenance}
-            fuente={provenanceFuente}
-            compact
-          />
-        )}
-      </div>
-      <p className={`font-mono text-[22px] font-medium ${color ?? 'text-[#1C1B18]'}`}>{value}</p>
-      <p className="text-[11px] text-[#A8A49C] mt-0.5">{sub}</p>
-      {compare}
-    </div>
+    <EditorialMetric
+      label={label}
+      value={value}
+      sub={sub}
+      figureClassName={color}
+      compare={compare}
+      headerRight={
+        provenance ? (
+          <ProvenanceBadge tipo={provenance} fuente={provenanceFuente} compact />
+        ) : undefined
+      }
+    />
   )
 }

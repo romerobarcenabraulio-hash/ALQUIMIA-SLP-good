@@ -9,7 +9,7 @@ import {
 import {
   AlertTriangle, CheckCircle, Clock, DollarSign,
   Shield, TrendingUp, MapPin, Lock, ChevronDown,
-  ChevronRight, ArrowRight, Zap, Users, FileText, Target,
+  ChevronRight, Zap, Users, FileText, Target,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getHitosForZm } from '@/data/hitosTimeline'
@@ -19,6 +19,7 @@ import { ExpandableChart } from '@/components/ui/ExpandableChart'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 
 const CircularidadRoadmapMap = dynamic(
   () => import('@/components/simulator/CircularidadRoadmapMap').then(m => ({ default: m.CircularidadRoadmapMap })),
@@ -478,96 +479,36 @@ function DecisionCommitBar({
 }) {
   if (compact) {
     return (
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 mb-4">
-        <div className="flex flex-wrap gap-2 text-[10px]">
-          <span className="rounded-[6px] border border-[#D7E8C0] bg-[#F4FAEC] px-2.5 py-1">
-            <span className="text-[#3B6D11] font-semibold">M1:</span>{' '}
-            <span className="text-[#4A4740]">{municipio} · {horizonte}a · {trayectoria} · RSU {fmt.kgd(rsuDia)}</span>
-          </span>
-          <ChevronRight className="w-3 h-3 text-[#A8A49C] self-center shrink-0" />
-          <span className="rounded-[6px] border border-[#BDD7F5] bg-[#EBF3FB] px-2.5 py-1">
-            <span className="text-[#1A5FA8] font-semibold">M2:</span>{' '}
-            <span className="text-[#4A4740]">{faseLegal} · {vacios} vacíos · {adendas} adendos</span>
-          </span>
-        </div>
+      <div className="border-t border-[#E8E4DC] pt-4 mb-4 flex flex-wrap items-center gap-2 text-[10px] text-[#4A4740]">
+        <span><span className="font-semibold text-[#3B6D11]">M1:</span> {municipio} · {horizonte}a · {trayectoria} · RSU {fmt.kgd(rsuDia)}</span>
+        <ChevronRight className="w-3 h-3 text-[#A8A49C] shrink-0" />
+        <span><span className="font-semibold text-[#1A5FA8]">M2:</span> {faseLegal} · {vacios} vacíos · {adendas} adendos</span>
       </div>
     )
   }
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4 mb-5">
-      <div className="flex flex-wrap lg:flex-nowrap items-stretch gap-2">
-        {/* M1 */}
-        <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#D7E8C0] bg-[#F4FAEC] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#3B6D11] font-bold mb-1.5">M1 · Escenario</p>
-          <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">{municipio}</p>
-          <p className="text-[11px] text-[#5A5750] mt-0.5">{horizonte} años · {trayectoria}</p>
-          <div className="flex gap-3 mt-1.5">
-            <div>
-              <p className="text-[8px] uppercase text-[#A8A49C]">Captura final</p>
-              <p className="text-[11px] font-semibold text-[#3B6D11]">{capturaFinal}%</p>
-            </div>
-            <div>
-              <p className="text-[8px] uppercase text-[#A8A49C]">RSU objetivo</p>
-              <p className="text-[11px] font-semibold text-[#3B6D11]">{fmt.kgd(rsuDia)}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex items-center">
-          <ArrowRight className="w-5 h-5 text-[#A8A49C] shrink-0" />
-        </div>
-
-        {/* M2 */}
-        <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#BDD7F5] bg-[#EBF3FB] px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#1A5FA8] font-bold mb-1.5">M2 · Marco jurídico</p>
-          <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">{faseLegal}</p>
-          <p className="text-[11px] text-[#5A5750] mt-0.5">Reforma requerida antes de contratación</p>
-          <div className="flex gap-3 mt-1.5">
-            <div>
-              <p className="text-[8px] uppercase text-[#A8A49C]">Vacíos jurídicos</p>
-              <p className="text-[11px] font-semibold text-[#1A5FA8]">{vacios}</p>
-            </div>
-            <div>
-              <p className="text-[8px] uppercase text-[#A8A49C]">Adendos propuestos</p>
-              <p className="text-[11px] font-semibold text-[#1A5FA8]">{adendas}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="hidden lg:flex items-center">
-          <ArrowRight className="w-5 h-5 text-[#A8A49C] shrink-0" />
-        </div>
-
-        {/* M3 */}
-        <div className="flex-1 min-w-[180px] rounded-[10px] border border-[#E8E4DC] bg-white px-4 py-3">
-          <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C] font-bold mb-1.5">M3 · Planeación</p>
-          <p className="text-[13px] font-semibold text-[#1C1B18] leading-snug">Ruta crítica y calendario</p>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// ── PlanningKpi ───────────────────────────────────────────────────────────────
-
-function PlanningKpi({
-  icon: Icon, label, value, sub, color = '#1C1B18', alert = false,
-}: {
-  icon: React.ElementType; label: string; value: string
-  sub?: string; color?: string; alert?: boolean
-}) {
-  return (
-    <div className={cn(
-      'rounded-[10px] border bg-white p-3.5',
-      alert ? 'border-[#F5C4C4]' : 'border-[#E8E4DC]',
-    )}>
-      <div className="flex items-center gap-1.5 mb-1.5">
-        <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: alert ? '#C0392B' : color }} strokeWidth={2} />
-        <p className="text-[9px] uppercase tracking-[0.07em] text-[#A8A49C]">{label}</p>
-      </div>
-      <p className="font-bold text-[22px] leading-none mb-0.5" style={{ color: alert ? '#C0392B' : color }}>{value}</p>
-      {sub && <p className="text-[9px] text-[#A8A49C]">{sub}</p>}
+    <div className="border-t border-[#E8E4DC] pt-6 mb-5 space-y-4">
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          {
+            label: `M1 · Escenario · ${horizonte} años · ${trayectoria}`,
+            value: municipio,
+          },
+          {
+            label: `Captura final · RSU objetivo ${fmt.kgd(rsuDia)}`,
+            value: `${capturaFinal}%`,
+            figureClassName: 'text-[#3B6D11]',
+          },
+          {
+            label: `M2 · Marco jurídico · ${vacios} vacíos · ${adendas} adendos`,
+            value: faseLegal,
+            figureClassName: 'text-[#1A5FA8]',
+          },
+        ]}
+      />
+      <p className="text-[12px] text-[#6B6760]">M3 · Planeación — Ruta crítica y calendario</p>
     </div>
   )
 }
@@ -623,15 +564,17 @@ function Page1({
         vacios={vacios} adendas={adendas} faseLegal={faseLegal}
       />
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-        <PlanningKpi icon={Clock}          label="Duración total"        value={`${totalSemanas} sem`}    sub="del plan operativo"      color="#1A5FA8" />
-        <PlanningKpi icon={TrendingUp}     label="Fases principales"     value="6"                         sub="fases de implementación" />
-        <PlanningKpi icon={AlertTriangle}  label="Actividades críticas"  value="7 / 15"                    sub="sin holgura"              alert />
-        <PlanningKpi icon={DollarSign}     label="Costo planificado"     value={fmt.mxnM(capexTotal)}       sub="CAPEX total estimado"    color="#3B6D11" />
-        <PlanningKpi icon={Shield}         label="Dependencias críticas" value="12"                         sub="nodos PERT ruta crítica" />
-        <PlanningKpi icon={Target}         label="Confianza cronograma"  value="72%"                        sub="supuestos validados"     color="#D4881E" />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: 'Duración total · del plan operativo', value: `${totalSemanas} sem`, figureClassName: 'text-[#1A5FA8]' },
+          { label: 'Fases principales', value: '6' },
+          { label: 'Actividades críticas · sin holgura', value: '7 / 15', figureClassName: 'text-[#C0392B]' },
+          { label: 'Costo planificado · CAPEX total estimado', value: fmt.mxnM(capexTotal), figureClassName: 'text-[#3B6D11]' },
+          { label: 'Dependencias críticas · nodos PERT', value: '12' },
+          { label: 'Confianza cronograma · supuestos validados', value: '72%', figureClassName: 'text-[#D4881E]' },
+        ]}
+      />
 
       {/* Phase timeline */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
@@ -800,15 +743,21 @@ function Page2({
         compact
       />
 
-      {/* KPI control */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
-        <PlanningKpi icon={AlertTriangle}  label="Nodos críticos"      value={`${criticalNodes.length} / ${PERT_NODES.length}`} alert />
-        <PlanningKpi icon={Clock}          label="Holgura promedio"    value={`${avgHolgura}d`}   sub="media de la red PERT" />
-        <PlanningKpi icon={Zap}            label="Sin holgura"         value={String(noHolgura)}   sub="actividades críticas"  color="#D4881E" />
-        <PlanningKpi icon={Lock}           label="Bloqueos jurídicos"  value={String(vacios)}      sub="vacíos sin resolver"   color="#1A5FA8" />
-        <PlanningKpi icon={DollarSign}     label="Bloqueos pres."      value="2"                   sub="sin ministración" />
-        <PlanningKpi icon={Shield}         label="Riesgo de retraso"   value="Medio"               sub="+23 días estimados"    color="#D4881E" />
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          {
+            label: 'Nodos críticos',
+            value: `${criticalNodes.length} / ${PERT_NODES.length}`,
+            figureClassName: 'text-[#C0392B]',
+          },
+          { label: 'Holgura promedio · media PERT', value: `${avgHolgura}d` },
+          { label: 'Sin holgura · actividades críticas', value: String(noHolgura), figureClassName: 'text-[#D4881E]' },
+          { label: 'Bloqueos jurídicos · vacíos sin resolver', value: String(vacios), figureClassName: 'text-[#1A5FA8]' },
+          { label: 'Bloqueos pres. · sin ministración', value: '2' },
+          { label: 'Riesgo de retraso · +23 días estimados', value: 'Medio', figureClassName: 'text-[#D4881E]' },
+        ]}
+      />
 
       {/* PERT full network */}
       <ExpandableChart chartId="m03-pert-full" title="Red PERT" subtitle="T01–T15 · clic en nodo para detalle · verde = ruta crítica">
@@ -1103,24 +1052,17 @@ function Page3({
 
   return (
     <div className="space-y-6">
-      {/* Inherited decisions */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] px-5 py-4">
-        <div className="flex flex-wrap gap-2">
-          {[
-            { label: 'Escenario',          value: trayectoria },
-            { label: 'Horizonte',          value: `${horizonte} años` },
-            { label: 'Gen. per cápita',    value: `${genPercapita.toFixed(2)} kg/hab/día` },
-            { label: 'Captura final',      value: `${capturaFinal}%` },
-            { label: 'Marco jurídico',     value: faseLegal },
-            { label: 'Responsable inst.',  value: 'Dir. Economía Circular' },
-          ].map(c => (
-            <div key={c.label} className="rounded-[7px] border border-[#E8E4DC] bg-white px-3 py-2">
-              <p className="text-[8px] uppercase tracking-[0.05em] text-[#A8A49C]">{c.label}</p>
-              <p className="text-[11px] font-semibold text-[#1C1B18]">{c.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={[
+          { label: 'Escenario', value: trayectoria },
+          { label: 'Horizonte', value: `${horizonte} años` },
+          { label: 'Gen. per cápita', value: `${genPercapita.toFixed(2)} kg/hab/día` },
+          { label: 'Captura final', value: `${capturaFinal}%` },
+          { label: 'Marco jurídico', value: faseLegal },
+          { label: 'Responsable inst.', value: 'Dir. Economía Circular' },
+        ]}
+      />
 
       {/* Progress timeline */}
       <div className="rounded-[12px] border border-[#E8E4DC] bg-white px-6 py-5">
@@ -1130,26 +1072,18 @@ function Page3({
           </div>
           <span className="text-[11px] font-mono font-semibold text-[#3B6D11] shrink-0">Mes 9 de {totalMeses}</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5">
-          {[
-            { label: 'Fase activa',    curr: 'Instalación',  meta: 'Oleada 1',  icon: TrendingUp },
-            { label: 'Captura acum.',  curr: '2,689 t',       meta: `${Math.round(empleosMeta * 30)} t`,    icon: Target },
-            { label: 'Centros activos', curr: '12',           meta: `${mixCentros}`,                        icon: MapPin },
-            { label: 'Empleos gen.',   curr: String(Math.min(147, empleosMeta)), meta: String(empleosMeta),  icon: Users },
-            { label: 'CO₂ evitado',   curr: `${(co2Meta * 0.025 / 1000).toFixed(1)} kt`, meta: `${(co2Meta / 1000).toFixed(0)} kt`, icon: Shield },
-            { label: 'Derrama acum.', curr: `$${(derraMeta * 0.028 / 1_000_000).toFixed(1)} M`, meta: fmt.mxnM(derraMeta), icon: DollarSign },
-            { label: 'Mes plan.',      curr: 'Mes 9',        meta: `de ${totalMeses}`,                       icon: Clock },
-          ].map(c => (
-            <div key={c.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-3">
-              <div className="flex items-center gap-1.5 mb-1.5">
-                <c.icon className="w-3 h-3 text-[#A8A49C]" />
-                <p className="text-[8px] uppercase tracking-[0.05em] text-[#A8A49C]">{c.label}</p>
-              </div>
-              <p className="text-[13px] font-bold text-[#1C1B18] font-mono leading-none">{c.curr}</p>
-              <p className="text-[8px] text-[#A8A49C] mt-0.5">Meta: {c.meta}</p>
-            </div>
-          ))}
-        </div>
+        <KpiAnchorGrid
+          columns={4}
+          items={[
+            { label: 'Fase activa · meta Oleada 1', value: 'Instalación' },
+            { label: 'Captura acum. · meta toneladas', value: '2,689 t' },
+            { label: 'Centros activos · meta mix', value: '12' },
+            { label: 'Empleos gen. · meta plan', value: String(Math.min(147, empleosMeta)) },
+            { label: 'CO₂ evitado · meta kt', value: `${(co2Meta * 0.025 / 1000).toFixed(1)} kt` },
+            { label: 'Derrama acum. · meta MXN', value: `$${(derraMeta * 0.028 / 1_000_000).toFixed(1)} M` },
+            { label: 'Mes plan. · de horizonte', value: `Mes 9 / ${totalMeses}` },
+          ]}
+        />
       </div>
 
       {/* Map + Waves */}
@@ -1341,7 +1275,7 @@ function RightRail({ page, vacios }: { page: number; vacios: number }) {
   }
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+    <div className="border-t border-[#E8E4DC] pt-6">
       <RailSection title="Cómo se calcula" defaultOpen>
         <p>{content.calcula}</p>
       </RailSection>

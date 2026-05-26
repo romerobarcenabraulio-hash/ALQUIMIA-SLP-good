@@ -15,6 +15,7 @@ import type { SociodemographicDisplayBlock } from '@/types/socialDemographicCont
 import { cn } from '@/lib/utils'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
+import { EditorialCallout } from '@/components/editorial'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -398,16 +399,10 @@ export function MunicipalContextStack({
     <div className="space-y-4 pb-6">
 
       {legalIsFallback && (
-        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <div>
-            <p className="text-[11px] font-semibold text-amber-900">Datos de referencia (Monterrey)</p>
-            <p className="text-[10px] text-amber-800 mt-0.5 leading-relaxed">
-              No hay diagnóstico legal específico para esta zona metropolitana. Se muestra el marco de referencia MTY
-              hasta cargar el reglamento local. Seleccione su municipio para datos específicos.
-            </p>
-          </div>
-        </div>
+        <EditorialCallout tone="caution" label="Datos de referencia (Monterrey)">
+          No hay diagnóstico legal específico para esta zona metropolitana. Se muestra el marco de referencia MTY
+          hasta cargar el reglamento local. Seleccione su municipio para datos específicos.
+        </EditorialCallout>
       )}
 
       {/* ── KPI Strip ──────────────────────────────────────────────────────── */}

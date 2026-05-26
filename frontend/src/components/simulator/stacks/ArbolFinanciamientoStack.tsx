@@ -370,7 +370,7 @@ export function ArbolFinanciamientoStack() {
         </div>
 
         {/* Right rail */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+        <div className="border-t border-[#E8E4DC] pt-6">
           <div className="flex items-center justify-between mb-3 px-1">
             <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Contexto</p>
             <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#EAF3DE] text-[#2D5A0D]">Referencia</span>

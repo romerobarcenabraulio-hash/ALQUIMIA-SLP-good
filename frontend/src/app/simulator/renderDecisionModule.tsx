@@ -134,7 +134,7 @@ const CostoOmisionStack = dynamic(
     import('@/components/simulator/stacks/CostoOmisionStack').then(m => ({ default: m.CostoOmisionStack })),
   {
     ssr: false,
-    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando análisis contrafactual…</p>,
+    loading: () => <p className="text-[12px] text-[#6B6760]">Preparando costo de omisión…</p>,
   },
 )
 

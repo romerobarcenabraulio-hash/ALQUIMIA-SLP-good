@@ -10,7 +10,8 @@ import {
   buildRecyclersKpiContract,
   getRecicladorasForZm,
 } from '@/lib/recicladorasCatalog'
-import { RefreshCw, AlertTriangle, MapPin, Building2, Recycle, Filter, Truck } from 'lucide-react'
+import { RefreshCw, MapPin, Building2, Recycle, Filter, Truck } from 'lucide-react'
+import { EditorialCallout, MarginalNote } from '@/components/editorial'
 
 const MATERIAL_LABELS: Record<string, string> = {
   pet: 'PET',
@@ -168,10 +169,9 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
 
   if (error) {
     return (
-      <div className="flex items-start gap-2 rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 text-[12px] text-amber-800">
-        <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+      <EditorialCallout tone="caution" label="Error al cargar centros">
         {error}
-      </div>
+      </EditorialCallout>
     )
   }
 
@@ -186,9 +186,9 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
         </div>
       )}
       {syncStatus === 'sin_datos' && centros.length === 0 && (
-        <div className="rounded-[8px] border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-900">
+        <EditorialCallout tone="caution" label="Sin datos DENUE">
           Sin datos DENUE para CVE {claveInegi ?? '—'}. El cron nacional procesará este municipio en cola.
-        </div>
+        </EditorialCallout>
       )}
       {coveragePct != null && (
         <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[10px] text-[#6B6760]">
@@ -208,11 +208,11 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
       )}
 
       {centros.length === 0 && !loading && (
-        <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2 text-[11px] text-[#6B6760]">
+        <EditorialCallout label="Sin centros identificados">
           Sin centros identificados para este municipio. Ejecute sync DENUE (
           <code className="text-[10px]">POST /centros-acopio/sync/denue</code>) o registre operador en{' '}
           <code className="text-[10px]">data/geo/operadores_logisticos/{claveInegi ?? 'CVE'}.json</code>.
-        </div>
+        </EditorialCallout>
       )}
 
       {/* KPI bar */}
@@ -374,9 +374,9 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
         </div>
       </div>
 
-      <p className="text-[10px] text-[#8A857C]">
+      <MarginalNote>
         Fuentes: DENUE INEGI · Google Places · registro usuario · ÁGORA GOV ALQUIMIA
-      </p>
+      </MarginalNote>
     </div>
   )
 }

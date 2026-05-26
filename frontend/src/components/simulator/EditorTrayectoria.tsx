@@ -7,6 +7,7 @@ import { Slider } from '@/components/ui/Slider'
 import { narrativaS9 } from '@/lib/calculator'
 import { debounce } from '@/lib/utils'
 import { cn } from '@/lib/utils'
+import { Conclusion } from '@/components/editorial/Conclusion'
 
 export function EditorTrayectoria() {
   const { horizonte, pctCapturaPorAño, presetTrayectoria, setPreset, setPctCapturaAño, resultados } = useSimulatorStore()
@@ -65,9 +66,7 @@ export function EditorTrayectoria() {
 
       {/* Narrativa dinámica */}
       {narrativa && (
-        <div className="mt-4 px-4 py-3 bg-[#EBF3FB] rounded-[10px] border-l-4 border-[#1A5FA8]">
-          <p className="text-[13px] text-[#051D45] italic leading-relaxed">{narrativa}</p>
-        </div>
+        <Conclusion className="mt-4 text-[15px] italic">{narrativa}</Conclusion>
       )}
     </div>
   )

@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
+import { ChevronDown } from 'lucide-react'
+import { KpiAnchorGrid, MarginalNote, SectionLabel } from '@/components/editorial'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -68,6 +70,20 @@ function SemaforoDot({ status }: { status: SemaforoStatus }) {
         status === 'rojo'     && 'bg-red-500',
       )}
     />
+  )
+}
+
+function RailSection({ title, children, open: defaultOpen = false }: { title: string; children: React.ReactNode; open?: boolean }) {
+  const [open, setOpen] = useState(defaultOpen)
+  return (
+    <div className="border-b border-[#EDE9E3] last:border-b-0">
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center justify-between py-3 px-1 text-left">
+        <span className="text-[10px] uppercase tracking-[0.08em] text-[#6B6760] font-bold">{title}</span>
+        <ChevronDown className={cn('w-3.5 h-3.5 text-[#A8A49C] transition-transform', open && 'rotate-180')} />
+      </button>
+      {open && <div className="pb-3 px-1 text-[11px] leading-relaxed text-[#6B6760] space-y-1">{children}</div>}
+    </div>
   )
 }
 
@@ -455,44 +471,23 @@ function TabSemaforo({ records, pctCapturaPorAño }: Tab3Props) {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {cards.map(card => (
-          <div
-            key={card.label}
-            className={cn(
-              'rounded-[10px] border p-4 flex flex-col gap-2',
-              card.status === 'verde'    && 'border-[#C9DDB1] bg-[#EAF3DE]',
-              card.status === 'amarillo' && 'border-[#D4881E]/30 bg-[#FEF7E7]',
-              card.status === 'rojo'     && 'border-red-200 bg-red-50',
-            )}
-          >
-            <div className="flex items-center justify-between">
-              <p className="text-[10px] uppercase tracking-[0.1em] text-[#6B6760] font-medium">
-                {card.label}
-              </p>
-              <SemaforoDot status={card.status} />
-            </div>
-            <p
-              className={cn(
-                'font-mono text-[20px] font-semibold leading-none',
-                card.status === 'verde'    && 'text-[#3B6D11]',
-                card.status === 'amarillo' && 'text-[#D4881E]',
-                card.status === 'rojo'     && 'text-red-600',
-              )}
-            >
-              {card.value}
-            </p>
-            {card.sub && (
-              <p className="text-[11px] text-[#6B6760]">{card.sub}</p>
-            )}
-          </div>
-        ))}
-      </div>
+      <KpiAnchorGrid
+        columns={3}
+        items={cards.map(card => ({
+          label: card.sub ? `${card.label} · ${card.sub}` : card.label,
+          value: card.value,
+          figureClassName: cn(
+            card.status === 'verde'    && 'text-[#3B6D11]',
+            card.status === 'amarillo' && 'text-[#D4881E]',
+            card.status === 'rojo'     && 'text-red-600',
+          ),
+        }))}
+      />
 
-      <p className="text-[11px] text-[#A8A49C] border border-[#E8E4DC] rounded-[8px] px-3 py-2 bg-[#F4F2ED]">
+      <MarginalNote>
         El semáforo se actualiza automáticamente cuando se registran datos de campo en la pestaña anterior.{' '}
         Verde = ≤10% de brecha vs proyección · Amarillo = 10-25% · Rojo = &gt;25% o sin dato.
-      </p>
+      </MarginalNote>
     </div>
   )
 }
@@ -524,38 +519,55 @@ export function MonitoreoRealStack() {
   ]
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] shadow-[0_2px_12px_rgba(28,27,24,0.06)] overflow-hidden">
-      <div className="px-6 pt-4 pb-0 border-b border-[#E8E4DC]">
-        <div className="flex gap-0 -mb-px overflow-x-auto">
-          {TABS.map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={cn(
-                'flex-shrink-0 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors',
-                activeTab === tab.id
-                  ? 'border-[#3B6D11] text-[#3B6D11]'
-                  : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
-              )}
-            >
-              {tab.label}
-            </button>
-          ))}
+    <div className="grid grid-cols-1 xl:grid-cols-[1fr_260px] gap-6 items-start">
+      <div className="overflow-hidden border border-[#E8E4DC] rounded-[12px]">
+        <div className="px-6 pt-4 pb-0 border-b border-[#E8E4DC]">
+          <div className="flex gap-0 -mb-px overflow-x-auto">
+            {TABS.map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={cn(
+                  'flex-shrink-0 px-4 py-2.5 text-[12px] font-medium border-b-2 transition-colors',
+                  activeTab === tab.id
+                    ? 'border-[#3B6D11] text-[#3B6D11]'
+                    : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
+                )}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="p-5">
+          {activeTab === 'captura' && (
+            <TabCaptura records={records} onSave={handleSave} />
+          )}
+          {activeTab === 'comparacion' && (
+            <TabComparacion records={records} pctCapturaPorAño={pctCapturaPorAño} />
+          )}
+          {activeTab === 'semaforo' && (
+            <TabSemaforo records={records} pctCapturaPorAño={pctCapturaPorAño} />
+          )}
         </div>
       </div>
 
-      {/* Tab content */}
-      <div className="p-5">
-        {activeTab === 'captura' && (
-          <TabCaptura records={records} onSave={handleSave} />
-        )}
-        {activeTab === 'comparacion' && (
-          <TabComparacion records={records} pctCapturaPorAño={pctCapturaPorAño} />
-        )}
-        {activeTab === 'semaforo' && (
-          <TabSemaforo records={records} pctCapturaPorAño={pctCapturaPorAño} />
-        )}
-      </div>
+      <aside className="sticky top-4 border-l border-[#E8E4DC] pl-4">
+        <SectionLabel as="span">Metodología</SectionLabel>
+        <RailSection title="Captura de campo" open>
+          <p>Registros manuales por periodo — toneladas separadas, hogares, precios de mercado y quejas ciudadanas.</p>
+        </RailSection>
+        <RailSection title="Comparación">
+          <p>Brecha proyectado vs. medido usando pctCapturaPorAño del simulador y datos capturados en campo.</p>
+        </RailSection>
+        <RailSection title="Semáforo">
+          <p>Verde ≤10% brecha · Amarillo 10-25% · Rojo &gt;25% o sin dato registrado.</p>
+        </RailSection>
+        <RailSection title="Límites">
+          <p>No sustituye PER oficial ni dictamen SEMARNAT. Los datos no se persisten en servidor en esta versión.</p>
+        </RailSection>
+      </aside>
     </div>
   )
 }

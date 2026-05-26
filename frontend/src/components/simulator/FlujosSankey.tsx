@@ -8,6 +8,7 @@
  */
 
 import { ResponsiveContainer, Sankey, Tooltip } from 'recharts'
+import { MarginalNote, SectionLabel } from '@/components/editorial'
 
 export interface SankeyNode {
   id: string
@@ -50,10 +51,8 @@ export function FlujosSankey({ title, nodes, links, height = 280 }: FlujosSankey
   }
 
   return (
-    <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      {title && (
-        <p className="mb-3 text-[11px] uppercase tracking-[0.08em] text-[#A8A49C]">{title}</p>
-      )}
+    <div className="border-t border-[#E8E4DC] pt-4">
+      {title && <SectionLabel>{title}</SectionLabel>}
       <div style={{ width: '100%', height }}>
         <ResponsiveContainer>
           <Sankey

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, type ReactNode } from 'react'
+import { useMemo } from 'react'
 import {
   ArrowRight, Recycle, Scale, Target,
   BarChart3, MapPin, CheckCircle2,
@@ -17,34 +17,13 @@ import {
   JOURNEY_MODE_META,
   type JourneyMode,
 } from '@/lib/journeyMode'
+import { Conclusion, MarginalNote, SectionLabel } from '@/components/editorial'
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
   1: MapPin,
   2: Target,
   3: Scale,
   4: BarChart3,
-}
-
-function EditorialSection({
-  title,
-  children,
-  accentColor,
-  className,
-}: {
-  title: string
-  children: ReactNode
-  accentColor?: string
-  className?: string
-}) {
-  return (
-    <section
-      className={cn('pl-5 border-l-[3px] py-1', className)}
-      style={{ borderColor: accentColor ?? 'var(--surface-border)' }}
-    >
-      <p className="text-[14px] font-semibold text-gray-900c mb-3">{title}</p>
-      {children}
-    </section>
-  )
 }
 
 interface GuiaCircularidadProps {
@@ -109,15 +88,13 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
 
       <NarrativaIntroBridge />
 
-      <EditorialSection
-        title="¿Para qué entras hoy?"
-        accentColor="#3B6D11"
-      >
-        <p className="text-[13px] leading-[1.75] text-gray-600c mb-4">
+      <section className="border-t border-[#E8E4DC] pt-6">
+        <SectionLabel>¿Para qué entras hoy?</SectionLabel>
+        <Conclusion className="text-[16px] md:text-[17px] mb-4">
           ALQUIMIA tiene {CHAPTER_COUNT} capítulos consultivos; no hace falta recorrerlos todos de
-          una vez. Elige si necesitas <strong>validar la propuesta</strong> ante Cabildo o{' '}
-          <strong>planificar la implementación</strong> y los controles de operación.
-        </p>
+          una vez. Elige si necesitas validar la propuesta ante Cabildo o planificar la implementación
+          y los controles de operación.
+        </Conclusion>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {(['validar', 'implementar'] as const).map(mode => {
             const meta = JOURNEY_MODE_META[mode]
@@ -168,16 +145,14 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             infraestructura — los KPIs del simulador alimentan Cap. 2 y el paquete consultoría.
           </p>
         )}
-      </EditorialSection>
+      </section>
 
-      <EditorialSection
-        title={`Capítulos visibles — ${JOURNEY_MODE_META[journeyMode].title}`}
-        accentColor="#1A5FA8"
-      >
-        <p className="text-[13px] leading-[1.75] text-gray-600c mb-5">
+      <section className="border-t border-[#E8E4DC] pt-6">
+        <SectionLabel>Capítulos visibles — {JOURNEY_MODE_META[journeyMode].title}</SectionLabel>
+        <MarginalNote className="mb-5">
           Vista de conjunto del modo seleccionado. Puede cambiar el recorrido aquí en cualquier
           momento sin perder datos del simulador.
-        </p>
+        </MarginalNote>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">
           {chaptersForMode.map(ch => {
@@ -212,10 +187,10 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
             )
           })}
         </div>
-      </EditorialSection>
+      </section>
 
-      <section className="pl-5 border-l-[3px] border-red-500a/40 py-1">
-        <p className="text-[14px] font-semibold text-gray-900c mb-3">Lo que ALQUIMIA no es</p>
+      <section className="border-t border-[#E8E4DC] pt-6">
+        <SectionLabel>Lo que ALQUIMIA no es</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[12px] text-gray-600c">
           {[
             { no: 'No es un dictamen oficial', si: 'Requiere validación del equipo jurídico y técnico del municipio.' },

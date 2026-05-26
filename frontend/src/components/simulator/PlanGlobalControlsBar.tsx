@@ -13,8 +13,8 @@ export function PlanGlobalControlsBar({ showGeneration = true }: { showGeneratio
   const setGenPercapita = useSimulatorStore(s => s.setGenPercapita)
 
   return (
-    <section className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <div className="mt-1 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
+    <section className="space-y-4">
+      <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
         <p className="text-[11px] text-[#6B6760]">Horizonte (años)</p>
         <div className="mt-2 flex flex-wrap gap-2">
           {[1, 2, 3, 4, 5].map(n => (
@@ -36,7 +36,7 @@ export function PlanGlobalControlsBar({ showGeneration = true }: { showGeneratio
       </div>
 
       {showGeneration && (
-        <div className="mt-4 rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
+        <div className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3">
           <label htmlFor="plan-global-percapita" className="text-[11px] text-[#6B6760]">
             Generación RSU per cápita:{' '}
             <span className="font-medium text-[#1C1B18]">{genPercapita.toFixed(2)} kg/hab/día</span>

@@ -23,6 +23,7 @@ import {
 } from '@/data/dictamenTecnicoEvidence'
 import { cn, fmt } from '@/lib/utils'
 import { ModuleBottomBar } from '@/components/simulator/ModuleBottomBar'
+import { Conclusion, EditorialCallout, KpiAnchorGrid } from '@/components/editorial'
 
 function StatusBadge({ status }: { status: EvidenceStatus }) {
   const styles = {
@@ -145,37 +146,29 @@ export function DictamenTecnicoStack() {
           title="Valor de captura: 5 fracciones vs. 3"
           subtitle={`Escenario activo · ${territorio}`}
         >
-          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
-            <p className="text-[12px] text-[#1C1B18] leading-relaxed mb-4">
+          <div className="px-5 pb-5 space-y-4">
+            <Conclusion as="div" className="text-[16px] md:text-[17px]">
               Para <strong>{territorio}</strong>, la separación en 5 fracciones capturaría aproximadamente{' '}
               <strong>{fmt.mxn(captureDelta.fiveFraction)} MXN/año</strong> en valor de materiales, vs.{' '}
               <strong>{fmt.mxn(captureDelta.threeFraction)} MXN/año</strong> con 3 fracciones — una diferencia de{' '}
               <strong className="text-[#3B6D11]">{fmt.mxn(captureDelta.delta)} MXN/año</strong> atribuible
               principalmente a menor contaminación en el stream reciclable.
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="rounded-[8px] bg-[#F4FAEC] border border-[#C9DDB1] p-3 text-center">
-                <p className="text-[10px] text-[#3B6D11] font-semibold">5 fracciones</p>
-                <p className="font-serif text-[20px] text-[#1A4200] mt-1">{fmt.mxn(captureDelta.fiveFraction)}</p>
-                <p className="text-[9px] text-[#6B6760]">contaminación ~12%</p>
-              </div>
-              <div className="rounded-[8px] bg-[#FEF7E7] border border-[#F5DCA0] p-3 text-center">
-                <p className="text-[10px] text-[#6B4800] font-semibold">3 fracciones</p>
-                <p className="font-serif text-[20px] text-[#6B4800] mt-1">{fmt.mxn(captureDelta.threeFraction)}</p>
-                <p className="text-[9px] text-[#6B6760]">contaminación ~25%</p>
-              </div>
-            </div>
+            </Conclusion>
+            <KpiAnchorGrid
+              columns={2}
+              items={[
+                { label: '5 fracciones · contaminación ~12%', value: fmt.mxn(captureDelta.fiveFraction) },
+                { label: '3 fracciones · contaminación ~25%', value: fmt.mxn(captureDelta.threeFraction), figureClassName: 'text-amber-800' },
+              ]}
+            />
           </div>
         </ChartPanel>
       )}
 
       {!captureDelta && (
-        <div className="rounded-[10px] border border-amber-200 bg-amber-50 px-4 py-3 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-          <p className="text-[11px] text-amber-800">
-            Calcule un escenario en M01 para ver el argumento económico específico de 5 vs. 3 fracciones para su municipio.
-          </p>
-        </div>
+        <EditorialCallout tone="caution" label="Escenario requerido">
+          Calcule un escenario en M01 para ver el argumento económico específico de 5 vs. 3 fracciones para su municipio.
+        </EditorialCallout>
       )}
 
       {/* Evidence sections accordion */}

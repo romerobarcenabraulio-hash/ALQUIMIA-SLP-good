@@ -4,6 +4,10 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { fmt } from '@/lib/utils'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
+import { Conclusion } from '@/components/editorial/Conclusion'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
+import { MarginalNote } from '@/components/editorial/MarginalNote'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
 
 export function ImpactoAmbientalStack() {
   const resultados = useSimulatorStore(s => s.resultados)
@@ -13,38 +17,36 @@ export function ImpactoAmbientalStack() {
 
   if (!r) {
     return (
-      <p className="text-[12px] text-[#6B6760] rounded-[8px] border border-dashed border-[#E8E4DC] p-4">
+      <p className="text-[12px] text-gray-600c border-b border-[0.5px] border-gray-200c pb-4">
         Configure el escenario en M01 para ver impactos ambientales y sanitarios.
       </p>
     )
   }
 
   const kpis = [
-    { label: 'CO₂e acumulado', value: fmt.co2(r.co2eEvitadasHorizonteTon), color: '#1A5FA8' },
-    { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} t`, color: '#5A9438' },
-    { label: 'Casos IRA evitados', value: fmt.num0(r.casosIRAEvitados), color: '#C0392B' },
-    { label: 'Casos dengue evitados', value: fmt.num0(r.casosDengueEvitados), color: '#D4881E' },
-    { label: 'AVAD evitados', value: r.avadEvitados.toFixed(0), color: '#C0392B' },
-    { label: 'Biogás (informativo)', value: fmt.kwh(r.kwhBiogas), color: '#5A4A2A' },
-    { label: 'Vida relleno extendida', value: `+${r.extensionRelleno.toFixed(1)} años`, color: '#3B6D11' },
-    { label: 'Ingreso carbono', value: fmt.mxn(r.ingresoCarbono), color: '#4A1C7A' },
+    { label: 'CO₂e acumulado', value: fmt.co2(r.co2eEvitadasHorizonteTon) },
+    { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} t` },
+    { label: 'Casos IRA evitados', value: fmt.num0(r.casosIRAEvitados) },
+    { label: 'Extensión relleno', value: `+${r.extensionRelleno.toFixed(1)} años` },
+    { label: 'Casos dengue evitados', value: fmt.num0(r.casosDengueEvitados) },
+    { label: 'Biogás (informativo)', value: fmt.kwh(r.kwhBiogas) },
+    { label: 'AVAD evitados', value: r.avadEvitados.toFixed(0) },
+    { label: 'Ingreso carbono', value: fmt.mxn(r.ingresoCarbono) },
   ]
 
   return (
-    <div className="space-y-5">
-
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {kpis.map(item => (
-          <div key={item.label} className="rounded-[10px] border border-[#E8E4DC] bg-white px-3 py-3 text-center">
-            <p className="font-mono text-[14px] font-semibold" style={{ color: item.color }}>{item.value}</p>
-            <p className="text-[11px] text-[#A8A49C] mt-1">{item.label}</p>
-          </div>
-        ))}
-      </div>
+    <div className="space-y-6">
+      <section>
+        <SectionLabel>Impacto ambiental y sanitario</SectionLabel>
+        <Conclusion className="mb-5">
+          {`En ${horizonte} años el escenario evita ${fmt.co2(r.co2eEvitadasHorizonteTon)} CO₂e y ${r.pm25EvitadoTon.toFixed(1)} t de PM2.5 — el argumento solo es defendible si el factor del relleno local está acotado.`}
+        </Conclusion>
+        <KpiAnchorGrid items={kpis} columns={4} className="mb-2" />
+      </section>
 
       <NarrativeBridge
         variant="bridge"
-        summary={`Con ${fmt.co2(r.co2eEvitadasHorizonteTon)} CO₂e evitadas en ${horizonte} años y ${r.pm25EvitadoTon.toFixed(1)} t PM2.5, el argumento ambiental en ALQUIMIA solo es defendible si el factor de emisión del relleno local está acotado. Si el contrafactual sin programa supera ${fmt.kgd(resultadosSinPrograma?.rsuTotalTonDia ?? r.rsuTotalTonDia)} RSU/día, lleve estas cifras a M04 costo de omisión; si falta dato de relleno, baje confianza antes de anexar a informe oficial.`}
+        summary={`Si el contrafactual sin programa supera ${fmt.kgd(resultadosSinPrograma?.rsuTotalTonDia ?? r.rsuTotalTonDia)} RSU/día, lleve estas cifras a M04 costo de omisión; si falta dato de relleno, baje confianza antes de anexar a informe oficial.`}
         evidence={[
           { label: 'CO₂e horizonte', value: fmt.co2(r.co2eEvitadasHorizonteTon) },
           { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} t` },
@@ -59,14 +61,13 @@ export function ImpactoAmbientalStack() {
       />
 
       {resultadosSinPrograma && (
-        <div className="rounded-[10px] bg-[#FEF7E7] border border-[#F5D98A] px-4 py-3 text-[12px] text-[#6B4800]">
-          <strong>Sin programa (contrafactual):</strong>{' '}
+        <MarginalNote prefix="Contrafactual sin programa">
           {fmt.kgd(resultadosSinPrograma.rsuTotalTonDia)} RSU/día ·{' '}
-          {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}/año ingresos perdidos
-        </div>
+          {fmt.mxnM(resultadosSinPrograma.ingresosBrutos / Math.max(1, horizonte))}/año ingresos no capturados
+        </MarginalNote>
       )}
 
-      <p className="text-[10px] text-[#6B6760] flex items-center gap-1">
+      <p className="text-[10px] text-gray-600c flex items-center gap-1">
         <ProvenanceBadge tipo="estimado" confianza={0.68} fuente="OPS/INSP · INECC · calculator.ts" />
         Biogás no incluido en ingresos base — requiere permiso CRE.
       </p>

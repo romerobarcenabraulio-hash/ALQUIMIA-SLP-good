@@ -8,6 +8,7 @@ import {
 import { AlertTriangle, TrendingDown, ChevronDown, DollarSign, Leaf } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { MODELO_PARAMS } from '@/lib/constants'
+import { buildContrafactualData, FACTOR_EMISION_RELLENO_OMISION, COSTO_SALUD_POR_TON_ORGANICO_OMISION, INPC_ANNUAL_OMISION, COSTO_DISPOSICION_OMISION_TM } from '@/lib/costoOmisionContrafactual'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { CHART_AXIS_TICK, CHART_AXIS_TICK_MUTED, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
@@ -16,56 +17,10 @@ import { cn, fmt } from '@/lib/utils'
 // ── Calculation helpers ───────────────────────────────────────────────────────
 // All values derived from simulator inputs — nothing hardcoded.
 
-const INPC_ANNUAL = 0.045         // 4.5% annual inflation (BANXICO 2024-2026 avg)
-const COSTO_DISPOSICION_TM = 280  // MXN/ton — relleno sanitario tarifa media nacional
 const VIDA_UTIL_RELLENO_ANOS = 15 // remaining useful life of existing landfill (typical)
 const MULTA_PROFEPA_MIN = 1_500_000  // MXN — LGPGIR Art.10 minimum fine
 const MULTA_PROFEPA_MAX = 15_000_000 // MXN — maximum cumulative
-
-// Health damage cost per ton of organic waste in open/informal disposal
-// Based on WHO methodology + INSP (Instituto Nacional de Salud Pública) Mexico urban
-const COSTO_SALUD_POR_TON_ORGANICO = 185 // MXN/ton (IRA, vectores, contaminación acuífera)
-// INECC / SEMARNAT — emisiones evitables por tonelada dispuesta sin captura (tCO2e/ton)
-const FACTOR_EMISION_RELLENO = 0.9
-// Precio social del carbono — tier SCE medio (USD/tCO2e) × tipo de cambio
 const PRECIO_SOCIAL_CARBONO_MXN = MODELO_PARAMS.precioCarbonoSCE[1] * MODELO_PARAMS.tipoCambio
-
-function buildContrafactualData(
-  rsuDia: number,
-  años: number,
-  ingresos_programa: number,
-  co2eEvitadasAnualTon: number,
-) {
-  const results = []
-  let costoAcum = 0
-  let costoPrograma = 0
-  const tonAnual = rsuDia * 365
-
-  for (let y = 1; y <= años; y++) {
-    const inflFactor = Math.pow(1 + INPC_ANNUAL, y - 1)
-    const costoDisposicion = tonAnual * COSTO_DISPOSICION_TM * inflFactor
-    const costoSalud = tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO * inflFactor
-    const costoCarbono = tonAnual * FACTOR_EMISION_RELLENO * PRECIO_SOCIAL_CARBONO_MXN * inflFactor
-    const costoAnual = costoDisposicion + costoSalud + costoCarbono
-    costoAcum += costoAnual
-
-    const captureRate = Math.min(0.85, 0.15 + y * 0.12)
-    const tonEvitada = co2eEvitadasAnualTon * captureRate
-    const beneficioCarbono = tonEvitada * PRECIO_SOCIAL_CARBONO_MXN * inflFactor
-    const costoConPrograma = tonAnual * (1 - captureRate) * COSTO_DISPOSICION_TM * inflFactor
-    costoPrograma += costoConPrograma + (ingresos_programa * (1 - Math.pow(0.95, y - 1))) - beneficioCarbono
-
-    results.push({
-      año: `A${y}`,
-      sinPrograma: Math.round(costoAcum / 1_000_000),
-      conPrograma: Math.round(Math.max(0, costoPrograma) / 1_000_000),
-      diferencia: Math.round((costoAcum - Math.max(0, costoPrograma)) / 1_000_000),
-      captureRate: Math.round(captureRate * 100),
-      costoCarbonoAnual: Math.round(costoCarbono / 1_000_000),
-    })
-  }
-  return results
-}
 
 function RailSection({ title, children, open: defaultOpen = false }: { title: string; children: React.ReactNode; open?: boolean }) {
   const [open, setOpen] = useState(defaultOpen)
@@ -107,8 +62,8 @@ export function CostoOmisionStack() {
   const rellenoFechaStr = rellenoFecha.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' })
 
   const costoTotal10 = ultimo.sinPrograma
-  const costoSalud10 = Math.round((tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO * años) / 1_000_000)
-  const costoCarbono10 = Math.round((tonAnual * FACTOR_EMISION_RELLENO * PRECIO_SOCIAL_CARBONO_MXN * años) / 1_000_000)
+  const costoSalud10 = Math.round((tonAnual * 0.52 * COSTO_SALUD_POR_TON_ORGANICO_OMISION * años) / 1_000_000)
+  const costoCarbono10 = Math.round((tonAnual * FACTOR_EMISION_RELLENO_OMISION * PRECIO_SOCIAL_CARBONO_MXN * años) / 1_000_000)
   const pxnM = (n: number) => `$${n}M MXN`
 
   return (
@@ -138,7 +93,7 @@ export function CostoOmisionStack() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             {[
               { label: `Costo acumulado ${años} años`, value: pxnM(costoTotal10), sub: 'Disposición + salud + carbono', color: '#C0392B', icon: TrendingDown },
-              { label: 'Costo social carbono', value: pxnM(costoCarbono10), sub: `${FACTOR_EMISION_RELLENO} tCO₂e/ton × SCE`, color: '#4A1C7A', icon: Leaf },
+              { label: 'Costo social carbono', value: pxnM(costoCarbono10), sub: `${FACTOR_EMISION_RELLENO_OMISION} tCO₂e/ton × SCE`, color: '#4A1C7A', icon: Leaf },
               { label: 'Daño a la salud', value: pxnM(costoSalud10), sub: 'IRA, vectores, agua (OPS)', color: '#D4881E', icon: AlertTriangle },
               { label: 'Brecha vs. con programa', value: pxnM(ultimo.diferencia), sub: `Diferencia acumulada año ${años}`, color: '#3B6D11', icon: DollarSign },
             ].map(c => (
@@ -265,15 +220,15 @@ export function CostoOmisionStack() {
         </div>
 
         {/* Right rail */}
-        <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
+        <div className="border-t border-[#E8E4DC] pt-6">
           <div className="flex items-center justify-between mb-3 px-1">
             <p className="text-[9px] uppercase tracking-[0.1em] text-[#A8A49C] font-bold">Metodología</p>
             <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Estimativo</span>
           </div>
           <RailSection title="Cómo se calcula" open>
             <p>
-              Costo de disposición: RSU generado × {`$${COSTO_DISPOSICION_TM}`}/ton (tarifa media relleno sanitario nacional) × factor INPC {(INPC_ANNUAL * 100).toFixed(1)}%/año.
-              Daño salud: fracción orgánica × ${COSTO_SALUD_POR_TON_ORGANICO}/ton (OPS/INSP México).
+              Costo de disposición: RSU generado × {`$${COSTO_DISPOSICION_OMISION_TM}`}/ton (tarifa media relleno sanitario nacional) × factor INPC {(INPC_ANNUAL_OMISION * 100).toFixed(1)}%/año.
+              Daño salud: fracción orgánica × ${COSTO_SALUD_POR_TON_ORGANICO_OMISION}/ton (OPS/INSP México).
               Saturación del relleno: supuesto 6M m³ capacidad residual, 0.5 m³/ton compactado.
             </p>
           </RailSection>

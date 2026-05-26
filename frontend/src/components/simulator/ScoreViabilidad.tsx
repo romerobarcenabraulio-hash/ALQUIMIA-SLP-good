@@ -1,6 +1,8 @@
 'use client'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
+import { MarginalNote } from '@/components/editorial/MarginalNote'
 
 export function ScoreViabilidad() {
   const { resultados } = useSimulatorStore()
@@ -52,11 +54,16 @@ export function ScoreViabilidad() {
         </div>
       </div>
 
-      {/* ESG — Bug 4 fix: score 0-100 normalizado, no co2eEvitadas/1000 */}
-      <div className="bg-[#EBF3FB] rounded-[12px] p-4">
-        <p className="text-[11px] text-[#1A5FA8] font-medium mb-1">Score ESG municipal</p>
-        <p className="font-mono text-[24px] text-[#1A5FA8]">{esgDelta.toFixed(0)}<span className="text-[14px] ml-1">/100</span></p>
-        <p className="text-[11px] text-[#6B6760]">CO₂e (25 pts) · empleo formal (40 pts) · pureza operativa (20 pts) · gobernanza (15 pts)</p>
+      <div className="border-t border-[#E8E4DC] pt-6 space-y-3">
+        <KpiAnchorGrid
+          columns={2}
+          items={[
+            { label: 'Score ESG municipal', value: `${esgDelta.toFixed(0)}/100`, figureClassName: 'text-[#1A5FA8]' },
+          ]}
+        />
+        <MarginalNote>
+          CO₂e (25 pts) · empleo formal (40 pts) · pureza operativa (20 pts) · gobernanza (15 pts)
+        </MarginalNote>
       </div>
     </div>
   )

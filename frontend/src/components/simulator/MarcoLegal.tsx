@@ -4,6 +4,8 @@ import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
 import { cn } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
+import { EditorialCallout } from '@/components/editorial/EditorialCallout'
+import { SectionLabel } from '@/components/editorial/SectionLabel'
 
 export type MarcoLegalMode = 'citizen' | 'functionary'
 
@@ -24,31 +26,26 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
       <div>
         <ScopeAnclaKicker className="mb-3" />
 
-        <div className="mb-4">
-          <p className="text-[11px] font-medium text-[#6B6760] mb-2">Fases del programa municipal</p>
-          <div className="flex flex-col gap-2">
-            {FASES_INSTITUCIONALES.map(f => (
-              <div
-                key={f.fase}
-                className={cn(
-                  'flex items-start gap-3 px-4 py-3 rounded-[10px] border',
-                  f.bloqueante ? 'border-[#D4881E]/40 bg-[#FEF7E7]' : 'border-[#E8E4DC] bg-[#FDFCFA]',
-                )}
-              >
-                <span
-                  className={cn(
-                    'font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0',
-                    f.bloqueante ? 'bg-[#D4881E] text-white' : 'bg-[#E2DED6] text-[#6B6760]',
-                  )}
-                >
-                  F{f.fase}
-                </span>
-                <div>
-                  <p className="text-[12px] font-medium text-[#1C1B18]">{f.nombre}</p>
-                  <p className="text-[11px] text-[#6B6760]">{f.meses} · {f.gate}</p>
+        <div className="mb-4 space-y-4">
+          <SectionLabel>Fases del programa municipal</SectionLabel>
+          <div className="flex flex-col gap-4">
+            {FASES_INSTITUCIONALES.map(f =>
+              f.bloqueante ? (
+                <EditorialCallout key={f.fase} tone="caution" label={`F${f.fase} · ${f.nombre}`}>
+                  <p>{f.meses} · {f.gate}</p>
+                </EditorialCallout>
+              ) : (
+                <div key={f.fase} className="flex items-start gap-3 border-t border-[#E8E4DC] pt-4">
+                  <span className="font-mono text-[11px] px-2 py-0.5 rounded-full shrink-0 bg-[#E2DED6] text-[#6B6760]">
+                    F{f.fase}
+                  </span>
+                  <div>
+                    <p className="text-[12px] font-medium text-[#1C1B18]">{f.nombre}</p>
+                    <p className="text-[11px] text-[#6B6760]">{f.meses} · {f.gate}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
           </div>
         </div>
       </div>
@@ -58,17 +55,18 @@ export function MarcoLegal({ mode = 'functionary' }: MarcoLegalProps) {
   return (
     <div>
       <ScopeAnclaKicker className="mb-3 max-w-2xl" />
-      <div className="mb-6 rounded-[12px] border border-[#E8E4DC] bg-[#F8F6F1] p-5">
-        <p className={cn(
-          'inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium mb-3',
-          agoraLegalBloqueado ? 'bg-[#FEF7E7] text-[#8B5A00]' : 'bg-[#EAF3DE] text-[#3B6D11]'
-        )}>
-          {agoraLegalBloqueado ? 'En regularización jurídica' : 'Con validación jurídica base'}
-        </p>
-        <p className="text-[11px] font-medium text-[#6B6760] mb-2">Acciones requeridas por fase</p>
-        <ul className="space-y-2 mb-4">
+      <div className="mb-6 space-y-4">
+        {agoraLegalBloqueado ? (
+          <EditorialCallout tone="caution" label="En regularización jurídica">
+            <p>Acciones requeridas por fase antes de habilitar sanciones y documentos oficiales.</p>
+          </EditorialCallout>
+        ) : (
+          <p className="text-[12px] font-medium text-[#3B6D11]">Con validación jurídica base</p>
+        )}
+        <SectionLabel>Acciones requeridas por fase</SectionLabel>
+        <ul className="space-y-0 mb-4">
           {FASES_INSTITUCIONALES.map(f => (
-            <li key={f.fase} className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-3 py-2">
+            <li key={f.fase} className="border-t border-[#E8E4DC] py-3">
               <p className="text-[12px] text-[#1C1B18]">
                 <span className="font-mono text-[#6B6760]">F{f.fase}</span> · {f.nombre}
               </p>

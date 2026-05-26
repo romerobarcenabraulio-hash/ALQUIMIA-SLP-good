@@ -99,7 +99,7 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
       {state.status === 'loading' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4 animate-pulse">
+            <div key={i} className="border-t border-[#E8E4DC] pt-4 animate-pulse">
               <div className="h-3 bg-[#E8E4DC] rounded w-2/3 mb-2" />
               <div className="h-2 bg-[#E8E4DC] rounded w-1/2" />
             </div>
@@ -127,7 +127,7 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
           {state.fuentes.map(fuente => (
             <div
               key={fuente.id}
-              className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] p-4"
+              className="border-t border-[#E8E4DC] pt-4"
             >
               {/* Header */}
               <div className="flex items-start justify-between mb-2 gap-2">

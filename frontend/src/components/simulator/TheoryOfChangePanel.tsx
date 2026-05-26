@@ -3,14 +3,7 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ZMS } from '@/lib/constants'
 import { cn, fmt } from '@/lib/utils'
-
-const COL_BG = {
-  inputs:      '#F4F2ED',
-  actividades: '#FDFCFA',
-  outputs:     '#EAF3DE',
-  outcomes:    '#FDFCFA',
-  impacto:     '#EAF3DE',
-} as const
+import { SectionLabel } from '@/components/editorial/SectionLabel'
 
 const STEP_TITLES: Record<string, string> = {
   inputs:      '01 · Entradas',
@@ -22,7 +15,6 @@ const STEP_TITLES: Record<string, string> = {
 
 interface ToCColumn {
   id: string
-  bg: string
   accent?: boolean
   items: string[]
 }
@@ -41,21 +33,11 @@ function ToCCard({ col }: { col: ToCColumn }) {
   return (
     <div
       className={cn(
-        'flex-1 min-w-[180px] rounded-[10px] border p-4 flex flex-col gap-2.5',
-        col.accent
-          ? 'border-[#3B6D11]/40 shadow-[0_2px_12px_rgba(59,109,17,0.10)]'
-          : 'border-[#C9DDB1]',
+        'flex-1 min-w-[180px] border-t border-[#E8E4DC] pt-4 flex flex-col gap-2.5',
+        col.accent && 'border-[#3B6D11]/40',
       )}
-      style={{ background: col.bg }}
     >
-      <p
-        className={cn(
-          'text-[12px] font-semibold leading-tight',
-          col.accent ? 'text-[#3B6D11]' : 'text-[#1C1B18]',
-        )}
-      >
-        {STEP_TITLES[col.id]}
-      </p>
+      <SectionLabel>{STEP_TITLES[col.id]}</SectionLabel>
       <ul className="flex flex-col gap-1.5">
         {col.items.map((item, i) => (
           <li key={i} className="flex items-start gap-1.5">
@@ -110,7 +92,7 @@ export function TheoryOfChangePanel() {
 
   const columns: ToCColumn[] = [
     {
-      id: 'inputs', bg: COL_BG.inputs,
+      id: 'inputs',
       items: [
         `RSU generado: ${rsuTotalTonDia} t/día`,
         `Capital institucional: ${nCAs} CA(s)`,
@@ -119,7 +101,7 @@ export function TheoryOfChangePanel() {
       ],
     },
     {
-      id: 'actividades', bg: COL_BG.actividades,
+      id: 'actividades',
       items: [
         'Separación en origen',
         `Recolección diferenciada · ${nRutas} rutas`,
@@ -128,7 +110,7 @@ export function TheoryOfChangePanel() {
       ],
     },
     {
-      id: 'outputs', bg: COL_BG.outputs,
+      id: 'outputs',
       items: [
         `${volValorizable} t/día valorizadas`,
         `${empDir} empleos directos`,
@@ -137,7 +119,7 @@ export function TheoryOfChangePanel() {
       ],
     },
     {
-      id: 'outcomes', bg: COL_BG.outcomes,
+      id: 'outcomes',
       items: [
         `Ingresos municipio: ${ingresosMun}/año`,
         `EBITDA: ${ebitda}/año`,
@@ -146,7 +128,7 @@ export function TheoryOfChangePanel() {
       ],
     },
     {
-      id: 'impacto', bg: COL_BG.impacto, accent: true,
+      id: 'impacto', accent: true,
       items: [
         `${co2e} evitadas`,
         `${avad} AVAD evitados`,
@@ -163,7 +145,7 @@ export function TheoryOfChangePanel() {
   }
 
   return (
-    <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] shadow-[0_2px_12px_rgba(28,27,24,0.06)] overflow-hidden">
+    <div className="overflow-hidden border-t border-[#E8E4DC] pt-4">
       <div className="flex justify-end px-4 pt-3">
         <button
           type="button"

@@ -205,8 +205,8 @@ export default function Precolocacion() {
   // Sin resultados de simulación → no hay qué colocar
   if (!resultados || !hasVolumes) {
     return (
-      <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6">
-        <h3 className="text-base font-semibold text-[#1C1B18] mb-2">
+      <div className="space-y-3">
+        <h3 className="font-serif text-[22px] text-[#1C1B18]">
           Precolocación de Materiales
         </h3>
         <p className="text-sm text-[#6B6760]">
@@ -217,7 +217,7 @@ export default function Precolocacion() {
   }
 
   return (
-    <div className="rounded-[14px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 space-y-4">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>

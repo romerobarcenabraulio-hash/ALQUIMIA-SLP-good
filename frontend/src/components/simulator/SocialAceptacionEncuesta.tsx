@@ -20,6 +20,12 @@ import { RefreshCw, Users, Home, Building2, Info } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getApiUrl } from '@/lib/api'
 import type { EncuestaResultados } from '@/types'
+import {
+  Conclusion,
+  EditorialCallout,
+  MarginalNote,
+  SectionLabel,
+} from '@/components/editorial'
 
 // IPC benchmark de referencia (sin datos de campo)
 // Fuente: SEMARNAT (2022) «Evaluación de Programas RSU», 24 municipios mexicanos
@@ -54,39 +60,29 @@ function IpcGauge({ valor, label, n }: { valor: number; label: string; n?: numbe
 }
 
 function InterpretacionIpc({ ipc, nTotal, isReal }: { ipc: number; nTotal: number; isReal: boolean }) {
-  let nivel: string; let color: string; let mensaje: string
+  let nivel: string; let mensaje: string
 
   if (ipc >= 75) {
-    nivel = 'Alto'; color = '#3B6D11'
+    nivel = 'Alto'
     mensaje = 'La ciudadanía tiene alta preparación y voluntad de separar. El programa puede arrancar con riesgo de adopción bajo. Prioriza el diseño operativo sobre la comunicación.'
   } else if (ipc >= 55) {
-    nivel = 'Medio'; color = '#D4881E'
+    nivel = 'Medio'
     mensaje = 'Nivel de preparación moderado. Se requiere un plan de educación ciudadana de 4-8 semanas antes del lanzamiento del CA para reducir el riesgo de abandono en el trimestre 1.'
   } else {
-    nivel = 'Bajo'; color = '#C0392B'
+    nivel = 'Bajo'
     mensaje = 'Nivel crítico. Sin un programa educativo previo, la tasa de captura no llegará a la masa crítica del 30% necesaria para la viabilidad financiera del CA. Invierte primero en educación.'
   }
 
   return (
-    <div className="rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
-        <p className="text-[11px] font-semibold text-[#1C1B18]">
-          Nivel de preparación ciudadana: <span style={{ color }}>{nivel}</span>
-          {!isReal && (
-            <span className="ml-2 text-[9px] font-normal text-[#A8A49C] bg-[#F0EDE5] rounded-full px-2 py-0.5">
-              Benchmark SEMARNAT 2022
-            </span>
-          )}
-          {isReal && nTotal > 0 && (
-            <span className="ml-2 text-[9px] font-normal text-[#3B6D11] bg-[#F4FAEC] rounded-full px-2 py-0.5">
-              Dato real · {nTotal} encuestas
-            </span>
-          )}
-        </p>
-      </div>
-      <p className="text-[12px] text-[#6B6760] leading-relaxed">{mensaje}</p>
-    </div>
+    <EditorialCallout label={`Nivel de preparación ciudadana: ${nivel}`}>
+      {!isReal && (
+        <span className="text-[9px] text-[#A8A49C]">Benchmark SEMARNAT 2022</span>
+      )}
+      {isReal && nTotal > 0 && (
+        <span className="text-[9px] text-[#3B6D11]">Dato real · {nTotal} encuestas</span>
+      )}
+      <p className="mt-2">{mensaje}</p>
+    </EditorialCallout>
   )
 }
 
@@ -125,18 +121,17 @@ export function SocialAceptacionEncuesta() {
   return (
     <div className="space-y-4">
       {/* Header */}
-      <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
-        <p className="text-[10px] uppercase tracking-[0.08em] text-[#A8A49C] mb-1">Encuesta de aceptación ciudadana</p>
+      <header>
+        <SectionLabel>Encuesta de aceptación ciudadana</SectionLabel>
         <h3 className="font-serif text-[18px] text-[#1C1B18] mb-2">
           Índice de Preparación Ciudadana (IPC) — {municipioNombre}
         </h3>
-        <p className="text-[12px] text-[#6B6760] leading-relaxed">
+        <Conclusion className="text-[16px] md:text-[17px] mb-0">
           El IPC mide en escala 0-100 la disposición real de la ciudadanía a separar residuos.
-          Con datos de campo, reemplaza el benchmark de referencia de SEMARNAT (2022) y se convierte
-          en el input que modula la velocidad de ramp-up de la tasa de captura en M03 y el score del
-          actor "Ciudadanos" en el módulo de riesgos.
-        </p>
-      </div>
+          Con datos de campo, reemplaza el benchmark de referencia de SEMARNAT (2022) y modula
+          la ramp-up de captura en M03 y el score del actor &quot;Ciudadanos&quot; en el módulo de riesgos.
+        </Conclusion>
+      </header>
 
       {/* QR + Resultados en paralelo */}
       <div className="grid md:grid-cols-2 gap-4">
@@ -249,30 +244,21 @@ export function SocialAceptacionEncuesta() {
 
       {/* Implicaciones VP */}
       {ipcVP < 60 && (
-        <div className="rounded-[10px] border border-[#D4881E]/40 bg-[#FEF7E7]/80 p-4">
-          <p className="text-[11px] font-semibold text-[#1C1B18] mb-1">
-            Atención: IPC bajo en casas en vía pública (Hemisferio 2)
-          </p>
-          <p className="text-[12px] text-[#5C5740] leading-relaxed">
-            El IPC del segmento VP ({ipcVP.toFixed(0)}/100) indica que la adopción en casas de calle pública
-            requerirá brigadas presenciales puerta a puerta. Este segmento requiere 3-5× más inversión
-            educativa por hogar que condominios. Ver Plan Educativo para el desglose de costos.
-            <span className="block mt-1 text-[#3B6D11] font-medium">
-              Este dato refuerza la necesidad del Adendo 12 — la regulación sin educación previa
-              no logra cambio de comportamiento sostenido.
-            </span>
-          </p>
-        </div>
+        <EditorialCallout tone="caution" label="Atención: IPC bajo en casas en vía pública (Hemisferio 2)">
+          El IPC del segmento VP ({ipcVP.toFixed(0)}/100) indica que la adopción en casas de calle pública
+          requerirá brigadas presenciales puerta a puerta. Este segmento requiere 3-5× más inversión
+          educativa por hogar que condominios. Ver Plan Educativo para el desglose de costos.
+          Este dato refuerza la necesidad del Adendo 12 — la regulación sin educación previa
+          no logra cambio de comportamiento sostenido.
+        </EditorialCallout>
       )}
 
-      {/* Nota de fuentes */}
-      <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-3 text-[10px] text-[#6B6760] leading-relaxed">
-        <span className="font-medium text-[#1C1B18]">Metodología IPC: </span>
+      <MarginalNote prefix="Metodología IPC">
         Escala Likert 1-5 en tres secciones (A: valores, B: comportamiento, C: compromiso).
         Ponderación: 30% / 40% / 30%. Fórmula: IPC = (promA×0.30 + promB×0.40 + promC×0.30) × 20.
         Benchmark de referencia: SEMARNAT (2022) «Evaluación de Programas RSU en 24 Municipios Mexicanos» —
         media 70/100. Las respuestas se almacenan anonimizadas en la base de datos del proyecto.
-      </div>
+      </MarginalNote>
     </div>
   )
 }

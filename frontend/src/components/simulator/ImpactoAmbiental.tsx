@@ -4,7 +4,9 @@ import { fmt } from '@/lib/utils'
 import { GaugeCO2 } from '@/components/charts/GaugeCO2'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
+import { KpiAnchorGrid } from '@/components/editorial/KpiAnchorGrid'
 import { FACTORES_EMISION } from '@/lib/constants'
+
 function scrollToDecisionModules() {
   document.getElementById('decision-shell-title')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -30,28 +32,24 @@ export function ImpactoAmbiental() {
         advertencia="Las cifras de salud (IRA, dengue, AVAD) son estimados epidemiológicos a escala poblacional, no pronósticos individuales. No sustituyen evaluaciones de impacto ambiental oficiales."
       />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        {/* Gauge CO2e */}
-        <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] p-5 flex flex-col items-center">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+        <div className="flex flex-col items-center justify-center py-4">
           <GaugeCO2 />
         </div>
 
-        {/* Métricas ambientales */}
-        <div className="grid grid-cols-2 gap-3">
-          {[
-            { l: 'PM2.5 evitado',        v: r ? `${r.pm25EvitadoTon.toFixed(1)} ton`        : '—' },
-            { l: 'kWh biogás',            v: r ? fmt.kwh(r.kwhBiogas)                       : '—' },
-            { l: 'Ext. vida relleno',     v: r ? `+${r.extensionRelleno.toFixed(1)} años`   : '—' },
-            { l: 'AVAD evitados',         v: r ? r.avadEvitados.toFixed(0)                   : '—' },
-            { l: 'Casos IRA evitados',    v: r ? fmt.num0(r.casosIRAEvitados)               : '—' },
-            { l: 'Ahorro hospitalario',   v: r ? fmt.mxnK(r.ahorroSalud)                    : '—' },
-          ].map(item => (
-            <div key={item.l} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-3">
-              <p className="text-[10px] uppercase text-[#A8A49C] tracking-wide">{item.l}</p>
-              <p className="font-mono text-[15px] text-[#1C1B18] mt-1">{item.v}</p>
-            </div>
-          ))}
-        </div>
+        {r && (
+          <KpiAnchorGrid
+            items={[
+              { label: 'PM2.5 evitado', value: `${r.pm25EvitadoTon.toFixed(1)} ton` },
+              { label: 'kWh biogás', value: fmt.kwh(r.kwhBiogas) },
+              { label: 'Ext. vida relleno', value: `+${r.extensionRelleno.toFixed(1)} años` },
+              { label: 'AVAD evitados', value: r.avadEvitados.toFixed(0) },
+              { label: 'Casos IRA evitados', value: fmt.num0(r.casosIRAEvitados) },
+              { label: 'Ahorro hospitalario', value: fmt.mxnK(r.ahorroSalud) },
+            ]}
+            columns={2}
+          />
+        )}
       </div>
 
       {r && (
