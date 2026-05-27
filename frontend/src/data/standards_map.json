@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.1",
   "updated": "2026-05-27",
   "modules": [
     {
@@ -30,21 +30,39 @@
       "standards": [
         {
           "code": "GRI 306-1",
-          "full_name": "GRI 306: Residuos 2020 — Contenido 306-1: Generación de residuos",
+          "full_name": "GRI 306: Residuos 2020 — 306-1: Generación de residuos e impactos significativos",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Cuantifica toneladas de RSU generadas por tipo de residuo y destino"
+          "relevance": "Identificación de impactos significativos y origen de los residuos en la línea base"
+        },
+        {
+          "code": "GRI 306-3",
+          "full_name": "GRI 306: Residuos 2020 — 306-3: Residuos generados",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Toneladas de RSU generadas por composición y periodo de reporte"
+        },
+        {
+          "code": "GRI 306-4",
+          "full_name": "GRI 306: Residuos 2020 — 306-4: Residuos desviados de disposición",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Reciclaje, compostaje y otras operaciones de recuperación"
+        },
+        {
+          "code": "GRI 306-5",
+          "full_name": "GRI 306: Residuos 2020 — 306-5: Residuos dirigidos a disposición",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Toneladas enviadas a relleno sanitario y disposición final"
         },
         {
           "code": "GRI 306-2",
-          "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
+          "full_name": "GRI 306: Residuos 2020 — 306-2: Gestión de impactos significativos relacionados con residuos",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Gestión de impactos significativos de residuos"
+          "relevance": "Enfoque de gestión y acciones sobre impactos de residuos (no métricas de destino)"
         },
         {
-          "code": "SASB IF-WM-150a.1",
-          "full_name": "SASB Waste Management — IF-WM-150a.1: Peso de residuos dirigidos a vertederos",
+          "code": "SASB IF-WM-000.D",
+          "full_name": "SASB Waste Management — IF-WM-000.D: Materiales gestionados por categoría de cliente",
           "url": "https://sasb.org/standards/materiality-map/",
-          "relevance": "Métrica sectorial de residuos enviados a disposición final"
+          "relevance": "Volumen total de materiales gestionados (métrica de actividad sectorial)"
         },
         {
           "code": "NOM-083-SEMARNAT-2003",
@@ -116,12 +134,6 @@
           "relevance": "Participación estructurada de actores en decisiones del programa"
         },
         {
-          "code": "GRI 2-30",
-          "full_name": "GRI 2: Contenido general 2021 — 2-30: Acuerdos de negociación colectiva",
-          "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Relaciones laborales y acuerdos colectivos"
-        },
-        {
           "code": "AA1000 SES:2015",
           "full_name": "AccountAbility AA1000 SES (2015): Estándar de sostenibilidad y responsabilidad",
           "url": "https://www.accountability.org/standards/",
@@ -129,9 +141,9 @@
         },
         {
           "code": "ISO 26000:2010 §5.3",
-          "full_name": "ISO 26000:2010 — §5.3: Responsabilidad organizacional",
+          "full_name": "ISO 26000:2010 — §5.3: Identificación y compromiso con stakeholders",
           "url": "https://www.iso.org/standard/42546.html",
-          "relevance": "Responsabilidad social organizacional"
+          "relevance": "Identificación y diálogo con actores del ecosistema municipal"
         }
       ]
     },
@@ -151,8 +163,8 @@
           "relevance": "Delegación de responsabilidades de gestión"
         },
         {
-          "code": "PMI PMBOK® 7th Ed. §9",
-          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "code": "PMI PMBOK® 7 — Team Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Equipo (Team)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Gestión de recursos del equipo de proyecto"
         }
@@ -305,8 +317,8 @@
       "module_id": "M05D",
       "standards": [
         {
-          "code": "PMI PMBOK® 7th Ed. §6",
-          "full_name": "PMI PMBOK® 7th Edition — §6: Planificación",
+          "code": "PMI PMBOK® 7 — Planning Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Planificación (Planning)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Planificación de proyecto de implementación"
         },
@@ -322,8 +334,8 @@
       "module_id": "M05",
       "standards": [
         {
-          "code": "PMI PMBOK® 7th Ed. §4",
-          "full_name": "PMI PMBOK® 7th Edition — §4: Modelos, métodos y artefactos",
+          "code": "PMI PMBOK® 7 — Models, Methods, and Artifacts",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Modelos, métodos y artefactos",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Modelos y artefactos de gestión de proyecto"
         },
@@ -345,8 +357,8 @@
       "module_id": "M05B",
       "standards": [
         {
-          "code": "PMI PMBOK® 7th Ed. §9",
-          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "code": "PMI PMBOK® 7 — Team Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Equipo (Team)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Gestión de recursos del equipo de proyecto"
         },
@@ -385,10 +397,10 @@
           "relevance": "Planificación y control operacional ambiental"
         },
         {
-          "code": "SASB IF-WM-000.A",
-          "full_name": "SASB Waste Management — IF-WM-000.A: Número de instalaciones de gestión de residuos",
+          "code": "SASB IF-WM-000.C",
+          "full_name": "SASB Waste Management — IF-WM-000.C: Número de instalaciones de gestión de residuos",
           "url": "https://sasb.org/standards/materiality-map/",
-          "relevance": "Infraestructura de gestión de residuos operada"
+          "relevance": "Conteo de rellenos, estaciones de transferencia, centros de acopio y compostaje"
         },
         {
           "code": "NMX-AA-061-SCFI-2015",
@@ -420,8 +432,8 @@
           "relevance": "Roles en seguridad y salud en el trabajo"
         },
         {
-          "code": "PMI PMBOK® 7th Ed. §9",
-          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "code": "PMI PMBOK® 7 — Team Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Equipo (Team)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Gestión de recursos del equipo de proyecto"
         }
@@ -437,10 +449,10 @@
           "relevance": "Residuos generados en operación logística"
         },
         {
-          "code": "SASB IF-WM-150a.2",
-          "full_name": "SASB Waste Management — IF-WM-150a.2: Porcentaje de residuos reciclados",
+          "code": "SASB IF-WM-420a.3",
+          "full_name": "SASB Waste Management — IF-WM-420a.3: Cantidad de material reciclado",
           "url": "https://sasb.org/standards/materiality-map/",
-          "relevance": "Porcentaje de residuos reciclados y valorizados"
+          "relevance": "Material reciclado y valorizado en operación"
         },
         {
           "code": "ISO 14001:2015 §8.1",
@@ -472,10 +484,10 @@
           "relevance": "Programas de mejora de competencias"
         },
         {
-          "code": "ISO 26000:2010 §6.8",
-          "full_name": "ISO 26000:2010 — §6.8: Responsabilidad social en la cadena de valor",
+          "code": "ISO 26000:2010 §5.3",
+          "full_name": "ISO 26000:2010 — §5.3: Identificación y compromiso con stakeholders",
           "url": "https://www.iso.org/standard/42546.html",
-          "relevance": "Educación y responsabilidad social en cadena de valor"
+          "relevance": "Participación comunitaria en educación ambiental y comunicación social"
         },
         {
           "code": "ODS 4.7",
@@ -518,10 +530,10 @@
           "relevance": "Materiales reclamados y reintroducidos"
         },
         {
-          "code": "SASB IF-WM-150a.2",
-          "full_name": "SASB Waste Management — IF-WM-150a.2: Porcentaje de residuos reciclados",
+          "code": "SASB IF-WM-420a.3",
+          "full_name": "SASB Waste Management — IF-WM-420a.3: Cantidad de material reciclado",
           "url": "https://sasb.org/standards/materiality-map/",
-          "relevance": "Porcentaje de residuos reciclados y valorizados"
+          "relevance": "Material reciclado y valorizado en operación"
         },
         {
           "code": "CSRD ESRS E5 §E5-5",
@@ -596,8 +608,8 @@
           "relevance": "Categorización de riesgos físicos y de transición"
         },
         {
-          "code": "PMI PMBOK® §11",
-          "full_name": "PMI PMBOK® 7th Edition — §11: Incertidumbre y riesgo",
+          "code": "PMI PMBOK® 7 — Uncertainty Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Incertidumbre (Uncertainty)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Gestión de incertidumbre y riesgo de proyecto"
         }
@@ -639,7 +651,7 @@
           "code": "GRI 306-2",
           "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Gestión de impactos significativos de residuos"
+          "relevance": "Seguimiento del enfoque de gestión de impactos de residuos en operación"
         }
       ]
     },
@@ -656,7 +668,7 @@
           "code": "GRI 306-2",
           "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Gestión de impactos significativos de residuos"
+          "relevance": "Seguimiento del enfoque de gestión de impactos de residuos en operación"
         },
         {
           "code": "ISO 14001:2015 §9.1.1",
@@ -676,10 +688,10 @@
       "module_id": "M18",
       "standards": [
         {
-          "code": "GRI 3:2021 (Doble materialidad)",
-          "full_name": "GRI 3: Temas materiales 2021 — Doble materialidad",
+          "code": "GRI 3:2021 §3-1",
+          "full_name": "GRI 3: Temas materiales 2021 — Proceso para determinar temas materiales (impact materiality)",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Evaluación de doble materialidad financiera e impacto"
+          "relevance": "Dimensión de impacto de la evaluación de materialidad (complementa ESRS 1)"
         },
         {
           "code": "CSRD ESRS 1:2023",
@@ -688,10 +700,10 @@
           "relevance": "Requisitos generales de reporteo CSRD"
         },
         {
-          "code": "EFRAG IG 1:2023",
-          "full_name": "EFRAG IG 1 (2023): Guía de implementación ESRS",
+          "code": "EFRAG IG 1 (2024)",
+          "full_name": "EFRAG IG 1 (2024): Guía de implementación — evaluación de materialidad (ESRS)",
           "url": "https://www.efrag.org/lab6",
-          "relevance": "Guía de implementación de estándares ESRS"
+          "relevance": "Guía no autoritativa de doble materialidad bajo ESRS 1"
         }
       ]
     },
@@ -700,9 +712,9 @@
       "standards": [
         {
           "code": "GRI 2-4",
-          "full_name": "GRI 2: Contenido general 2021 — 2-4: Reubicación de informaciones",
+          "full_name": "GRI 2: Contenido general 2021 — 2-4: Reexpresiones de información (restatements)",
           "url": "https://www.globalreporting.org/standards/",
-          "relevance": "Reubicación y restatement de informaciones"
+          "relevance": "Reexpresiones y correcciones de cifras reportadas en periodos anteriores"
         },
         {
           "code": "GRI 2-3",
@@ -762,8 +774,8 @@
           "relevance": "Directrices de gestión del riesgo"
         },
         {
-          "code": "PMI PMBOK® §11",
-          "full_name": "PMI PMBOK® 7th Edition — §11: Incertidumbre y riesgo",
+          "code": "PMI PMBOK® 7 — Uncertainty Performance Domain",
+          "full_name": "PMI PMBOK® Guide 7th Edition — Dominio de desempeño: Incertidumbre (Uncertainty)",
           "url": "https://www.pmi.org/pmbok-guide-standards",
           "relevance": "Gestión de incertidumbre y riesgo de proyecto"
         },
@@ -789,12 +801,6 @@
           "full_name": "Stage-Gate® (Cooper): Sistema de gestión de innovación por fases",
           "url": "https://www.stage-gate.com/",
           "relevance": "Gates verificables de cierre de fase"
-        },
-        {
-          "code": "PMI PMBOK® Phase-Gate",
-          "full_name": "PMI PMBOK® — Phase-Gate: Control de fases de proyecto",
-          "url": "https://www.pmi.org/pmbok-guide-standards",
-          "relevance": "Control de fases con gates de aprobación"
         },
         {
           "code": "ISO 21502:2020",

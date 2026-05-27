@@ -24,6 +24,16 @@ describe('standardsMap', () => {
     expect(m01?.standards.some(s => s.code === 'GRI 306-1')).toBe(true)
   })
 
+  it('M01 cita GRI 306:2020 y SASB IF-WM alineados con auditoría', () => {
+    const m01 = resolveModuleStandards('city_baseline')!
+    const codes = m01.standards.map(s => s.code)
+    expect(codes).toContain('GRI 306-3')
+    expect(codes).toContain('GRI 306-4')
+    expect(codes).toContain('GRI 306-5')
+    expect(codes).toContain('SASB IF-WM-000.D')
+    expect(codes).not.toContain('SASB IF-WM-150a.1')
+  })
+
   it('cubre guía M00 y todos los módulos del journey funcionario', () => {
     const guia = resolveModuleStandards('guia_circularidad')
     expect(guia?.status).toBe('no_aplica')

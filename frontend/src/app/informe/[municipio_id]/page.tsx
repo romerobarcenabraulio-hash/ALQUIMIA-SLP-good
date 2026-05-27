@@ -359,7 +359,7 @@ export default function InformePage() {
           {/* ── CAP 8: DOBLE MATERIALIDAD ─────────────────────────────────── */}
           <Section id="cap8" title="Capítulo 8. Doble Materialidad">
             <Tbl heads={['Indicador', 'Estándar', 'Valor proyectado']} rows={[
-              ['Residuos desviados de relleno',          'GRI 306-2',        `${num(r.rsuTotalTonDia * (pctFinal / 100) * diasOp, 0)} t/año`],
+              ['Residuos desviados de relleno',          'GRI 306-4',        `${num(r.rsuTotalTonDia * (pctFinal / 100) * diasOp, 0)} t/año`],
               ['Emisiones evitadas (Alcance 3)',          'GRI 305-3 / ESRS E1-6', `${num(r.co2eEvitadasAnualTon, 0)} t CO₂e/año`],
               ['Material recuperado y reciclado',         'GRI 306-4',        `${num(r.rsuTotalTonDia * (pctFinal / 100) * diasOp * 0.48, 0)} t/año`],
               ['Empleo formal en economía circular',      'GRI 401-1 / ESRS S1', `${num(r.empleosTotalesDirectos)} empleos directos`],

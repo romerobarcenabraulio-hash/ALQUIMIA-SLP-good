@@ -1,6 +1,6 @@
 # Rationale de estándares por módulo
 
-Documento metodológico MARCOS — fuente canónica: `docs/architecture/standards_map.json`.
+Documento metodológico MARCOS — fuente canónica: `docs/architecture/standards_map.json` v1.0.1.
 Cada entrada explica por qué el estándar aplica al módulo (máx. dos oraciones).
 
 ## M00 · Guía de circularidad
@@ -14,9 +14,12 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 ## M01 · Línea base RSU
 
-- **GRI 306-1** aplica a M01 porque cuantifica toneladas de RSU generadas por tipo de residuo y destino
-- **GRI 306-2** aplica a M01 porque gestión de impactos significativos de residuos
-- **SASB IF-WM-150a.1** aplica a M01 porque métrica sectorial de residuos enviados a disposición final
+- **GRI 306-1** aplica a M01 porque identificación de impactos significativos y origen de los residuos en la línea base
+- **GRI 306-3** aplica a M01 porque toneladas de RSU generadas por composición y periodo de reporte
+- **GRI 306-4** aplica a M01 porque reciclaje, compostaje y otras operaciones de recuperación
+- **GRI 306-5** aplica a M01 porque toneladas enviadas a relleno sanitario y disposición final
+- **GRI 306-2** aplica a M01 porque enfoque de gestión y acciones sobre impactos de residuos (no métricas de destino)
+- **SASB IF-WM-000.D** aplica a M01 porque volumen total de materiales gestionados (métrica de actividad sectorial)
 - **NOM-083-SEMARNAT-2003** aplica a M01 porque marco normativo de disposición final de residuos sólidos
 - **ODS 11.6** aplica a M01 porque indicador de impacto urbano ambiental por habitante
 
@@ -35,15 +38,14 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 ## M02C · Mapeo de actores
 
 - **GRI 2-29** aplica a M02C porque participación estructurada de actores en decisiones del programa
-- **GRI 2-30** aplica a M02C porque relaciones laborales y acuerdos colectivos
 - **AA1000 SES:2015** aplica a M02C porque engagement y rendición de cuentas con stakeholders
-- **ISO 26000:2010 §5.3** aplica a M02C porque responsabilidad social organizacional
+- **ISO 26000:2010 §5.3** aplica a M02C porque identificación y diálogo con actores del ecosistema municipal
 
 ## M02D · Organigrama diagnóstico
 
 - **GRI 2-12** aplica a M02D porque rol de la máxima instancia de gobernanza
 - **GRI 2-13** aplica a M02D porque delegación de responsabilidades de gestión
-- **PMI PMBOK® 7th Ed. §9** aplica a M02D porque gestión de recursos del equipo de proyecto
+- **PMI PMBOK® 7 — Team Performance Domain** aplica a M02D porque gestión de recursos del equipo de proyecto
 
 ## M03 · Capacidad institucional
 
@@ -86,18 +88,18 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 ## M05D · Roadmap de implementación
 
-- **PMI PMBOK® 7th Ed. §6** aplica a M05D porque planificación de proyecto de implementación
+- **PMI PMBOK® 7 — Planning Performance Domain** aplica a M05D porque planificación de proyecto de implementación
 - **Stage-Gate® Cooper (2009)** aplica a M05D porque gestión de innovación por fases y gates
 
 ## M05 · Plan maestro
 
-- **PMI PMBOK® 7th Ed. §4** aplica a M05 porque modelos y artefactos de gestión de proyecto
+- **PMI PMBOK® 7 — Models, Methods, and Artifacts** aplica a M05 porque modelos y artefactos de gestión de proyecto
 - **Stage-Gate® Cooper** aplica a M05 porque gates verificables de cierre de fase
 - **ISO 21500:2012** aplica a M05 porque directrices de gestión de proyectos municipales
 
 ## M05B · Ruta crítica
 
-- **PMI PMBOK® 7th Ed. §9** aplica a M05B porque gestión de recursos del equipo de proyecto
+- **PMI PMBOK® 7 — Team Performance Domain** aplica a M05B porque gestión de recursos del equipo de proyecto
 - **PERT clásico NASA (1958)** aplica a M05B porque análisis de ruta crítica y tiempos probabilísticos
 - **RACI matrix** aplica a M05B porque asignación de roles Responsable, Aprobador, Consultado e Informado
 
@@ -108,7 +110,7 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 ## M06 · Infraestructura
 
 - **ISO 14001:2015 §8.1** aplica a M06 porque planificación y control operacional ambiental
-- **SASB IF-WM-000.A** aplica a M06 porque infraestructura de gestión de residuos operada
+- **SASB IF-WM-000.C** aplica a M06 porque conteo de rellenos, estaciones de transferencia, centros de acopio y compostaje
 - **NMX-AA-061-SCFI-2015** aplica a M06 porque norma mexicana de recolección y transporte de RSU
 - **EN 840-1:2012** aplica a M06 porque especificaciones de contenedores para recolección
 
@@ -116,12 +118,12 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 - **GRI 2-9** aplica a M07 porque estructura de gobernanza organizacional
 - **ISO 45001:2018 §5.3** aplica a M07 porque roles en seguridad y salud en el trabajo
-- **PMI PMBOK® 7th Ed. §9** aplica a M07 porque gestión de recursos del equipo de proyecto
+- **PMI PMBOK® 7 — Team Performance Domain** aplica a M07 porque gestión de recursos del equipo de proyecto
 
 ## M08 · Logística
 
 - **GRI 306-3** aplica a M08 porque residuos generados en operación logística
-- **SASB IF-WM-150a.2** aplica a M08 porque porcentaje de residuos reciclados y valorizados
+- **SASB IF-WM-420a.3** aplica a M08 porque material reciclado y valorizado en operación
 - **ISO 14001:2015 §8.1** aplica a M08 porque planificación y control operacional ambiental
 - **GRI 305-3** aplica a M08 porque emisiones de Alcance 3 evitadas por valorización
 
@@ -129,7 +131,7 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 - **GRI 404-1** aplica a M08B porque horas de capacitación por empleado
 - **GRI 404-2** aplica a M08B porque programas de mejora de competencias
-- **ISO 26000:2010 §6.8** aplica a M08B porque educación y responsabilidad social en cadena de valor
+- **ISO 26000:2010 §5.3** aplica a M08B porque participación comunitaria en educación ambiental y comunicación social
 - **ODS 4.7** aplica a M08B porque educación ambiental y desarrollo sostenible
 
 ## M09 · Costos del programa
@@ -141,7 +143,7 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 - **GRI 301-2** aplica a M10 porque materiales reciclados utilizados en operación
 - **GRI 301-3** aplica a M10 porque materiales reclamados y reintroducidos
-- **SASB IF-WM-150a.2** aplica a M10 porque porcentaje de residuos reciclados y valorizados
+- **SASB IF-WM-420a.3** aplica a M10 porque material reciclado y valorizado en operación
 - **CSRD ESRS E5 §E5-5** aplica a M10 porque flujos de recursos en economía circular
 
 ## M11 · Esquema de concesión
@@ -151,7 +153,6 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 ## M12 · Árbol de financiamiento
 
 - **Preliminar:** Pendiente construcción. GRI 201-1 como referencia preliminar.
-
 - **GRI 201-1** aplica a M12 porque referencia preliminar de valor económico para árbol de financiamiento
 
 ## M13 · Escenarios financieros
@@ -165,7 +166,7 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 - **ISO 31000:2018** aplica a M14 porque directrices de gestión del riesgo
 - **GRI 3:2021 §3-3** aplica a M14 porque gestión de temas materiales y teoría de cambio
 - **TCFD Risk Framework** aplica a M14 porque categorización de riesgos físicos y de transición
-- **PMI PMBOK® §11** aplica a M14 porque gestión de incertidumbre y riesgo de proyecto
+- **PMI PMBOK® 7 — Uncertainty Performance Domain** aplica a M14 porque gestión de incertidumbre y riesgo de proyecto
 
 ## M15 · Expediente Cabildo
 
@@ -176,24 +177,24 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 
 - **ISO 14001:2015 §9.1** aplica a M16 porque seguimiento y medición del desempeño ambiental
 - **ISO 14001:2015 §9.2** aplica a M16 porque auditoría interna del sistema de gestión
-- **GRI 306-2** aplica a M16 porque gestión de impactos significativos de residuos
+- **GRI 306-2** aplica a M16 porque seguimiento del enfoque de gestión de impactos de residuos en operación
 
 ## M17 · Monitoreo operativo
 
 - **PMI EVM ANSI/EIA-748-C** aplica a M17 porque sistema de valor ganado para monitoreo operativo
-- **GRI 306-2** aplica a M17 porque gestión de impactos significativos de residuos
+- **GRI 306-2** aplica a M17 porque seguimiento del enfoque de gestión de impactos de residuos en operación
 - **ISO 14001:2015 §9.1.1** aplica a M17 porque generalidades de monitoreo operativo
 - **ODS 11.6** aplica a M17 porque indicador de impacto urbano ambiental por habitante
 
 ## M18 · Doble materialidad
 
-- **GRI 3:2021 (Doble materialidad)** aplica a M18 porque evaluación de doble materialidad financiera e impacto
+- **GRI 3:2021 §3-1** aplica a M18 porque dimensión de impacto de la evaluación de materialidad (complementa ESRS 1)
 - **CSRD ESRS 1:2023** aplica a M18 porque requisitos generales de reporteo CSRD
-- **EFRAG IG 1:2023** aplica a M18 porque guía de implementación de estándares ESRS
+- **EFRAG IG 1 (2024)** aplica a M18 porque guía no autoritativa de doble materialidad bajo ESRS 1
 
 ## M19 · Trazabilidad
 
-- **GRI 2-4** aplica a M19 porque reubicación y restatement de informaciones
+- **GRI 2-4** aplica a M19 porque reexpresiones y correcciones de cifras reportadas en periodos anteriores
 - **GRI 2-3** aplica a M19 porque periodo y frecuencia de reporte de trazabilidad
 - **ISO 14044:2006** aplica a M19 porque análisis del ciclo de vida de flujos de residuos
 
@@ -202,29 +203,20 @@ Cada entrada explica por qué el estándar aplica al módulo (máx. dos oracione
 - **PMI EVM ANSI/EIA-748-C (2011)** aplica a M20 porque sistema de valor ganado para control presupuestal
 - **ISO 21508:2018** aplica a M20 porque valor ganado en gestión de proyectos
 
-## M20B · Conciliación mensual
+## M20B · Conciliación presupuestal
 
 - **GRI 201-1** aplica a M20B porque valor económico directo generado y distribuido
 - **ISO 21508:2018** aplica a M20B porque valor ganado en gestión de proyectos
 
-## M21 · Dashboard de riesgos
+## M21 · Registro de riesgos
 
 - **ISO 31000:2018** aplica a M21 porque directrices de gestión del riesgo
-- **PMI PMBOK® §11** aplica a M21 porque gestión de incertidumbre y riesgo de proyecto
+- **PMI PMBOK® 7 — Uncertainty Performance Domain** aplica a M21 porque gestión de incertidumbre y riesgo de proyecto
 - **IRM Risk Register Guidance** aplica a M21 porque registro estructurado de riesgos del programa
 - **GRI 3:2021 §3-3** aplica a M21 porque gestión de temas materiales y teoría de cambio
 
-## M21B · Gate status
+## M21B · Estado de gates
 
 - **Stage-Gate® Cooper** aplica a M21B porque gates verificables de cierre de fase
-- **PMI PMBOK® Phase-Gate** aplica a M21B porque control de fases con gates de aprobación
 - **ISO 21502:2020** aplica a M21B porque gestión de programas y carteras municipales
 
-## Módulos que requirieron decisión del founder
-
-| Módulo | Situación | Decisión |
-|--------|-----------|----------|
-| M00 | Guía interna | No aplica estándar internacional |
-| M05C | Despliegue por fases | ISO 55000:2014 solo como referencia de gestión de activos, no certificación |
-| M11 | En construcción | Sin estándar hasta definir alcance del esquema de concesión |
-| M12 | En construcción | GRI 201-1 como referencia preliminar de valor económico |

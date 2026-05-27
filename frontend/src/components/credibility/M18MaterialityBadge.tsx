@@ -17,7 +17,7 @@ export function M18MaterialityBadge({ variant = 'header', className }: M18Materi
   const copy =
     variant === 'crossRef'
       ? 'El expediente incluye evaluación de doble materialidad conforme CSRD ESRS 1:2023.'
-      : 'Doble materialidad — metodología alineada con CSRD ESRS 1:2023 y GRI 3:2021'
+      : 'Doble materialidad — CSRD ESRS 1:2023; temas materiales GRI 3:2021 (impacto)'
 
   return (
     <p
@@ -29,7 +29,7 @@ export function M18MaterialityBadge({ variant = 'header', className }: M18Materi
     >
       {copy}
       {variant === 'crossRef' && (
-        <span className="block text-[11px] text-[#A8A49C] mt-0.5">GRI 3:2021 · CSRD ESRS 1:2023</span>
+        <span className="block text-[11px] text-[#A8A49C] mt-0.5">CSRD ESRS 1:2023 · GRI 3:2021 (impacto)</span>
       )}
     </p>
   )

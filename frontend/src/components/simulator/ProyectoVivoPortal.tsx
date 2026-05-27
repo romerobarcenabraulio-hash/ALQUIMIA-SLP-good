@@ -482,7 +482,7 @@ export default function ProyectoVivoPortal({ proyectoId, municipioId }: Props) {
               </div>
               <div className="space-y-3">
                 <ReadinessBar label={readiness.estandares.gri306.nombre} score={readiness.estandares.gri306.score_pct} codigo="GRI 306:2020" />
-                <ReadinessBar label={readiness.estandares.sasb.nombre}   score={readiness.estandares.sasb.score_pct}   codigo="SASB IF-WM-150a" />
+                <ReadinessBar label={readiness.estandares.sasb.nombre}   score={readiness.estandares.sasb.score_pct}   codigo="SASB IF-WM-420a" />
                 <ReadinessBar label={readiness.estandares.iso9001.nombre} score={readiness.estandares.iso9001.score_pct} codigo="ISO 9001" />
                 <ReadinessBar label={readiness.estandares.ods.nombre}    score={readiness.estandares.ods.score_pct}    codigo="ODS" />
               </div>
