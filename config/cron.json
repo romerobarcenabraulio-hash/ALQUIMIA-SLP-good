@@ -9,6 +9,18 @@
       "endpoint": "POST /api/v1/cron/geo-denue-nacional-sync",
       "description": "GeoNacionalWorker — ~50 CVE/día DENUE + candidatos operador"
     },
+    "geo_places_estado_rotation": {
+      "schedule_utc": "0 11 * * *",
+      "schedule_local_mx": "05:00 America/Mexico_City",
+      "endpoint": "POST /api/v1/cron/geo-places-estado-rotation",
+      "description": "Google Places+DENUE+operador candidato — 1 entidad/día (config/geo_nacional_estados.json)"
+    },
+    "geo_depot_report_weekly": {
+      "schedule_utc": "0 12 * * 0",
+      "schedule_local_mx": "06:00 domingo America/Mexico_City",
+      "endpoint": "POST /api/v1/cron/geo-depot-report",
+      "description": "Regenera data/geo/depot_por_municipio.json (almacén concesionario por CVE)"
+    },
     "logistics_daily_summary": {
       "schedule_utc": "0 19 * * *",
       "schedule_local_mx": "13:00 America/Mexico_City",

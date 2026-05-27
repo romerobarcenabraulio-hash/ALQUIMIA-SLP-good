@@ -21,6 +21,12 @@
       "hard_stop_at_pct": 0.98,
       "fallback": "colonia_centroid_cache"
     },
+    "google_places": {
+      "daily_quota": 5000,
+      "warn_at_pct": 0.85,
+      "hard_stop_at_pct": 0.98,
+      "fallback": "denue_only"
+    },
     "google_roads_snap": {
       "daily_quota": 1500,
       "warn_at_pct": 0.85,

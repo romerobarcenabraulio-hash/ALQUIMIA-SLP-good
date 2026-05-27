@@ -52,6 +52,7 @@ def _row_to_centro(row: GeoCentroAcopio) -> CentroAcopio:
         verificado=row.verificado,
         score_confianza=row.score_confianza,
         notas=row.notas,
+        place_id=getattr(row, "place_id", None),
         created_at=row.created_at or datetime.now(timezone.utc),
         updated_at=row.updated_at or datetime.now(timezone.utc),
     )
@@ -84,6 +85,7 @@ def _centro_to_row(centro: CentroAcopio) -> dict[str, Any]:
         "verificado": centro.verificado,
         "score_confianza": centro.score_confianza,
         "notas": centro.notas,
+        "place_id": getattr(centro, "place_id", None),
         "updated_at": datetime.now(timezone.utc),
     }
 
@@ -102,11 +104,11 @@ def upsert_centro(db: Session, centro: CentroAcopio) -> CentroAcopio:
 
 
 def upsert_centros_bulk(db: Session, centros: list[CentroAcopio], clave_inegi: str) -> int:
-    """Reemplaza centros no-operador de un CVE; preserva operadores de perfil verificado."""
+    """Reemplaza centros DENUE del CVE; preserva places_api, perfil y operadores verificados."""
     db.query(GeoCentroAcopio).filter(
         GeoCentroAcopio.clave_inegi == clave_inegi.zfill(5),
         GeoCentroAcopio.es_operador_principal.is_(False),
-        GeoCentroAcopio.fuente != "perfil_municipal",
+        GeoCentroAcopio.fuente == "denue",
     ).delete(synchronize_session=False)
     count = 0
     for c in centros:

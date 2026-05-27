@@ -17,8 +17,8 @@ SERVICE_ALIASES = {
     "google_geocoding": "google_geocoding",
     "routes": "google_routes",
     "google_routes": "google_routes",
-    "places": "google_geocoding",
-    "google_places": "google_geocoding",
+    "places": "google_places",
+    "google_places": "google_places",
     "route_matrix": "google_routes_matrix",
     "google_routes_matrix": "google_routes_matrix",
 }

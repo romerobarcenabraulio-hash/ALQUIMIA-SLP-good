@@ -25,6 +25,14 @@ def test_depot_resolver_slp_verificado():
         assert "5015" in depot["label"] or "Perif" in depot["label"] or depot["centro_id"]
 
 
+def test_depot_resolver_mty_perfil_candidato():
+    """Perfil municipal (score > 0.55) debe usarse antes que fallback."""
+    depot = resolve_depot("19039", zm="MTY")
+    assert depot["confianza"] in ("verificado", "candidato")
+    assert depot["lat"] is not None
+    assert abs(depot["lat"] - 25.67) < 0.1
+
+
 def test_depot_resolver_sin_datos_fallback():
     with patch("app.logistics.depot_resolver.is_db_available", return_value=False):
         with patch("app.logistics.depot_resolver.geo_db.list_centros_db", return_value=[]):

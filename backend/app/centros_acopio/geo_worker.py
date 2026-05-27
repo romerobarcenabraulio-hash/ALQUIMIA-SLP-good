@@ -45,6 +45,32 @@ def _load_perfil_operadores(cve: str) -> list[CentroAcopio]:
     return centros
 
 
+def bootstrap_estado_queue(db: Session, estado_id: str) -> int:
+    """Encola municipios de una entidad con status pending."""
+    eid = estado_id.strip().zfill(2)
+    estado_nombre = dict(ESTADOS_MX).get(eid, f"Entidad {eid}")
+    count = 0
+    for row in fetch_municipios_inegi(eid):
+        cve = row.clave_inegi.zfill(5)
+        if geo_db.get_sync_row(db, cve):
+            continue
+        geo_db.upsert_sync_row(
+            db,
+            clave_inegi=cve,
+            municipio=row.nombre,
+            estado=row.estado_nombre or estado_nombre,
+            estado_id=eid,
+            status="pending",
+            total_centros=0,
+            total_candidatos_operador=0,
+            fuente=None,
+        )
+        count += 1
+    db.commit()
+    logger.info("Geo bootstrap estado %s: %d municipios encolados", eid, count)
+    return count
+
+
 def bootstrap_queue(db: Session) -> int:
     """Encola todos los municipios INEGI con status pending."""
     count = 0
@@ -147,6 +173,17 @@ def sync_municipio(db: Session, clave_inegi: str, *, force: bool = False) -> dic
         cve, centros, municipio=row.nombre, estado=row.estado_nombre, fuente="denue",
     )
     db.commit()
+
+    places_result: dict[str, Any] = {}
+    if os.getenv("PLACES_SYNC_ENABLED", "1").strip().lower() in {"1", "true", "yes"}:
+        try:
+            from app.centros_acopio.places_sync import sync_municipio_places
+
+            places_result = sync_municipio_places(db, cve, force=force)
+        except Exception as exc:
+            logger.warning("Places sync opcional falló %s: %s", cve, exc)
+            places_result = {"error": str(exc)}
+
     return {
         "clave_inegi": cve,
         "municipio": row.nombre,
@@ -155,6 +192,7 @@ def sync_municipio(db: Session, clave_inegi: str, *, force: bool = False) -> dic
         "perfil_operador": len(perfil),
         "total": total,
         "status": status,
+        "places": places_result,
     }
 
 
@@ -205,6 +243,43 @@ def ensure_municipio_geo(db: Session, clave_inegi: str) -> dict[str, Any]:
     if not sync_row:
         bootstrap_queue(db)
     return sync_municipio(db, cve)
+
+
+def sync_estado(
+    db: Session,
+    estado_id: str,
+    *,
+    force: bool = False,
+    limit: int | None = None,
+    use_places: bool = True,
+) -> dict[str, Any]:
+    """DENUE + Places + perfil para todos los municipios de una entidad."""
+    eid = estado_id.strip().zfill(2)
+    municipios = fetch_municipios_inegi(eid)
+    if limit is not None:
+        municipios = municipios[: max(0, limit)]
+
+    results = []
+    for i, row in enumerate(municipios):
+        logger.info("[%d/%d] Sync completo %s (%s)", i + 1, len(municipios), row.nombre, row.clave_inegi)
+        r = sync_municipio(db, row.clave_inegi, force=force)
+        if use_places and not r.get("places"):
+            try:
+                from app.centros_acopio.places_sync import sync_municipio_places
+
+                r["places"] = sync_municipio_places(db, row.clave_inegi, force=force)
+            except Exception as exc:
+                r["places"] = {"error": str(exc)}
+        results.append(r)
+        time.sleep(RATE_LIMIT_S)
+
+    con_datos = sum(1 for r in results if (r.get("total") or 0) > 0 or (r.get("places") or {}).get("places_synced", 0) > 0)
+    return {
+        "estado_id": eid,
+        "municipios_procesados": len(results),
+        "municipios_con_datos": con_datos,
+        "detalle": results,
+    }
 
 
 def seed_json_to_db(db: Session) -> int:

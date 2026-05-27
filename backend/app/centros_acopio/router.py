@@ -50,6 +50,12 @@ class DenueSyncRequest(BaseModel):
     limit: Optional[int] = Field(None, ge=1, le=250)
 
 
+class PlacesEstadoSyncRequest(BaseModel):
+    estado_id: str = Field("24", description="CVE entidad INEGI (24=San Luis Potosí)")
+    force: bool = False
+    limit: Optional[int] = Field(None, ge=1, le=250)
+
+
 class CentroAcopioListResponse(BaseModel):
     total:    int
     centros:  List[CentroAcopio]
@@ -105,6 +111,29 @@ async def list_centros(
         solo_operador=solo_operador,
     )
     return CentroAcopioListResponse(total=len(centros), centros=centros, sync_status=sync_status)
+
+
+@router.get("/depots")
+async def get_depots_map(
+    estado_id: Optional[str] = Query(None, description="CVE entidad INEGI, ej. 19=NL"),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mapa depósito/almacén concesionario resuelto por municipio (resolveDepot)."""
+    from app.city.inegi_catalog import ESTADOS_MX, fetch_municipios_inegi
+    from app.logistics.depot_resolver import resolve_depot
+
+    estados = [estado_id.zfill(2)] if estado_id else [e for e, _ in ESTADOS_MX]
+    municipios_out: dict[str, dict] = {}
+    for eid in estados:
+        for muni in fetch_municipios_inegi(eid):
+            cve = muni.clave_inegi.zfill(5)
+            depot = resolve_depot(cve, zm=muni.zm_simulator_id, db=db)
+            municipios_out[cve] = {
+                "municipio": muni.nombre,
+                "estado": muni.estado_nombre,
+                **depot,
+            }
+    return {"municipios": municipios_out, "total": len(municipios_out)}
 
 
 @router.get("/coverage")
@@ -221,6 +250,29 @@ async def sync_denue(req: DenueSyncRequest, db: Session = Depends(get_db)) -> di
         return nacional_sync.sync_estado_denue(req.estado_id, force=req.force, limit=req.limit)
 
     raise HTTPException(status_code=400, detail="Indique clave_inegi o estado_id.")
+
+
+@router.post("/sync/places-estado")
+async def sync_places_estado(req: PlacesEstadoSyncRequest, db: Session = Depends(get_db)) -> dict:
+    """Google Places — todos los municipios de una entidad (p.ej. 24=San Luis Potosí)."""
+    if db is None:
+        raise HTTPException(503, "Base de datos no disponible")
+    from app.centros_acopio.places_sync import sync_estado_places
+
+    return sync_estado_places(db, req.estado_id, force=req.force, limit=req.limit)
+
+
+@router.post("/sync/places-municipio")
+async def sync_places_municipio(
+    clave_inegi: str = Query(..., min_length=5, max_length=5),
+    force: bool = Query(False),
+    db: Session = Depends(get_db),
+) -> dict:
+    if db is None:
+        raise HTTPException(503, "Base de datos no disponible")
+    from app.centros_acopio.places_sync import sync_municipio_places
+
+    return sync_municipio_places(db, clave_inegi, force=force)
 
 
 @router.post("/sync/geocode-operadores")

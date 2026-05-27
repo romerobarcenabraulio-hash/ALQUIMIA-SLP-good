@@ -816,6 +816,7 @@ class CentroAcopio(BaseModel):
     verificado:     bool = False
     score_confianza: float = Field(ge=0.0, le=1.0, default=0.5)
     notas:          Optional[str] = None
+    place_id:       Optional[str] = None
     created_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     updated_at:     datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 

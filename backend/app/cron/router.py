@@ -13,6 +13,8 @@ from sqlalchemy.orm import Session
 
 from app.cron.jobs import (
     job_geo_denue_nacional_sync,
+    job_geo_depot_report,
+    job_geo_places_estado_rotation,
     job_logistics_daily_summary,
     job_weekly_status,
 )
@@ -101,6 +103,26 @@ def cron_geo_denue_nacional_sync(
         batch_size=req.batch_size,
         force=req.force_bootstrap,
     )
+
+
+class GeoPlacesRotationRequest(BaseModel):
+    estado_id: str | None = None
+    force: bool = False
+
+
+@router.post("/geo-places-estado-rotation", dependencies=[Depends(verify_cron_secret)])
+def cron_geo_places_rotation(
+    body: GeoPlacesRotationRequest | None = None,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """DENUE + Places + candidato operador para un estado (rotación diaria)."""
+    req = body or GeoPlacesRotationRequest()
+    return job_geo_places_estado_rotation(db=db, estado_id=req.estado_id, force=req.force)
+
+
+@router.post("/geo-depot-report", dependencies=[Depends(verify_cron_secret)])
+def cron_geo_depot_report(db: Session = Depends(get_db)) -> dict[str, Any]:
+    return job_geo_depot_report(db=db)
 
 
 @router.post("/weekly-status", dependencies=[Depends(verify_cron_secret)])

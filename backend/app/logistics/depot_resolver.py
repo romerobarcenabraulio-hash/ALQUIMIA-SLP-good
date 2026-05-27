@@ -60,8 +60,15 @@ def resolve_depot(
         return _pack(best, confianza="verificado")
 
     candidatos = [
-        c for c in operadores
-        if not c.verificado and c.lat is not None and c.lon is not None and c.score_confianza <= 0.55
+        c
+        for c in operadores
+        if not c.verificado
+        and c.lat is not None
+        and c.lon is not None
+        and (
+            c.fuente == "perfil_municipal"
+            or c.score_confianza <= 0.55
+        )
     ]
     if candidatos:
         best = max(candidatos, key=lambda c: c.score_confianza)

@@ -95,7 +95,18 @@ class DenueAdapter(BaseAdapter):
     Soporta llamadas en vivo (con token) y catálogo offline (sin token).
     """
 
+    id = "inegi_denue"
+    nombre = "INEGI DENUE"
+    organismo = "INEGI"
+    endpoint = _URL_DOC
+    requiere_clave = True
     SOURCE_ID = "inegi_denue_2024"
+
+    async def fetch(self, zm: str) -> list:
+        return []
+
+    def kpis_cubiertos(self) -> list[str]:
+        return ["centros_acopio_municipio"]
 
     def get_centros_acopio_municipio(
         self,
@@ -157,18 +168,17 @@ class DenueAdapter(BaseAdapter):
                 "establecimientos": establecimientos,
                 "total": len(establecimientos),
                 "provenance": DataProvenance(
-                    fuente="INEGI DENUE — consulta en vivo",
                     tipo=FuenteTipo.oficial,
-                    confianza=0.88,
-                    nota=(
-                        f"Búsqueda DENUE para CVE municipio '{cve_municipio}'. "
-                        f"Actividades SCIAN: {', '.join(_SCIAN_RECICLAJE)}. "
-                        f"DENUE identifica establecimientos registrados, no todos los puntos de acopio informales."
-                    ),
-                    url=_URL_DOC,
+                    fuente_nombre="INEGI DENUE — consulta en vivo",
+                    fuente_organismo="INEGI",
+                    fuente_url=_URL_DOC,
                     fecha_consulta=now_iso(),
-                    version_datos=_VERSION,
-                ).dict(),
+                    confianza=0.88,
+                    advertencia=(
+                        f"Búsqueda DENUE CVE '{cve_municipio}'. SCIAN: {', '.join(_SCIAN_RECICLAJE)}."
+                    ),
+                    requiere_clave_api=True,
+                ).model_dump(),
             }
 
         except Exception as e:
@@ -197,14 +207,15 @@ class DenueAdapter(BaseAdapter):
             "establecimientos": establecimientos,
             "total": len(establecimientos),
             "provenance": DataProvenance(
-                fuente="INEGI DENUE 2024 — catálogo offline piloto",
                 tipo=FuenteTipo.estimado,
-                confianza=0.50,
-                nota=nota,
-                url=_URL_DOC,
+                fuente_nombre=f"INEGI DENUE 2024 — catálogo offline ({_VERSION})",
+                fuente_organismo="INEGI",
+                fuente_url=_URL_DOC,
                 fecha_consulta=now_iso(),
-                version_datos=f"{_VERSION} (offline)",
-            ).dict(),
+                confianza=0.50,
+                advertencia=nota,
+                requiere_clave_api=True,
+            ).model_dump(),
         }
 
     def _parsear_respuesta_denue(self, data: Any) -> List[Dict[str, Any]]:

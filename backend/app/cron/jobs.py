@@ -149,6 +149,62 @@ def job_geo_denue_nacional_sync(
     return {"ok": True, **result}
 
 
+def job_geo_places_estado_rotation(
+    *,
+    db: Session | None = None,
+    estado_id: str | None = None,
+    force: bool = False,
+) -> dict[str, Any]:
+    """Rota un estado/día: DENUE + Google Places + candidato operador."""
+    import json
+    from pathlib import Path
+
+    from app.repo_paths import repo_root
+
+    if db is None:
+        return {"ok": False, "error": "DB no disponible"}
+
+    cfg_path = repo_root() / "config" / "geo_nacional_estados.json"
+    order: list[str] = ["24", "19", "22", "14"]
+    if cfg_path.is_file():
+        order = json.loads(cfg_path.read_text(encoding="utf-8")).get("rotation_order", order)
+
+    eid = estado_id
+    if not eid:
+        import os
+        idx = int(os.getenv("GEO_NACIONAL_ESTADO_INDEX", "0")) % len(order)
+        eid = order[idx]
+
+    from app.centros_acopio.geo_worker import bootstrap_estado_queue, sync_estado
+    from app.centros_acopio.places_sync import sync_estado_places
+
+    bootstrap_estado_queue(db, eid)
+    denue = sync_estado(db, eid, force=force, use_places=False)
+    places = sync_estado_places(db, eid, force=force)
+    return {
+        "ok": True,
+        "estado_id": eid,
+        "denue": {
+            "municipios": denue.get("municipios_procesados"),
+            "con_datos": denue.get("municipios_con_datos"),
+        },
+        "places": {
+            "total_places": places.get("total_places_inserted"),
+            "municipios_con_places": places.get("municipios_con_places"),
+        },
+    }
+
+
+def job_geo_depot_report(*, db: Session | None = None) -> dict[str, Any]:
+    """Regenera depot_por_municipio.json."""
+    if db is None:
+        return {"ok": False, "error": "DB no disponible"}
+    from app.centros_acopio.geo_report import DEPOT_REPORT_PATH, build_depot_report
+
+    report = build_depot_report(db)
+    return {"ok": True, "path": str(DEPOT_REPORT_PATH), "resumen": report.get("resumen")}
+
+
 def job_weekly_status(
     *,
     municipio_id: str | None = "slp",
