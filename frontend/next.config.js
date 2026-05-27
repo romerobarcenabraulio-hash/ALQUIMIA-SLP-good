@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  experimental: {
+    externalDir: true,
+  },
   // output: 'export' eliminado (R3) — el proyecto usa middleware Edge y Route Handlers
   // Route handlers legacy (POST /api/acceso) + auth (POST /api/auth/login) requieren runtime Node/Edge en Vercel.
   // Para hosting estático puro sin auth, restaurar output: 'export' y usar

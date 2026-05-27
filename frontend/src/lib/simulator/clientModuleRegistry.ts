@@ -237,7 +237,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   doble_materialidad: base({
     module_id: 'doble_materialidad',
     label: 'Doble materialidad y reporte ESG',
-    decision: 'Reportar bajo GRI 306 / ESRS E5 para crédito verde.',
+    decision: 'Reportar bajo GRI 306-1 / CSRD ESRS E5 para crédito verde.',
     evidence: 'Matriz doble materialidad, disclosures GRI, template BID/GCF.',
     next_action: 'Enviar informe GRI a financiador seleccionado.',
   }),

@@ -1,0 +1,808 @@
+{
+  "version": "1.0.0",
+  "updated": "2026-05-27",
+  "modules": [
+    {
+      "module_id": "M00",
+      "status": "no_aplica",
+      "message": "No aplica estándar. Es guía de navegación interna.",
+      "standards": []
+    },
+    {
+      "module_id": "M00B",
+      "standards": [
+        {
+          "code": "GRI 2-29",
+          "full_name": "GRI 2: Contenido general 2021 — 2-29: Enfoques para la participación de stakeholders",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Participación estructurada de actores en decisiones del programa"
+        },
+        {
+          "code": "GRI 2-22",
+          "full_name": "GRI 2: Contenido general 2021 — 2-22: Declaración sobre estrategia de desarrollo sostenible",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Declaración de estrategia de sostenibilidad municipal"
+        }
+      ]
+    },
+    {
+      "module_id": "M01",
+      "standards": [
+        {
+          "code": "GRI 306-1",
+          "full_name": "GRI 306: Residuos 2020 — Contenido 306-1: Generación de residuos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Cuantifica toneladas de RSU generadas por tipo de residuo y destino"
+        },
+        {
+          "code": "GRI 306-2",
+          "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de impactos significativos de residuos"
+        },
+        {
+          "code": "SASB IF-WM-150a.1",
+          "full_name": "SASB Waste Management — IF-WM-150a.1: Peso de residuos dirigidos a vertederos",
+          "url": "https://sasb.org/standards/materiality-map/",
+          "relevance": "Métrica sectorial de residuos enviados a disposición final"
+        },
+        {
+          "code": "NOM-083-SEMARNAT-2003",
+          "full_name": "NOM-083-SEMARNAT-2003: Especificaciones de protección ambiental para sitios de disposición final",
+          "url": "https://www.dof.gob.mx/",
+          "relevance": "Marco normativo de disposición final de residuos sólidos"
+        },
+        {
+          "code": "ODS 11.6",
+          "full_name": "ODS 11 — Meta 11.6: Reducir el impacto ambiental per capita de las ciudades",
+          "url": "https://sdgs.un.org/goals/goal11",
+          "relevance": "Indicador de impacto urbano ambiental por habitante"
+        }
+      ]
+    },
+    {
+      "module_id": "M02",
+      "standards": [
+        {
+          "code": "GRI 2-1",
+          "full_name": "GRI 2: Contenido general 2021 — 2-1: Detalles organizacionales",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Identificación organizacional del ente responsable"
+        },
+        {
+          "code": "ISO 14001:2015 §4.1",
+          "full_name": "ISO 14001:2015 — §4.1: Comprensión de la organización y su contexto",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Contexto organizacional para sistema de gestión ambiental"
+        }
+      ]
+    },
+    {
+      "module_id": "M02B",
+      "standards": [
+        {
+          "code": "GRI 2-29",
+          "full_name": "GRI 2: Contenido general 2021 — 2-29: Enfoques para la participación de stakeholders",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Participación estructurada de actores en decisiones del programa"
+        },
+        {
+          "code": "AA1000 SES:2015",
+          "full_name": "AccountAbility AA1000 SES (2015): Estándar de sostenibilidad y responsabilidad",
+          "url": "https://www.accountability.org/standards/",
+          "relevance": "Engagement y rendición de cuentas con stakeholders"
+        },
+        {
+          "code": "ISO 10002:2018",
+          "full_name": "ISO 10002:2018 — Gestión de la satisfacción del cliente — Quejas",
+          "url": "https://www.iso.org/standard/71580.html",
+          "relevance": "Gestión de quejas y retroalimentación ciudadana"
+        },
+        {
+          "code": "ODS 16.7",
+          "full_name": "ODS 16 — Meta 16.7: Decisiones inclusivas y participativas",
+          "url": "https://sdgs.un.org/goals/goal16",
+          "relevance": "Participación inclusiva en decisiones públicas"
+        }
+      ]
+    },
+    {
+      "module_id": "M02C",
+      "standards": [
+        {
+          "code": "GRI 2-29",
+          "full_name": "GRI 2: Contenido general 2021 — 2-29: Enfoques para la participación de stakeholders",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Participación estructurada de actores en decisiones del programa"
+        },
+        {
+          "code": "GRI 2-30",
+          "full_name": "GRI 2: Contenido general 2021 — 2-30: Acuerdos de negociación colectiva",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Relaciones laborales y acuerdos colectivos"
+        },
+        {
+          "code": "AA1000 SES:2015",
+          "full_name": "AccountAbility AA1000 SES (2015): Estándar de sostenibilidad y responsabilidad",
+          "url": "https://www.accountability.org/standards/",
+          "relevance": "Engagement y rendición de cuentas con stakeholders"
+        },
+        {
+          "code": "ISO 26000:2010 §5.3",
+          "full_name": "ISO 26000:2010 — §5.3: Responsabilidad organizacional",
+          "url": "https://www.iso.org/standard/42546.html",
+          "relevance": "Responsabilidad social organizacional"
+        }
+      ]
+    },
+    {
+      "module_id": "M02D",
+      "standards": [
+        {
+          "code": "GRI 2-12",
+          "full_name": "GRI 2: Contenido general 2021 — 2-12: Rol de la más alta instancia de gobernanza",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Rol de la máxima instancia de gobernanza"
+        },
+        {
+          "code": "GRI 2-13",
+          "full_name": "GRI 2: Contenido general 2021 — 2-13: Delegación de responsabilidad en gestión de impactos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Delegación de responsabilidades de gestión"
+        },
+        {
+          "code": "PMI PMBOK® 7th Ed. §9",
+          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Gestión de recursos del equipo de proyecto"
+        }
+      ]
+    },
+    {
+      "module_id": "M03",
+      "standards": [
+        {
+          "code": "ISO 14001:2015 §7",
+          "full_name": "ISO 14001:2015 — §7: Apoyo",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Recursos, competencia y comunicación del SGA"
+        },
+        {
+          "code": "ISO 14001:2015 §5.3",
+          "full_name": "ISO 14001:2015 — §5.3: Roles, responsabilidades y autoridades",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Roles y responsabilidades en gestión ambiental"
+        }
+      ]
+    },
+    {
+      "module_id": "M03B",
+      "standards": [
+        {
+          "code": "ISO 14001:2015 §6.1.3",
+          "full_name": "ISO 14001:2015 — §6.1.3: Evaluación de requisitos legales y otros",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Evaluación de cumplimiento normativo"
+        },
+        {
+          "code": "GRI 2-27",
+          "full_name": "GRI 2: Contenido general 2021 — 2-27: Cumplimiento de leyes y regulaciones",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Cumplimiento de leyes y regulaciones ambientales"
+        },
+        {
+          "code": "LGPGIR Arts. 9, 17, 18",
+          "full_name": "LGPGIR — Arts. 9, 17 y 18: Programas de gestión integral de residuos",
+          "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf",
+          "relevance": "Marco federal de programas municipales de residuos"
+        }
+      ]
+    },
+    {
+      "module_id": "M03C",
+      "standards": [
+        {
+          "code": "GRI 2-1",
+          "full_name": "GRI 2: Contenido general 2021 — 2-1: Detalles organizacionales",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Identificación organizacional del ente responsable"
+        },
+        {
+          "code": "ISO 14001:2015 §4.3",
+          "full_name": "ISO 14001:2015 — §4.3: Determinación del alcance del SGA",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Alcance territorial del sistema de gestión ambiental"
+        }
+      ]
+    },
+    {
+      "module_id": "M03D",
+      "standards": [
+        {
+          "code": "GRI 2-23",
+          "full_name": "GRI 2: Contenido general 2021 — 2-23: Compromisos de política",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Compromisos de política institucional"
+        },
+        {
+          "code": "GRI 2-25",
+          "full_name": "GRI 2: Contenido general 2021 — 2-25: Procesos para remediar impactos negativos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Procesos de remediación de impactos negativos"
+        }
+      ]
+    },
+    {
+      "module_id": "M04",
+      "standards": [
+        {
+          "code": "GRI 201-2",
+          "full_name": "GRI 201: Desempeño económico 2016 — 201-2: Implicaciones financieras del cambio climático",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Implicaciones financieras del cambio climático"
+        },
+        {
+          "code": "TCFD Recommendations (2017)",
+          "full_name": "TCFD Recommendations (2017): Divulgaciones de riesgos climáticos",
+          "url": "https://www.fsb-tcfd.org/recommendations/",
+          "relevance": "Divulgación de riesgos y oportunidades climáticas"
+        },
+        {
+          "code": "CSRD ESRS E5",
+          "full_name": "CSRD ESRS E5 (2023): Economía circular",
+          "url": "https://www.efrag.org/lab6",
+          "relevance": "Reporteo de economía circular para financiadores"
+        },
+        {
+          "code": "ODS 12.5",
+          "full_name": "ODS 12 — Meta 12.5: Reducir significativamente la generación de residuos",
+          "url": "https://sdgs.un.org/goals/goal12",
+          "relevance": "Reducción de generación de residuos"
+        }
+      ]
+    },
+    {
+      "module_id": "M04B",
+      "standards": [
+        {
+          "code": "GRI 203-2",
+          "full_name": "GRI 203: Impactos económicos indirectos 2016 — 203-2: Impactos económicos indirectos significativos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Impactos económicos indirectos del programa"
+        },
+        {
+          "code": "GRI 413-1",
+          "full_name": "GRI 413: Comunidades locales 2016 — 413-1: Operaciones con programas de participación comunitaria",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Participación comunitaria en operaciones"
+        },
+        {
+          "code": "ODS 8.5",
+          "full_name": "ODS 8 — Meta 8.5: Empleo pleno y productivo",
+          "url": "https://sdgs.un.org/goals/goal8",
+          "relevance": "Empleo formal generado por el programa"
+        },
+        {
+          "code": "ODS 1.2",
+          "full_name": "ODS 1 — Meta 1.2: Reducir la pobreza en todas sus dimensiones",
+          "url": "https://sdgs.un.org/goals/goal1",
+          "relevance": "Impacto socioeconómico en población vulnerable"
+        }
+      ]
+    },
+    {
+      "module_id": "M04C",
+      "standards": [
+        {
+          "code": "GRI 3:2021 §3-3",
+          "full_name": "GRI 3: Temas materiales 2021 — §3-3: Gestión de temas materiales",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de temas materiales y teoría de cambio"
+        }
+      ]
+    },
+    {
+      "module_id": "M05D",
+      "standards": [
+        {
+          "code": "PMI PMBOK® 7th Ed. §6",
+          "full_name": "PMI PMBOK® 7th Edition — §6: Planificación",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Planificación de proyecto de implementación"
+        },
+        {
+          "code": "Stage-Gate® Cooper (2009)",
+          "full_name": "Stage-Gate® (Cooper, 2009): Sistema de gestión de innovación por fases",
+          "url": "https://www.stage-gate.com/",
+          "relevance": "Gestión de innovación por fases y gates"
+        }
+      ]
+    },
+    {
+      "module_id": "M05",
+      "standards": [
+        {
+          "code": "PMI PMBOK® 7th Ed. §4",
+          "full_name": "PMI PMBOK® 7th Edition — §4: Modelos, métodos y artefactos",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Modelos y artefactos de gestión de proyecto"
+        },
+        {
+          "code": "Stage-Gate® Cooper",
+          "full_name": "Stage-Gate® (Cooper): Sistema de gestión de innovación por fases",
+          "url": "https://www.stage-gate.com/",
+          "relevance": "Gates verificables de cierre de fase"
+        },
+        {
+          "code": "ISO 21500:2012",
+          "full_name": "ISO 21500:2012 — Directrices sobre gestión de proyectos",
+          "url": "https://www.iso.org/standard/53726.html",
+          "relevance": "Directrices de gestión de proyectos municipales"
+        }
+      ]
+    },
+    {
+      "module_id": "M05B",
+      "standards": [
+        {
+          "code": "PMI PMBOK® 7th Ed. §9",
+          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Gestión de recursos del equipo de proyecto"
+        },
+        {
+          "code": "PERT clásico NASA (1958)",
+          "full_name": "PERT (Program Evaluation Review Technique, NASA 1958)",
+          "url": "https://www.nasa.gov/",
+          "relevance": "Análisis de ruta crítica y tiempos probabilísticos"
+        },
+        {
+          "code": "RACI matrix",
+          "full_name": "RACI Matrix — Matriz de responsabilidades clásica",
+          "url": "https://www.pmi.org/learning/library/raci-matrix-responsibility-assignment-6672",
+          "relevance": "Asignación de roles Responsable, Aprobador, Consultado e Informado"
+        }
+      ]
+    },
+    {
+      "module_id": "M05C",
+      "standards": [
+        {
+          "code": "ISO 55000:2014",
+          "full_name": "ISO 55000:2014 — Gestión de activos — Visión general",
+          "url": "https://www.iso.org/standard/55088.html",
+          "relevance": "Referencia de despliegue de infraestructura por fases"
+        }
+      ]
+    },
+    {
+      "module_id": "M06",
+      "standards": [
+        {
+          "code": "ISO 14001:2015 §8.1",
+          "full_name": "ISO 14001:2015 — §8.1: Planificación y control operacional",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Planificación y control operacional ambiental"
+        },
+        {
+          "code": "SASB IF-WM-000.A",
+          "full_name": "SASB Waste Management — IF-WM-000.A: Número de instalaciones de gestión de residuos",
+          "url": "https://sasb.org/standards/materiality-map/",
+          "relevance": "Infraestructura de gestión de residuos operada"
+        },
+        {
+          "code": "NMX-AA-061-SCFI-2015",
+          "full_name": "NMX-AA-061-SCFI-2015: Recolección, transporte y disposición final de residuos sólidos urbanos",
+          "url": "https://www.dof.gob.mx/",
+          "relevance": "Norma mexicana de recolección y transporte de RSU"
+        },
+        {
+          "code": "EN 840-1:2012",
+          "full_name": "EN 840-1:2012 — Contenedores móviles para residuos — Parte 1",
+          "url": "https://www.en-standard.eu/",
+          "relevance": "Especificaciones de contenedores para recolección"
+        }
+      ]
+    },
+    {
+      "module_id": "M07",
+      "standards": [
+        {
+          "code": "GRI 2-9",
+          "full_name": "GRI 2: Contenido general 2021 — 2-9: Estructura de gobernanza y composición",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Estructura de gobernanza organizacional"
+        },
+        {
+          "code": "ISO 45001:2018 §5.3",
+          "full_name": "ISO 45001:2018 — §5.3: Roles, responsabilidades y autoridades en SST",
+          "url": "https://www.iso.org/standard/63787.html",
+          "relevance": "Roles en seguridad y salud en el trabajo"
+        },
+        {
+          "code": "PMI PMBOK® 7th Ed. §9",
+          "full_name": "PMI PMBOK® 7th Edition — §9: Recursos del equipo",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Gestión de recursos del equipo de proyecto"
+        }
+      ]
+    },
+    {
+      "module_id": "M08",
+      "standards": [
+        {
+          "code": "GRI 306-3",
+          "full_name": "GRI 306: Residuos 2020 — Contenido 306-3: Residuos generados",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Residuos generados en operación logística"
+        },
+        {
+          "code": "SASB IF-WM-150a.2",
+          "full_name": "SASB Waste Management — IF-WM-150a.2: Porcentaje de residuos reciclados",
+          "url": "https://sasb.org/standards/materiality-map/",
+          "relevance": "Porcentaje de residuos reciclados y valorizados"
+        },
+        {
+          "code": "ISO 14001:2015 §8.1",
+          "full_name": "ISO 14001:2015 — §8.1: Planificación y control operacional",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Planificación y control operacional ambiental"
+        },
+        {
+          "code": "GRI 305-3",
+          "full_name": "GRI 305: Emisiones 2016 — 305-3: Otras emisiones indirectas de GEI (Alcance 3)",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Emisiones de Alcance 3 evitadas por valorización"
+        }
+      ]
+    },
+    {
+      "module_id": "M08B",
+      "standards": [
+        {
+          "code": "GRI 404-1",
+          "full_name": "GRI 404: Capacitación y educación 2016 — 404-1: Promedio de horas de capacitación",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Horas de capacitación por empleado"
+        },
+        {
+          "code": "GRI 404-2",
+          "full_name": "GRI 404: Capacitación y educación 2016 — 404-2: Programas de mejora de competencias",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Programas de mejora de competencias"
+        },
+        {
+          "code": "ISO 26000:2010 §6.8",
+          "full_name": "ISO 26000:2010 — §6.8: Responsabilidad social en la cadena de valor",
+          "url": "https://www.iso.org/standard/42546.html",
+          "relevance": "Educación y responsabilidad social en cadena de valor"
+        },
+        {
+          "code": "ODS 4.7",
+          "full_name": "ODS 4 — Meta 4.7: Educación para el desarrollo sostenible",
+          "url": "https://sdgs.un.org/goals/goal4",
+          "relevance": "Educación ambiental y desarrollo sostenible"
+        }
+      ]
+    },
+    {
+      "module_id": "M09",
+      "standards": [
+        {
+          "code": "GRI 201-1",
+          "full_name": "GRI 201: Desempeño económico 2016 — 201-1: Valor económico directo generado y distribuido",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Valor económico directo generado y distribuido"
+        },
+        {
+          "code": "PMI EVM ANSI/EIA-748-C (2011)",
+          "full_name": "ANSI/EIA-748-C (2011): Earned Value Management Systems",
+          "url": "https://www.pmi.org/learning/library/earned-value-management-systems-7076",
+          "relevance": "Sistema de valor ganado para control presupuestal"
+        }
+      ]
+    },
+    {
+      "module_id": "M10",
+      "standards": [
+        {
+          "code": "GRI 301-2",
+          "full_name": "GRI 301: Materiales 2016 — 301-2: Materiales utilizados reciclados",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Materiales reciclados utilizados en operación"
+        },
+        {
+          "code": "GRI 301-3",
+          "full_name": "GRI 301: Materiales 2016 — 301-3: Productos y materiales de envasado reclamados",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Materiales reclamados y reintroducidos"
+        },
+        {
+          "code": "SASB IF-WM-150a.2",
+          "full_name": "SASB Waste Management — IF-WM-150a.2: Porcentaje de residuos reciclados",
+          "url": "https://sasb.org/standards/materiality-map/",
+          "relevance": "Porcentaje de residuos reciclados y valorizados"
+        },
+        {
+          "code": "CSRD ESRS E5 §E5-5",
+          "full_name": "CSRD ESRS E5 (2023) — §E5-5: Recursos entrantes y salientes",
+          "url": "https://www.efrag.org/lab6",
+          "relevance": "Flujos de recursos en economía circular"
+        }
+      ]
+    },
+    {
+      "module_id": "M11",
+      "status": "pendiente",
+      "message": "Pendiente construcción. Sin estándar definido hasta que exista.",
+      "standards": []
+    },
+    {
+      "module_id": "M12",
+      "status": "preliminar",
+      "message": "Pendiente construcción. GRI 201-1 como referencia preliminar.",
+      "standards": [
+        {
+          "code": "GRI 201-1",
+          "full_name": "GRI 201: Desempeño económico 2016 — 201-1: Valor económico directo generado y distribuido",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Referencia preliminar de valor económico para árbol de financiamiento"
+        }
+      ],
+      "note": "Referencia preliminar hasta construcción del módulo"
+    },
+    {
+      "module_id": "M13",
+      "standards": [
+        {
+          "code": "GRI 201-2",
+          "full_name": "GRI 201: Desempeño económico 2016 — 201-2: Implicaciones financieras del cambio climático",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Implicaciones financieras del cambio climático"
+        },
+        {
+          "code": "TCFD Recommendations (2017)",
+          "full_name": "TCFD Recommendations (2017): Divulgaciones de riesgos climáticos",
+          "url": "https://www.fsb-tcfd.org/recommendations/",
+          "relevance": "Divulgación de riesgos y oportunidades climáticas"
+        },
+        {
+          "code": "CSRD ESRS E1-E5",
+          "full_name": "CSRD ESRS E1–E5 (2023): Conjunto de estándares ambientales y sociales",
+          "url": "https://www.efrag.org/lab6",
+          "relevance": "Reporteo integral ESG para financiadores"
+        }
+      ]
+    },
+    {
+      "module_id": "M14",
+      "standards": [
+        {
+          "code": "ISO 31000:2018",
+          "full_name": "ISO 31000:2018 — Gestión del riesgo — Directrices",
+          "url": "https://www.iso.org/standard/65690.html",
+          "relevance": "Directrices de gestión del riesgo"
+        },
+        {
+          "code": "GRI 3:2021 §3-3",
+          "full_name": "GRI 3: Temas materiales 2021 — §3-3: Gestión de temas materiales",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de temas materiales y teoría de cambio"
+        },
+        {
+          "code": "TCFD Risk Framework",
+          "full_name": "TCFD Risk Framework: Marco de categorización de riesgos climáticos",
+          "url": "https://www.fsb-tcfd.org/",
+          "relevance": "Categorización de riesgos físicos y de transición"
+        },
+        {
+          "code": "PMI PMBOK® §11",
+          "full_name": "PMI PMBOK® 7th Edition — §11: Incertidumbre y riesgo",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Gestión de incertidumbre y riesgo de proyecto"
+        }
+      ]
+    },
+    {
+      "module_id": "M15",
+      "standards": [
+        {
+          "code": "GRI 2-26",
+          "full_name": "GRI 2: Contenido general 2021 — 2-26: Mecanismos para buscar asesoramiento",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Mecanismos de asesoría para decisiones de Cabildo"
+        },
+        {
+          "code": "GRI 2-22",
+          "full_name": "GRI 2: Contenido general 2021 — 2-22: Declaración sobre estrategia de desarrollo sostenible",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Declaración de estrategia de sostenibilidad municipal"
+        }
+      ]
+    },
+    {
+      "module_id": "M16",
+      "standards": [
+        {
+          "code": "ISO 14001:2015 §9.1",
+          "full_name": "ISO 14001:2015 — §9.1: Seguimiento, medición, análisis y evaluación",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Seguimiento y medición del desempeño ambiental"
+        },
+        {
+          "code": "ISO 14001:2015 §9.2",
+          "full_name": "ISO 14001:2015 — §9.2: Auditoría interna",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Auditoría interna del sistema de gestión"
+        },
+        {
+          "code": "GRI 306-2",
+          "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de impactos significativos de residuos"
+        }
+      ]
+    },
+    {
+      "module_id": "M17",
+      "standards": [
+        {
+          "code": "PMI EVM ANSI/EIA-748-C",
+          "full_name": "ANSI/EIA-748-C: Earned Value Management Systems",
+          "url": "https://www.pmi.org/learning/library/earned-value-management-systems-7076",
+          "relevance": "Sistema de valor ganado para monitoreo operativo"
+        },
+        {
+          "code": "GRI 306-2",
+          "full_name": "GRI 306: Residuos 2020 — Contenido 306-2: Gestión de impactos significativos relacionados con residuos",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de impactos significativos de residuos"
+        },
+        {
+          "code": "ISO 14001:2015 §9.1.1",
+          "full_name": "ISO 14001:2015 — §9.1.1: Generalidades de seguimiento y medición",
+          "url": "https://www.iso.org/standard/60857.html",
+          "relevance": "Generalidades de monitoreo operativo"
+        },
+        {
+          "code": "ODS 11.6",
+          "full_name": "ODS 11 — Meta 11.6: Reducir el impacto ambiental per capita de las ciudades",
+          "url": "https://sdgs.un.org/goals/goal11",
+          "relevance": "Indicador de impacto urbano ambiental por habitante"
+        }
+      ]
+    },
+    {
+      "module_id": "M18",
+      "standards": [
+        {
+          "code": "GRI 3:2021 (Doble materialidad)",
+          "full_name": "GRI 3: Temas materiales 2021 — Doble materialidad",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Evaluación de doble materialidad financiera e impacto"
+        },
+        {
+          "code": "CSRD ESRS 1:2023",
+          "full_name": "CSRD ESRS 1 (2023): Requisitos generales de reporteo de sostenibilidad",
+          "url": "https://www.efrag.org/lab6",
+          "relevance": "Requisitos generales de reporteo CSRD"
+        },
+        {
+          "code": "EFRAG IG 1:2023",
+          "full_name": "EFRAG IG 1 (2023): Guía de implementación ESRS",
+          "url": "https://www.efrag.org/lab6",
+          "relevance": "Guía de implementación de estándares ESRS"
+        }
+      ]
+    },
+    {
+      "module_id": "M19",
+      "standards": [
+        {
+          "code": "GRI 2-4",
+          "full_name": "GRI 2: Contenido general 2021 — 2-4: Reubicación de informaciones",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Reubicación y restatement de informaciones"
+        },
+        {
+          "code": "GRI 2-3",
+          "full_name": "GRI 2: Contenido general 2021 — 2-3: Periodo de reporte, frecuencia y punto de contacto",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Periodo y frecuencia de reporte de trazabilidad"
+        },
+        {
+          "code": "ISO 14044:2006",
+          "full_name": "ISO 14044:2006 — Análisis del ciclo de vida — Requisitos y directrices",
+          "url": "https://www.iso.org/standard/38498.html",
+          "relevance": "Análisis del ciclo de vida de flujos de residuos"
+        }
+      ]
+    },
+    {
+      "module_id": "M20",
+      "standards": [
+        {
+          "code": "PMI EVM ANSI/EIA-748-C (2011)",
+          "full_name": "ANSI/EIA-748-C (2011): Earned Value Management Systems",
+          "url": "https://www.pmi.org/learning/library/earned-value-management-systems-7076",
+          "relevance": "Sistema de valor ganado para control presupuestal"
+        },
+        {
+          "code": "ISO 21508:2018",
+          "full_name": "ISO 21508:2018 — Gestión de proyectos — Valor ganado",
+          "url": "https://www.iso.org/standard/71152.html",
+          "relevance": "Valor ganado en gestión de proyectos"
+        }
+      ]
+    },
+    {
+      "module_id": "M20B",
+      "standards": [
+        {
+          "code": "GRI 201-1",
+          "full_name": "GRI 201: Desempeño económico 2016 — 201-1: Valor económico directo generado y distribuido",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Valor económico directo generado y distribuido"
+        },
+        {
+          "code": "ISO 21508:2018",
+          "full_name": "ISO 21508:2018 — Gestión de proyectos — Valor ganado",
+          "url": "https://www.iso.org/standard/71152.html",
+          "relevance": "Valor ganado en gestión de proyectos"
+        }
+      ]
+    },
+    {
+      "module_id": "M21",
+      "standards": [
+        {
+          "code": "ISO 31000:2018",
+          "full_name": "ISO 31000:2018 — Gestión del riesgo — Directrices",
+          "url": "https://www.iso.org/standard/65690.html",
+          "relevance": "Directrices de gestión del riesgo"
+        },
+        {
+          "code": "PMI PMBOK® §11",
+          "full_name": "PMI PMBOK® 7th Edition — §11: Incertidumbre y riesgo",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Gestión de incertidumbre y riesgo de proyecto"
+        },
+        {
+          "code": "IRM Risk Register Guidance",
+          "full_name": "IRM Risk Register Guidance: Guía de registro de riesgos del Institute of Risk Management",
+          "url": "https://www.theirm.org/",
+          "relevance": "Registro estructurado de riesgos del programa"
+        },
+        {
+          "code": "GRI 3:2021 §3-3",
+          "full_name": "GRI 3: Temas materiales 2021 — §3-3: Gestión de temas materiales",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de temas materiales y teoría de cambio"
+        }
+      ]
+    },
+    {
+      "module_id": "M21B",
+      "standards": [
+        {
+          "code": "Stage-Gate® Cooper",
+          "full_name": "Stage-Gate® (Cooper): Sistema de gestión de innovación por fases",
+          "url": "https://www.stage-gate.com/",
+          "relevance": "Gates verificables de cierre de fase"
+        },
+        {
+          "code": "PMI PMBOK® Phase-Gate",
+          "full_name": "PMI PMBOK® — Phase-Gate: Control de fases de proyecto",
+          "url": "https://www.pmi.org/pmbok-guide-standards",
+          "relevance": "Control de fases con gates de aprobación"
+        },
+        {
+          "code": "ISO 21502:2020",
+          "full_name": "ISO 21502:2020 — Gestión de proyectos, programas y carteras",
+          "url": "https://www.iso.org/standard/74910.html",
+          "relevance": "Gestión de programas y carteras municipales"
+        }
+      ]
+    }
+  ]
+}
