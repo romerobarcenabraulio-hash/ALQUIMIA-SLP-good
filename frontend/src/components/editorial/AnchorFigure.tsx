@@ -1,11 +1,12 @@
 'use client'
 
+import type { ReactNode } from 'react'
 import { cn } from '@/lib/utils'
 import { editorial } from '@/components/editorial/editorialStyles'
 
 export interface AnchorFigureProps {
   /** Cifra ancla — columna izquierda */
-  figure: string
+  figure: ReactNode
   /** Contexto breve — columna derecha */
   context: string
   className?: string

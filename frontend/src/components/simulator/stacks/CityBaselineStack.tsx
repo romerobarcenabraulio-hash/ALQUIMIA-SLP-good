@@ -22,6 +22,7 @@ import { ImpactScenariosPanel } from '@/components/simulator/ImpactScenariosPane
 import { BaselineImpactoAmbientalSection } from '@/components/simulator/stacks/BaselineImpactoAmbientalSection'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { AnchorFigure } from '@/components/editorial/AnchorFigure'
+import { MetricSourceTraceLink } from '@/components/credibility'
 import {
   CHART_AXIS_TICK,
   CHART_GRID,
@@ -148,14 +149,14 @@ function PercentSlider({
 }
 
 function KpiStrip({ icon: Icon, label, value, sub, accent }: {
-  icon: React.ElementType; label: string; value: string; sub: string; accent: string
+  icon: React.ElementType; label: string; value: React.ReactNode; sub: string; accent: string
 }) {
   return (
     <div className="flex items-center gap-2 rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2 min-w-0">
       <Icon className="w-3 h-3 shrink-0" style={{ color: accent }} strokeWidth={2} />
       <div className="min-w-0">
         <p className="text-[9px] uppercase tracking-[0.05em] text-[#A8A49C] leading-none truncate">{label}</p>
-        <p className="font-mono text-[13px] font-semibold leading-tight truncate" style={{ color: accent }}>{value}</p>
+        <div className="font-mono text-[13px] font-semibold leading-tight truncate" style={{ color: accent }}>{value}</div>
         <p className="text-[9px] text-[#A8A49C] leading-none truncate">{sub}</p>
       </div>
     </div>
@@ -315,7 +316,21 @@ export function CityBaselineStack() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-chart-id="volumen-rsu">
         <KpiStrip icon={Truck}     label="RSU generado"  value={r ? fmt.kgd(r.rsuTotalTonDia) : '—'}                              sub="diario estimado"        accent="#3B6D11" />
         <KpiStrip icon={TrendingUp} label="Derrama anual" value={r ? fmt.mxnM(r.ingresosBrutos / Math.max(1, horizonte)) : '—'}   sub="valorización"           accent="#3B6D11" />
-        <KpiStrip icon={Leaf}      label="CO₂e evitado"  value={r ? `${(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K t` : '—'}    sub="por año"                accent="#1A5FA8" />
+        <KpiStrip
+          icon={Leaf}
+          label="CO₂e evitado"
+          value={
+            r ? (
+              <MetricSourceTraceLink traceKey="co2e_anual" className="font-mono text-[13px] font-semibold" title="Ver trazabilidad y estándar GRI en M19">
+                {(r.co2eEvitadasAnualTon / 1000).toFixed(0)}K t
+              </MetricSourceTraceLink>
+            ) : (
+              '—'
+            )
+          }
+          sub="por año · click-to-source"
+          accent="#1A5FA8"
+        />
         <KpiStrip icon={Heart}     label="Ahorro salud"  value={r ? fmt.mxnM(r.ahorroSalud) : '—'}                               sub="anual est."             accent="#C0392B" />
       </div>
 

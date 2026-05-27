@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { BookOpenCheck, Filter, X } from 'lucide-react'
 import { SOURCE_VERIFICATION_MATRIX, SOURCE_VERIFICATION_STATUS_LABEL } from '@/data/sourceVerificationMatrix'
 import type { SourceVerificationStatus } from '@/data/sourceVerificationMatrix'
@@ -15,6 +15,7 @@ import {
   MarginalNote,
   SectionLabel,
 } from '@/components/editorial'
+import { MetricSourceTraceDetail } from '@/components/credibility'
 
 const STATUS_CLASS: Record<SourceVerificationStatus, string> = {
   verificado: 'border-[#3B6D11]/30 bg-[#EAF3DE] text-[#23470A]',
@@ -32,6 +33,7 @@ const STATUS_ACTIVE_BTN: Record<SourceVerificationStatus, string> = {
 
 export function ReferenciasCalculos() {
   const resultados = useSimulatorStore(s => s.resultados)
+  const sourceTraceFocusKey = useSimulatorStore(s => s.sourceTraceFocusKey)
   const genPercapita = useSimulatorStore(s => s.genPercapita)
   const precios = useSimulatorStore(s => s.precios)
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
@@ -56,6 +58,17 @@ export function ReferenciasCalculos() {
       : SOURCE_VERIFICATION_MATRIX,
     [activeFilter],
   )
+
+  useEffect(() => {
+    if (!sourceTraceFocusKey) return
+    const t = window.setTimeout(() => {
+      document.getElementById(`metric-trace-${sourceTraceFocusKey}`)?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start',
+      })
+    }, 120)
+    return () => window.clearTimeout(t)
+  }, [sourceTraceFocusKey])
 
   return (
     <section className="section" aria-labelledby="referencias-calculos-title" data-testid="referencias-calculos">
@@ -171,6 +184,15 @@ export function ReferenciasCalculos() {
           </table>
         </div>
       </header>
+
+      {sourceTraceFocusKey && (
+        <MetricSourceTraceDetail
+          traceKey={sourceTraceFocusKey}
+          displayValueTon={
+            sourceTraceFocusKey === 'co2e_anual' ? resultados?.co2eEvitadasAnualTon : undefined
+          }
+        />
+      )}
 
       <SocialContextExportPreviewSection
         block={socialBlock}

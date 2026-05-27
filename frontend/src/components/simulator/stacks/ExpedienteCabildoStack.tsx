@@ -9,6 +9,7 @@ import { GovernancePanel } from '@/components/simulator/GovernancePanel'
 import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { cn } from '@/lib/utils'
 import { MarginalNote, SectionLabel } from '@/components/editorial'
+import { M18MaterialityBadge } from '@/components/credibility'
 
 function scrollToSection(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
@@ -67,6 +68,8 @@ export function ExpedienteCabildoStack() {
               ))}
       </div>
 
+      <M18MaterialityBadge variant="crossRef" className="max-w-2xl" />
+
       <div>
         <SectionLabel>Contenido del expediente</SectionLabel>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mt-3">
@@ -76,7 +79,7 @@ export function ExpedienteCabildoStack() {
             { num: '03', title: 'Infraestructura propuesta', desc: 'Centros, organigrama, logística', fuente: 'M06 + M07 + M08' },
             { num: '04', title: 'Modelo financiero', desc: 'CAPEX, OPEX, TIR, escenarios, riesgos', fuente: 'M09 + M13 + M14' },
             { num: '05', title: 'Esquema de operación', desc: 'Concesión recomendada, vehículo financiero', fuente: 'M12 + M15' },
-            { num: '06', title: 'Cumplimiento de estándares', desc: 'GRI 306, SASB EM-WM, ODS mapeados', fuente: 'M18 + M19' },
+            { num: '06', title: 'Cumplimiento de estándares', desc: 'GRI 306:2020 (306-1/306-2), SASB IF-WM-150a, ODS mapeados', fuente: 'M18 + M19' },
           ].map(item => (
             <div key={item.num} className="flex items-start gap-3 rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] p-3">
               <span className="w-6 h-6 rounded-full bg-[#3B6D11] text-white text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">{item.num}</span>

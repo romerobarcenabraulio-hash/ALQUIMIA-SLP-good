@@ -3,10 +3,11 @@
 import { useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn, fmt } from '@/lib/utils'
+import { M18MaterialityBadge } from '@/components/credibility'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const TABS = ['Doble Materialidad', 'GRI 306', 'Reporte Financiadores']
+const TABS = ['Doble Materialidad', 'GRI 306:2020', 'Reporte Financiadores']
 
 const MATERIALIDAD_TOPICS = [
   { label: 'Emisiones CH₄ rellenos',        impacto: 4.5, financiero: 3.0 },
@@ -85,6 +86,7 @@ _Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan
 
   return (
     <div className="pb-4">
+      <M18MaterialityBadge variant="header" className="mb-5 max-w-2xl" />
       {/* Tabs */}
       <div className="flex flex-wrap gap-1.5 mb-6">
         {TABS.map((label, i) => {

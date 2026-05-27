@@ -27,6 +27,8 @@ import { ConsultingExportButton } from '@/components/simulator/ConsultingExportB
 import { getChartBrief, getModuleEditorialBrief } from '@/data/moduleEditorialBriefs'
 import { useModuleEditorialContext } from '@/lib/moduleEditorialContext'
 import { GlosarioTooltip } from '@/components/ui/GlosarioTooltip'
+import { StandardsFooter } from '@/components/ui/standards-footer'
+import { SOURCE_TRACE_NAV_EVENT, type SourceTraceNavDetail } from '@/data/metricStandardsTrace'
 import { buscarTermino } from '@/data/glosario'
 import type { ChartBrief, MetodologiaEditorial } from '@/data/moduleEditorialBriefs'
 import { useChartSectionObserver } from '@/hooks/useChartSectionObserver'
@@ -1172,6 +1174,22 @@ export function DecisionModuleShell({
     }
   }, [activeModule?.module_id, navigateOrCover])
 
+  const setSourceTraceFocusKey = useSimulatorStore(s => s.setSourceTraceFocusKey)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<SourceTraceNavDetail>).detail
+      if (!detail?.traceKey) return
+      setSourceTraceFocusKey(detail.traceKey)
+      // Ir directo a M19 sin portada de capítulo (click-to-source §4.8 hoja de ruta)
+      setChapterIndex(null)
+      setChapterSep(null)
+      onModuleChange('trazabilidad')
+    }
+    window.addEventListener(SOURCE_TRACE_NAV_EVENT, handler)
+    return () => window.removeEventListener(SOURCE_TRACE_NAV_EVENT, handler)
+  }, [onModuleChange, setSourceTraceFocusKey])
+
   useEffect(() => {
     bindNavigation?.({
       navigateModule: handleModuleChange,
@@ -1338,6 +1356,7 @@ export function DecisionModuleShell({
                     activeChartId={activeChartId}
                   />
                   {renderModule(activeModule, { navigateModule: handleModuleChange })}
+                  <StandardsFooter moduleId={activeModule.module_id} />
                 </div>
               )}
             </div>

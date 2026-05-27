@@ -18,6 +18,7 @@ import {
   type JourneyMode,
 } from '@/lib/journeyMode'
 import { Conclusion, MarginalNote, SectionLabel } from '@/components/editorial'
+import { InstitutionalBadge } from '@/components/credibility'
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
   1: MapPin,
@@ -70,9 +71,10 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           <Recycle size={120} strokeWidth={0.8} />
         </div>
         <div className="relative z-10 max-w-3xl">
-          <h1 className="text-[22px] leading-[1.25] font-bold mb-3">
+          <h1 className="text-[22px] leading-[1.25] font-bold mb-2">
             Pasos hacia la circularidad
           </h1>
+          <InstitutionalBadge variant="onDark" className="mb-4" />
           <p className="text-[14px] leading-[1.7] text-white/90 max-w-2xl">
             Guía de lectura del simulador — elige el recorrido según tu objetivo.
             Pregunta central: ¿puede{' '}

@@ -19,12 +19,15 @@ import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 import { SectionLabel } from '@/components/editorial/SectionLabel'
 import { MarginalNote } from '@/components/editorial/MarginalNote'
 import { editorial } from '@/components/editorial/editorialStyles'
+import { MetricSourceTraceLink } from '@/components/credibility'
 
 export type NarrativeBridgeVariant = 'result' | 'warning' | 'bridge'
 
 export interface NarrativeBridgeEvidence {
   label: string
   value: string
+  /** Abre M19 con traza de fuente y estándar */
+  traceKey?: string
 }
 
 export interface NarrativeBridgeNextStep {
@@ -123,7 +126,15 @@ export function NarrativeBridge({
           {evidence.slice(0, 4).map(item => (
             <AnchorFigure
               key={`${item.label}:${item.value}`}
-              figure={item.value}
+              figure={
+                item.traceKey ? (
+                  <MetricSourceTraceLink traceKey={item.traceKey} className="font-serif text-[28px]">
+                    {item.value}
+                  </MetricSourceTraceLink>
+                ) : (
+                  item.value
+                )
+              }
               context={item.label}
             />
           ))}

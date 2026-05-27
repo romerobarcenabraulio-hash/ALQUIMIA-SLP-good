@@ -151,6 +151,8 @@ interface SimulatorStore extends SimulatorState {
   cityPortalError: string | null
   /** Módulo activo en `DecisionModuleShell` (no persistido; UI). */
   activeDecisionModuleId: string | null
+  /** Clave METRIC_SOURCE_TRACES activada desde click-to-source (M19). */
+  sourceTraceFocusKey: string | null
   /** Modo de recorrido funcionario — persistido; default validar. */
   journeyMode: JourneyMode
   setJourneyMode: (mode: JourneyMode) => void
@@ -231,6 +233,7 @@ interface SimulatorStore extends SimulatorState {
   setNationalCoverage:    (profiles: MunicipioProfile[] | null, coverage: CoverageStatus[] | null) => void
   setOperationsSummary:   (s: OperationsSummary | null) => void
   setActiveDecisionModuleId: (moduleId: string | null) => void
+  setSourceTraceFocusKey: (key: string | null) => void
   setPropuestaActivaIdx: (idx: number | null) => void
 
   // ── Cotización recomendada (motor ALQUIMIA) ────────────────────────────────
@@ -352,6 +355,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
         portalError: null,
         cityPortalError: null,
         activeDecisionModuleId: null,
+        sourceTraceFocusKey: null,
         propuestaActivaIdx: null,
         clientSetupComplete: false,
         journeyMode: 'validar',
@@ -445,6 +449,9 @@ export const useSimulatorStore = create<SimulatorStore>()(
 
         setActiveDecisionModuleId: moduleId => {
           set({ activeDecisionModuleId: moduleId })
+        },
+        setSourceTraceFocusKey: key => {
+          set({ sourceTraceFocusKey: key })
         },
         setPropuestaActivaIdx: idx => {
           set({ propuestaActivaIdx: idx })

@@ -20,6 +20,7 @@ import {
   chapterModuleRange,
   dismissChapterIndex,
 } from '@/lib/chapterNarratives'
+import { ModuleStandardsBadge } from '@/components/credibility'
 
 export type ChapterIndexMode = 'entry' | 'review'
 
@@ -211,6 +212,7 @@ export function ChapterIndex({
                                 </span>
                               )}
                             </span>
+                            <ModuleStandardsBadge moduleId={modId} className="mt-0.5 max-w-[42%]" />
                             <ArrowRight
                               size={14}
                               className="mt-1 shrink-0 text-[#C8C4BC] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6B6760]"
