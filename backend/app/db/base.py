@@ -19,3 +19,4 @@ def import_all_models() -> None:
     import app.models.user_account  # noqa: F401
     import app.models.logistics  # noqa: F401
     import app.models.geo  # noqa: F401
+    import app.models.admin_tenant  # noqa: F401

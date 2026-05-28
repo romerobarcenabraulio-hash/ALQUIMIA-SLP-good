@@ -14,7 +14,7 @@ describe('standardsMap', () => {
     const dataPath = resolve(__dirname, '../data/standards_map.json')
     expect(readFileSync(dataPath, 'utf8')).toBe(readFileSync(docsPath, 'utf8'))
   })
-  it('publica 37 módulos activos en el mapa canónico', () => {
+  it('preserva 37 registros de estándares aunque el journey consolidado exponga 23 módulos', () => {
     expect(STANDARDS_MODULE_COUNT).toBe(37)
   })
 

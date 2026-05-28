@@ -28,6 +28,8 @@ import {
   MarginalNote,
   SectionLabel,
 } from '@/components/editorial'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantProfileStatus } from '@/components/simulator/TenantProfilePanels'
 
 export type SocialView = 'diagnostico' | 'encuesta' | 'educacion' | 'impacto'
 
@@ -87,6 +89,7 @@ export function SocialDemographicContextPanel({
     (s as typeof s & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana ?? null
   )
   const municipio = useSimulatorStore(s => s.seleccionMunicipioCatalog)
+  const { profile } = useTenantMunicipalProfile()
 
   const isEmptyPublic =
     block.dato === 'no_disponible' &&
@@ -133,14 +136,15 @@ export function SocialDemographicContextPanel({
             : 'Cargar estudio sociodemográfico'
         }
       />
+      <TenantProfileStatus profile={profile} />
 
       {/* Header */}
-      <header>
+      <header className="mx-auto max-w-4xl text-center">
         <SectionLabel>{headerMeta.kicker}</SectionLabel>
-        <h3 id="social-demographic-context-title" className="font-serif text-[20px] text-[#1C1B18]">
+        <h3 id="social-demographic-context-title" className="font-serif text-[26px] leading-tight text-[#1C1B18]">
           {headerMeta.title}
         </h3>
-        <Conclusion className="text-[18px] md:text-[19px] mb-4">
+        <Conclusion className="mx-auto mb-6 max-w-3xl text-[18px] md:text-[20px]">
           El programa de separación en ALQUIMIA distingue{' '}
           <span className="font-medium text-[#1C1B18]">condominios y privadas</span> (Adendos 1–11)
           de <span className="font-medium text-[#1C1B18]">vía pública</span> (Adendo 12).
@@ -151,6 +155,7 @@ export function SocialDemographicContextPanel({
         </Conclusion>
         <KpiAnchorGrid
           columns={3}
+          className="mx-auto max-w-4xl text-left"
           items={[
             { label: 'Municipio', value: municipio?.nombre ?? '—' },
             {
@@ -169,17 +174,17 @@ export function SocialDemographicContextPanel({
 
       {/* Tabs — ocultos cuando el módulo tiene view fijo */}
       {!view && (
-      <div className="flex gap-1 rounded-[10px] bg-[#F0EDE5] p-1">
+      <div className="flex gap-4 border-b border-[#E8E4DC]">
         {TABS.map(tab => (
           <button
             key={tab.id}
             type="button"
             onClick={() => setTabActivo(tab.id)}
             className={cn(
-              'flex-1 rounded-[8px] py-1.5 text-[11px] font-medium transition-all',
+              'flex-1 border-b-2 py-2 text-[11px] font-medium transition-colors',
               tabActivo === tab.id
-                ? 'bg-white text-[#1C1B18] shadow-sm'
-                : 'text-[#6B6760] hover:text-[#1C1B18]',
+                ? 'border-[#1C1B18] text-[#1C1B18]'
+                : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
             )}
           >
             {tab.label}
@@ -220,7 +225,7 @@ export function SocialDemographicContextPanel({
           {isEmptyPublic && (
             <div
               data-testid="social-context-empty"
-              className="rounded-[8px] border border-dashed border-[#C8C2B8] bg-[#FAF8F4] px-3 py-3 text-[12px] text-[#6B6760]"
+              className="border-l border-[#C8C2B8] pl-3 text-[12px] text-[#8B5A00]"
             >
               Estado vacío: no hay serie sociodemográfica enlazada a este bloque.
               Cuando exista contrato de API y fuentes aprobadas, aparecerá el detalle verificable.
@@ -272,7 +277,7 @@ export function SocialDemographicContextPanel({
           />
           <details
             data-testid="social-context-deferred-scope"
-            className="rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-3 py-2 text-[11px] text-[#6B6760]"
+            className="border-t border-[#E8E4DC] pt-3 text-[11px] text-[#6B6760]"
           >
             <summary className="cursor-pointer font-medium text-[#1C1B18]">Alcance diferido (PR3 / PR4)</summary>
             <ul className="mt-2 list-disc space-y-1 pl-4">
@@ -295,10 +300,10 @@ export function SocialDemographicContextPanel({
       {/* Tab: Estudio de impacto */}
       {tabActivo === 'impacto' && (
         <div className="space-y-4">
-          <section>
+          <section className="mx-auto max-w-4xl text-center">
             <SectionLabel>Documento para cabildo</SectionLabel>
-            <h3 className="font-serif text-[18px] text-[#1C1B18] mb-2">Estudio de Impacto Social</h3>
-            <Conclusion className="text-[17px] md:text-[18px] mb-4">
+            <h3 className="mb-2 font-serif text-[26px] leading-tight text-[#1C1B18]">Estudio de Impacto Social</h3>
+            <Conclusion className="mx-auto mb-6 max-w-3xl text-[18px] md:text-[20px]">
               El Estudio de Impacto Social convierte los datos de la encuesta de campo
               en evidencia jurídico-política para justificar el Adendo 12 (casas en vía pública)
               y el Anexo B (Programa de Capacitación Ciudadana) ante cabildo.
@@ -306,9 +311,9 @@ export function SocialDemographicContextPanel({
           </section>
 
           {/* Estructura del documento */}
-          <div className="rounded-[10px] border border-[#E8E4DC] bg-white p-4">
-            <p className="text-[11px] font-semibold text-[#1C1B18] mb-3">Estructura del documento</p>
-            <div className="space-y-2">
+          <div>
+            <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#A8A49C]">Estructura del documento</p>
+            <div className="divide-y divide-[#E8E4DC] border-y border-[#E8E4DC]">
               {[
                 { sec: '§1', titulo: 'Contexto demográfico', desc: 'Población, vivienda por tipo, estratificación ENIGH, índices CONAPO/CONEVAL', estado: 'Disponible' },
                 { sec: '§2', titulo: 'Análisis de brechas', desc: 'Gap entre cobertura normativa actual y universo real (Hemisferio 1 + 2)', estado: 'Disponible' },
@@ -318,17 +323,17 @@ export function SocialDemographicContextPanel({
                 { sec: '§6', titulo: 'Grandes Generadores', desc: 'Cláusula: comercios y hoteles son auto-responsables — LGPGIR Art. 42', estado: 'Disponible' },
                 { sec: 'Ane. B', titulo: 'Programa de Capacitación Ciudadana', desc: 'Requerimiento LGPGIR Art. 10 — incluido en paquete de adendos', estado: 'Disponible' },
               ].map(item => (
-                <div key={item.sec} className="flex items-start gap-3 p-2 rounded-[6px] bg-[#F7F5F0]">
-                  <span className="font-mono text-[10px] font-bold text-[#3B6D11] w-10 shrink-0 pt-0.5">{item.sec}</span>
+                <div key={item.sec} className="flex items-start gap-3 py-3">
+                  <span className="w-10 shrink-0 pt-0.5 font-mono text-[10px] font-bold text-[#3B6D11]">{item.sec}</span>
                   <div className="flex-1">
                     <p className="text-[11px] font-medium text-[#1C1B18]">{item.titulo}</p>
                     <p className="text-[10px] text-[#6B6760]">{item.desc}</p>
                   </div>
                   <span className={cn(
-                    'text-[9px] font-medium rounded-full px-2 py-0.5 shrink-0',
+                    'shrink-0 text-[9px] font-semibold',
                     item.estado === 'Disponible' || item.estado === 'Con datos reales'
-                      ? 'bg-[#F4FAEC] text-[#3B6D11] border border-[#D7E8C0]'
-                      : 'bg-[#FEF7E7] text-[#D4881E] border border-[#D4881E]/30',
+                      ? 'text-[#3B6D11]'
+                      : 'text-[#D4881E]',
                   )}>
                     {item.estado}
                   </span>

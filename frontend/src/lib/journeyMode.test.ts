@@ -25,7 +25,7 @@ describe('journeyMode', () => {
   it('modo implementar incluye Cap. 2, Cap. 4 y puentes', () => {
     expect(IMPLEMENTAR_MODULE_IDS).toContain('antecedentes_municipales')
     expect(IMPLEMENTAR_MODULE_IDS).toContain('roadmap_implementacion')
-    expect(IMPLEMENTAR_MODULE_IDS).toContain('gate_status')
+    expect(IMPLEMENTAR_MODULE_IDS).toContain('risk_dashboard')
     expect(IMPLEMENTAR_MODULE_IDS).toContain('marco_legal')
     expect(IMPLEMENTAR_MODULE_IDS).not.toContain('social_encuesta')
     expect(IMPLEMENTAR_MODULE_IDS).not.toContain('expediente_cabildo')

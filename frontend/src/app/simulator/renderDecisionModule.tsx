@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { CityBaselineStack } from '@/components/simulator/stacks/CityBaselineStack'
 import { EducacionCiudadana } from '@/components/simulator/EducacionCiudadana'
 import { DeclaracionWizard } from '@/components/simulator/DeclaracionWizard'
@@ -26,6 +26,8 @@ import { PlanEducativoStack } from '@/components/simulator/stacks/PlanEducativoS
 import { OrganigramaDiagnosticoStack } from '@/components/simulator/stacks/OrganigramaDiagnosticoStack'
 import ProyectoVivoPortal from '@/components/simulator/ProyectoVivoPortal'
 import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDataAwaitingBanner'
+import { TenantActorsPanel } from '@/components/simulator/TenantProfilePanels'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -270,50 +272,21 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'city_baseline':
       return <CityBaselineStack />
     case 'social_diagnostico':
-      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
-    case 'social_encuesta':
-      return <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={module.module_id} view="encuesta" />
-    case 'mapeo_actores':
-      return <MapeoActoresBridge />
-    case 'organigrama_diagnostico':
-      return <OrganigramaDiagnosticoStack />
+      return <SocialAuthorityConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />
     case 'capacidad_institucional':
-      return <CapacidadInstitucionalStack />
+      return <InstitutionalConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />
     case 'marco_legal':
       return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
-    case 'cobertura_territorial':
-      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="cobertura" />
-    case 'dictamen_tecnico':
-      return <DictamenTecnicoStack />
     case 'costo_omision':
-      return <CostoOmisionStack />
-    case 'evaluacion_socioeconomica':
-      return <EvaluacionSocioeconomicaStack />
-    case 'teoria_cambio':
-      return <TeoriaCambioStack />
+      return <OmissionImpactConsolidatedModule />
     case 'roadmap_implementacion':
-      return <KronosRoadmapStack />
-    case 'plan_maestro':
-      return <FutureGoalsModule notice={<M03Notice />} pageOnly={1} />
-    case 'ruta_critica':
-      return <FutureGoalsModule notice={<M03Notice />} pageOnly={2} />
-    case 'oleadas_territoriales':
-      return (
-        <div className="space-y-10">
-          <ImplementacionEspacioTiempo />
-          <div className="border-t border-[#E8E4DC] pt-8">
-            <ProgresionPlanMunicipalTiempo />
-          </div>
-        </div>
-      )
+      return <RoadmapConsolidatedModule />
     case 'infraestructura':
       return <InfrastructureOperationsStack />
     case 'organigrama':
       return <OrganigramaStack />
     case 'logistica':
-      return <LogisticaOperativaStack />
-    case 'plan_educativo':
-      return <PlanEducativoStack />
+      return <LogisticsEducationConsolidatedModule />
     case 'costos_programa':
       return <CostosProgramaStack />
     case 'mercado_materiales':
@@ -342,19 +315,16 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
         </div>
       )
     case 'evm_dashboard':
-      return <KronosEvmDashboardStack />
-    case 'conciliacion_mensual':
-      return <KronosConciliacionStack />
+      return <BudgetControlConsolidatedModule />
     case 'risk_dashboard':
-      return <KronosRiskDashboardStack />
-    case 'gate_status':
-      return <KronosGateStatusStack />
+      return <RiskGateConsolidatedModule />
     default:
       return <ModuleEmpty module={module} />
   }
 }
 
 function MapeoActoresBridge() {
+  const { profile } = useTenantMunicipalProfile()
   const { municipiosActivos, zmActiva } = useSimulatorStore()
   const indicePreparacionCiudadana = useSimulatorStore(s =>
     (s as typeof s & { indicePreparacionCiudadana?: number | null }).indicePreparacionCiudadana ?? null
@@ -381,6 +351,7 @@ function MapeoActoresBridge() {
         ]}
         ctaLabel="Programar levantamiento con el municipio"
       />
+      <TenantActorsPanel profile={profile} />
       <ProyectoVivoPortal proyectoId={`sim-${munId}`} municipioId={munId} />
     </div>
   )
@@ -401,6 +372,171 @@ function M03Notice() {
         en el simulador.
       </p>
     </div>
+  )
+}
+
+function ConsolidatedModuleTabs({
+  tabs,
+}: {
+  tabs: Array<{ id: string; label: string; moduleCode: string; content: ReactNode }>
+}) {
+  const [activeId, setActiveId] = useState(tabs[0]?.id ?? '')
+  const active = tabs.find(tab => tab.id === activeId) ?? tabs[0]
+  if (!active) return null
+
+  return (
+    <div className="space-y-6">
+      <div className="border-b border-[#E8E4DC]">
+        <div className="flex flex-wrap gap-1" role="tablist" aria-label="Secciones consolidadas">
+          {tabs.map(tab => {
+            const selected = tab.id === active.id
+            return (
+              <button
+                key={tab.id}
+                type="button"
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveId(tab.id)}
+                className={[
+                  'px-3 py-2 text-[12px] font-medium transition-colors border-b-2',
+                  selected
+                    ? 'border-[#3B6D11] text-[#1C1B18]'
+                    : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
+                ].join(' ')}
+              >
+                <span className="font-mono text-[10px] text-[#A8A49C]">M{tab.moduleCode}</span>
+                <span className="ml-1.5">{tab.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
+      <div role="tabpanel" aria-label={active.label}>
+        {active.content}
+      </div>
+    </div>
+  )
+}
+
+function SocialAuthorityConsolidatedModule({
+  sociodemographicBlock,
+  moduleAnchor,
+}: {
+  sociodemographicBlock: DecisionModuleRenderContext['sociodemographicBlock']
+  moduleAnchor: string
+}) {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        {
+          id: 'demografia',
+          label: 'Demografía',
+          moduleCode: '02',
+          content: <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={moduleAnchor} view="diagnostico" />,
+        },
+        {
+          id: 'encuesta',
+          label: 'Encuesta',
+          moduleCode: '02B',
+          content: <SocialDemographicContextPanel block={sociodemographicBlock} moduleAnchor={moduleAnchor} view="encuesta" />,
+        },
+        { id: 'actores', label: 'Actores', moduleCode: '02C', content: <MapeoActoresBridge /> },
+        { id: 'autoridad', label: 'Autoridad', moduleCode: '02D', content: <OrganigramaDiagnosticoStack /> },
+      ]}
+    />
+  )
+}
+
+function InstitutionalConsolidatedModule({
+  sociodemographicBlock,
+  moduleAnchor,
+}: {
+  sociodemographicBlock: DecisionModuleRenderContext['sociodemographicBlock']
+  moduleAnchor: string
+}) {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'capacidad', label: 'Capacidad', moduleCode: '03', content: <CapacidadInstitucionalStack /> },
+        {
+          id: 'cobertura',
+          label: 'Cobertura',
+          moduleCode: '03C',
+          content: <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={moduleAnchor} view="cobertura" />,
+        },
+        { id: 'dictamen', label: 'Dictamen', moduleCode: '03D', content: <DictamenTecnicoStack /> },
+      ]}
+    />
+  )
+}
+
+function OmissionImpactConsolidatedModule() {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'omision', label: 'Omisión', moduleCode: '04', content: <CostoOmisionStack /> },
+        { id: 'socioeconomica', label: 'Evaluación', moduleCode: '04B', content: <EvaluacionSocioeconomicaStack /> },
+        { id: 'teoria', label: 'Teoría de cambio', moduleCode: '04C', content: <TeoriaCambioStack /> },
+      ]}
+    />
+  )
+}
+
+function RoadmapConsolidatedModule() {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'roadmap', label: 'Roadmap', moduleCode: '05D', content: <KronosRoadmapStack /> },
+        { id: 'cronograma', label: 'Cronograma', moduleCode: '05', content: <FutureGoalsModule notice={<M03Notice />} pageOnly={1} /> },
+        { id: 'ruta', label: 'Ruta crítica', moduleCode: '05B', content: <FutureGoalsModule notice={<M03Notice />} pageOnly={2} /> },
+        {
+          id: 'oleadas',
+          label: 'Oleadas',
+          moduleCode: '05C',
+          content: (
+            <div className="space-y-10">
+              <ImplementacionEspacioTiempo />
+              <div className="border-t border-[#E8E4DC] pt-8">
+                <ProgresionPlanMunicipalTiempo />
+              </div>
+            </div>
+          ),
+        },
+      ]}
+    />
+  )
+}
+
+function LogisticsEducationConsolidatedModule() {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'rutas', label: 'Rutas y vehículos', moduleCode: '08', content: <LogisticaOperativaStack /> },
+        { id: 'educacion', label: 'Educación ciudadana', moduleCode: '08B', content: <PlanEducativoStack /> },
+      ]}
+    />
+  )
+}
+
+function BudgetControlConsolidatedModule() {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'evm', label: 'EVM', moduleCode: '20', content: <KronosEvmDashboardStack /> },
+        { id: 'conciliacion', label: 'Conciliación', moduleCode: '20B', content: <KronosConciliacionStack /> },
+      ]}
+    />
+  )
+}
+
+function RiskGateConsolidatedModule() {
+  return (
+    <ConsolidatedModuleTabs
+      tabs={[
+        { id: 'riesgos', label: 'Riesgos', moduleCode: '21', content: <KronosRiskDashboardStack /> },
+        { id: 'gates', label: 'Gates', moduleCode: '21B', content: <KronosGateStatusStack /> },
+      ]}
+    />
   )
 }
 

@@ -5,6 +5,8 @@ import { ExternalLink, History, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import type { AntecedenteEvento } from '@/lib/antecedentesTypes'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantAntecedentesPanel } from '@/components/simulator/TenantProfilePanels'
 
 const TIPO_LABEL: Record<string, string> = {
   concesion: 'Concesión',
@@ -67,6 +69,7 @@ function EventoRow({ e }: { e: AntecedenteEvento }) {
 }
 
 export function AntecedentesMunicipalesStack() {
+  const { profile } = useTenantMunicipalProfile()
   const reportaje = useSimulatorStore(s => s.antecedentesReportaje)
   const loading = useSimulatorStore(s => s.antecedentesLoading)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
@@ -123,6 +126,8 @@ export function AntecedentesMunicipalesStack() {
           </div>
         </div>
       </section>
+
+      <TenantAntecedentesPanel profile={profile} />
 
       {reportaje && !loading && (
         <>

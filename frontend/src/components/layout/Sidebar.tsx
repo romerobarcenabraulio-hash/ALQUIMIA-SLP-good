@@ -20,7 +20,7 @@ import {
 
 const TOP_NAV = [
   { href: '/', Icon: Home, label: 'Inicio' },
-  { href: '/simulator', Icon: LayoutDashboard, label: 'Panel ejecutivo', matchPrefix: '/simulator' },
+  { href: '/v', Icon: LayoutDashboard, label: 'Plataforma', matchPrefixes: ['/v', '/p', '/e'] },
   { href: '/hub', Icon: FileText, label: 'Documentos', matchPrefix: '/hub' },
   { href: '/aprende', Icon: BookOpen, label: 'Aprende', matchPrefix: '/aprende' },
   { href: '/ca-studio', Icon: Recycle, label: 'CA-Studio', matchPrefix: '/ca-studio' },
@@ -58,8 +58,12 @@ export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
 
       {/* Top-level nav */}
       <nav className="px-2 pt-3 pb-2">
-        {TOP_NAV.map(({ href, Icon, label, matchPrefix }) => {
-          const active = matchPrefix ? pathname.startsWith(matchPrefix) : pathname === href
+        {TOP_NAV.map(({ href, Icon, label, matchPrefix, matchPrefixes }) => {
+          const active = matchPrefixes
+            ? matchPrefixes.some(prefix => pathname.startsWith(prefix))
+            : matchPrefix
+              ? pathname.startsWith(matchPrefix)
+              : pathname === href
           return (
             <Link
               key={href}

@@ -1,0 +1,138 @@
+{
+  "schema": "alquimia.slp.phase4.comparison.v1",
+  "created_at": "2026-05-28T15:18:53.230881+00:00",
+  "ok": true,
+  "tenant": {
+    "ok": true,
+    "tenant_id": "slp-capital",
+    "municipio": "San Luis Potosí",
+    "estado": "San Luis Potosí",
+    "current_stage": "validation",
+    "canonical_client_path": "/v",
+    "tier_comercial": "diagnostico",
+    "capabilities_active": [
+      "antecedentes_municipales",
+      "arbol_financiamiento",
+      "capacidad_institucional",
+      "city_baseline",
+      "costo_omision",
+      "escenarios_financieros",
+      "esquema_concesion",
+      "expediente_cabildo",
+      "guia_circularidad",
+      "marco_legal",
+      "riesgos_modelo",
+      "social_diagnostico"
+    ],
+    "gates": {
+      "G1": "no_iniciado",
+      "G2": "no_iniciado",
+      "G3": "no_iniciado",
+      "G4": "no_iniciado",
+      "G5": "no_iniciado"
+    },
+    "access": {
+      "validation": {
+        "status": "allowed",
+        "http_equivalent": 200
+      },
+      "planning": {
+        "status": "denied",
+        "http_equivalent": 403,
+        "detail": "Tenant en etapa validation no puede acceder a plataforma planning"
+      },
+      "execution": {
+        "status": "denied",
+        "http_equivalent": 403,
+        "detail": "Tenant en etapa validation no puede acceder a plataforma execution"
+      }
+    },
+    "audit_actions": [
+      "slp_phase4_migrated_to_validation",
+      "slp_phase4_migrated_to_validation",
+      "tenant_municipal_profile_seeded",
+      "tenant_municipal_profile_seeded"
+    ]
+  },
+  "visibility": {
+    "validation_visible": [
+      "antecedentes_municipales",
+      "arbol_financiamiento",
+      "capacidad_institucional",
+      "city_baseline",
+      "costo_omision",
+      "escenarios_financieros",
+      "esquema_concesion",
+      "expediente_cabildo",
+      "guia_circularidad",
+      "marco_legal",
+      "riesgos_modelo",
+      "social_diagnostico"
+    ],
+    "future_stage_modules_hidden_for_slp_validation": [
+      "costos_programa",
+      "doble_materialidad",
+      "evm_dashboard",
+      "infraestructura",
+      "inspeccion",
+      "logistica",
+      "mercado_materiales",
+      "monitoreo_operativo",
+      "organigrama",
+      "risk_dashboard",
+      "roadmap_implementacion",
+      "trazabilidad"
+    ],
+    "future_stage_hidden_ok": true,
+    "execution_modules_preserved_in_registry": [
+      "doble_materialidad",
+      "evm_dashboard",
+      "inspeccion",
+      "monitoreo_operativo",
+      "risk_dashboard",
+      "trazabilidad"
+    ],
+    "execution_modules_hidden_for_slp_validation": [
+      "doble_materialidad",
+      "evm_dashboard",
+      "inspeccion",
+      "monitoreo_operativo",
+      "risk_dashboard",
+      "trazabilidad"
+    ],
+    "execution_hidden_ok": true
+  },
+  "pre_post_data_integrity": {
+    "backup_manifest": "backups/phase4-slp/slp-phase4-pre-migration-20260528T034925Z.manifest.json",
+    "files_checked": 68,
+    "changed": [],
+    "missing": [],
+    "critical_buckets": {
+      "bibliografia": {
+        "files": 5,
+        "status": "present"
+      },
+      "calculos_base": {
+        "files": 14,
+        "status": "present"
+      },
+      "escenarios": {
+        "files": 5,
+        "status": "present"
+      },
+      "configuraciones": {
+        "files": 4,
+        "status": "present"
+      },
+      "fuentes_provenance": {
+        "files": 38,
+        "status": "present"
+      }
+    }
+  },
+  "differences": {
+    "changed_files": [],
+    "missing_files": []
+  },
+  "auditor_statement": "cero perdida detectada por hash en buckets criticos"
+}

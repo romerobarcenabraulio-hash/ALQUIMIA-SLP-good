@@ -41,27 +41,17 @@ export const CHAPTERS: ChapterDef[] = [
       {
         id: 'social',
         label: 'Social',
-        modulos: ['social_diagnostico', 'social_encuesta', 'mapeo_actores'],
-      },
-      {
-        id: 'gobernanza_operativa',
-        label: 'Gobernanza operativa',
-        modulos: ['organigrama_diagnostico'],
+        modulos: ['social_diagnostico'],
       },
       {
         id: 'institucional_normativo',
         label: 'Institucional-normativo',
-        modulos: ['capacidad_institucional', 'marco_legal', 'cobertura_territorial', 'dictamen_tecnico'],
+        modulos: ['capacidad_institucional', 'marco_legal'],
       },
       {
         id: 'financiero_economico',
         label: 'Financiero-económico',
-        modulos: ['costo_omision', 'evaluacion_socioeconomica'],
-      },
-      {
-        id: 'cierre_diagnostico',
-        label: 'Teoría de cambio',
-        modulos: ['teoria_cambio'],
+        modulos: ['costo_omision'],
       },
     ],
     modulos: [] as string[],
@@ -83,12 +73,12 @@ export const CHAPTERS: ChapterDef[] = [
       {
         id: 'estrategico',
         label: 'Estratégico',
-        modulos: ['plan_maestro', 'ruta_critica', 'oleadas_territoriales'],
+        modulos: [],
       },
       {
         id: 'operativo',
         label: 'Operativo',
-        modulos: ['infraestructura', 'organigrama', 'logistica', 'plan_educativo'],
+        modulos: ['infraestructura', 'organigrama', 'logistica'],
       },
       {
         id: 'economico',
@@ -152,12 +142,12 @@ export const CHAPTERS: ChapterDef[] = [
       {
         id: 'control_presupuestal',
         label: 'Control presupuestal',
-        modulos: ['evm_dashboard', 'conciliacion_mensual'],
+        modulos: ['evm_dashboard'],
       },
       {
         id: 'gestion_riesgos',
         label: 'Gestión de riesgos',
-        modulos: ['risk_dashboard', 'gate_status'],
+        modulos: ['risk_dashboard'],
       },
     ],
     modulos: [] as string[],
@@ -279,9 +269,22 @@ export function moduleNumber(id: string): string {
 
 /** Legacy module_id → canonical module_id for redirects. */
 export const LEGACY_MODULE_ALIASES: Record<string, string> = {
+  social_encuesta: 'social_diagnostico',
+  mapeo_actores: 'social_diagnostico',
+  organigrama_diagnostico: 'social_diagnostico',
+  cobertura_territorial: 'capacidad_institucional',
+  dictamen_tecnico: 'capacidad_institucional',
+  evaluacion_socioeconomica: 'costo_omision',
+  teoria_cambio: 'costo_omision',
+  plan_maestro: 'roadmap_implementacion',
+  ruta_critica: 'roadmap_implementacion',
+  oleadas_territoriales: 'roadmap_implementacion',
+  plan_educativo: 'logistica',
+  conciliacion_mensual: 'evm_dashboard',
+  gate_status: 'risk_dashboard',
   social_study: 'social_diagnostico',
   municipal_context: 'marco_legal',
-  future_goals: 'plan_maestro',
+  future_goals: 'roadmap_implementacion',
   infrastructure_operations: 'infraestructura',
   organigrama_programa: 'organigrama',
   logistica_operativa: 'logistica',

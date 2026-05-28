@@ -125,7 +125,7 @@ export default function SimulatorPage() {
   const journeyFilteredModules = useMemo(() => {
     if (audience !== 'functionary') return filteredModules
     const visible = filteredModules.filter(m => isModuleVisibleInJourneyMode(m.module_id, journeyMode))
-    const awaitingIds = new Set(['social_diagnostico', 'social_encuesta', 'mapeo_actores'])
+    const awaitingIds = new Set(['social_diagnostico'])
     const socioAwaiting =
       sociodemographicBlock?.dato !== 'disponible' && sociodemographicBlock?.dato !== 'manual_usuario'
     return visible.map(m =>
@@ -246,4 +246,3 @@ export default function SimulatorPage() {
     </div>
   )
 }
-

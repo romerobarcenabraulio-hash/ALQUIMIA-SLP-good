@@ -57,6 +57,8 @@ export function ModuleNav({
   activeId,
   onChange,
   onOpenChapterCover,
+  readOnlyModuleIds,
+  platformLabel,
   className,
   theme = 'light',
 }: {
@@ -65,6 +67,8 @@ export function ModuleNav({
   onChange: (id: string) => void
   /** Abre la portada del capítulo (índice editorial) — no navega al primer rubro. */
   onOpenChapterCover?: (chapterFirstModuleId: string) => void
+  readOnlyModuleIds?: ReadonlySet<string>
+  platformLabel?: string
   className?: string
   theme?: 'light' | 'dark'
 }) {
@@ -87,24 +91,40 @@ export function ModuleNav({
         <p className={cn('text-[9px] uppercase tracking-[0.1em] font-semibold px-1', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
           Módulos de decisión
         </p>
-        <button
-          type="button"
-          onClick={() => onChange('guia_circularidad')}
-          className={cn(
-            'mt-2 w-full rounded-[6px] px-2 py-1.5 text-left text-[9px] leading-snug transition-colors',
-            isDark
-              ? 'bg-[#243320] text-[#8AAD78] hover:bg-[#2D4020]'
-              : 'bg-[#ECEAE5] text-[#6B6760] hover:bg-[#E4E2DD]',
-          )}
-          title="Cambiar modo de recorrido en M00"
-        >
-          <span className="font-semibold uppercase tracking-wide">
-            {JOURNEY_MODE_META[journeyMode].title}
-          </span>
-          <span className={cn('block', isDark ? 'text-[#6A9A50]' : 'text-[#A8A49C]')}>
-            Cambiar en M00 →
-          </span>
-        </button>
+        {platformLabel ? (
+          <div
+            className={cn(
+              'mt-2 rounded-[6px] px-2 py-1.5 text-[9px] leading-snug',
+              isDark ? 'bg-[#243320] text-[#8AAD78]' : 'bg-[#ECEAE5] text-[#6B6760]',
+            )}
+          >
+            <span className="font-semibold uppercase tracking-wide">
+              Plataforma {platformLabel}
+            </span>
+            <span className={cn('block', isDark ? 'text-[#6A9A50]' : 'text-[#A8A49C]')}>
+              tenant_state + capability registry
+            </span>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onChange('guia_circularidad')}
+            className={cn(
+              'mt-2 w-full rounded-[6px] px-2 py-1.5 text-left text-[9px] leading-snug transition-colors',
+              isDark
+                ? 'bg-[#243320] text-[#8AAD78] hover:bg-[#2D4020]'
+                : 'bg-[#ECEAE5] text-[#6B6760] hover:bg-[#E4E2DD]',
+            )}
+            title="Cambiar modo de recorrido en M00"
+          >
+            <span className="font-semibold uppercase tracking-wide">
+              {JOURNEY_MODE_META[journeyMode].title}
+            </span>
+            <span className={cn('block', isDark ? 'text-[#6A9A50]' : 'text-[#A8A49C]')}>
+              Cambiar en M00 →
+            </span>
+          </button>
+        )}
       </div>
 
       <div className="py-1.5">
@@ -115,6 +135,7 @@ export function ModuleNav({
             active={activeId === 'guia_circularidad'}
             isDark={isDark}
             onChange={onChange}
+            readOnly={readOnlyModuleIds?.has('guia_circularidad') ?? false}
           />
         )}
 
@@ -207,6 +228,7 @@ export function ModuleNav({
                             active={m.module_id === activeId}
                             isDark={isDark}
                             onChange={onChange}
+                            readOnly={readOnlyModuleIds?.has(m.module_id) ?? false}
                             indent
                           />
                         ))}
@@ -224,12 +246,13 @@ export function ModuleNav({
 }
 
 function ModuleNavItem({
-  m, active, isDark, onChange, indent = false,
+  m, active, isDark, onChange, readOnly = false, indent = false,
 }: {
   m: DecisionModule
   active: boolean
   isDark: boolean
   onChange: (id: string) => void
+  readOnly?: boolean
   indent?: boolean
 }) {
   const blocked = m.status === 'blocked'
@@ -282,7 +305,7 @@ function ModuleNavItem({
           {m.label}
         </p>
         <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
-          {blocked ? 'Requiere acción' : m.nav_subtitle ?? m.audience_mode ?? 'Disponible'}
+          {blocked ? 'Requiere acción' : readOnly ? 'Lectura' : m.nav_subtitle ?? m.audience_mode ?? 'Disponible'}
         </p>
       </div>
 
@@ -299,10 +322,12 @@ function MobileModuleSelect({
   modules,
   activeId,
   onChange,
+  readOnlyModuleIds,
 }: {
   modules: DecisionModule[]
   activeId: string
   onChange: (id: string) => void
+  readOnlyModuleIds?: ReadonlySet<string>
 }) {
   const modulesById = useMemo(
     () => Object.fromEntries(modules.map(m => [m.module_id, m])),
@@ -335,6 +360,7 @@ function MobileModuleSelect({
                 return (
                   <option key={id} value={id}>
                     {moduleNumber(id)}. {m.label}
+                    {readOnlyModuleIds?.has(id) ? ' — Lectura' : ''}
                     {m.status === 'blocked' ? ' — requiere acción' : ''}
                   </option>
                 )
@@ -1069,6 +1095,8 @@ interface DecisionModuleShellProps {
     module: DecisionModule,
     nav: { navigateModule: (id: string) => void },
   ) => ReactNode
+  readOnlyModuleIds?: ReadonlySet<string>
+  chapterVisibleModuleIds?: ReadonlySet<string>
 }
 
 export function DecisionModuleShell({
@@ -1079,6 +1107,8 @@ export function DecisionModuleShell({
   error,
   bindNavigation,
   renderModule,
+  readOnlyModuleIds,
+  chapterVisibleModuleIds,
 }: DecisionModuleShellProps) {
   const audienceSelected = useSimulatorStore(s => s.audience)
   const setActiveDecisionModuleId = useSimulatorStore(s => s.setActiveDecisionModuleId)
@@ -1271,6 +1301,7 @@ export function DecisionModuleShell({
           modules={modules}
           activeId={activeModule.module_id}
           onChange={handleModuleChange}
+          readOnlyModuleIds={readOnlyModuleIds}
         />
       )}
 
@@ -1292,6 +1323,8 @@ export function DecisionModuleShell({
           chapterAnchorId={chapterIndex.anchorId}
           highlightModuleId={chapterIndex.highlightId ?? activeModule?.module_id}
           mode={chapterIndex.mode}
+          visibleModuleIds={chapterVisibleModuleIds}
+          readOnlyModuleIds={readOnlyModuleIds}
           onSelectModule={moduleId => {
             setChapterIndex(null)
             onModuleChange(moduleId)

@@ -21,6 +21,8 @@ import {
   ORGANIGRAMA_MUNICIPAL_JERARQUICO,
   flattenOrganigramaNodes,
 } from '@/data/organigramaMunicipalCanon'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantAntecedentesPanel } from '@/components/simulator/TenantProfilePanels'
 
 const VERIFICACION_OPTIONS: VerificacionOrg[] = ['confirmado', 'pendiente', 'desconocido', 'referencia']
 
@@ -37,6 +39,7 @@ function VerificacionChip({ v }: { v: VerificacionOrg }) {
 }
 
 export function OrganigramaDiagnosticoStack() {
+  const { profile } = useTenantMunicipalProfile()
   const {
     municipiosActivos,
     organigramaDiagnostico,
@@ -85,6 +88,8 @@ export function OrganigramaDiagnosticoStack() {
 
   return (
     <div className="space-y-5 pb-6">
+
+      <TenantAntecedentesPanel profile={profile} />
 
       <div className="flex flex-wrap gap-2 items-center">
         <ProvenanceBadge

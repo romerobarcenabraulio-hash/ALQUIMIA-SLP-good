@@ -28,6 +28,8 @@ interface ChapterIndexProps {
   chapterAnchorId: string
   highlightModuleId?: string | null
   mode?: ChapterIndexMode
+  visibleModuleIds?: ReadonlySet<string>
+  readOnlyModuleIds?: ReadonlySet<string>
   onSelectModule: (moduleId: string) => void
   onBeginFromStart: () => void
   onBack: () => void
@@ -37,6 +39,8 @@ export function ChapterIndex({
   chapterAnchorId,
   highlightModuleId = null,
   mode = 'entry',
+  visibleModuleIds,
+  readOnlyModuleIds,
   onSelectModule,
   onBeginFromStart,
   onBack,
@@ -54,8 +58,10 @@ export function ChapterIndex({
 
   const visibleModuleCount = useMemo(() => {
     if (!chapter) return 0
-    return chapter.modulos.filter(id => isModuleVisibleInJourneyMode(id, journeyMode)).length
-  }, [chapter, journeyMode])
+    return chapter.modulos.filter(id =>
+      (visibleModuleIds ? visibleModuleIds.has(id) : isModuleVisibleInJourneyMode(id, journeyMode)),
+    ).length
+  }, [chapter, journeyMode, visibleModuleIds])
 
   const portadaIntro = useMemo(() => {
     if (!chapter) return ''
@@ -152,7 +158,7 @@ export function ChapterIndex({
           <div className="space-y-10">
             {chapter.rubros.map(rubro => {
               const visibleModulos = rubro.modulos.filter(id =>
-                isModuleVisibleInJourneyMode(id, journeyMode),
+                visibleModuleIds ? visibleModuleIds.has(id) : isModuleVisibleInJourneyMode(id, journeyMode),
               )
               if (visibleModulos.length === 0) return null
 
@@ -176,49 +182,61 @@ export function ChapterIndex({
 
                       return (
                         <li key={modId}>
-                          <button
-                            type="button"
-                            onClick={() => handleSelectModule(modId)}
+                          <div
                             className={cn(
-                              'group flex w-full items-start gap-4 py-3.5 text-left transition-colors hover:bg-[#FDFCFA]',
+                              'group flex w-full items-start gap-4 py-3.5 transition-colors hover:bg-[#FDFCFA]',
                               isActive && 'bg-[#FDFCFA]',
                             )}
                           >
-                            <span className="mt-0.5 w-6 shrink-0 font-mono text-[11px] text-[#A8A49C]">
-                              {String(ordinal).padStart(2, '0')}
-                            </span>
-                            <span className="min-w-0 flex-1">
-                              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                                <span className="font-mono text-[10px] text-[#C8C4BC]">
-                                  M{moduleNumber(modId)}
-                                </span>
-                                {isStart && (
-                                  <span className="text-[10px] uppercase tracking-wide text-[#6B6760]">
-                                    Inicio del capítulo
+                            <button
+                              type="button"
+                              onClick={() => handleSelectModule(modId)}
+                              className="flex min-w-0 flex-1 items-start gap-4 text-left"
+                            >
+                              <span className="mt-0.5 w-6 shrink-0 font-mono text-[11px] text-[#A8A49C]">
+                                {String(ordinal).padStart(2, '0')}
+                              </span>
+                              <span className="min-w-0 flex-1">
+                                <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                  <span className="font-mono text-[10px] text-[#C8C4BC]">
+                                    M{moduleNumber(modId)}
                                   </span>
-                                )}
-                                {isActive && (
-                                  <span className="text-[10px] uppercase tracking-wide text-[#1C1B18]">
-                                    Módulo actual
+                                  {isStart && (
+                                    <span className="text-[10px] uppercase tracking-wide text-[#6B6760]">
+                                      Inicio del capítulo
+                                    </span>
+                                  )}
+                                  {isActive && (
+                                    <span className="text-[10px] uppercase tracking-wide text-[#1C1B18]">
+                                      Módulo actual
+                                    </span>
+                                  )}
+                                  {readOnlyModuleIds?.has(modId) && (
+                                    <span className="text-[10px] uppercase tracking-wide text-[#8A5C05]">
+                                      Lectura
+                                    </span>
+                                  )}
+                                </span>
+                                <span className="mt-1 block text-[14px] font-medium leading-snug text-[#1C1B18]">
+                                  {label}
+                                </span>
+                                {brief?.pregunta_guia && (
+                                  <span className="mt-1 block text-[12px] leading-snug text-[#6B6760] line-clamp-2">
+                                    {brief.pregunta_guia}
                                   </span>
                                 )}
                               </span>
-                              <span className="mt-1 block text-[14px] font-medium leading-snug text-[#1C1B18]">
-                                {label}
-                              </span>
-                              {brief?.pregunta_guia && (
-                                <span className="mt-1 block text-[12px] leading-snug text-[#6B6760] line-clamp-2">
-                                  {brief.pregunta_guia}
-                                </span>
-                              )}
-                            </span>
+                            </button>
                             <ModuleStandardsBadge moduleId={modId} className="mt-0.5 max-w-[42%]" />
-                            <ArrowRight
-                              size={14}
+                            <button
+                              type="button"
+                              onClick={() => handleSelectModule(modId)}
                               className="mt-1 shrink-0 text-[#C8C4BC] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6B6760]"
-                              aria-hidden
-                            />
-                          </button>
+                              aria-label={`Abrir ${label}`}
+                            >
+                              <ArrowRight size={14} aria-hidden />
+                            </button>
+                          </div>
                         </li>
                       )
                     })}

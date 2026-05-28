@@ -1,243 +1,564 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useMemo, useState } from 'react'
+import { CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ShieldCheck } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
-import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
-import Link from 'next/link'
+import { getApiUrl } from '@/lib/api'
 
-// ── Panel de Proyectos Vivos ──────────────────────────────────────────────────
+type TenantStage = 'validation' | 'planning' | 'execution' | 'expansion'
+type TierComercial = 'diagnostico' | 'implementacion' | 'operacion_completa'
 
-function AdminProyectosPanel() {
-  const [proyectos, setProyectos] = useState<{
-    id: string; municipio_id: string; zm: string; estado: string;
-    semanas_activo: number; pct_avance: number; is_showcase: boolean; negociacion: string
-  }[]>([])
-  const [loading, setLoading] = useState(true)
+interface TenantGate {
+  gate_id: string
+  status: string
+  evidencia_url: string | null
+  evidencia_label: string | null
+  decisor_humano: string | null
+  closed_at: string | null
+}
+
+interface TenantCapability {
+  module_id: string
+  active: boolean
+  source: string
+}
+
+interface TenantAuditLog {
+  id: string
+  actor: string
+  action: string
+  payload: Record<string, unknown>
+  created_at: string
+}
+
+interface AdminTenant {
+  id: string
+  nombre: string
+  estado_mx: string
+  municipio_id: string
+  inegi_clave: string
+  tier_comercial: TierComercial
+  state: {
+    current_stage: TenantStage
+    transition_mode: string
+    fecha_ingreso: string
+    fecha_cambio_stage: string
+  }
+  gates: TenantGate[]
+  capabilities: TenantCapability[]
+  audit_log: TenantAuditLog[]
+  municipal_profile?: {
+    mode: string
+    antecedentes: Record<string, unknown>
+    mapa_social: Record<string, unknown>
+    organigrama_servicio: Record<string, unknown>
+    provenance_status: string
+  }
+}
+
+const emptyForm = {
+  nombre: '',
+  estado_mx: '',
+  municipio_id: '',
+  inegi_clave: '',
+  tier_comercial: 'diagnostico' as TierComercial,
+}
+
+function authHeaders(): HeadersInit {
+  if (typeof window === 'undefined') return { 'Content-Type': 'application/json' }
+  const token = localStorage.getItem('alquimia_token')
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
+function statusClass(status: string) {
+  if (status === 'cerrado') return 'bg-[#EAF3DE] text-[#2F5B0D] border-[#C9DDB1]'
+  if (status === 'en_revision') return 'bg-[#FEF7E7] text-[#8A5C05] border-[#F5DCA0]'
+  if (status === 'fallido') return 'bg-[#FBEAEA] text-[#A8322A] border-[#EBC0BA]'
+  return 'bg-[#FDFCFA] text-[#6B6760] border-[#E8E4DC]'
+}
+
+function sourceLabelFrom(value: unknown): string {
+  if (!value || typeof value !== 'object') return ''
+  const source = (value as Record<string, unknown>).fuente
+  if (!source || typeof source !== 'object') return ''
+  return String((source as Record<string, unknown>).label ?? '')
+}
+
+function pendingSource(label: string) {
+  return {
+    valor: null,
+    estado: 'pendiente_verificacion',
+    fuente: {
+      label: label || 'Pendiente carga de datos del municipio',
+      status: 'pendiente_verificacion',
+      fecha: new Date().toISOString().slice(0, 10),
+    },
+  }
+}
+
+function linesFromItems(items: unknown, fields: string[]) {
+  if (!Array.isArray(items)) return ''
+  return items.map(item => {
+    const row = item && typeof item === 'object' ? item as Record<string, unknown> : {}
+    return fields.map(field => String(row[field] ?? '')).join(' | ')
+  }).join('\n')
+}
+
+function itemsFromLines(value: string, fields: string[], fallback: Record<string, unknown> = {}) {
+  return value
+    .split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const parts = line.split('|').map(part => part.trim())
+      return fields.reduce<Record<string, unknown>>((acc, field, idx) => {
+        acc[field] = parts[idx] || fallback[field] || 'pendiente_verificacion'
+        return acc
+      }, { ...fallback })
+    })
+}
+
+export default function AdminPage() {
+  const [tenants, setTenants] = useState<AdminTenant[]>([])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [form, setForm] = useState(emptyForm)
+  const [evidence, setEvidence] = useState({
+    gate_id: 'G1',
+    evidencia_url: '',
+    evidencia_label: '',
+    decisor_humano: 'Founder',
+  })
+  const [loading, setLoading] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
+  const [profileDraft, setProfileDraft] = useState({
+    antecedentes: '{}',
+    mapa_social: '{"actores":[]}',
+    organigrama_servicio: '{}',
+    provenance_status: 'pendiente_verificacion',
+  })
+
+  const selected = useMemo(
+    () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
+    [selectedId, tenants],
+  )
 
   useEffect(() => {
-    const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-    fetch(`${base}/api/v1/proyecto/`)
-      .then(r => r.json())
-      .then(d => setProyectos(d.proyectos || []))
-      .catch(() => setProyectos([]))
-      .finally(() => setLoading(false))
+    const profile = selected?.municipal_profile
+    if (!profile) return
+    setProfileDraft({
+      antecedentes: JSON.stringify(profile.antecedentes ?? {}, null, 2),
+      mapa_social: JSON.stringify(profile.mapa_social ?? { actores: [] }, null, 2),
+      organigrama_servicio: JSON.stringify(profile.organigrama_servicio ?? {}, null, 2),
+      provenance_status: profile.provenance_status ?? 'pendiente_verificacion',
+    })
+  }, [selected?.id, selected?.municipal_profile])
+
+  async function loadTenants(nextSelectedId?: string) {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants`, { headers: authHeaders() })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      const next = data.tenants ?? []
+      setTenants(next)
+      if (nextSelectedId) setSelectedId(nextSelectedId)
+      else if (!selectedId && next[0]) setSelectedId(next[0].id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar tenants')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void loadTenants()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const SEMAFORO_DEMO = (pct: number, semanas: number) => {
-    if (semanas > 8 && pct < 20) return 'rojo'
-    if (pct < 50 && semanas > 4)  return 'amarillo'
-    return 'verde'
+  async function createTenant() {
+    setError(null)
+    setMessage(null)
+    const payload = { ...form, current_stage: 'validation' }
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setForm(emptyForm)
+      setMessage(`Tenant creado: ${data.nombre}`)
+      await loadTenants(data.id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo crear tenant')
+    }
+  }
+
+  async function registerEvidence() {
+    if (!selected) return
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${selected.id}/gates/${evidence.gate_id}/evidence`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify(evidence),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`Evidencia registrada para ${evidence.gate_id}`)
+      await loadTenants(data.id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo registrar evidencia')
+    }
+  }
+
+  async function closeGate() {
+    if (!selected) return
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${selected.id}/gates/${evidence.gate_id}/close`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({
+          evidencia_url: evidence.evidencia_url || undefined,
+          evidencia_label: evidence.evidencia_label || undefined,
+          decisor_humano: evidence.decisor_humano,
+        }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`${evidence.gate_id} cerrado manualmente`)
+      await loadTenants(data.id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo cerrar gate')
+    }
+  }
+
+  async function saveMunicipalProfile() {
+    if (!selected) return
+    setError(null)
+    setMessage(null)
+    try {
+      const payload = {
+        antecedentes: JSON.parse(profileDraft.antecedentes),
+        mapa_social: JSON.parse(profileDraft.mapa_social),
+        organigrama_servicio: JSON.parse(profileDraft.organigrama_servicio),
+        provenance_status: profileDraft.provenance_status,
+      }
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${selected.id}/municipal-profile`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`Perfil municipal actualizado: ${data.municipal_profile?.mode ?? 'carga_inicial'}`)
+      await loadTenants(data.id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo guardar perfil municipal')
+    }
+  }
+
+  function parseProfileDraft(key: 'antecedentes' | 'mapa_social' | 'organigrama_servicio') {
+    try {
+      return JSON.parse(profileDraft[key]) as Record<string, unknown>
+    } catch {
+      return {}
+    }
+  }
+
+  function updateProfileDraft(
+    key: 'antecedentes' | 'mapa_social' | 'organigrama_servicio',
+    updater: (draft: Record<string, unknown>) => Record<string, unknown>,
+  ) {
+    const next = updater(parseProfileDraft(key))
+    setProfileDraft(prev => ({ ...prev, [key]: JSON.stringify(next, null, 2) }))
+  }
+
+  function updateAntecedenteSource(key: string, label: string) {
+    updateProfileDraft('antecedentes', draft => ({ ...draft, [key]: pendingSource(label) }))
   }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <p className="text-[12px] text-[#A8A49C]">
-          Proyectos activos en la plataforma · Consultor vivo
-        </p>
-        <Link
-          href="/proyecto"
-          className="text-[11px] text-[#3B6D11] hover:underline"
-        >
-          + Nuevo proyecto
-        </Link>
-      </div>
-
-      {loading ? (
-        <div className="text-center py-10 text-[#A8A49C] text-[12px]">Cargando proyectos…</div>
-      ) : proyectos.length === 0 ? (
-        <div className="bg-[#FDFCFA] border border-dashed border-[#E8E4DC] rounded-[16px] p-10 text-center">
-          <p className="text-3xl mb-3">🏗️</p>
-          <p className="text-[13px] text-[#6B6760]">No hay proyectos aún.</p>
-          <p className="text-[11px] text-[#A8A49C] mt-1">
-            Se crean automáticamente al cerrar la venta del servicio.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {proyectos.map(p => {
-            const sem = SEMAFORO_DEMO(p.pct_avance, p.semanas_activo)
-            return (
-              <Link
-                key={p.id}
-                href={`/proyecto/${p.municipio_id}?proyecto_id=${p.id}`}
-                className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[16px] p-5 hover:shadow-md transition-shadow block"
-              >
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2.5 h-2.5 rounded-full ${
-                      sem === 'verde' ? 'bg-emerald-500' : sem === 'amarillo' ? 'bg-amber-400' : 'bg-red-500'
-                    }`} />
-                    <span className="text-[12px] font-bold text-[#1C1B18]">{p.municipio_id}</span>
-                  </div>
-                  {p.is_showcase && (
-                    <span className="text-[9px] bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full font-medium">
-                      Showcase
-                    </span>
-                  )}
-                </div>
-                <div className="space-y-1.5">
-                  <div className="flex justify-between text-[11px] text-[#6B6760]">
-                    <span>Avance</span>
-                    <span className="font-medium">{p.pct_avance.toFixed(0)}%</span>
-                  </div>
-                  <div className="w-full h-1.5 bg-[#E8E4DC] rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-[#3B6D11] rounded-full transition-all duration-500"
-                      style={{ width: `${p.pct_avance}%` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-[10px] text-[#A8A49C]">
-                    <span>{p.zm}</span>
-                    <span>{p.semanas_activo} sem · {p.estado}</span>
-                  </div>
-                </div>
-              </Link>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-const USUARIOS_MOCK = [
-  { id: 1, nombre: 'Arq. Carlos Pérez', email: 'carlos@slp.gob.mx', rol: 'analista', zm: 'SLP', ultimo_acceso: '2025-04-26' },
-  { id: 2, nombre: 'Lic. María García', email: 'maria@qro.gob.mx',  rol: 'analista', zm: 'QRO', ultimo_acceso: '2025-04-25' },
-  { id: 3, nombre: 'Admin Sistema',     email: 'admin@alquimia.mx', rol: 'admin',    zm: 'ALL', ultimo_acceso: '2025-04-27' },
-]
-
-const LOGS_MOCK = [
-  { ts: '2025-04-27 09:14', usuario: 'carlos@slp.gob.mx', accion: 'Generó plan circularidad', zm: 'SLP', estado: 'completado' },
-  { ts: '2025-04-26 15:30', usuario: 'maria@qro.gob.mx',  accion: 'Generó plan circularidad', zm: 'QRO', estado: 'en proceso' },
-  { ts: '2025-04-25 11:00', usuario: 'carlos@slp.gob.mx', accion: 'Exportó PDF ejecutivo',    zm: 'SLP', estado: 'completado' },
-]
-
-export default function AdminPage() {
-  const [tab, setTab] = useState<'usuarios' | 'logs' | 'agentes' | 'proyectos'>('usuarios')
-
-  return (
     <AppShell>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        <div className="mb-6">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">/admin — Panel de administración</p>
-          <h1 className="font-serif text-[28px] text-[#1C1B18]">Administración ALQUIMIA</h1>
-          <SimulatorGatewayHint variant="compact" className="mt-3 max-w-2xl" />
-        </div>
-
-        {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-1 w-fit">
-          {[
-            { id: 'usuarios', label: 'Usuarios' },
-            { id: 'logs',     label: 'Logs de generación' },
-            { id: 'agentes',   label: 'Estado ÁGORA' },
-            { id: 'proyectos', label: 'Proyectos Vivos' },
-          ].map(t => (
-            <button
-              key={t.id}
-              onClick={() => setTab(t.id as typeof tab)}
-              className={`px-4 py-2 rounded-[8px] text-[12px] font-medium transition-colors ${
-                tab === t.id ? 'bg-[#3B6D11] text-white' : 'text-[#6B6760] hover:bg-[#F0EDE5]'
-              }`}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-
-        {tab === 'usuarios' && (
+      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <p className="text-[13px] font-medium text-[#1C1B18]">{USUARIOS_MOCK.length} usuarios registrados</p>
-              <button className="btn-primary text-[12px]">+ Crear usuario</button>
-            </div>
-            <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] overflow-hidden">
-              <table className="w-full text-[12px]">
-                <thead className="bg-[#F0EDE5]">
-                  <tr>
-                    {['Nombre','Email','Rol','ZM','Último acceso','Acciones'].map(h => (
-                      <th key={h} className="text-left py-3 px-4 text-[#6B6760] font-medium">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {USUARIOS_MOCK.map(u => (
-                    <tr key={u.id} className="border-t border-[#E8E4DC]">
-                      <td className="py-3 px-4 font-medium text-[#1C1B18]">{u.nombre}</td>
-                      <td className="py-3 px-4 text-[#6B6760]">{u.email}</td>
-                      <td className="py-3 px-4">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-medium ${u.rol === 'admin' ? 'bg-[#FBEAEA] text-[#C0392B]' : 'bg-[#EAF3DE] text-[#3B6D11]'}`}>
-                          {u.rol}
-                        </span>
-                      </td>
-                      <td className="py-3 px-4 font-mono text-[#6B6760]">{u.zm}</td>
-                      <td className="py-3 px-4 text-[#A8A49C]">{u.ultimo_acceso}</td>
-                      <td className="py-3 px-4">
-                        <button className="text-[#1A5FA8] hover:underline mr-3">Editar</button>
-                        <button className="text-[#C0392B] hover:underline">Eliminar</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <p className="mb-1 text-[10px] uppercase tracking-[0.08em] text-[#8E8980]">/admin · Plataforma 0</p>
+            <h1 className="font-serif text-[26px] text-[#1C1B18]">Backoffice de tenants</h1>
+          </div>
+          <button
+            type="button"
+            onClick={() => void loadTenants()}
+            className="inline-flex h-9 items-center gap-2 border border-[#D8D1C4] bg-[#FDFCFA] px-3 text-[12px] font-medium text-[#1C1B18]"
+          >
+            <RefreshCw size={14} /> Actualizar
+          </button>
+        </div>
+
+        {(message || error) && (
+          <div className={`mb-4 border px-4 py-3 text-[12px] ${error ? 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]' : 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'}`}>
+            {error ?? message}
           </div>
         )}
 
-        {tab === 'logs' && (
-          <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[14px] overflow-hidden">
-            <table className="w-full text-[12px]">
-              <thead className="bg-[#F0EDE5]">
-                <tr>
-                  {['Timestamp','Usuario','Acción','ZM','Estado'].map(h => (
-                    <th key={h} className="text-left py-3 px-4 text-[#6B6760] font-medium">{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {LOGS_MOCK.map((l, i) => (
-                  <tr key={i} className="border-t border-[#E8E4DC]">
-                    <td className="py-3 px-4 font-mono text-[10px] text-[#A8A49C]">{l.ts}</td>
-                    <td className="py-3 px-4 text-[#6B6760]">{l.usuario}</td>
-                    <td className="py-3 px-4 text-[#1C1B18]">{l.accion}</td>
-                    <td className="py-3 px-4 font-mono">{l.zm}</td>
-                    <td className="py-3 px-4">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] ${
-                        l.estado === 'completado' ? 'bg-[#EAF3DE] text-[#3B6D11]' : 'bg-[#FEF7E7] text-[#D4881E]'
-                      }`}>{l.estado}</span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-
-        {tab === 'proyectos' && (
-          <AdminProyectosPanel />
-        )}
-
-        {tab === 'agentes' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[
-              { nombre: 'Director',    estado: 'idle',  ultima: '2025-04-27 09:14' },
-              { nombre: 'Arquitecto',  estado: 'idle',  ultima: '2025-04-27 09:16' },
-              { nombre: 'Ghostwriter', estado: 'idle',  ultima: '2025-04-27 09:22' },
-              { nombre: 'Comparador',  estado: 'idle',  ultima: '2025-04-26 15:30' },
-              { nombre: 'Mapeador',    estado: 'idle',  ultima: '2025-04-26 15:34' },
-              { nombre: 'Validador',   estado: 'idle',  ultima: '2025-04-27 09:25' },
-              { nombre: 'Humanizador', estado: 'idle',  ultima: '2025-04-27 09:27' },
-            ].map(a => (
-              <div key={a.nombre} className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[12px] px-5 py-4 flex items-center gap-4">
-                <div className={`w-3 h-3 rounded-full ${a.estado === 'running' ? 'bg-[#3B6D11] animate-pulse' : 'bg-[#E2DED6]'}`} />
-                <div className="flex-1">
-                  <p className="text-[13px] font-medium text-[#1C1B18]">{a.nombre}</p>
-                  <p className="text-[11px] text-[#A8A49C]">Última ejecución: {a.ultima}</p>
-                </div>
-                <span className="text-[10px] text-[#A8A49C] uppercase">{a.estado}</span>
+        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
+          <aside className="space-y-5">
+            <section className="border border-[#E1DACE] bg-[#FDFCFA] p-4">
+              <div className="mb-4 flex items-center gap-2">
+                <Plus size={16} className="text-[#3B6D11]" />
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Nuevo tenant</h2>
               </div>
-            ))}
-          </div>
-        )}
+              <div className="space-y-3">
+                {[
+                  ['nombre', 'Municipio'],
+                  ['estado_mx', 'Estado'],
+                  ['municipio_id', 'Municipio ID'],
+                  ['inegi_clave', 'Clave INEGI'],
+                ].map(([key, label]) => (
+                  <label key={key} className="block text-[11px] font-medium text-[#6B6760]">
+                    {label}
+                    <input
+                      value={form[key as keyof typeof form]}
+                      onChange={event => setForm(prev => ({ ...prev, [key]: event.target.value }))}
+                      className="mt-1 h-9 w-full border border-[#D8D1C4] bg-white px-3 text-[12px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
+                    />
+                  </label>
+                ))}
+                <label className="block text-[11px] font-medium text-[#6B6760]">
+                  Tier comercial
+                  <select
+                    value={form.tier_comercial}
+                    onChange={event => setForm(prev => ({ ...prev, tier_comercial: event.target.value as TierComercial }))}
+                    className="mt-1 h-9 w-full border border-[#D8D1C4] bg-white px-3 text-[12px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
+                  >
+                    <option value="diagnostico">Diagnostico</option>
+                    <option value="implementacion">Implementacion</option>
+                    <option value="operacion_completa">Operacion completa</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => void createTenant()}
+                  disabled={!form.nombre || !form.estado_mx || !form.municipio_id || !form.inegi_clave}
+                  className="h-9 w-full bg-[#3B6D11] text-[12px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#B9C8A7]"
+                >
+                  Crear en validation
+                </button>
+              </div>
+            </section>
+
+            <section className="border border-[#E1DACE] bg-[#FDFCFA]">
+              <div className="flex items-center justify-between border-b border-[#E8E4DC] px-4 py-3">
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Tenants</h2>
+                <span className="text-[11px] text-[#8E8980]">{loading ? '...' : tenants.length}</span>
+              </div>
+              <div className="max-h-[420px] overflow-auto">
+                {tenants.length === 0 ? (
+                  <p className="px-4 py-6 text-[12px] text-[#8E8980]">Sin tenants registrados.</p>
+                ) : tenants.map(tenant => (
+                  <button
+                    key={tenant.id}
+                    type="button"
+                    onClick={() => setSelectedId(tenant.id)}
+                    className={`block w-full border-b border-[#EEE8DE] px-4 py-3 text-left hover:bg-[#F4F2ED] ${selected?.id === tenant.id ? 'bg-[#EAF3DE]' : ''}`}
+                  >
+                    <span className="block text-[13px] font-semibold text-[#1C1B18]">{tenant.nombre}</span>
+                    <span className="mt-1 block text-[11px] text-[#6B6760]">{tenant.state.current_stage} · {tenant.tier_comercial}</span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          </aside>
+
+          <main className="space-y-5">
+            {!selected ? (
+              <section className="border border-dashed border-[#D8D1C4] bg-[#FDFCFA] p-8 text-[13px] text-[#6B6760]">
+                Crea o selecciona un tenant.
+              </section>
+            ) : (
+              <>
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="mb-2 flex items-center gap-2">
+                        <Landmark size={18} className="text-[#3B6D11]" />
+                        <h2 className="text-[18px] font-semibold text-[#1C1B18]">{selected.nombre}</h2>
+                      </div>
+                      <p className="text-[12px] text-[#6B6760]">{selected.estado_mx} · {selected.municipio_id} · INEGI {selected.inegi_clave}</p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3 text-[12px] md:min-w-[360px]">
+                      <div className="border border-[#E8E4DC] bg-white px-3 py-2">
+                        <span className="block text-[10px] uppercase text-[#8E8980]">Etapa</span>
+                        <strong className="text-[#1C1B18]">{selected.state.current_stage}</strong>
+                      </div>
+                      <div className="border border-[#E8E4DC] bg-white px-3 py-2">
+                        <span className="block text-[10px] uppercase text-[#8E8980]">Tier</span>
+                        <strong className="text-[#1C1B18]">{selected.tier_comercial}</strong>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <ShieldCheck size={16} className="text-[#3B6D11]" />
+                    <h2 className="text-[13px] font-semibold text-[#1C1B18]">Gates G1-G5</h2>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[720px] text-[12px]">
+                      <thead>
+                        <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+                          <th className="py-2 pr-3 font-medium">Gate</th>
+                          <th className="py-2 pr-3 font-medium">Estado</th>
+                          <th className="py-2 pr-3 font-medium">Evidencia</th>
+                          <th className="py-2 pr-3 font-medium">Decisor</th>
+                          <th className="py-2 pr-3 font-medium">Cierre</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {selected.gates.map(gate => (
+                          <tr key={gate.gate_id} className="border-b border-[#EEE8DE]">
+                            <td className="py-3 pr-3 font-semibold text-[#1C1B18]">{gate.gate_id}</td>
+                            <td className="py-3 pr-3">
+                              <span className={`border px-2 py-1 text-[11px] ${statusClass(gate.status)}`}>{gate.status}</span>
+                            </td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{gate.evidencia_label ?? 'Pendiente'}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{gate.decisor_humano ?? 'Pendiente'}</td>
+                            <td className="py-3 pr-3 text-[#8E8980]">{gate.closed_at ? new Date(gate.closed_at).toLocaleString() : '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="mt-4 grid gap-3 md:grid-cols-[90px_1fr_1fr_170px_auto_auto]">
+                    <select
+                      value={evidence.gate_id}
+                      onChange={event => setEvidence(prev => ({ ...prev, gate_id: event.target.value }))}
+                      className="h-9 border border-[#D8D1C4] bg-white px-2 text-[12px]"
+                    >
+                      {['G1', 'G2', 'G3', 'G4', 'G5'].map(g => <option key={g}>{g}</option>)}
+                    </select>
+                    <input
+                      value={evidence.evidencia_label}
+                      onChange={event => setEvidence(prev => ({ ...prev, evidencia_label: event.target.value }))}
+                      placeholder="Etiqueta evidencia"
+                      className="h-9 border border-[#D8D1C4] bg-white px-3 text-[12px]"
+                    />
+                    <input
+                      value={evidence.evidencia_url}
+                      onChange={event => setEvidence(prev => ({ ...prev, evidencia_url: event.target.value }))}
+                      placeholder="URL o ruta de evidencia"
+                      className="h-9 border border-[#D8D1C4] bg-white px-3 text-[12px]"
+                    />
+                    <input
+                      value={evidence.decisor_humano}
+                      onChange={event => setEvidence(prev => ({ ...prev, decisor_humano: event.target.value }))}
+                      placeholder="Decisor"
+                      className="h-9 border border-[#D8D1C4] bg-white px-3 text-[12px]"
+                    />
+                    <button type="button" onClick={() => void registerEvidence()} className="h-9 border border-[#3B6D11] px-3 text-[12px] font-semibold text-[#2F5B0D]">
+                      Registrar
+                    </button>
+                    <button type="button" onClick={() => void closeGate()} className="h-9 bg-[#1C1B18] px-3 text-[12px] font-semibold text-white">
+                      Cerrar
+                    </button>
+                  </div>
+                </section>
+
+                <section className="grid gap-5 xl:grid-cols-2">
+                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                    <div className="mb-4 flex items-center gap-2">
+                      <CheckCircle2 size={16} className="text-[#3B6D11]" />
+                      <h2 className="text-[13px] font-semibold text-[#1C1B18]">Capabilities activas</h2>
+                    </div>
+                    <div className="grid max-h-[320px] gap-2 overflow-auto sm:grid-cols-2">
+                      {selected.capabilities.map(cap => (
+                        <div key={cap.module_id} className="border border-[#E8E4DC] bg-white px-3 py-2 text-[11px] text-[#1C1B18]">
+                          <span className="font-mono">{cap.module_id}</span>
+                          <span className="ml-2 text-[#8E8980]">{cap.source}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                    <div className="mb-4 flex items-center gap-2">
+                      <FileCheck2 size={16} className="text-[#3B6D11]" />
+                      <h2 className="text-[13px] font-semibold text-[#1C1B18]">Auditoria minima</h2>
+                    </div>
+                    <div className="max-h-[320px] space-y-2 overflow-auto">
+                      {[...selected.audit_log].reverse().map(log => (
+                        <div key={log.id} className="border border-[#E8E4DC] bg-white px-3 py-2">
+                          <div className="flex items-center justify-between gap-3 text-[11px]">
+                            <strong className="text-[#1C1B18]">{log.action}</strong>
+                            <span className="text-[#8E8980]">{new Date(log.created_at).toLocaleString()}</span>
+                          </div>
+                          <p className="mt-1 text-[11px] text-[#6B6760]">{log.actor}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </section>
+
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex flex-col gap-1">
+                    <h2 className="text-[13px] font-semibold text-[#1C1B18]">Personalización municipal Fase 6</h2>
+                    <p className="text-[11px] text-[#6B6760]">
+                      Modo actual: {selected.municipal_profile?.mode ?? 'carga_inicial'} · todo campo sin fuente debe quedar como pendiente de verificación.
+                    </p>
+                  </div>
+                  <div className="grid gap-4 xl:grid-cols-3">
+                    {[
+                      ['antecedentes', 'tenant.antecedentes'],
+                      ['mapa_social', 'tenant.mapa_social'],
+                      ['organigrama_servicio', 'tenant.organigrama_servicio'],
+                    ].map(([key, label]) => (
+                      <label key={key} className="block text-[11px] font-medium text-[#6B6760]">
+                        {label}
+                        <textarea
+                          value={profileDraft[key as keyof typeof profileDraft]}
+                          onChange={event => setProfileDraft(prev => ({ ...prev, [key]: event.target.value }))}
+                          rows={14}
+                          spellCheck={false}
+                          className="mt-1 w-full border border-[#D8D1C4] bg-white px-3 py-2 font-mono text-[11px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
+                        />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="mt-4 flex flex-wrap items-end gap-3">
+                    <label className="block text-[11px] font-medium text-[#6B6760]">
+                      Estado de provenance
+                      <select
+                        value={profileDraft.provenance_status}
+                        onChange={event => setProfileDraft(prev => ({ ...prev, provenance_status: event.target.value }))}
+                        className="mt-1 h-9 border border-[#D8D1C4] bg-white px-3 text-[12px] text-[#1C1B18]"
+                      >
+                        <option value="pendiente_verificacion">Pendiente verificación</option>
+                        <option value="fuentes_cargadas">Fuentes cargadas</option>
+                      </select>
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => void saveMunicipalProfile()}
+                      className="h-9 bg-[#1C1B18] px-4 text-[12px] font-semibold text-white"
+                    >
+                      Guardar perfil municipal
+                    </button>
+                  </div>
+                </section>
+              </>
+            )}
+          </main>
+        </div>
       </div>
     </AppShell>
   )

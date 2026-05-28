@@ -19,7 +19,7 @@ export const IMPLEMENTAR_BRIDGE_MODULE_IDS = [
   'antecedentes_municipales',
   'city_baseline',
   'marco_legal',
-  'dictamen_tecnico',
+  'capacidad_institucional',
 ] as const
 
 /** Cap. 1 completo + Cap. 3 completo (decidir). */

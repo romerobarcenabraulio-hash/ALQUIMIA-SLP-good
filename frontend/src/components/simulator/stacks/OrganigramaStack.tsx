@@ -12,6 +12,8 @@ import { ANCLA_PROGRAMA_RSU } from '@/data/organigramaMunicipalCanon'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import { CHART_AXIS_TICK, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { Conclusion, EditorialCallout, KpiAnchorGrid } from '@/components/editorial'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantOrganigramaServicioPanel } from '@/components/simulator/TenantProfilePanels'
 
 // ── Staff data per CA type ────────────────────────────────────────────────────
 
@@ -126,6 +128,7 @@ function raciColor(val: string) {
 }
 
 export function OrganigramaStack() {
+  const { profile } = useTenantMunicipalProfile()
   const { mixCAs, resultados, zmActiva, municipiosActivos } = useSimulatorStore()
   const [caTipo, setCaTipo] = useState<'P' | 'M' | 'G'>('M')
 
@@ -152,6 +155,8 @@ export function OrganigramaStack() {
     <div className="pb-4">
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
         <div className="space-y-5">
+
+          <TenantOrganigramaServicioPanel profile={profile} />
 
           {/* System-level KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">

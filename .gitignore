@@ -39,6 +39,9 @@ frontend/.next/
 frontend/out/
 frontend/.turbo/
 
+# Backups binarios locales — guardar fuera de git o en storage/LFS; los manifest sí se versionan
+backups/**/*.tgz
+
 # TypeScript incremental (local; cambia en cada tsc y ensucia diffs/PRs)
 frontend/tsconfig.tsbuildinfo
 .vercel

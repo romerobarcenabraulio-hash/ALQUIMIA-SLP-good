@@ -1,0 +1,371 @@
+{
+  "schema": "alquimia.slp.phase4.backup_manifest.v1",
+  "created_at": "2026-05-27T23:07:06.450550+00:00",
+  "repo": "/Users/braulioromerobarcena/Documents/alquimia-slp",
+  "tenant_id": "slp-capital",
+  "critical_buckets": {
+    "bibliografia": {
+      "files": 5,
+      "status": "present"
+    },
+    "calculos_base": {
+      "files": 14,
+      "status": "present"
+    },
+    "escenarios": {
+      "files": 5,
+      "status": "present"
+    },
+    "configuraciones": {
+      "files": 4,
+      "status": "present"
+    },
+    "fuentes_provenance": {
+      "files": 38,
+      "status": "present"
+    }
+  },
+  "missing_inputs": [],
+  "files": [
+    {
+      "path": "docs/municipalities/SLP/informe_ejecutivo.md",
+      "bytes": 3378,
+      "sha256": "5be177f82480975b0f2f65b67477dc73b92f8f0650deb39f9d1971919c0660e0"
+    },
+    {
+      "path": "docs/audit/charts_inventory.md",
+      "bytes": 8453,
+      "sha256": "cd2cbb62691f731c62080773a9c77918e106d9a2f0889387dee69008d337b6cd"
+    },
+    {
+      "path": "docs/audit/simulator_editorial_diffs.md",
+      "bytes": 2615,
+      "sha256": "455040dec417216c3e71be9bbe5b47fdf2e7c77bc12fecec49100c4f53962e5f"
+    },
+    {
+      "path": "docs/audit/simulator_editorial_inventory.md",
+      "bytes": 8730,
+      "sha256": "4f13c09f2966144181d5c6add59aa791dd475c0153d375adeab8733dd548273c"
+    },
+    {
+      "path": "docs/audit/standards_accuracy.md",
+      "bytes": 15344,
+      "sha256": "237d55c88cec93da8977df5cf99df9c0d827fe8f4a34b78bccf42d1378b2e2b3"
+    },
+    {
+      "path": "data/planning/reports/weekly_2026-W22.json",
+      "bytes": 5261,
+      "sha256": "dd6891f1e3a49ed765ea84672d08c5af2f910541ef31d527b26ab68507f27fd7"
+    },
+    {
+      "path": "data/planning/weekly_status_latest.json",
+      "bytes": 5261,
+      "sha256": "dd6891f1e3a49ed765ea84672d08c5af2f910541ef31d527b26ab68507f27fd7"
+    },
+    {
+      "path": "data/lifecycle/financial_latest.json",
+      "bytes": 1875,
+      "sha256": "f0acd527aa88d574f8bbce0de6ef0b43d8727f2096a178648e85c04da04e9c9e"
+    },
+    {
+      "path": "data/lifecycle/sensitivity_latest.json",
+      "bytes": 2506,
+      "sha256": "c4704784378d5878c0e5335a172e62817ed1082e0d4db9ff2b01c5cf7bdb86d9"
+    },
+    {
+      "path": "data/environmental/co2e_latest.json",
+      "bytes": 1289,
+      "sha256": "a33174d54ecc517d4244a85ea406b730931fdb823ace85b9aa18f082851c0a9f"
+    },
+    {
+      "path": "data/environmental/lca_factors.json",
+      "bytes": 1987,
+      "sha256": "8e217fb348c56add7420a5b5bfeb193df7c4bf464da1b0d1a91e9894ffb52ee6"
+    },
+    {
+      "path": "data/environmental/reports/informe_2026-05-25.md",
+      "bytes": 3145,
+      "sha256": "fe7736373b2d28005942c9cc8e083d444efee51822745f40cef5c28a7ca39853"
+    },
+    {
+      "path": "data/environmental/reports/informe_latest.md",
+      "bytes": 3145,
+      "sha256": "fe7736373b2d28005942c9cc8e083d444efee51822745f40cef5c28a7ca39853"
+    },
+    {
+      "path": "data/assets/inventory.json",
+      "bytes": 227,
+      "sha256": "1129fdca0d78a8ff059305fcffaa89134980909ced1c9937c553a2f5e5af79ff"
+    },
+    {
+      "path": "backend/data/municipal_legal_disclaimers_2026-05-07.json",
+      "bytes": 8043,
+      "sha256": "c4ba40ab69b7d95d28d84f172d046d9ebdaed7247b7b392b64e938c6d4f64082"
+    },
+    {
+      "path": "backend/data/planning/reports/weekly_2026-W22.json",
+      "bytes": 4640,
+      "sha256": "eacb30063a30501e3aff182cc0cb1899183f7f1ef2ef9063e80f9a5bece1d37e"
+    },
+    {
+      "path": "backend/data/planning/weekly_status_latest.json",
+      "bytes": 4640,
+      "sha256": "eacb30063a30501e3aff182cc0cb1899183f7f1ef2ef9063e80f9a5bece1d37e"
+    },
+    {
+      "path": "backend/data/risk/risk_register.json",
+      "bytes": 4302,
+      "sha256": "41c8460e9ed05833524cca15affff73cfb9514efc2521c46dcf2a91084b9b7be"
+    },
+    {
+      "path": "backend/data/state/gate_status.json",
+      "bytes": 1076,
+      "sha256": "0af0c9624d9462e8acd0f146ec2ee7841f623ecabe167f161ed8bd17d0561797"
+    },
+    {
+      "path": "frontend/src/store/simulatorStore.ts",
+      "bytes": 47641,
+      "sha256": "225ab949fbc76999c698182010277e2864e2b12ed4bef24536bd4d1551de34fd"
+    },
+    {
+      "path": "frontend/src/lib/calculator.ts",
+      "bytes": 35203,
+      "sha256": "098ebe1e7206122f1bc80186354fcf0c14c3a8efba6b66da5f04cc1ce2e3b894"
+    },
+    {
+      "path": "frontend/src/lib/simulator/clientModuleRegistry.ts",
+      "bytes": 15363,
+      "sha256": "1cf64278101c0865376613ecba252bc511d8024d9966218811c259451e43c3d0"
+    },
+    {
+      "path": "frontend/src/lib/chapterConfig.ts",
+      "bytes": 8093,
+      "sha256": "90588dec835ce58c17cd60ae60172852ebb37ffd4c4ab7583cabf252519f6782"
+    },
+    {
+      "path": "frontend/src/data/adendos.ts",
+      "bytes": 59769,
+      "sha256": "3049c01fcac72fd5198a5179b8e7aaaedf17aa080532344c0e5b6d611ddacbd7"
+    },
+    {
+      "path": "frontend/src/data/adendosExtendedCiudades.ts",
+      "bytes": 16034,
+      "sha256": "ca73c519538060e60b97e1f8964341e8d4011a4a5300ddaf24d9e197faa3056f"
+    },
+    {
+      "path": "frontend/src/data/chartBriefCatalog.ts",
+      "bytes": 33924,
+      "sha256": "8fdf4d6a470f2f1c6fa1965006f673f9881da67d4826a88fc32af9e2079e97db"
+    },
+    {
+      "path": "frontend/src/data/dictamenTecnicoEvidence.ts",
+      "bytes": 7182,
+      "sha256": "3b54406a57e4650d259f965533afc21790cd509d9cc923da344dc908376697f6"
+    },
+    {
+      "path": "frontend/src/data/glosario.ts",
+      "bytes": 13207,
+      "sha256": "26f2a669274339b233746dbe7e3815f565638ebab6b02fce97ce0877bd5ca23f"
+    },
+    {
+      "path": "frontend/src/data/hitosTimeline.ts",
+      "bytes": 14551,
+      "sha256": "ca34422ca20b6fdc3819fcd7cdb99315cc2f4f3443760aa3347bdf7dd6596013"
+    },
+    {
+      "path": "frontend/src/data/hubDocumentosCapitulo.test.ts",
+      "bytes": 2152,
+      "sha256": "98006afd61a352f1c4f393a73f39ef8fd3e894221d790fc6d14fc964db137ef0"
+    },
+    {
+      "path": "frontend/src/data/hubDocumentosCapitulo.ts",
+      "bytes": 12117,
+      "sha256": "ecf75f764755240948ccc5362daae179067ad410c8f08639d215aa3a76f9d4fd"
+    },
+    {
+      "path": "frontend/src/data/inegiCensus2020StateFacts.ts",
+      "bytes": 3477,
+      "sha256": "2cb1235fea809bf9613afc05ebb28bb472c000bfeb94c433e0293c35560db2c5"
+    },
+    {
+      "path": "frontend/src/data/materialPriceResearch.ts",
+      "bytes": 5754,
+      "sha256": "78858c5f64376a9584bff442bb7446fcb247bde7f1b1edc0dc8d5b50b589006e"
+    },
+    {
+      "path": "frontend/src/data/metricStandardsTrace.ts",
+      "bytes": 2731,
+      "sha256": "f9d17d0488a2d49ecc7faf6e55380cefff522d6e15297b30fab429aa4e94e08f"
+    },
+    {
+      "path": "frontend/src/data/moduleEditorialBriefs.ts",
+      "bytes": 101250,
+      "sha256": "123f91e43eb5b94082920c8cd266ab89cdef750ff59f589a46cd84ef0fbb4bd1"
+    },
+    {
+      "path": "frontend/src/data/municipalNarratives.ts",
+      "bytes": 6990,
+      "sha256": "fe5e3d1a2277523481480332d4ad93f92dd53a4c95a913a04ad4c5903fb67406"
+    },
+    {
+      "path": "frontend/src/data/organigramaDiagnostico.ts",
+      "bytes": 8753,
+      "sha256": "a426451201d60f9e04f4b6143679ae16501b0c54aa2acbce421ed964e501d306"
+    },
+    {
+      "path": "frontend/src/data/organigramaMunicipalCanon.ts",
+      "bytes": 12221,
+      "sha256": "e74b2d049ce900ceabf71e51e6febc65566124944a8ab97b5c62b0edd36d6a51"
+    },
+    {
+      "path": "frontend/src/data/recicladorasByZm.ts",
+      "bytes": 8459,
+      "sha256": "bc180d43ae8f94346f3d5f1735960ba13aa7491f67fd43b10ddf23e93953feb8"
+    },
+    {
+      "path": "frontend/src/data/reglamentos.ts",
+      "bytes": 14218,
+      "sha256": "2e4ab94bf37312a415404b012578add07a573ebdcd33d7447c308f4e8c3ff7b5"
+    },
+    {
+      "path": "frontend/src/data/sankeyData.ts",
+      "bytes": 14095,
+      "sha256": "5c4bcf43c5af517385d865acb66c20ad2b51d3c3dee54045f44b921eabd74a5b"
+    },
+    {
+      "path": "frontend/src/data/socialRiskMatrixContent.ts",
+      "bytes": 5851,
+      "sha256": "a28d72530d6628635cd40ada6dd10e4d40a2563366532b6286c12473dab24912"
+    },
+    {
+      "path": "frontend/src/data/socialStats/SOURCE_TRACE.md",
+      "bytes": 4235,
+      "sha256": "4e9914e2e6fb5bbc0248dd32da336d4172d7cffc5d4bd70ddd3da1d439194048"
+    },
+    {
+      "path": "frontend/src/data/socialStats/embeddedBundle.contract.test.ts",
+      "bytes": 541,
+      "sha256": "7c372e0eb94bb0bdccd38963ad18eab97ab61084a3c528815ec4996b7bcb3d96"
+    },
+    {
+      "path": "frontend/src/data/socialStats/embeddedBundle.ts",
+      "bytes": 6555,
+      "sha256": "2f32873aef0c1e8f84c58054722e84bb0345375891de1af881c6c701ed6365bd"
+    },
+    {
+      "path": "frontend/src/data/socialStats/index.ts",
+      "bytes": 242,
+      "sha256": "c44035a35a0de580f8f7544ae0935d24c5c16a4fd48868bbaba3ecb118c7ebae"
+    },
+    {
+      "path": "frontend/src/data/socialStats/vizIndicators.ts",
+      "bytes": 346,
+      "sha256": "82e38f25b28f0b0641631959e4d5ec8c7861f851cb993f01ed14af3a6879b681"
+    },
+    {
+      "path": "frontend/src/data/sourceVerificationMatrix.ts",
+      "bytes": 23679,
+      "sha256": "cc19bbaa6fafdf6989149639031f3c8d63db8fde85f193646128f043a9c5156b"
+    },
+    {
+      "path": "frontend/src/data/standards_map.json",
+      "bytes": 33410,
+      "sha256": "0627bf869393573864fd37b7e54f850b87dbb3a78910449e0054d8f272557246"
+    },
+    {
+      "path": "frontend/src/data/stateFiscalBaselines.ts",
+      "bytes": 3437,
+      "sha256": "79471d83c355bdd39286bcedab854c397d63911e810883efbfa1bdfe82f878e7"
+    },
+    {
+      "path": "frontend/src/data/trendscapeBaseline.ts",
+      "bytes": 3107,
+      "sha256": "96a5fb691f8c16cb2e395acb5b5bdb066aa962c3a0933490ab9b9afa4954c2ef"
+    },
+    {
+      "path": "fuentes de calculo/CHANGELOG_FUENTES_SOCIAL.md",
+      "bytes": 4422,
+      "sha256": "179e3638b41d570bcb10aa42441dd9d985bce92dd76af456e78133beb2868b8c"
+    },
+    {
+      "path": "fuentes de calculo/Investigacion_Precios_RSU_SLP.xlsx",
+      "bytes": 18556,
+      "sha256": "cfa67dd22215aab3ee594d57fa51587a036ea36951009d836d2597ad76a0b7f9"
+    },
+    {
+      "path": "fuentes de calculo/README.md",
+      "bytes": 1763,
+      "sha256": "51ce47452637ea11d21422c16ed49d66a664fb0b2075d0dc63000f8f795a49cc"
+    },
+    {
+      "path": "fuentes de calculo/Tabla_Maestra_Fuentes_CapituloSLP.docx",
+      "bytes": 37435,
+      "sha256": "c4acb71a581fc8aeed3022d92226a83b1d831a19ef54478ebc8d930c96154737"
+    },
+    {
+      "path": "fuentes de calculo/Vivienda_01.xlsx",
+      "bytes": 6120,
+      "sha256": "27848868f6020ed83386881643b88737dd817659baa7c25defdcfffd46a44a4a"
+    },
+    {
+      "path": "fuentes de calculo/Vivienda_02.xlsx",
+      "bytes": 5182,
+      "sha256": "e5ac8903c2218af3b7f7d54d4a6b0a45d45b4fe4118b9b28705d3ecec9989f55"
+    },
+    {
+      "path": "Investigacion_Precios_RSU_SLP.xlsx",
+      "bytes": 18556,
+      "sha256": "cfa67dd22215aab3ee594d57fa51587a036ea36951009d836d2597ad76a0b7f9"
+    },
+    {
+      "path": "Tabla_Maestra_Fuentes_CapituloSLP.docx",
+      "bytes": 37435,
+      "sha256": "c4acb71a581fc8aeed3022d92226a83b1d831a19ef54478ebc8d930c96154737"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/.DS_Store",
+      "bytes": 6148,
+      "sha256": "f56fc53b00b323b0f828d4854b485d44097a0affdf75097686827ad938e2cd58"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/CAPITULO SAN LUIS POTOSÍ(1).docx",
+      "bytes": 3633244,
+      "sha256": "ee3f3dc4b54dd7f630fc1ddb394b6ff9dc17d1cc4de0718c7f572e1fd549badf"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/CAPITULO SAN LUIS POTOSÍ.docx",
+      "bytes": 5702706,
+      "sha256": "2092e191741e04a6832aa30c685efe9b05a33d4eaa8a2624f1386cf12222f3c9"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/Centros_Acopio_v2.xlsx",
+      "bytes": 151153,
+      "sha256": "126bfc7907350b3dfe2db33f33edb17afe847015afa889e49e979db6a1495d74"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/Estrategia_Valorizacion_RSU_SLP.docx",
+      "bytes": 64164,
+      "sha256": "b2ae49349b391582e8998b85551cc44d1235570cb5b9af23ef3787f6aa652c2d"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/FORMATO DE BITÁCORA SEMANAL – ÁREA DE RESIDUOS.docx",
+      "bytes": 10244,
+      "sha256": "174492f9e258480d049c1c1f8428a961e3869664539ee6195fd9a89ec586448e"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/Gantt_RSUSLP.xlsx",
+      "bytes": 30573,
+      "sha256": "719b154ee1cbf99252bb5b016b90bbcab04a3b028987714dd6b3f16444d42581"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/Modelo_BASED.xlsx",
+      "bytes": 29103,
+      "sha256": "899a419e423a59c116cfb97f2b1da56c1f8c8912c7dc1068270feff314457c61"
+    },
+    {
+      "path": "SLP ( contexto )  /DOCS/Recicladoras_por_Giro.xlsx",
+      "bytes": 178371,
+      "sha256": "28839928d901f60b49de3b79d1703b7258f794e35a61727a3246d9cf6e0a6f6a"
+    }
+  ]
+}

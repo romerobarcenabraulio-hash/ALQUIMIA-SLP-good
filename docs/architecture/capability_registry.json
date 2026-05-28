@@ -1,0 +1,617 @@
+{
+  "version": "2.0.0",
+  "status": "reviewed_signed_phase_0",
+  "review": {
+    "reviewed_at": "2026-05-27",
+    "reviewed_by": [
+      "Founder / Usuario soberano",
+      "SUPREME",
+      "KOSMOS"
+    ],
+    "result": "approved_for_phase_1_start",
+    "binary_gate": "pass",
+    "checks": {
+      "version_is_2_0_0": true,
+      "manual_transition_only": true,
+      "slp_capital_stage": "validation",
+      "module_count": 24,
+      "json_integrity": "valid"
+    }
+  },
+  "generated_from": [
+    "ADR-0010_stage_based_platform_separation.md",
+    "PLATAFORMA_0_BACKOFFICE_SPEC.md",
+    "MODULE_MATURITY_AND_PERSONALIZATION.md",
+    "frontend/src/lib/chapterConfig.ts",
+    "frontend/src/lib/simulator/clientModuleRegistry.ts"
+  ],
+  "stage_model": {
+    "stages": [
+      "validation",
+      "planning",
+      "execution",
+      "expansion"
+    ],
+    "transitions": {
+      "validation_to_planning": "G1 cerrado",
+      "planning_to_execution": "G2 cerrado",
+      "execution_to_expansion": "G3 cerrado and additional capabilities active"
+    },
+    "manual_transition_only": true
+  },
+  "notes": [
+    "Phase 5 consolidation preserves legacy module code but removes duplicate module IDs from client-facing registry.",
+    "Consolidated modules expose legacy functionality as internal tabs; no legacy calculations or stacks were deleted.",
+    "Client execution modules remain hidden from validation tenants by platform visibility."
+  ],
+  "modules": [
+    {
+      "module_id": "guia_circularidad",
+      "legacy_number": "M00",
+      "name": "Guia de lectura",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 1,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "antecedentes_municipales",
+      "legacy_number": "M00B",
+      "name": "Antecedentes municipales",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 2,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "city_baseline",
+      "legacy_number": "M01",
+      "name": "Diagnostico RSU linea base",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 3,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [
+        "antecedentes_municipales"
+      ],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "social_diagnostico",
+      "legacy_number": "M02",
+      "name": "Diagnóstico social y autoridad",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 4,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Demografía",
+        "Encuesta",
+        "Actores",
+        "Autoridad"
+      ],
+      "absorbs_module_ids": [
+        "social_encuesta",
+        "mapeo_actores",
+        "organigrama_diagnostico"
+      ]
+    },
+    {
+      "module_id": "capacidad_institucional",
+      "legacy_number": "M03",
+      "name": "Capacidad institucional y dictamen técnico",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 5,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Capacidad",
+        "Cobertura",
+        "Dictamen"
+      ],
+      "absorbs_module_ids": [
+        "cobertura_territorial",
+        "dictamen_tecnico"
+      ]
+    },
+    {
+      "module_id": "marco_legal",
+      "legacy_number": "M03B",
+      "name": "Marco legal",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 6,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "costo_omision",
+      "legacy_number": "M04",
+      "name": "Costo de omisión e impacto socioeconómico",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 7,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Omisión",
+        "Evaluación",
+        "Teoría de cambio"
+      ],
+      "absorbs_module_ids": [
+        "evaluacion_socioeconomica",
+        "teoria_cambio"
+      ]
+    },
+    {
+      "module_id": "esquema_concesion",
+      "legacy_number": "M11",
+      "name": "Esquema de concesion",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 8,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "arbol_financiamiento",
+      "legacy_number": "M12",
+      "name": "Arbol de financiamiento",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 9,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "escenarios_financieros",
+      "legacy_number": "M13",
+      "name": "Escenarios financieros",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 10,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "riesgos_modelo",
+      "legacy_number": "M14",
+      "name": "Riesgos del modelo",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 11,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "expediente_cabildo",
+      "legacy_number": "M15",
+      "name": "Expediente Cabildo",
+      "platforms": [
+        "validation",
+        "planning",
+        "execution"
+      ],
+      "editable_in": "validation",
+      "readonly_after_stage": "validation",
+      "default_active": true,
+      "min_tier": "diagnostico",
+      "monthly_price_addon": 0,
+      "order": 12,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "roadmap_implementacion",
+      "legacy_number": "M05D",
+      "name": "Roadmap, cronograma y oleadas",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 13,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Roadmap",
+        "Cronograma",
+        "Ruta crítica",
+        "Oleadas"
+      ],
+      "absorbs_module_ids": [
+        "plan_maestro",
+        "ruta_critica",
+        "oleadas_territoriales"
+      ]
+    },
+    {
+      "module_id": "infraestructura",
+      "legacy_number": "M06",
+      "name": "Infraestructura",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 14,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "organigrama",
+      "legacy_number": "M07",
+      "name": "Organigrama y personal",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 15,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "logistica",
+      "legacy_number": "M08",
+      "name": "Logística y educación ciudadana",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 16,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Rutas y vehículos",
+        "Educación ciudadana"
+      ],
+      "absorbs_module_ids": [
+        "plan_educativo"
+      ]
+    },
+    {
+      "module_id": "costos_programa",
+      "legacy_number": "M09",
+      "name": "CAPEX y OPEX",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 17,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "mercado_materiales",
+      "legacy_number": "M10",
+      "name": "Mercado de materiales",
+      "platforms": [
+        "planning",
+        "execution"
+      ],
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
+      "default_active": true,
+      "min_tier": "implementacion",
+      "monthly_price_addon": 0,
+      "order": 18,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "inspeccion",
+      "legacy_number": "M16",
+      "name": "Inspeccion y enforcement",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 19,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "monitoreo_operativo",
+      "legacy_number": "M17",
+      "name": "Monitoreo proyectado vs real",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 20,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "doble_materialidad",
+      "legacy_number": "M18",
+      "name": "Doble materialidad",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 21,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "trazabilidad",
+      "legacy_number": "M19",
+      "name": "Trazabilidad click-to-source",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 22,
+      "consolidation_status": "preserve_current_until_phase_5",
+      "depends_on": [],
+      "produces_data_for": []
+    },
+    {
+      "module_id": "evm_dashboard",
+      "legacy_number": "M20",
+      "name": "EVM y conciliación mensual",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 23,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "EVM",
+        "Conciliación"
+      ],
+      "absorbs_module_ids": [
+        "conciliacion_mensual"
+      ]
+    },
+    {
+      "module_id": "risk_dashboard",
+      "legacy_number": "M21",
+      "name": "Riesgos y gates KRONOS",
+      "platforms": [
+        "execution"
+      ],
+      "editable_in": "execution",
+      "readonly_after_stage": "execution",
+      "default_active": true,
+      "min_tier": "operacion_completa",
+      "monthly_price_addon": 0,
+      "order": 24,
+      "consolidation_status": "phase5_consolidated",
+      "depends_on": [],
+      "produces_data_for": [],
+      "internal_tabs": [
+        "Riesgos",
+        "Gates"
+      ],
+      "absorbs_module_ids": [
+        "gate_status"
+      ]
+    }
+  ],
+  "tenant_overrides": {
+    "slp-capital": {
+      "current_stage": "validation",
+      "additional_capabilities": [],
+      "disabled_modules": [],
+      "legacy_mode_available": true
+    }
+  },
+  "phase5_consolidation": {
+    "status": "implemented",
+    "absorbed_modules": {
+      "social_encuesta": {
+        "target": "social_diagnostico",
+        "tab": "Encuesta"
+      },
+      "mapeo_actores": {
+        "target": "social_diagnostico",
+        "tab": "Actores"
+      },
+      "organigrama_diagnostico": {
+        "target": "social_diagnostico",
+        "tab": "Autoridad"
+      },
+      "cobertura_territorial": {
+        "target": "capacidad_institucional",
+        "tab": "Cobertura"
+      },
+      "dictamen_tecnico": {
+        "target": "capacidad_institucional",
+        "tab": "Dictamen"
+      },
+      "evaluacion_socioeconomica": {
+        "target": "costo_omision",
+        "tab": "Evaluación"
+      },
+      "teoria_cambio": {
+        "target": "costo_omision",
+        "tab": "Teoría de cambio"
+      },
+      "plan_maestro": {
+        "target": "roadmap_implementacion",
+        "tab": "Cronograma"
+      },
+      "ruta_critica": {
+        "target": "roadmap_implementacion",
+        "tab": "Ruta crítica"
+      },
+      "oleadas_territoriales": {
+        "target": "roadmap_implementacion",
+        "tab": "Oleadas"
+      },
+      "plan_educativo": {
+        "target": "logistica",
+        "tab": "Educación ciudadana"
+      },
+      "conciliacion_mensual": {
+        "target": "evm_dashboard",
+        "tab": "Conciliación"
+      },
+      "gate_status": {
+        "target": "risk_dashboard",
+        "tab": "Gates"
+      }
+    },
+    "client_facing_module_count_including_m00": 24,
+    "legacy_code_preserved": true
+  }
+}

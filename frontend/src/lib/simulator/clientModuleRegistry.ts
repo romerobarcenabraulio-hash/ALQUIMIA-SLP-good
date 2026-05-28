@@ -40,10 +40,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   social_diagnostico: base({
     module_id: 'social_diagnostico',
-    label: 'Diagnóstico demográfico',
-    decision: 'Cuántas viviendas separarán si educación, infraestructura e incentivos llegan a tiempo.',
-    evidence: 'INEGI Censo 2020, CONEVAL 2022, matriz de riesgo social, supuestos trazables.',
-    next_action: 'Revisar brechas antes de la encuesta de aceptación ciudadana.',
+    label: 'Diagnóstico social y autoridad',
+    decision: 'Evaluar demografía, aceptación ciudadana, actores y autoridad municipal sin separar el diagnóstico social en cuatro módulos.',
+    evidence: 'INEGI/CONEVAL, encuesta de aceptación, mapa de actores, matriz de autoridad y pendientes de carga visibles.',
+    next_action: 'Completar las pestañas social, encuesta, actores y autoridad antes de cerrar el diagnóstico.',
   }),
   social_encuesta: base({
     module_id: 'social_encuesta',
@@ -68,10 +68,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   capacidad_institucional: base({
     module_id: 'capacidad_institucional',
-    label: 'Capacidad institucional del municipio',
-    decision: '¿Qué capacidad real tiene el municipio hoy para operar el programa?',
-    evidence: 'Presupuesto disponible, plantilla existente, historial de programas, bloqueo ÁGORA legal.',
-    next_action: 'Desbloquear checklist jurídico antes de comprometer esquema de concesión.',
+    label: 'Capacidad institucional y dictamen técnico',
+    decision: 'Determinar capacidad operativa, cobertura territorial y viabilidad técnica de la reforma.',
+    evidence: 'Presupuesto, plantilla, cobertura normativa/territorial y dictamen técnico preservados como pestañas.',
+    next_action: 'Resolver brechas institucionales y anexar dictamen antes de comprometer esquema de concesión.',
   }),
   marco_legal: base({
     module_id: 'marco_legal',
@@ -96,10 +96,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   costo_omision: base({
     module_id: 'costo_omision',
-    label: 'Costo de la omisión — 10 años sin actuar',
-    decision: 'Cuánto cuesta no hacer nada y cuánto recupera el programa en salud pública.',
-    evidence: 'Disposición acumulada, daño sanitario, relleno saturado, multas PROFEPA, elegibilidad verde.',
-    next_action: 'Presentar antes de discutir presupuesto del programa.',
+    label: 'Costo de omisión e impacto socioeconómico',
+    decision: 'Cuánto cuesta no actuar, qué beneficio fiscal/social justifica Cabildo y cómo se conecta la teoría de cambio.',
+    evidence: 'Disposición acumulada, salud pública, evaluación socioeconómica y teoría de cambio preservadas.',
+    next_action: 'Usar las tres pestañas como cierre del diagnóstico económico.',
   }),
   evaluacion_socioeconomica: base({
     module_id: 'evaluacion_socioeconomica',
@@ -124,10 +124,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   roadmap_implementacion: base({
     module_id: 'roadmap_implementacion',
-    label: 'Roadmap de implementación (24 meses)',
-    decision: 'Entender las 5 fases institucionales G1–G5, sus actividades y gates antes de dimensionar operación.',
-    evidence: 'Timeline G1–G5, actividades T01–T15 por fase, prerequisitos y riesgos asociados.',
-    next_action: 'Revisar la fase actual y confirmar prerequisitos en M21B antes de avanzar.',
+    label: 'Roadmap, cronograma y oleadas',
+    decision: 'Planear roadmap, metas, ruta crítica y oleadas territoriales en una sola superficie operativa.',
+    evidence: 'Timeline G1–G5, Gantt, PERT/RACI y despliegue territorial preservados como pestañas.',
+    next_action: 'Confirmar ruta crítica y primera oleada antes de dimensionar operación.',
   }),
   ruta_critica: base({
     module_id: 'ruta_critica',
@@ -159,10 +159,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   logistica: base({
     module_id: 'logistica',
-    label: 'Logística, rutas y diseño de piloto',
-    decision: 'Diseñar zona piloto, rutas y flota requerida.',
-    evidence: 'Matriz selección piloto, camiones requeridos, PER, estacionalidad.',
-    next_action: 'Confirmar zona piloto con equipo de campo.',
+    label: 'Logística y educación ciudadana',
+    decision: 'Diseñar rutas, flota, zona piloto y preparación ciudadana como una sola operación de arranque.',
+    evidence: 'Matriz piloto, camiones, PER, estacionalidad, educación H1/H2 y costo de comunicación.',
+    next_action: 'Alinear zona piloto y ventana educativa con la oleada 1.',
   }),
   plan_educativo: base({
     module_id: 'plan_educativo',
@@ -250,10 +250,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   evm_dashboard: base({
     module_id: 'evm_dashboard',
-    label: 'EVM — Control presupuestal',
-    decision: 'Monitorear el desempeño real del proyecto vs plan usando Earned Value Management.',
-    evidence: 'CPI, SPI, SV, CV, TCPI, EAC (×3) y VAC calculados desde CAPEX del simulador y costos reales ingresados.',
-    next_action: 'Ingresar el % avance real y los costos acumulados para obtener el semáforo actualizado.',
+    label: 'EVM y conciliación mensual',
+    decision: 'Monitorear desempeño presupuestal y conciliar ejercicio mensual contra avance físico.',
+    evidence: 'CPI, SPI, SV, CV, TCPI, EAC/VAC y conciliación de partidas preservados.',
+    next_action: 'Ingresar avance real, costos acumulados y costos del mes.',
   }),
   conciliacion_mensual: base({
     module_id: 'conciliacion_mensual',
@@ -264,10 +264,10 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   risk_dashboard: base({
     module_id: 'risk_dashboard',
-    label: 'Registro de riesgos KRONOS',
-    decision: 'Visualizar y gestionar los 6 riesgos críticos del proyecto con su scoring calculado.',
-    evidence: 'Registro dinámico R01–R06: Score = Prob × Impacto (matriz PMBOK 6ed). Semáforo derivado del score.',
-    next_action: 'Asignar owner a riesgos ROJO y documentar el plan de mitigación.',
+    label: 'Riesgos y gates KRONOS',
+    decision: 'Gestionar riesgos críticos y confirmar prerequisitos de avance G1–G5 desde una sola vista de control.',
+    evidence: 'Registro R01–R06, Score = Prob × Impacto, semáforo y estado de gates preservados.',
+    next_action: 'Asignar owner a riesgos rojos y cerrar prerequisitos del gate activo.',
   }),
   gate_status: base({
     module_id: 'gate_status',

@@ -1,0 +1,95 @@
+{
+  "schema": "alquimia.slp.phase4.rerun_audit.v1",
+  "created_at": "2026-05-28T03:50:30Z",
+  "status": "closed",
+  "scope": "revalidacion de migracion SLP contra capability_registry consolidado",
+  "backup": {
+    "command": "backend/.venv/bin/python backend/scripts/slp_phase4_backup.py",
+    "archive": "backups/phase4-slp/slp-phase4-pre-migration-20260528T034925Z.tgz",
+    "archive_sha256": "20837b585ec83aab321af4908c56bed2b47b8f45fd63e413b12fff15ba54a6c7",
+    "manifest": "backups/phase4-slp/slp-phase4-pre-migration-20260528T034925Z.manifest.json",
+    "files": 68,
+    "critical_buckets": {
+      "bibliografia": "present",
+      "calculos_base": "present",
+      "escenarios": "present",
+      "configuraciones": "present",
+      "fuentes_provenance": "present"
+    }
+  },
+  "migration": {
+    "command": "backend/.venv/bin/python backend/scripts/slp_phase4_migrate.py --actor phase4-auditor-rerun-20260528",
+    "tenant_id": "slp-capital",
+    "municipio": "San Luis Potosi",
+    "estado": "San Luis Potosi",
+    "current_stage": "validation",
+    "tier_comercial": "diagnostico",
+    "created": false,
+    "capabilities_count": 12,
+    "evidence": "docs/migration/phase4/slp-capital-migration-evidence.json"
+  },
+  "access_gate": {
+    "canonical_path": "/v",
+    "validation": {
+      "status": "allowed",
+      "http_equivalent": 200
+    },
+    "planning": {
+      "status": "denied",
+      "http_equivalent": 403
+    },
+    "execution": {
+      "status": "denied",
+      "http_equivalent": 403
+    }
+  },
+  "visibility": {
+    "validation_capabilities": [
+      "guia_circularidad",
+      "antecedentes_municipales",
+      "city_baseline",
+      "social_diagnostico",
+      "capacidad_institucional",
+      "marco_legal",
+      "costo_omision",
+      "esquema_concesion",
+      "arbol_financiamiento",
+      "escenarios_financieros",
+      "riesgos_modelo",
+      "expediente_cabildo"
+    ],
+    "future_stage_hidden_ok": true,
+    "execution_hidden_ok": true
+  },
+  "data_integrity": {
+    "command": "backend/.venv/bin/python backend/scripts/slp_phase4_compare.py --manifest backups/phase4-slp/slp-phase4-pre-migration-20260528T034925Z.manifest.json",
+    "report": "docs/migration/phase4/slp-phase4-comparison-report.json",
+    "files_checked": 68,
+    "changed_files": [],
+    "missing_files": [],
+    "auditor_statement": "cero perdida detectada por hash en buckets criticos"
+  },
+  "tests": [
+    {
+      "command": "backend/.venv/bin/python -m pytest backend/tests/test_admin_tenants.py",
+      "result": "passed",
+      "tests": 7
+    },
+    {
+      "command": "./node_modules/.bin/vitest run src/lib/platformRouting.test.ts src/lib/phase5Consolidation.test.ts",
+      "result": "passed",
+      "tests": 9
+    }
+  ],
+  "rollback": {
+    "documented": true,
+    "path": "docs/migration/phase4/ROLLBACK.md"
+  },
+  "auditor_verdict": {
+    "zero_loss": true,
+    "negative_execution_access_tested": true,
+    "legacy_modules_deleted": false,
+    "municipio_zm_separated": true,
+    "partial_or_blocked": false
+  }
+}

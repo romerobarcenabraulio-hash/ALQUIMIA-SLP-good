@@ -7,27 +7,33 @@ import { FUNCTIONARY_MODULE_ORDER } from '@/lib/chapterConfig'
 const readFrontend = (path: string) => readFileSync(join(process.cwd(), path), 'utf8')
 
 describe('simulator functionary surface', () => {
-  it('expone 38 ítems funcionario (guía + 37 módulos) con gate_status al cierre', () => {
+  it('expone 24 ítems funcionario tras consolidación Fase 5 (guía + 23 módulos)', () => {
     expect(AUDIENCE_MODULES.functionary).toEqual([
       'guia_circularidad',
       ...FUNCTIONARY_MODULE_ORDER,
     ])
-    expect(AUDIENCE_MODULES.functionary).toHaveLength(37)
+    expect(AUDIENCE_MODULES.functionary).toHaveLength(24)
     expect(AUDIENCE_MODULES.functionary).toContain('antecedentes_municipales')
     expect(AUDIENCE_MODULES.functionary).toContain('evm_dashboard')
-    expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('gate_status')
+    expect(AUDIENCE_MODULES.functionary).not.toContain('gate_status')
+    expect(AUDIENCE_MODULES.functionary.at(-1)).toBe('risk_dashboard')
   })
 
   it('renderiza stacks dedicados para planificación, fiscal-social y escenarios', () => {
     const registrySource = readFrontend('src/app/simulator/renderDecisionModule.tsx')
 
-    expect(registrySource).toContain("case 'plan_maestro':")
-    expect(registrySource).toMatch(/case 'plan_maestro':[\s\S]*<FutureGoalsModule/)
+    expect(registrySource).toContain("case 'roadmap_implementacion':")
+    expect(registrySource).toMatch(/function RoadmapConsolidatedModule\(\)[\s\S]*<FutureGoalsModule/)
+    expect(registrySource).toMatch(/label: 'Roadmap'[\s\S]*label: 'Cronograma'[\s\S]*label: 'Ruta crítica'[\s\S]*label: 'Oleadas'/)
     expect(registrySource).toContain('const FutureGoalsModule = dynamic(')
-    expect(registrySource).toContain("case 'organigrama_diagnostico':")
+    expect(registrySource).toContain('function SocialAuthorityConsolidatedModule')
+    expect(registrySource).toMatch(/label: 'Demografía'[\s\S]*label: 'Encuesta'[\s\S]*label: 'Actores'[\s\S]*label: 'Autoridad'/)
     expect(registrySource).toContain('<OrganigramaDiagnosticoStack />')
-    expect(registrySource).toContain("case 'evaluacion_socioeconomica':")
+    expect(registrySource).toContain('function OmissionImpactConsolidatedModule')
     expect(registrySource).toContain('<EvaluacionSocioeconomicaStack />')
+    expect(registrySource).toMatch(/label: 'Rutas y vehículos'[\s\S]*label: 'Educación ciudadana'/)
+    expect(registrySource).toMatch(/label: 'EVM'[\s\S]*label: 'Conciliación'/)
+    expect(registrySource).toMatch(/label: 'Riesgos'[\s\S]*label: 'Gates'/)
     expect(registrySource).toMatch(/case 'escenarios_financieros':[\s\S]*<ScenariosExportStack/)
     expect(registrySource).toContain("case 'mercado_materiales':")
     expect(registrySource).toMatch(/case 'mercado_materiales':[\s\S]*pageOnly=\{2\}/)

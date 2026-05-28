@@ -1,0 +1,101 @@
+{
+  "phase": "Fase 5",
+  "scope": "consolidacion de modulos",
+  "status": "closed",
+  "generated_at": "2026-05-27",
+  "module_counts": {
+    "previous_client_facing_modules_including_m00": 37,
+    "current_client_facing_modules_including_m00": 24,
+    "current_functionary_modules_excluding_m00": 23
+  },
+  "consolidated_groups": {
+    "M02": {
+      "target": "social_diagnostico",
+      "tabs": ["Demografia", "Encuesta", "Actores", "Autoridad"],
+      "absorbed": ["social_encuesta", "mapeo_actores", "organigrama_diagnostico"]
+    },
+    "M03": {
+      "target": "capacidad_institucional",
+      "tabs": ["Capacidad", "Cobertura", "Dictamen"],
+      "absorbed": ["cobertura_territorial", "dictamen_tecnico"],
+      "preserved_separate": ["marco_legal"]
+    },
+    "M04": {
+      "target": "costo_omision",
+      "tabs": ["Costo de omision", "Evaluacion", "Teoria de cambio"],
+      "absorbed": ["evaluacion_socioeconomica", "teoria_cambio"]
+    },
+    "M05": {
+      "target": "roadmap_implementacion",
+      "tabs": ["Roadmap", "Cronograma", "Ruta critica", "Oleadas"],
+      "absorbed": ["plan_maestro", "ruta_critica", "oleadas_territoriales"]
+    },
+    "M08": {
+      "target": "logistica",
+      "tabs": ["Rutas y vehiculos", "Educacion ciudadana"],
+      "absorbed": ["plan_educativo"]
+    },
+    "M20": {
+      "target": "evm_dashboard",
+      "tabs": ["EVM", "Conciliacion"],
+      "absorbed": ["conciliacion_mensual"]
+    },
+    "M21": {
+      "target": "risk_dashboard",
+      "tabs": ["Riesgos", "Gates"],
+      "absorbed": ["gate_status"]
+    }
+  },
+  "data_loss_gate": {
+    "legacy_code_deleted": false,
+    "backend_calculation_files_modified": false,
+    "agora_files_modified": false,
+    "legacy_stacks_preserved_inside_tabs": true,
+    "standards_records_preserved": 37,
+    "absorbed_module_aliases_preserved": true,
+    "capability_registry_top_level_duplicate_ids_removed": true,
+    "calculated_variable_owners_point_to_visible_canonical_modules": true,
+    "chapter_index_has_no_nested_buttons_after_audit_fix": true
+  },
+  "evidence": {
+    "capability_registry_module_count": 24,
+    "functionary_module_order_count": 23,
+    "absorbed_ids_removed_from_functionary_sidebar": true,
+    "absorbed_ids_resolve_to_canonical_modules": true,
+    "tests": [
+      {
+        "command": "./node_modules/.bin/vitest run src/lib/phase5Consolidation.test.ts src/lib/platformRouting.test.ts src/lib/journeyMode.test.ts src/app/simulator/simulatorSurface.test.ts src/app/simulator/editorialInventory.test.ts src/lib/standardsMap.test.ts",
+        "result": "passed",
+        "files": 6,
+        "tests": 38
+      },
+      {
+        "command": "./node_modules/.bin/tsc --noEmit",
+        "result": "passed"
+      },
+      {
+        "command": "./node_modules/.bin/next build --experimental-app-only --webpack",
+        "result": "passed",
+        "note": "validated production App Router build; plain next build fails on pages-manifest in this app-router-only repo"
+      },
+      {
+        "command": "browser desktop check at http://localhost:3000/simulator",
+        "result": "passed",
+        "note": "M08 rendered consolidated tabs; DOM click switched from Rutas y vehiculos to Educacion ciudadana with M08B content visible; ChapterIndex nested-button hydration issue was fixed after browser audit"
+      }
+    ]
+  },
+  "not_in_scope_and_untouched_by_design": [
+    "backend tenant transitions",
+    "billing",
+    "analytics cross-tenant",
+    "AGORA",
+    "SLP tenant migration state",
+    "M11/M12 consolidation"
+  ],
+  "auditor_notes": [
+    "M03B Marco legal remains separate as requested.",
+    "Absorbed module implementations remain in source and are rendered through tabs; they were not deleted.",
+    "Final production build passed after this report was updated."
+  ]
+}

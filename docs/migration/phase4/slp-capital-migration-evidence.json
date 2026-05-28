@@ -1,0 +1,51 @@
+{
+  "schema": "alquimia.slp.phase4.migration.v1",
+  "created_at": "2026-05-28T03:49:46.264954+00:00",
+  "tenant": {
+    "tenant_id": "slp-capital",
+    "municipio": "San Luis Potosí",
+    "estado": "San Luis Potosí",
+    "inegi_clave": "24028",
+    "current_stage": "validation",
+    "tier_comercial": "diagnostico"
+  },
+  "capabilities_active": [
+    "guia_circularidad",
+    "antecedentes_municipales",
+    "city_baseline",
+    "social_diagnostico",
+    "capacidad_institucional",
+    "marco_legal",
+    "costo_omision",
+    "esquema_concesion",
+    "arbol_financiamiento",
+    "escenarios_financieros",
+    "riesgos_modelo",
+    "expediente_cabildo"
+  ],
+  "pending_data": [
+    {
+      "module_id": "social_diagnostico",
+      "status": "carga_inicial",
+      "note": "Datos sociodemograficos pendientes de carga/cotejo municipal.",
+      "no_inventar": true
+    },
+    {
+      "module_id": "organigrama",
+      "status": "en_construccion",
+      "note": "Modulo de organigrama operativo preservado para etapa planning.",
+      "no_inventar": true
+    }
+  ],
+  "preservation": {
+    "legacy_modules_deleted": false,
+    "execution_modules_preserved_in_code": true,
+    "execution_modules_hidden_while_validation": true,
+    "municipio_zm_separated": true,
+    "officiality_guard": "datos faltantes se registran como pendiente; no se inventan oficiales"
+  },
+  "db_result": {
+    "created": false,
+    "capabilities_count": 12
+  }
+}
