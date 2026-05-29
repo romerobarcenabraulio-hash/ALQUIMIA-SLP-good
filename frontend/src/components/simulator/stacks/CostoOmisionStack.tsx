@@ -13,6 +13,8 @@ import { ChartPanel } from '@/components/ui/ChartPanel'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { CHART_AXIS_TICK, CHART_AXIS_TICK_MUTED, CHART_GRID, CHART_TOOLTIP_STYLE } from '@/lib/chartTheme'
 import { cn, fmt } from '@/lib/utils'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePanels'
 
 // ── Calculation helpers ───────────────────────────────────────────────────────
 // All values derived from simulator inputs — nothing hardcoded.
@@ -38,6 +40,7 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 
 export function CostoOmisionStack() {
   const { resultados, horizonte } = useSimulatorStore()
+  const { profile } = useTenantMunicipalProfile()
 
   const rsuDia = resultados?.rsuTotalTonDia ?? 0
   const ingresoAnual = ((resultados?.ingresosBrutos ?? 0) / Math.max(1, 10)) * 0.8
@@ -68,6 +71,7 @@ export function CostoOmisionStack() {
 
   return (
     <div className="pb-4">
+      <TenantFirstLoginSummary profile={profile} moduleLabel="M04 · costo de omisión" />
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_288px] gap-6 items-start">
         <div className="space-y-5">
 

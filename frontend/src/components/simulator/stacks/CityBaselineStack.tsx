@@ -28,6 +28,8 @@ import {
   CHART_GRID,
   CHART_TOOLTIP_STYLE,
 } from '@/lib/chartTheme'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePanels'
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -198,6 +200,7 @@ export function CityBaselineStack() {
     precios,
     setPrecio,
   } = useSimulatorStore()
+  const { profile } = useTenantMunicipalProfile()
 
   const r = resultados
   const narrative = getMunicipalNarrative(zmActiva, municipiosActivos)
@@ -311,6 +314,7 @@ export function CityBaselineStack() {
 
   return (
     <div className="space-y-4 pb-6">
+      <TenantFirstLoginSummary profile={profile} moduleLabel="M01 · línea base" />
 
       {/* ── KPI Strip ──────────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2" data-chart-id="volumen-rsu">

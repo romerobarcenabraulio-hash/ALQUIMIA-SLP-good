@@ -21,7 +21,7 @@ export const SIMULATION_CONTEXT_TEASER =
 
 /**
  * Texto de confirmación para el modal / paso previo al botón "Genera mi plan".
- * Debe mostrarse en un modal de aceptación explícita antes de lanzar el pipeline ÁGORA.
+ * Debe mostrarse en un modal de aceptación explícita antes de lanzar el flujo de generación documental.
  * El usuario debe marcar "Entendido" o "Acepto" antes de continuar.
  */
 export const GENERA_PLAN_MODAL_DISCLAIMER =
@@ -33,7 +33,7 @@ export const GENERA_PLAN_MODAL_DISCLAIMER =
   'por profesionistas con cédula vigente en la materia. Al continuar, confirmas que entiendes el alcance de esta simulación.'
 
 /**
- * Encabezado de portada para documentos ÁGORA exportados.
+ * Encabezado de portada para documentos exportados.
  * Usar en la primera página de cualquier PDF o descarga generada por el pipeline.
  */
 export const AGORA_EXPORT_COVER_DISCLAIMER =

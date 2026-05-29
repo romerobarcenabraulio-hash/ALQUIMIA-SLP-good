@@ -8,6 +8,38 @@ export interface TenantMunicipalProfile {
   mapa_social: { actores?: Array<Record<string, unknown>>; [key: string]: unknown }
   organigrama_servicio: Record<string, unknown>
   provenance_status: string
+  automation?: {
+    preliminary_notice?: string
+    public_private_separation?: Record<string, unknown>
+    inference?: Record<string, unknown>
+    runtime?: {
+      events?: Array<Record<string, unknown>>
+      recalculation_log?: Array<Record<string, unknown>>
+      recalculated_modules?: string[]
+      discrepancies?: Array<Record<string, unknown>>
+      recommendations?: Array<Record<string, unknown>>
+      external_dispatches?: Array<Record<string, unknown>>
+      automatic_gate_changes?: boolean
+      automatic_stage_transitions?: boolean
+      [key: string]: unknown
+    }
+    nous_suggestions?: Array<{
+      suggestion_id: string
+      pattern_id: string
+      module_id: string
+      conclusion: string
+      evidence_summary: string
+      observations_count: number
+      confidence: string
+      comparable_profile?: Record<string, unknown>
+      limitation: string
+      action_suggested: string
+      source_traceability?: Record<string, unknown>
+      wording_guardrail?: string
+    }>
+    nous_publication_notice?: string
+    document_automation?: Record<string, unknown>
+  }
   updated_by?: string
   updated_at?: string | null
 }

@@ -1,5 +1,5 @@
 /**
- * Tokens compartidos — patrón consulting-editorial (POLIS / EIDOS).
+ * Tokens compartidos — patrón consulting-editorial (sistema editorial / guardrail editorial).
  * Serif: Literata (--font-literata) ≈ Tiempos / Source Serif Pro en brief.
  */
 export const editorial = {

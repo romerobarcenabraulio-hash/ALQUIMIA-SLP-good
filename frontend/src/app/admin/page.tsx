@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ShieldCheck } from 'lucide-react'
+import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, ShieldCheck } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
 
@@ -55,6 +55,55 @@ interface AdminTenant {
     provenance_status: string
   }
 }
+
+interface TenantDocumentDraft {
+  id: string
+  document_type: string
+  title: string
+  status: string
+  qa_status: string
+  can_export_ok: boolean
+  version: number
+  blockers: Array<Record<string, unknown>>
+  warnings: string[]
+  updated_at: string
+}
+
+interface NousPattern {
+  id: string
+  pattern_layer: number
+  pattern_status: string
+  pattern_description_natural: string
+  observations_count: number
+  confidence_level: string
+  statistical_significance: string | null
+  published_to_clients: boolean
+  founder_gate_status: string
+}
+
+interface NousA11Panel {
+  feature_gated: boolean
+  client_publication_enabled: boolean
+  automatic_recalibration_enabled: boolean
+  tabs: Record<string, {
+    label: string
+    patterns?: NousPattern[]
+    published_to_clients?: NousPattern[]
+    retired_or_rejected?: NousPattern[]
+    metrics?: Record<string, number>
+    report_status?: string
+    summary?: string
+  }>
+}
+
+const documentTypes = [
+  ['expediente_cabildo', 'Expediente Cabildo'],
+  ['reforma_reglamentaria_3_articulos', 'Reforma reglamentaria'],
+  ['acuerdo_cabildo', 'Acuerdo de Cabildo'],
+  ['adenda_concesion', 'Adenda de concesión'],
+  ['reporte_mensual_esg_gri_306', 'Reporte ESG / GRI 306'],
+  ['oficio_estandar', 'Oficio estándar'],
+] as const
 
 const emptyForm = {
   nombre: '',
@@ -140,6 +189,9 @@ export default function AdminPage() {
     organigrama_servicio: '{}',
     provenance_status: 'pendiente_verificacion',
   })
+  const [documents, setDocuments] = useState<TenantDocumentDraft[]>([])
+  const [documentType, setDocumentType] = useState<(typeof documentTypes)[number][0]>('expediente_cabildo')
+  const [a11, setA11] = useState<NousA11Panel | null>(null)
 
   const selected = useMemo(
     () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
@@ -156,6 +208,15 @@ export default function AdminPage() {
       provenance_status: profile.provenance_status ?? 'pendiente_verificacion',
     })
   }, [selected?.id, selected?.municipal_profile])
+
+  useEffect(() => {
+    if (!selected?.id) {
+      setDocuments([])
+      return
+    }
+    void loadDocuments(selected.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected?.id])
 
   async function loadTenants(nextSelectedId?: string) {
     setLoading(true)
@@ -175,8 +236,31 @@ export default function AdminPage() {
     }
   }
 
+  async function loadDocuments(tenantId: string) {
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${tenantId}/documents`, { headers: authHeaders() })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setDocuments(data.a6_documentacion_generada ?? [])
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar A6 Documentación generada')
+    }
+  }
+
+  async function loadA11Panel() {
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/nous/a11`, { headers: authHeaders() })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setA11(data)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar A11 NOUS')
+    }
+  }
+
   useEffect(() => {
     void loadTenants()
+    void loadA11Panel()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -237,8 +321,80 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
       setMessage(`${evidence.gate_id} cerrado manualmente`)
       await loadTenants(data.id)
+      await loadA11Panel()
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'No se pudo cerrar gate')
+    }
+  }
+
+  async function generateDocumentDraft() {
+    if (!selected) return
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${selected.id}/documents/drafts`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ document_type: documentType, notes: 'Generado desde A6 Plataforma 0' }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`Borrador generado: ${data.title} · ${data.qa_status}`)
+      await loadDocuments(selected.id)
+      await loadTenants(selected.id)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo generar borrador documental')
+    }
+  }
+
+  async function runExportCheck(documentId: string) {
+    if (!selected) return
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/tenants/${selected.id}/documents/${documentId}/export-check`, {
+        method: 'POST',
+        headers: authHeaders(),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`Export-check: ${data.qa_status} · ok=${String(data.can_export_ok)}`)
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo verificar export')
+    }
+  }
+
+  async function reviewNousPattern(patternId: string, action: 'approve_internal' | 'reject' | 'postpone' | 'retire') {
+    setError(null)
+    setMessage(null)
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/nous/patterns/${patternId}/review`, {
+        method: 'PATCH',
+        headers: authHeaders(),
+        body: JSON.stringify({ action, notes: `A11 ${action}` }),
+      })
+      const data = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
+      setMessage(`NOUS: ${data.pattern_status}`)
+      await loadA11Panel()
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo revisar patrón NOUS')
+    }
+  }
+
+  async function withdrawNousPattern(patternId: string) {
+    try {
+      const res = await fetch(`${getApiUrl()}/admin/nous/patterns/${patternId}/withdraw`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...authHeaders() },
+        body: JSON.stringify({ action: 'retire', notes: 'Retiro manual desde A11' }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.detail ?? 'No se pudo retirar sugerencia NOUS')
+      setMessage('NOUS: sugerencia retirada de cliente')
+      await loadA11Panel()
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo retirar sugerencia NOUS')
     }
   }
 
@@ -507,6 +663,170 @@ export default function AdminPage() {
                       ))}
                     </div>
                   </div>
+                </section>
+
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="mb-1 flex items-center gap-2">
+                        <ScrollText size={16} className="text-[#3B6D11]" />
+                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">A6 Documentación generada</h2>
+                      </div>
+                      <p className="text-[11px] text-[#6B6760]">
+                        Borradores para revisión humana. Nunca se marcan como oficiales ni se exportan como ok con bloqueos.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <select
+                        value={documentType}
+                        onChange={event => setDocumentType(event.target.value as typeof documentType)}
+                        className="h-9 border border-[#D8D1C4] bg-white px-3 text-[12px] text-[#1C1B18]"
+                      >
+                        {documentTypes.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => void generateDocumentDraft()}
+                        className="h-9 bg-[#1C1B18] px-4 text-[12px] font-semibold text-white"
+                      >
+                        Generar borrador
+                      </button>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-[12px]">
+                      <thead>
+                        <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+                          <th className="py-2 pr-3 font-medium">Documento</th>
+                          <th className="py-2 pr-3 font-medium">Estado</th>
+                          <th className="py-2 pr-3 font-medium">QA</th>
+                          <th className="py-2 pr-3 font-medium">Versión</th>
+                          <th className="py-2 pr-3 font-medium">Bloqueos</th>
+                          <th className="py-2 pr-3 font-medium">Acción</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {documents.length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-6 text-[#8E8980]">Sin borradores generados para este tenant.</td>
+                          </tr>
+                        ) : documents.map(document => (
+                          <tr key={document.id} className="border-b border-[#EEE8DE]">
+                            <td className="py-3 pr-3">
+                              <strong className="block text-[#1C1B18]">{document.title}</strong>
+                              <span className="text-[11px] text-[#8E8980]">{document.document_type}</span>
+                            </td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{document.status}</td>
+                            <td className={`py-3 pr-3 font-semibold ${document.qa_status === 'blocked' ? 'text-[#A8322A]' : document.qa_status === 'ok' ? 'text-[#2F5B0D]' : 'text-[#8A5C05]'}`}>
+                              {document.qa_status}
+                            </td>
+                            <td className="py-3 pr-3 text-[#6B6760]">v{document.version}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{document.blockers.length}</td>
+                            <td className="py-3 pr-3">
+                              <button
+                                type="button"
+                                onClick={() => void runExportCheck(document.id)}
+                                className="h-8 border border-[#D8D1C4] px-3 text-[11px] font-semibold text-[#1C1B18]"
+                              >
+                                Export-check
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="mb-1 flex items-center gap-2">
+                        <BrainCircuit size={16} className="text-[#3B6D11]" />
+                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">A11 NOUS Insights Panel</h2>
+                      </div>
+                      <p className="text-[11px] text-[#6B6760]">
+                        Revisión interna. Sin publicación al cliente ni recalibración automática.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void loadA11Panel()}
+                      className="h-8 border border-[#D8D1C4] px-3 text-[11px] font-semibold text-[#1C1B18]"
+                    >
+                      Actualizar A11
+                    </button>
+                  </div>
+                  <div className="grid gap-3 xl:grid-cols-5">
+                    {['A11.1', 'A11.2', 'A11.3', 'A11.4', 'A11.5'].map(tabId => {
+                      const tab = a11?.tabs?.[tabId]
+                      const patterns = tab?.patterns ?? []
+                      return (
+                        <div key={tabId} className="border border-[#E8E4DC] bg-white p-3">
+                          <span className="text-[10px] font-semibold uppercase text-[#8E8980]">{tabId}</span>
+                          <h3 className="mt-1 min-h-[32px] text-[12px] font-semibold text-[#1C1B18]">{tab?.label ?? 'NOUS pendiente'}</h3>
+                          {'metrics' in (tab ?? {}) ? (
+                            <dl className="mt-3 space-y-1 text-[11px] text-[#6B6760]">
+                              {Object.entries(tab?.metrics ?? {}).map(([key, value]) => (
+                                <div key={key} className="flex justify-between gap-3">
+                                  <dt>{key}</dt>
+                                  <dd className="font-semibold text-[#1C1B18]">{value}</dd>
+                                </div>
+                              ))}
+                            </dl>
+                          ) : (
+                            <p className="mt-3 text-[20px] font-semibold text-[#1C1B18]">{patterns.length}</p>
+                          )}
+                          {tab?.summary && <p className="mt-2 text-[11px] leading-5 text-[#6B6760]">{tab.summary}</p>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[760px] text-[12px]">
+                      <thead>
+                        <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+                          <th className="py-2 pr-3 font-medium">Patrón</th>
+                          <th className="py-2 pr-3 font-medium">Capa</th>
+                          <th className="py-2 pr-3 font-medium">N</th>
+                          <th className="py-2 pr-3 font-medium">Confianza</th>
+                          <th className="py-2 pr-3 font-medium">Estado</th>
+                          <th className="py-2 pr-3 font-medium">Revisión</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {([...(a11?.tabs?.['A11.1']?.patterns ?? []), ...(a11?.tabs?.['A11.2']?.published_to_clients ?? [])]).length === 0 ? (
+                          <tr>
+                            <td colSpan={6} className="py-5 text-[#8E8980]">Sin patrones pendientes. NOUS sigue observando.</td>
+                          </tr>
+                        ) : ([...(a11?.tabs?.['A11.1']?.patterns ?? []), ...(a11?.tabs?.['A11.2']?.published_to_clients ?? [])]).map(pattern => (
+                          <tr key={pattern.id} className="border-b border-[#EEE8DE]">
+                            <td className="py-3 pr-3">
+                              <span className="block max-w-[360px] text-[#1C1B18]">{pattern.pattern_description_natural}</span>
+                              <span className="text-[11px] text-[#8E8980]">{pattern.statistical_significance ?? 'sin significancia publicable'}</span>
+                            </td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{pattern.pattern_layer}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{pattern.observations_count}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{pattern.confidence_level}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{pattern.pattern_status}</td>
+                            <td className="py-3 pr-3">
+                              <div className="flex flex-wrap gap-2">
+                                <button type="button" onClick={() => void reviewNousPattern(pattern.id, 'approve_internal')} className="h-8 border border-[#D8D1C4] px-2 text-[11px] text-[#1C1B18]">Aprobar interno</button>
+                                <button type="button" onClick={() => void reviewNousPattern(pattern.id, 'postpone')} className="h-8 border border-[#D8D1C4] px-2 text-[11px] text-[#1C1B18]">Posponer</button>
+                                <button type="button" onClick={() => void reviewNousPattern(pattern.id, 'reject')} className="h-8 border border-[#EBC0BA] px-2 text-[11px] text-[#A8322A]">Rechazar</button>
+                                {pattern.published_to_clients ? (
+                                  <button type="button" onClick={() => void withdrawNousPattern(pattern.id)} className="h-8 border border-[#EBC0BA] px-2 text-[11px] text-[#A8322A]">Retirar cliente</button>
+                                ) : null}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                  <p className="mt-3 text-[11px] text-[#6B6760]">
+                    Cliente: apagado hasta patrón aprobado, bias check, MARCOS y founder gate. No se muestra patrón estadístico crudo.
+                  </p>
                 </section>
 
                 <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">

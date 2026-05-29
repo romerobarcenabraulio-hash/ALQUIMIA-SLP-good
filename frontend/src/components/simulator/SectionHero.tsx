@@ -252,7 +252,7 @@ export function SectionHero() {
       {snapshotDatos?.advertencias.some(a => a.bloquea_agora) && (
         <div className="mt-4 bg-red-50 border border-red-200 rounded-[10px] px-4 py-3">
           <p className="text-[12px] font-medium text-red-800">
-            Datos con calidad insuficiente para ÁGORA — revisa Bibliografía y cálculos
+            Datos con calidad insuficiente para la plataforma — revisa Bibliografía y cálculos
           </p>
         </div>
       )}

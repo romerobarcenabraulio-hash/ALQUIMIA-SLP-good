@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * EVM Dashboard — Control presupuestal KRONOS (M20) · Nivel B (proyecto municipal).
+ * EVM Dashboard — Control presupuestal control operativo (M20) · Nivel B (proyecto municipal).
  * BAC desde store.resultados.capexTotal — nada hardcodeado.
  */
 import { useState } from 'react'

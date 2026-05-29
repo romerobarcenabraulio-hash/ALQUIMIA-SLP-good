@@ -1,5 +1,5 @@
 /**
- * Catálogo curado de recicladoras/compradores por ZM — HERMES Parte C.
+ * Catálogo curado de recicladoras/compradores por ZM — datos operativos Parte C.
  * Coordenadas EPSG:4326. No usar como default global fuera de zm_simulator_id.
  * Fuente SLP: Recicladoras_por_Giro.xlsx (piloto). Otras ZM: estimado_denue mayo 2026.
  */

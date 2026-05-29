@@ -1,4 +1,4 @@
-/** Tokens Recharts + clases Tailwind — contrato EIDOS/LOGOS para gráficas del simulador. */
+/** Tokens Recharts + clases Tailwind — contrato guardrail editorial/LOGOS para gráficas del simulador. */
 
 import type { CSSProperties } from 'react'
 

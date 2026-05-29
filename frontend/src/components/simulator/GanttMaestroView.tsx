@@ -397,7 +397,7 @@ function RACIMatrix({ raci }: { raci: RACIPlan }) {
         </table>
       </div>
       <p className="text-[10px] text-[#8A857C]">
-        {raci.filas.length} procesos · {raci.municipio} · ÁGORA GOV ALQUIMIA
+        {raci.filas.length} procesos · {raci.municipio} · ALQUIMIA
       </p>
     </div>
   )

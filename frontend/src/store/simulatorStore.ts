@@ -120,7 +120,7 @@ interface SimulatorStore extends SimulatorState {
   generatingPlan: boolean
   generationProgress: number
   generationStep: string
-  /** Q-010 H-02 — modal de confirmación antes de ÁGORA */
+  /** Q-010 H-02 — modal de confirmación antes de la plataforma */
   agoraPlanConfirmOpen: boolean
   // Gate jurídico — seteado por DiagnosticoJuridico al cargar
   agoraLegalBloqueado: boolean

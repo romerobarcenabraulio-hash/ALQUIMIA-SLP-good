@@ -15,7 +15,7 @@ export interface ConsultingDeliverable {
   tier: DeliverableTier
   descripcion: string
   generacion: 'agora_zip' | 'professional_render' | 'executive_pdf' | 'index_pdf' | 'expediente_pdf' | 'hub' | 'modulo'
-  /** PDF borrador = portada+TOC; contenido completo en ÁGORA/DOCX salvo 01 parcial y 12 completo */
+  /** PDF borrador = portada+TOC; contenido completo en la plataforma/DOCX salvo 01 parcial y 12 completo */
   pdfContentLevel: 'completo' | 'parcial' | 'estructural' | 'meta'
 }
 
@@ -112,7 +112,7 @@ export const ENTREGABLES_RSU: ConsultingDeliverable[] = [
     id: '08_rutas',
     codigo: '08',
     titulo: 'Plan de rutas',
-    audiencia: 'Recolección · HERMES',
+    audiencia: 'Recolección · datos operativos',
     formato: ['docx', 'md', 'pdf'],
     tier: 'borrador',
     descripcion: 'Logística Wave 1',
@@ -166,7 +166,7 @@ export const ENTREGABLES_RSU: ConsultingDeliverable[] = [
   {
     id: 'paquete_completo',
     codigo: '—',
-    titulo: 'Paquete integral ÁGORA (ZIP)',
+    titulo: 'Paquete integral la plataforma (ZIP)',
     audiencia: 'Equipo municipal completo',
     formato: ['zip'],
     tier: 'cabildo',
@@ -177,4 +177,4 @@ export const ENTREGABLES_RSU: ConsultingDeliverable[] = [
 ]
 
 export const EXPORT_DISCLAIMER =
-  'Documento de consultoría generado por ALQUIMIA. Borrador estructural: el contenido sustantivo completo está en el paquete ÁGORA/DOCX salvo doc 01 (parcial) y 12 (acta). No sustituye actos de autoridad municipal.'
+  'Documento de consultoría generado por ALQUIMIA. Borrador estructural: el contenido sustantivo completo está en el paquete la plataforma/DOCX salvo doc 01 (parcial) y 12 (acta). No sustituye actos de autoridad municipal.'

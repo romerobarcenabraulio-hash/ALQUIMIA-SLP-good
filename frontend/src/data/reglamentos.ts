@@ -2,7 +2,7 @@
  * Fuente primaria de reglamentos (Blueprint 26) — datos estáticos hasta endpoint futuro.
  * Solo PDFs se sirven en línea desde `public/reglamentos/`.
  * Archivos .doc no van en línea — cuando se consiga el PDF oficial se agrega aquí.
- * Adendos jurídicos los generan los agentes de ALQUIMIA; el frontend los consume, no los produce.
+ * Adendos jurídicos los generan el flujo asistido de ALQUIMIA; el frontend los consume, no los produce.
  * Vigencia frente a terceros = fuente oficial (URL).
  */
 

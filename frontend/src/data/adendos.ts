@@ -3,7 +3,7 @@
  * Base normativa SLP + localizaciones MTY / QRO / SPGG / Corregidora / El Marqués (CLC).
  * Cada municipio activo debe usar `ciudades.{id}.adendoPropuesto` cuando exista; evita copy-paste intermunicipal.
  *
- * Los adendos definitivos los generan los agentes de ALQUIMIA; este archivo es
+ * Los adendos definitivos los generan el flujo asistido de ALQUIMIA; este archivo es
  * semilla estática hasta que el endpoint de agentes los sustituya.
  * [BORRADOR PARA REVISIÓN LEGAL — no produce efectos jurídicos]
  */

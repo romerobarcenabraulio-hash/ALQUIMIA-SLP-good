@@ -33,6 +33,8 @@ import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
 import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
 import { Conclusion, EditorialCallout, KpiAnchorGrid, MarginalNote } from '@/components/editorial'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePanels'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -127,6 +129,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
     municipiosActivos,
   } = useSimulatorStore()
   const r = resultados
+  const { profile } = useTenantMunicipalProfile()
 
   const logisticsContract = useMemo(
     () =>
@@ -197,6 +200,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
 
   return (
     <section className="pb-6" data-testid="scenarios-export-stack">
+      <TenantFirstLoginSummary profile={profile} moduleLabel="M13 · escenarios preliminares" />
 
       {/* ── Page navigation tabs ─────────────────────────────────────────── */}
       {!pageOnly && (

@@ -561,7 +561,7 @@ export interface SimulatorState {
   precioCarbonoEsc:  PrecioCarbonoEscenario
   genPercapita:      number
 
-  /** OPEX logístico — editables, benchmark nacional (HANDOFF HERMES↔KRONOS). */
+  /** OPEX logístico — editables, benchmark nacional (HANDOFF datos operativos↔control operativo). */
   costoCamionMesMxn: number
   costoVisitaMxn: number
   costoContingenciaTonMxn: number
@@ -1120,7 +1120,7 @@ export interface FuenteStatus {
   advertencia?:   string | null
 }
 
-// ─── Fase 3C/3D — Paquete documental ÁGORA ──────────────────────────────────
+// ─── Fase 3C/3D — Paquete documental la plataforma ──────────────────────────────────
 
 export interface PackageStatus {
   job_id:        string

@@ -23,7 +23,7 @@ export function MunicipioMadurezBanner({ municipiosActivos }: Props) {
         <p className="mt-1 text-[12px] text-[#3D4F33] leading-relaxed">
           {getMadurezMensajeMultiAncla(municipiosActivos.length)} Los PDFs de reglamento de aseo público y limpia se sirven desde{' '}
           <code className="text-[10px] rounded bg-white/80 px-1 py-0.5">public/reglamentos/</code> — uno por municipio cuando
-          el catálogo lo registra. Los adendos los generan los agentes de ALQUIMIA.
+          el catálogo lo registra. Los adendos los generan el flujo asistido de ALQUIMIA.
         </p>
       </div>
     )

@@ -22,7 +22,7 @@ export function FloatingCTA({ interaccionesRef }: { interaccionesRef: RefObject<
 
   return (
     <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-2">
-      {/* Advertencia cuando el marco legal (ÁGORA) está bloqueado hasta verificar reglamento */}
+      {/* Advertencia cuando el marco legal (la plataforma) está bloqueado hasta verificar reglamento */}
       {agoraLegalBloqueado && (
         <div className="bg-[#F3EAF5] border border-[#7B3FA0]/30 rounded-[10px] px-3 py-2 max-w-[260px] shadow-md">
           <p className="text-[11px] text-[#7B3FA0] font-medium">🔒 Verificación del reglamento pendiente</p>

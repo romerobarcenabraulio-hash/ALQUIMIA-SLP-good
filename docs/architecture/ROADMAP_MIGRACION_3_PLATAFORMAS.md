@@ -242,4 +242,30 @@ La opción 2 es la más segura desde perspectiva comercial. La opción 1 es la m
 
 ---
 
+## 7 · Addendum Fase 17R · Reconciliación NOUS
+
+El documento `LEARNING_AND_FEEDBACK_LAYER.md` se incorpora como restricción posterior al roadmap original. NOUS no entra como feature madura en Fases 11-17. Entra primero como aprendizaje observacional, lento, trazable y supervisado.
+
+Reglas incorporadas:
+
+- NOUS observa antes de sugerir.
+- N=5 permite analítica agregada interna, no publicación de patrones a clientes.
+- Mínimo 3 correcciones similares para patrón emergente interno de inferencia.
+- Mínimo 8 outcomes para patrón emergente interno de gate.
+- Mínimo 15 observaciones para patrón establecido candidato a founder gate.
+- Mínimo 30 observaciones para patrón robusto.
+- Sin opt-in, los datos del tenant no alimentan analytics agregada.
+- Ningún patrón se publica sin founder gate.
+- AUDITOR puede retirar patrones por sesgo.
+- Variables protegidas no se usan para correlaciones.
+- Se prohíbe lenguaje tipo “nuestro modelo predice”.
+
+Fase recomendada posterior:
+
+**Fase 18 · NOUS storage observacional y metodología.** Crear únicamente tablas/schemas/eventos para `inference_corrections`, `gate_outcomes`, `projection_deltas` y `nous_patterns`, más opt-in, audit log, bias policy y documentación metodológica. No construir A11 completo, detectores productivos, recalibración automática ni sugerencias NOUS al cliente hasta tener datos suficientes y firma founder.
+
+Documento de control: `docs/architecture/FASE17R_RECONCILIACION_NOUS_LEARNING_FEEDBACK.md`.
+
+---
+
 *ROADMAP CONSOLIDADO · Alquimia · 27 mayo 2026*

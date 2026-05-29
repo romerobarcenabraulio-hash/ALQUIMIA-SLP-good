@@ -39,7 +39,7 @@ function resolveEstadoNombre(
 }
 
 /**
- * Une simulador (ZM, trayectoria, snapshot) + resultados del motor para solicitar ZIP ÁGORA.
+ * Une simulador (ZM, trayectoria, snapshot) + resultados del motor para solicitar ZIP la plataforma.
  */
 export function buildAgoraPlanPayload(
   zmActiva: string,

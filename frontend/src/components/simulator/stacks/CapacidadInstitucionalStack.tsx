@@ -20,7 +20,7 @@ export function CapacidadInstitucionalStack() {
         <span className={agoraLegalBloqueado
           ? 'rounded-full bg-[#FDE8E8] border border-[#FCA5A5] px-3 py-1 text-[10px] font-semibold text-[#C0392B]'
           : 'rounded-full bg-[#EAF3DE] border border-[#C9DDB1] px-3 py-1 text-[10px] font-semibold text-[#3B6D11]'}>
-          ÁGORA {agoraLegalBloqueado ? 'bloqueado' : 'habilitado'}
+          la plataforma {agoraLegalBloqueado ? 'bloqueado' : 'habilitado'}
         </span>
       </div>
       <div id="panel-reglamento-ciudad">

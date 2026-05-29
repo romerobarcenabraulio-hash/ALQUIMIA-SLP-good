@@ -1,17 +1,17 @@
 {
   "audiencia": "inversionista",
-  "fecha": "2026-05-25",
-  "municipio_id": "jua",
-  "supuesto_base": "Modelo_BASED.xlsx · Fase 0-1 · ZM SLP",
+  "fecha": "2026-05-22",
+  "municipio_id": "slp",
+  "supuesto_base": "Modelo_BASED.xlsx · ZM SLP · mayo 2026",
   "resumen_ejecutivo": {
-    "capex_total_programa": "153641308",
+    "capex_total_programa": "161178648",
     "opex_run_rate_mensual": "277316",
-    "payback_simple_anios": "1.81",
+    "payback_simple_anios": "0.49",
     "costo_no_calidad_pct": "0.00"
   },
   "capex_por_componente": {
     "recicladoras": "81000000.0",
-    "centros_acopio": "55641308.0",
+    "centros_acopio": "63178648.0",
     "digital": "4500000.0",
     "flota": "12500000.0"
   },
@@ -24,5 +24,5 @@
     "Feed HERMES > 3 días sin publicar → AC EVM desactualizado",
     "Categoría OPEX > 20% sobre presupuesto → alerta roja"
   ],
-  "disclaimer_proyeccion": "Proyección basada en: Modelo_BASED.xlsx · Fase 0-1 · ZM SLP. No sustituye conciliación contable ni auditoría."
+  "disclaimer_proyeccion": "Proyección basada en: Modelo_BASED.xlsx · ZM SLP · mayo 2026. No sustituye conciliación contable ni auditoría."
 }

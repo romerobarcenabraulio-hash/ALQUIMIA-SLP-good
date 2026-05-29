@@ -13,7 +13,7 @@ export function ExportStatusPanel() {
     { id: 'escenario', label: 'Escenario calculado', ok: !!resultados },
     { id: 'municipio', label: 'Municipio seleccionado', ok: municipiosActivos.length > 0 },
     { id: 'datos', label: 'Calidad de datos ≥ 60', ok: (snapshotDatos?.score_datos ?? 0) >= 60 },
-    { id: 'bloqueos', label: 'Sin bloqueos AGORA', ok: !(snapshotDatos?.advertencias?.some(a => a.bloquea_agora)) },
+    { id: 'bloqueos', label: 'Sin bloqueos documentales', ok: !(snapshotDatos?.advertencias?.some(a => a.bloquea_agora)) },
   ]
   const ready = checks.filter(c => c.ok).length
 

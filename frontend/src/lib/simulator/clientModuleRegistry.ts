@@ -264,7 +264,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   }),
   risk_dashboard: base({
     module_id: 'risk_dashboard',
-    label: 'Riesgos y gates KRONOS',
+    label: 'Riesgos y gates operativos',
     decision: 'Gestionar riesgos críticos y confirmar prerequisitos de avance G1–G5 desde una sola vista de control.',
     evidence: 'Registro R01–R06, Score = Prob × Impacto, semáforo y estado de gates preservados.',
     next_action: 'Asignar owner a riesgos rojos y cerrar prerequisitos del gate activo.',

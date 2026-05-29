@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * M21B — Estado de gates G1–G5 enriquecido (KRONOS Control).
+ * M21B — Estado de gates G1–G5 enriquecido (control operativo Control).
  */
 import { useEffect, useState } from 'react'
 import { useSimulatorStore } from '@/store/simulatorStore'

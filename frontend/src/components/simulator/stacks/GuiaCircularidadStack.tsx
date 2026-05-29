@@ -19,6 +19,8 @@ import {
 } from '@/lib/journeyMode'
 import { Conclusion, MarginalNote, SectionLabel } from '@/components/editorial'
 import { InstitutionalBadge } from '@/components/credibility'
+import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePanels'
 
 const CHAPTER_ICONS: Record<number, LucideIcon> = {
   1: MapPin,
@@ -37,6 +39,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
   const journeyMode = useSimulatorStore(s => s.journeyMode)
   const setJourneyMode = useSimulatorStore(s => s.setJourneyMode)
   const resultados = useSimulatorStore(s => s.resultados)
+  const { profile, data } = useTenantMunicipalProfile()
 
   const municipioNarrativa = useMemo(() => {
     if (municipiosActivos.length === 1) {
@@ -87,6 +90,11 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           </p>
         </div>
       </section>
+
+      <TenantFirstLoginSummary
+        profile={profile}
+        moduleLabel={`M00 · ${data?.municipio ?? municipioNarrativa}`}
+      />
 
       <NarrativaIntroBridge />
 

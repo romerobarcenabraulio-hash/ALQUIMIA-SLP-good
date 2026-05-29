@@ -8,6 +8,10 @@ from app.routers.auth import UserInfo
 
 def _client() -> TestClient:
     admin._tenants_mem.clear()
+    admin._tenant_documents_mem.clear()
+    admin._analytics_audit_mem.clear()
+    for items in admin._nous_mem.values():
+        items.clear()
     app = FastAPI()
     app.include_router(admin.router, prefix="/admin")
 
@@ -98,6 +102,13 @@ def test_gate_cannot_close_without_evidence_and_does_not_transition_stage():
     assert body["state"]["current_stage"] == "validation"
     assert body["audit_log"][-1]["action"] == "gate_closed_manual"
     assert body["audit_log"][-1]["payload"]["automatic_stage_transition"] is False
+    assert len(admin._nous_mem["gate_outcomes"]) == 1
+    snapshot = admin._nous_mem["gate_outcomes"][0]
+    assert snapshot["gate"] == "G1"
+    assert snapshot["outcome"] == "cerrado_exitoso"
+    assert snapshot["module_state_at_close"]["snapshot_schema"] == "GateOutcomeSnapshot.v1"
+    assert snapshot["included_in_aggregate"] is False
+    assert snapshot["audit"]["published_to_clients"] is False
 
 
 def test_state_endpoint_returns_gates_capabilities_and_audit_log():

@@ -262,13 +262,13 @@ function HubContent() {
         {/* Cabecera */}
         <div className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">
-            /hub — ÁGORA · Hub de documentos
+            /hub · Hub de documentos
           </p>
           <h1 className="font-serif text-[32px] text-[#1C1B18]">Documentos del programa</h1>
           <p className="text-[13px] text-[#6B6760] mt-2">
             {jobParam
-              ? 'Paquete documental generado por ÁGORA — descarga, manifest y trazabilidad.'
-              : 'Repositorio de documentos generados por ÁGORA.'}
+              ? 'Paquete documental generado por la plataforma — descarga, manifest y trazabilidad.'
+              : 'Repositorio de documentos generados por la plataforma.'}
           </p>
           {!jobParam && (
             <div className="mt-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
@@ -340,7 +340,7 @@ function HubContent() {
             <div
               className="mb-4 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-3 py-3 text-[11px] leading-relaxed text-[#6B6760]"
               role="region"
-              aria-label="Aviso legal — paquete ÁGORA"
+              aria-label="Aviso legal — paquete la plataforma"
             >
               <p className="font-semibold text-[#1C1B18] flex items-center gap-1.5">
                 <AlertTriangle className="h-4 w-4 shrink-0 text-[#D4881E]" aria-hidden />
@@ -584,7 +584,7 @@ function HubContent() {
                 type="button"
                 onClick={() => void handleDescargarPaqueteCapitulo()}
                 disabled={zipLoading}
-                title="Solo archivos estáticos del repositorio — no es el paquete generado por ÁGORA"
+                title="Solo archivos estáticos del repositorio — no es el paquete generado por la plataforma"
                 className={cn(
                   'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] border transition-colors shrink-0',
                   zipLoading
@@ -612,7 +612,7 @@ function HubContent() {
               <strong className="text-[#1C1B18]">Importante — dos tipos de ZIP distintos.</strong>{' '}
               El botón gris <em>ZIP demo capítulo</em> empaqueta archivos estáticos de{' '}
               <span className="font-mono">public/</span> (borradores de referencia).{' '}
-              <strong>No sustituye</strong> el paquete consultoría de ÁGORA con carpetas{' '}
+              <strong>No sustituye</strong> el paquete consultoría generado por la plataforma con carpetas{' '}
               <span className="font-mono">analisis/</span> e{' '}
               <span className="font-mono">implementacion/</span>: genere el plan en el simulador y descargue desde ahí o desde el Hub con un{' '}
               <span className="font-mono">job=</span> activo.

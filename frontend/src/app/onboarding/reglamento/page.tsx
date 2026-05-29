@@ -45,7 +45,7 @@ function ReglamentoUploadForm() {
         <h1 className="font-serif text-[24px] text-[#3B6D11] text-center mb-2">Reglamento municipal</h1>
         <p className="text-[13px] text-[#6B6760] text-center mb-6 leading-relaxed">
           Sube el PDF más reciente del reglamento de aseo, limpia o gestión integral de residuos
-          del municipio que quieres analizar. Al activar tu cuenta, los agentes ALQUIMIA arrancan
+          del municipio que quieres analizar. Al activar tu cuenta, los la plataforma arrancan
           el análisis jurídico con este documento.
         </p>
 

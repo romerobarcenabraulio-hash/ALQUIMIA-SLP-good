@@ -375,7 +375,7 @@ export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras
       </div>
 
       <MarginalNote>
-        Fuentes: DENUE INEGI · Google Places · registro usuario · ÁGORA GOV ALQUIMIA
+        Fuentes: DENUE INEGI · Google Places · registro usuario · ALQUIMIA
       </MarginalNote>
     </div>
   )

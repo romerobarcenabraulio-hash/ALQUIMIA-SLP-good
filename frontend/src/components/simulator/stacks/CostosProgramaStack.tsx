@@ -268,7 +268,7 @@ export function CostosProgramaStack() {
         <div className="bg-white border border-[#E7E5DC] rounded-[14px] p-5 space-y-4">
           <div className="flex items-center justify-between gap-2">
             <h3 className="font-serif text-[18px] font-semibold text-[#1F2933]">
-              OPEX logístico (HERMES → KRONOS)
+              OPEX logístico (datos operativos → control presupuestal)
             </h3>
             <ProvenanceBadge
               tipo="estimado"

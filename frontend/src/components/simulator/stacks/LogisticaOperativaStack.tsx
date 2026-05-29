@@ -94,7 +94,7 @@ export function LogisticaOperativaStack() {
     mapSource,
   })
 
-  // Contrato KRONOS — disponible en window para agentes/diagnostics (no persiste)
+  // Contrato control operativo — disponible en window para agentes/diagnostics (no persiste)
   useEffect(() => {
     if (!hasResultados) return
     const contract = buildLogisticsKpiContract({
@@ -343,7 +343,7 @@ export function LogisticaOperativaStack() {
             <p>Dimensionar la flota y aprobar las rutas piloto antes de la primera fase de operación.</p>
           </RailSection>
           <RailSection title="Metodología">
-            <p>Dimensionamiento conceptual multi-municipio. KPIs publicables vía <code>window.__ALQUIMIA_LOGISTICS_KPI__</code> para KRONOS (Fase 0-1, estimado).</p>
+            <p>Dimensionamiento conceptual multi-municipio. KPIs publicables vía <code>window.__ALQUIMIA_LOGISTICS_KPI__</code> para control operativo (Fase 0-1, estimado).</p>
           </RailSection>
           <RailSection title="Módulos relacionados">
             <p>M06: Infraestructura que estas rutas sirven. M07: Personal que opera las rutas. M10: Mercado que recibe el material.</p>

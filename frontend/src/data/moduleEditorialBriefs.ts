@@ -327,11 +327,11 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
     case 'capacidad_institucional':
       return {
         moduleId: resolvedId,
-        title: 'Capacidad institucional y habilitación ÁGORA',
+        title: 'Capacidad institucional y habilitación documental',
         pregunta_guia: '¿El municipio puede ejecutar y generar plan hoy?',
         subtitulo_catchy: 'Madurez institucional, diagnóstico jurídico y bloqueos antes de planear',
         situacion_actual: `${territorio} puede tener diagnóstico técnico sólido y aun así carecer de capacidad administrativa o marco habilitante para operar.`,
-        observacion_alquimia: `${scope} El semáforo ÁGORA refleja el diagnóstico jurídico cargado — no es dictamen de autoridad.`,
+        observacion_alquimia: `${scope} El semáforo documental refleja el diagnóstico jurídico cargado — no es dictamen de autoridad.`,
         criterio_decision: 'Desbloquear requisitos jurídicos mínimos antes de prometer fechas de arranque ante Cabildo.',
         que_no_significa: 'No certifica madurez institucional ni autoriza erogaciones.',
         siguiente_accion: 'Completar diagnóstico jurídico y revisar madurez institucional documentada.',
@@ -339,7 +339,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Gate legal = checklist de artículos operables vs vacíos detectados en M03B.',
           origen_datos: 'Reglamento cargado, manifest de fuentes.',
-          por_que_este_enfoque: 'Evita generar planes ÁGORA sobre supuestos que el área jurídica aún no habilita.',
+          por_que_este_enfoque: 'Evita generar planes sobre supuestos que el área jurídica aún no habilita.',
           supuesto_critico: 'Vigencia y completitud del reglamento municipal analizado.',
         },
         chart_briefs: [],
@@ -461,11 +461,11 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿En qué fase institucional estamos y qué actividades y prerequisitos corresponden?',
         subtitulo_catchy: 'G1–G5: de Cabildo a cobertura total en 24 meses',
         situacion_actual: `Sin una narrativa de fases clara, ${territorio} mezcla hitos políticos (Cabildo, concesión) con tareas operativas (obra, rutas) y pierde el hilo de control.`,
-        observacion_alquimia: `${scope} KRONOS unifica gates G1–G5 con actividades T01–T15 y riesgos R01–R06 por fase.`,
+        observacion_alquimia: `${scope} El control operativo unifica gates G1–G5 con actividades T01–T15 y riesgos R01–R06 por fase.`,
         criterio_decision: 'Confirmar gate actual, prerequisitos abiertos y actividades de la fase antes de avanzar al detalle Gantt o a operación.',
         que_no_significa: 'No sustituye el acta de Cabildo, contrato de concesión ni reporte EVM — es la brújula de implementación.',
         siguiente_accion: 'Revisar prerequisitos de la fase seleccionada y validar en M21B antes de cerrar el gate.',
-        fuente_o_evidencia: 'GATE_DEFINITIONS KRONOS, Gantt builder T01–T15, registro de riesgos R01–R06.',
+        fuente_o_evidencia: 'GATE_DEFINITIONS, Gantt builder T01–T15, registro de riesgos R01–R06.',
         metodologia_editorial: {
           como_se_calcula: 'Cada fase G1–G5 merge definiciones institucionales con actividades T01–T15 (campo fase_gate) y riesgos por gate_afectado.',
           origen_datos: 'backend/app/planning/narrative.py, gate_tracker.py, builder.py, risk_register.py.',
@@ -1047,10 +1047,10 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'Confirme que el expediente responde las seis preguntas del regidor: costo, quién paga, quién opera, riesgo, beneficio y fecha de arranque.',
         que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
         siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
-        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por flujo AGORA.`,
+        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por el flujo asistido de la plataforma.`,
         metodologia_editorial: {
           como_se_calcula: 'No aplica. Este módulo consolida y exporta, no calcula.',
-          origen_datos: 'Store del simulador (Zustand) y flujo AGORA para generación de documentos.',
+          origen_datos: 'Store del simulador (Zustand) y flujo asistido para generación de documentos.',
           por_que_este_enfoque: 'Sin un expediente ordenado, el análisis pierde frente a resúmenes simplificados en sesión de Cabildo.',
           supuesto_critico: 'La completitud depende de que los módulos anteriores estén configurados con datos del municipio.',
         },
@@ -1068,7 +1068,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'No avanzar de gate con prerequisitos abiertos que afecten la validez del expediente.',
         que_no_significa: 'No sustituye la resolución de Cabildo ni la autorización presupuestal.',
         siguiente_accion: 'Revisar prerequisitos del gate actual y cerrar los pendientes antes de la fecha límite.',
-        fuente_o_evidencia: 'Estado de módulos en el simulador y checklist de gates KRONOS.',
+        fuente_o_evidencia: 'Estado de módulos en el simulador y checklist de gates operativos.',
         metodologia_editorial: {
           como_se_calcula: 'Cada gate evalúa booleanos de completitud por módulo prerequisito.',
           origen_datos: 'Store del simulador y reglas de gate definidas en chapterConfig.',

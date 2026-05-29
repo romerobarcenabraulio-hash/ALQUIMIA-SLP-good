@@ -1,0 +1,27 @@
+# PHASE 37 SOURCE ALIGNMENT CHECK
+
+**Uso:** revalidacion final del paquete de handoff para agentes ejecutores contra los siete archivos base de `AJUSTES PARA FINIQUITAR`.
+
+**Decision:** PASS documental. El handoff final preserva la arquitectura por etapas, la evidencia, la separacion territorial, la no-oficialidad de inferencias/benchmarks/estimaciones y los limites de NOUS/AGORA.
+
+## Matriz de alineacion
+
+| Archivo base | Mandato original | Como lo respeta el paquete actual | Documento donde quedo cubierto | Estado | Brecha | Accion correctiva | Riesgo si no se corrige |
+|---|---|---|---|---:|---|---|---|
+| `ADR-0010_stage_based_platform_separation.md` | Separacion por stages/plataformas. | Los handoffs backend/frontend/QA obligan a implementar Plataforma 0, `/v`, `/p`, `/e` con acceso por `tenant_state`. | `BACKEND_AGENT_HANDOFF.md`, `FRONTEND_AGENT_HANDOFF.md`, `QA_AUDITOR_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Probar 403 o bloqueo equivalente. | Cliente ve plataforma equivocada. |
+| `ADR-0010_stage_based_platform_separation.md` | Plataforma 0, vertical municipal y empresa/institucion no mezcladas. | `EXECUTOR_README.md` y handoffs separan backoffice interno de superficies cliente y founder/legal. | `EXECUTOR_README.md`, `FRONTEND_AGENT_HANDOFF.md`, `LEGAL_COMPLIANCE_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Mantener permisos admin separados. | Backoffice expuesto o vendido como cliente. |
+| `ADR-0010_stage_based_platform_separation.md` | Ejecucion por plataforma, no pantallas decorativas. | Frontend handoff exige journeys funcionales, no landing ni SaaS generico. | `FRONTEND_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Browser QA desktop/mobile. | UI bonita pero sin gate real. |
+| `PLATAFORMA_0_BACKOFFICE_SPEC.md` | Backoffice operativo, administracion interna, gates humanos y trazabilidad. | Backend, QA y founder ops exigen evidence log, audit log y cierre humano. | `BACKEND_AGENT_HANDOFF.md`, `QA_AUDITOR_AGENT_HANDOFF.md`, `FOUNDER_OPS_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Probar cierre de gate sin evidencia. | Decision sin responsable humano. |
+| `PLATAFORMA_0_BACKOFFICE_SPEC.md` | No convertir Plataforma 0 en landing. | Frontend y executor readme prohiben landing decorativa y marketing. | `EXECUTOR_README.md`, `FRONTEND_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Revisar UI por funcion operativa. | Backoffice pierde utilidad. |
+| `MODULE_MATURITY_AND_PERSONALIZATION.md` | Madurez modular y capacidades inmaduras bloqueadas o marcadas. | Handoffs obligan a leer `capability_registry.json`, maturity docs y marcar Carga inicial/En construccion. | `FRONTEND_AGENT_HANDOFF.md`, `QA_AUDITOR_AGENT_HANDOFF.md`. | PASS | Requiere auditoria viva por modulo. | Revisar modulos antes de activar. | Modulo parcial vendido como listo. |
+| `MODULE_MATURITY_AND_PERSONALIZATION.md` | Personalizacion por etapa y granularidad sin opacidad. | Backend/frontend exigen datos tenant, fuente y cambio visible por tenant sin copiar municipios. | `BACKEND_AGENT_HANDOFF.md`, `FRONTEND_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Prueba de cambio de tenant. | Plantilla generica como local. |
+| `ROADMAP_MIGRACION_3_PLATAFORMAS.md` | Migracion real a tres plataformas, separacion de journeys, continuidad SLP. | README y QA handoff obligan a ejecutar en orden y probar SLP, registry y acceso por stage. | `EXECUTOR_README.md`, `QA_AUDITOR_AGENT_HANDOFF.md`. | PASS | Requiere pruebas producto. | No cerrar sin SLP compare/access. | Migracion parcial presentada como final. |
+| `AUTOMATION_AND_PERSONALIZATION_LAYER.md` | Automatizacion posterior y trazable; agentes explicitos; no decisiones politicas automaticas. | NOUS/automation handoff exige disparadores explicitos, logs, provenance y decision humana. | `NOUS_AUTOMATION_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Bloquear triggers sin contexto. | Automatizacion opaca. |
+| `AUTOMATION_AND_PERSONALIZATION_LAYER.md` | Recomendaciones por modulo condicionadas. | NOUS handoff exige fuente, confianza, trade-off y accion humana. | `NOUS_AUTOMATION_AGENT_HANDOFF.md`, `QA_AUDITOR_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Prueba de recomendacion sin fuente. | Recomendacion parece decision oficial. |
+| `LEARNING_AND_FEEDBACK_LAYER.md` | NOUS observa antes de sugerir; aprendizaje por validacion; no ML opaco. | NOUS handoff bloquea publicacion y recalibracion automatica, exige opt-in, N, bias y founder gate. | `NOUS_AUTOMATION_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Tests opt-in/N insuficiente/bias. | Aprendizaje opaco o prematuro. |
+| `FIELD_STUDIES_AND_MISSING_KPIS.md` | Benchmark no es estudio local; KPI faltante es brecha critica. | QA/frontend/founder/legal handoffs exigen brechas visibles y bloquean claims locales sin estudio. | `QA_AUDITOR_AGENT_HANDOFF.md`, `FRONTEND_AGENT_HANDOFF.md`, `LEGAL_COMPLIANCE_AGENT_HANDOFF.md`. | PASS | Ninguna documental. | Validar M01/M03B/M06/M08/M09/M11/M13. | Diagnostico impugnable. |
+| `FIELD_STUDIES_AND_MISSING_KPIS.md` | Inferencia con fuente, fecha, metodo y confianza; municipio y ZM nunca se mezclan. | Todos los handoffs incluyen fuente/fecha/metodo/confianza y alcance territorial como cierre. | `EXECUTOR_README.md`, handoffs por agente. | PASS | Ninguna documental. | Probar claim sin metadata. | Claim falso o territorialmente contaminado. |
+
+## Resultado
+
+El handoff final queda alineado. La siguiente etapa ya no debe ampliar planeacion; debe ejecutar bloques concretos y cerrar con pruebas.

@@ -1,7 +1,7 @@
 'use client'
 
 /**
- * M05D — Roadmap de implementación KRONOS (24 meses · G1–G5).
+ * M05D — Roadmap de implementación control operativo (24 meses · G1–G5).
  * Punto de entrada narrativo: fases institucionales + actividades + Gantt API.
  */
 import { useEffect, useState } from 'react'

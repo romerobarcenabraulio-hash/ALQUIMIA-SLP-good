@@ -31,7 +31,7 @@ function lineaCatálogoNormativa(municipioId: string): string {
     return 'Este municipio aún no tiene fila propia en el catálogo de reglamentos del simulador; Marco Legal y validación competente definen qué instrumento aplica.'
   }
   if (tienePdfLocalEmbebible(reg)) {
-    return 'Catálogo: PDF municipal disponible en línea para lectura y adendos propuestos por agentes ALQUIMIA; la vigencia reconocible ante terceros sigue siendo la publicación oficial enlazada.'
+    return 'Catálogo: PDF municipal disponible en línea para lectura y adendos propuestos por la plataforma; la vigencia reconocible ante terceros sigue siendo la publicación oficial enlazada.'
   }
   switch (reg.estado_verificacion) {
     case 'vigente':

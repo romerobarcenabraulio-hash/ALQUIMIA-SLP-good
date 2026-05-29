@@ -1,6 +1,6 @@
 /**
- * OPEX logístico desde contrato HERMES — KRONOS Fase 0-1.
- * Fórmula validada en HANDOFF_HERMES_KRONOS_MAY2026.txt
+ * OPEX logístico desde contrato datos operativos — control operativo Fase 0-1.
+ * Fórmula validada en HANDOFF_datos operativos_control operativo_MAY2026.txt
  */
 import type { LogisticsKpiContract } from '@/lib/logisticsCalc'
 
@@ -81,7 +81,7 @@ export function computeOpexLogisticaAnual(
     opexLogisticaMensualMxn: total / 12,
     confianzaAplicada: confianza,
     advertencia,
-    fuente: 'HERMES LogisticsKpiContract + parámetros editables store',
+    fuente: 'Contrato de datos operativos + parámetros editables store',
   }
 }
 

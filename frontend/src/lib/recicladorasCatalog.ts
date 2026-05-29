@@ -1,5 +1,5 @@
 /**
- * Resolver de recicladoras por territorio + KPI hacia KRONOS (HERMES Parte C).
+ * Resolver de recicladoras por territorio + KPI hacia control operativo (datos operativos Parte C).
  */
 import {
   GIROS_COBERTURA,

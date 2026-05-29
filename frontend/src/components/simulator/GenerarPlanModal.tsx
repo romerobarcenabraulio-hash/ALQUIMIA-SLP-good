@@ -416,7 +416,7 @@ export function GenerarPlanModal() {
         ) : (
           <>
             <h3 className="font-serif text-[24px] text-[#1C1B18] mb-1">Generando tu plan</h3>
-            <p className="text-[13px] text-[#6B6760] mb-5">ÁGORA está trabajando — ~10 minutos en total</p>
+            <p className="text-[13px] text-[#6B6760] mb-5">La plataforma está generando el paquete — ~10 minutos en total</p>
 
             <div className="h-2 bg-[#E2DED6] rounded-full mb-3">
               <div

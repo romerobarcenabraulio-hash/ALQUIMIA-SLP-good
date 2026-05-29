@@ -168,7 +168,7 @@ export default function CoberturaNacional() {
                 figureClassName: 'text-amber-900',
               },
               {
-                label: 'AGORA bloqueado',
+                label: 'Bloqueo documental',
                 value: String(agg.agoraBloqueados),
                 figureClassName: 'text-red-800',
               },
@@ -188,12 +188,12 @@ export default function CoberturaNacional() {
                 : 'citizen'
           }
           kicker="Cobertura · lectura conjunta"
-          summary={`${zmActiva} reporta ${agg.total} filas municipales: ${agg.legalVerificado} con marco legal verificado (${agg.pct(agg.legalVerificado)}%), ${agg.legalEstimado} aún en estimación (${agg.pct(agg.legalEstimado)}%) y ${agg.legalLocalizado} localizados. Etapa «legal verificado» en el staging: ${agg.stageLegalVerificado}/${agg.total}. ${agg.agoraBloqueados > 0 ? `${agg.agoraBloqueados} municipio(s) mantienen bloqueo AGORA hasta saneamiento jurídico.` : 'Sin bloqueo AGORA en los registros cargados.'}`}
+          summary={`${zmActiva} reporta ${agg.total} filas municipales: ${agg.legalVerificado} con marco legal verificado (${agg.pct(agg.legalVerificado)}%), ${agg.legalEstimado} aún en estimación (${agg.pct(agg.legalEstimado)}%) y ${agg.legalLocalizado} localizados. Etapa «legal verificado» en el staging: ${agg.stageLegalVerificado}/${agg.total}. ${agg.agoraBloqueados > 0 ? `${agg.agoraBloqueados} municipio(s) mantienen bloqueo documental hasta saneamiento jurídico.` : 'Sin bloqueo documental en los registros cargados.'}`}
           evidence={[
             { label: 'Verificado', value: `${agg.legalVerificado} · ${agg.pct(agg.legalVerificado)}%` },
             { label: 'Estimado', value: `${agg.legalEstimado} · ${agg.pct(agg.legalEstimado)}%` },
             { label: 'Localizado', value: `${agg.legalLocalizado} mun.` },
-            { label: 'Bloqueo AGORA', value: String(agg.agoraBloqueados) },
+            { label: 'Bloqueo documental', value: String(agg.agoraBloqueados) },
           ]}
           nextStep={{
             label: 'Continuar en marco legal',
@@ -243,7 +243,7 @@ export default function CoberturaNacional() {
                       <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[c.legal] ?? STATUS_COLOR.no_disponible}`}>
                         {c.legal}
                       </span>
-                      {c.agora_bloqueado && <div className="mt-1 text-xs text-red-700">bloquea AGORA juridico</div>}
+                      {c.agora_bloqueado && <div className="mt-1 text-xs text-red-700">bloquea generación jurídica</div>}
                     </td>
                     <td className="py-3 px-3">
                       <span className={`inline-block rounded px-2 py-0.5 text-xs font-medium ${STATUS_COLOR[c.presupuesto] ?? STATUS_COLOR.no_disponible}`}>

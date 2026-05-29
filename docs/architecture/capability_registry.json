@@ -62,7 +62,11 @@
       "order": 1,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "antecedentes_municipales",
+        "city_baseline",
+        "social_diagnostico"
+      ]
     },
     {
       "module_id": "antecedentes_municipales",
@@ -81,7 +85,16 @@
       "order": 2,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "city_baseline",
+        "social_diagnostico",
+        "capacidad_institucional",
+        "marco_legal",
+        "costo_omision",
+        "escenarios_financieros",
+        "riesgos_modelo",
+        "expediente_cabildo"
+      ]
     },
     {
       "module_id": "city_baseline",
@@ -102,7 +115,41 @@
       "depends_on": [
         "antecedentes_municipales"
       ],
-      "produces_data_for": []
+      "produces_data_for": [
+        "costo_omision",
+        "escenarios_financieros",
+        "riesgos_modelo",
+        "expediente_cabildo",
+        "monitoreo_operativo"
+      ],
+      "sub_capabilities": [
+        {
+          "capability_id": "kpi_sdg_11_6_1",
+          "name": "SDG 11.6.1",
+          "type": "kpi_wave_one",
+          "gate": "G1",
+          "requires_local_study": [
+            "estudio_cuarteo",
+            "estudio_rutas",
+            "auditoria_infraestructura"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        },
+        {
+          "capability_id": "kpi_wasteaware_fisicos",
+          "name": "Wasteaware ISWM fisicos",
+          "type": "kpi_wave_one",
+          "gate": "G1",
+          "requires_local_study": [
+            "estudio_cuarteo",
+            "estudio_rutas",
+            "censo_pepenadores",
+            "auditoria_infraestructura"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        }
+      ],
+      "technical_defensibility_rule": "Distinguir benchmark nacional, inferencia y estudio de cuarteo local; sin estudio local mostrar brecha critica."
     },
     {
       "module_id": "social_diagnostico",
@@ -121,7 +168,12 @@
       "order": 4,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "marco_legal",
+        "costo_omision",
+        "riesgos_modelo",
+        "expediente_cabildo"
+      ],
       "internal_tabs": [
         "Demografía",
         "Encuesta",
@@ -132,6 +184,18 @@
         "social_encuesta",
         "mapeo_actores",
         "organigrama_diagnostico"
+      ],
+      "sub_capabilities": [
+        {
+          "capability_id": "kpi_inclusion_sector_informal",
+          "name": "Inclusion del sector informal",
+          "type": "kpi_wave_one",
+          "gate": "G1",
+          "requires_local_study": [
+            "censo_pepenadores"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        }
       ]
     },
     {
@@ -151,7 +215,13 @@
       "order": 5,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "roadmap_implementacion",
+        "infraestructura",
+        "organigrama",
+        "logistica",
+        "risk_dashboard"
+      ],
       "internal_tabs": [
         "Capacidad",
         "Cobertura",
@@ -160,6 +230,19 @@
       "absorbs_module_ids": [
         "cobertura_territorial",
         "dictamen_tecnico"
+      ],
+      "sub_capabilities": [
+        {
+          "capability_id": "kpi_wasteaware_gobernanza",
+          "name": "Wasteaware ISWM gobernanza",
+          "type": "kpi_wave_one",
+          "gate": "G1",
+          "requires_local_study": [
+            "censo_pepenadores",
+            "estudio_juridico"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        }
       ]
     },
     {
@@ -179,7 +262,12 @@
       "order": 6,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "expediente_cabildo",
+        "roadmap_implementacion",
+        "esquema_concesion"
+      ],
+      "technical_defensibility_rule": "Sin estudio juridico firmado, mostrar analisis preliminar y no dictamen."
     },
     {
       "module_id": "costo_omision",
@@ -198,7 +286,11 @@
       "order": 7,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "escenarios_financieros",
+        "riesgos_modelo",
+        "expediente_cabildo"
+      ],
       "internal_tabs": [
         "Omisión",
         "Evaluación",
@@ -226,7 +318,12 @@
       "order": 8,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "roadmap_implementacion",
+        "infraestructura",
+        "costos_programa"
+      ],
+      "technical_defensibility_rule": "Sin PSP, no defender tarifa al usuario."
     },
     {
       "module_id": "arbol_financiamiento",
@@ -245,7 +342,9 @@
       "order": 9,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "expediente_cabildo"
+      ]
     },
     {
       "module_id": "escenarios_financieros",
@@ -264,7 +363,10 @@
       "order": 10,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "expediente_cabildo"
+      ],
+      "technical_defensibility_rule": "Separar datos locales validados de sensibilidad financiera."
     },
     {
       "module_id": "riesgos_modelo",
@@ -283,7 +385,10 @@
       "order": 11,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "risk_dashboard",
+        "expediente_cabildo"
+      ]
     },
     {
       "module_id": "expediente_cabildo",
@@ -302,7 +407,9 @@
       "order": 12,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "roadmap_implementacion"
+      ]
     },
     {
       "module_id": "roadmap_implementacion",
@@ -320,7 +427,14 @@
       "order": 13,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "infraestructura",
+        "logistica",
+        "costos_programa",
+        "monitoreo_operativo",
+        "evm_dashboard",
+        "risk_dashboard"
+      ],
       "internal_tabs": [
         "Roadmap",
         "Cronograma",
@@ -349,7 +463,25 @@
       "order": 14,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "logistica",
+        "costos_programa",
+        "monitoreo_operativo",
+        "risk_dashboard"
+      ],
+      "sub_capabilities": [
+        {
+          "capability_id": "kpi_gri_303_2_lixiviados",
+          "name": "GRI 303-2 agua/lixiviados",
+          "type": "kpi_wave_one",
+          "gate": "G2",
+          "requires_local_study": [
+            "auditoria_infraestructura"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        }
+      ],
+      "technical_defensibility_rule": "Sin auditoria de infraestructura, marcar brecha critica antes de CAPEX validado."
     },
     {
       "module_id": "organigrama",
@@ -367,7 +499,11 @@
       "order": 15,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "logistica",
+        "monitoreo_operativo",
+        "risk_dashboard"
+      ]
     },
     {
       "module_id": "logistica",
@@ -385,14 +521,31 @@
       "order": 16,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "monitoreo_operativo",
+        "risk_dashboard"
+      ],
       "internal_tabs": [
         "Rutas y vehículos",
         "Educación ciudadana"
       ],
       "absorbs_module_ids": [
         "plan_educativo"
-      ]
+      ],
+      "sub_capabilities": [
+        {
+          "capability_id": "kpi_gri_302_1_energia",
+          "name": "GRI 302-1 energia",
+          "type": "kpi_wave_one",
+          "gate": "G2",
+          "requires_local_study": [
+            "estudio_rutas",
+            "auditoria_infraestructura"
+          ],
+          "confidence_until_evidence": "missing_local_study_until_evidence"
+        }
+      ],
+      "technical_defensibility_rule": "Sin estudio de rutas, marcar hipotesis operativa."
     },
     {
       "module_id": "costos_programa",
@@ -410,7 +563,11 @@
       "order": 17,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "escenarios_financieros",
+        "evm_dashboard"
+      ],
+      "technical_defensibility_rule": "Sin auditoria/rutas, mostrar CAPEX/OPEX estimado y no linea base validada."
     },
     {
       "module_id": "mercado_materiales",
@@ -428,7 +585,9 @@
       "order": 18,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "escenarios_financieros"
+      ]
     },
     {
       "module_id": "inspeccion",
@@ -445,7 +604,10 @@
       "order": 19,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "monitoreo_operativo",
+        "risk_dashboard"
+      ]
     },
     {
       "module_id": "monitoreo_operativo",
@@ -462,7 +624,11 @@
       "order": 20,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
-      "produces_data_for": []
+      "produces_data_for": [
+        "doble_materialidad",
+        "evm_dashboard",
+        "risk_dashboard"
+      ]
     },
     {
       "module_id": "doble_materialidad",
@@ -513,7 +679,9 @@
       "order": 23,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
-      "produces_data_for": [],
+      "produces_data_for": [
+        "risk_dashboard"
+      ],
       "internal_tabs": [
         "EVM",
         "Conciliación"
@@ -613,5 +781,10 @@
     },
     "client_facing_module_count_including_m00": 24,
     "legacy_code_preserved": true
+  },
+  "phase19": {
+    "field_study_contract": "docs/architecture/FASE19_FIELD_STUDIES_M00B_KPIS.md",
+    "kpi_wave_one_status": "contracts_only_no_local_values",
+    "no_local_study_policy": "show_critical_gap_not_municipal_truth"
   }
 }

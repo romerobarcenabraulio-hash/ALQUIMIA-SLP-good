@@ -18,7 +18,7 @@ export interface HubDocumentoCapitulo {
 }
 
 /**
- * Objetivo de negocio histórico ÁGORA Q-023 (documentos listos en ZIP).
+ * Objetivo de negocio histórico la plataforma Q-023 (documentos listos en ZIP).
  * El catálogo real puede ir por debajo; la UI y el README deben declararlo sin dramatismo.
  */
 export const HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO = 7

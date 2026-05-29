@@ -1,6 +1,6 @@
 {
-  "version": "1.0.1",
-  "updated": "2026-05-27",
+  "version": "1.0.2",
+  "updated": "2026-05-28",
   "modules": [
     {
       "module_id": "M00",
@@ -75,6 +75,18 @@
           "full_name": "ODS 11 — Meta 11.6: Reducir el impacto ambiental per capita de las ciudades",
           "url": "https://sdgs.un.org/goals/goal11",
           "relevance": "Indicador de impacto urbano ambiental por habitante"
+        },
+        {
+          "code": "SDG 11.6.1",
+          "full_name": "UN SDG Indicator 11.6.1: Proportion of municipal solid waste collected and managed in controlled facilities out of total municipal waste generated, by cities",
+          "url": "https://unstats.un.org/sdgs/metadata/",
+          "relevance": "Indicador oficial ONU para residuos municipales recolectados y manejados en instalaciones controladas"
+        },
+        {
+          "code": "Wasteaware ISWM Benchmark Indicators",
+          "full_name": "Wasteaware Integrated Sustainable Waste Management benchmark indicators (Wilson et al. 2015)",
+          "url": "https://doi.org/10.1016/j.wasman.2014.10.006",
+          "relevance": "Benchmark físico de recolección formal, reciclaje y disposición controlada"
         }
       ]
     },
@@ -92,6 +104,12 @@
           "full_name": "ISO 14001:2015 — §4.1: Comprensión de la organización y su contexto",
           "url": "https://www.iso.org/standard/60857.html",
           "relevance": "Contexto organizacional para sistema de gestión ambiental"
+        },
+        {
+          "code": "Wasteaware Informal Sector Inclusion",
+          "full_name": "Wasteaware ISWM governance indicator: informal sector inclusion",
+          "url": "https://doi.org/10.1016/j.wasman.2014.10.006",
+          "relevance": "Inclusión de pepenadores y trabajadores informales en gobernanza RSU"
         }
       ]
     },
@@ -144,6 +162,12 @@
           "full_name": "ISO 26000:2010 — §5.3: Identificación y compromiso con stakeholders",
           "url": "https://www.iso.org/standard/42546.html",
           "relevance": "Identificación y diálogo con actores del ecosistema municipal"
+        },
+        {
+          "code": "GRI 408-1",
+          "full_name": "GRI 408: Trabajo infantil 2016 — 408-1: Operaciones y proveedores con riesgo significativo de casos de trabajo infantil",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Censo de pepenadores y detección de menores en actividad informal"
         }
       ]
     },
@@ -184,6 +208,12 @@
           "full_name": "ISO 14001:2015 — §5.3: Roles, responsabilidades y autoridades",
           "url": "https://www.iso.org/standard/60857.html",
           "relevance": "Roles y responsabilidades en gestión ambiental"
+        },
+        {
+          "code": "Wasteaware ISWM Governance Indicators",
+          "full_name": "Wasteaware ISWM governance indicators: user inclusivity, provider inclusivity, financial sustainability and institutions",
+          "url": "https://doi.org/10.1016/j.wasman.2014.10.006",
+          "relevance": "Rúbrica de gobernanza municipal RSU"
         }
       ]
     },
@@ -207,6 +237,12 @@
           "full_name": "LGPGIR — Arts. 9, 17 y 18: Programas de gestión integral de residuos",
           "url": "https://www.diputados.gob.mx/LeyesBiblio/pdf/LGPGIR.pdf",
           "relevance": "Marco federal de programas municipales de residuos"
+        },
+        {
+          "code": "NMX-AA-015-1985",
+          "full_name": "NMX-AA-015-1985: Protección al ambiente - Contaminación del suelo - Residuos sólidos municipales - Muestreo - Método de cuarteo",
+          "url": "https://www.economia.gob.mx/",
+          "relevance": "Método mexicano de muestreo para caracterización física de RSU"
         }
       ]
     },
@@ -413,6 +449,12 @@
           "full_name": "EN 840-1:2012 — Contenedores móviles para residuos — Parte 1",
           "url": "https://www.en-standard.eu/",
           "relevance": "Especificaciones de contenedores para recolección"
+        },
+        {
+          "code": "GRI 303-2",
+          "full_name": "GRI 303: Agua y efluentes 2018 — 303-2: Gestión de impactos relacionados con vertidos de agua",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Gestión de lixiviados y vertidos asociados a infraestructura RSU"
         }
       ]
     },
@@ -465,6 +507,12 @@
           "full_name": "GRI 305: Emisiones 2016 — 305-3: Otras emisiones indirectas de GEI (Alcance 3)",
           "url": "https://www.globalreporting.org/standards/",
           "relevance": "Emisiones de Alcance 3 evitadas por valorización"
+        },
+        {
+          "code": "GRI 302-1",
+          "full_name": "GRI 302: Energía 2016 — 302-1: Consumo energético dentro de la organización",
+          "url": "https://www.globalreporting.org/standards/",
+          "relevance": "Consumo energético y combustible de flotilla y operación logística"
         }
       ]
     },
@@ -547,7 +595,14 @@
       "module_id": "M11",
       "status": "pendiente",
       "message": "Pendiente construcción. Sin estándar definido hasta que exista.",
-      "standards": []
+      "standards": [
+        {
+          "code": "PSP/WTP Contingent Valuation",
+          "full_name": "Willingness-to-pay / payment for service study using contingent valuation or choice experiment",
+          "url": "https://openknowledge.worldbank.org/",
+          "relevance": "Defensibilidad de tarifa o pago por servicio cuando el modelo financiero depende de cobro al usuario"
+        }
+      ]
     },
     {
       "module_id": "M12",

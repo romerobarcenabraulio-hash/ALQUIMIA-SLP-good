@@ -38,7 +38,7 @@ function countStandardsForBody(id: InstitutionalBodyId): number {
   return n
 }
 
-/** Cuatro cuerpos normativos visibles en M00 — conteos desde standards_map.json (MARCOS). */
+/** Cuatro cuerpos normativos visibles en M00 — conteos desde standards_map.json (revisión de estándares). */
 export const INSTITUTIONAL_BODIES: InstitutionalBodyMeta[] = (
   [
     {

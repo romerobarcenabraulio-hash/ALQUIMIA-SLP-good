@@ -1,6 +1,6 @@
 # Rationale de estándares por módulo
 
-Documento metodológico MARCOS — fuente canónica: `docs/architecture/standards_map.json` v1.0.1.
+Documento metodológico revision de estandares — fuente canónica: `docs/architecture/standards_map.json` v1.0.1.
 Cada entrada explica por qué el estándar aplica al módulo (máx. dos oraciones).
 
 ## M00 · Guía de circularidad

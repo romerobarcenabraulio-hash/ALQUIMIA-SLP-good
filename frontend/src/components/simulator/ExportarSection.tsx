@@ -89,7 +89,7 @@ export function ExportarSection() {
 
       <div className="mb-3 rounded-[10px] border border-[#1A5FA8]/25 bg-[#EBF3FB] px-4 py-2.5 text-[10px] leading-relaxed text-[#4A4740]">
         Los PDF de esta sección son <strong>borradores estructurales</strong> (portada + índice + Times New Roman).
-        Contenido sustantivo completo: ZIP ÁGORA y Hub profesional. Gráficas Exhibit: en XLSX o pendientes en PDF — ver auditoría SUPREME.
+        Contenido sustantivo completo: ZIP de la plataforma y Hub profesional. Gráficas Exhibit: en XLSX o pendientes en PDF — ver revisión interna.
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
@@ -123,16 +123,16 @@ export function ExportarSection() {
       <div className="bg-gradient-to-br from-[#1F3B06] to-[#2D5409] rounded-[20px] p-8 text-center text-white">
         <h3 className="font-serif text-[32px] mb-2">Genera tu plan de circularidad</h3>
         <p className="text-[#EAF3DE] text-[14px] mb-6 max-w-lg mx-auto">
-          ÁGORA producirá en ~10 minutos el paquete consultoría completo: carpetas{' '}
+          La plataforma producirá en ~10 minutos el paquete consultoría completo: carpetas{' '}
           <span className="font-mono text-[#F6FAD8]">analisis/</span> e{' '}
           <span className="font-mono text-[#F6FAD8]">implementacion/</span>, DOCX, XLSX, PDF
-          y kits por actividad — ordenados por los agentes del pipeline.
+          y kits por actividad — ordenados por el flujo asistido de generación.
         </p>
         <button
           onClick={handleGenerar}
           className="bg-[#F6C84B] text-[#1C1B18] font-medium text-[16px] px-8 py-4 rounded-[10px] hover:bg-[#D4881E] hover:text-white transition-colors"
         >
-          Generar paquete consultoría (ÁGORA)
+          Generar paquete consultoría
         </button>
         {resultados && (
           <p className="text-[#A8A49C] text-[11px] mt-3">
