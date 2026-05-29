@@ -128,7 +128,7 @@
     "fuente_score": "PMBOK 6th ed. Tabla 11-5 — Prob × Impacto"
   },
   "R09": {
-    "descripcion": "OPEX logístico excede presupuesto aprobado (feed HERMES)",
+    "descripcion": "OPEX logístico excede presupuesto aprobado (feed operativo)",
     "probabilidad": "Media",
     "impacto": "Alto",
     "score": 4,

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "actualizado": "2026-05-25",
-  "agente": "BIOS",
+  "fuente_operativa": "sistema_interno",
   "metodologia": "ISO 14040/14044 — impacto evitado vs. producción virgen",
   "factores": [
     {
@@ -11,7 +11,7 @@
       "referencia": "aluminium production, primary, at plant / RER",
       "anio_referencia": 2023,
       "unidad": "tCO2e/t",
-      "notas": "Valor operativo BIOS; alineado a tabla GRI 305 del agente BIOS"
+      "notas": "Valor operativo; alineado a tabla GRI 305 del sistema interno"
     },
     {
       "fraccion": "pet",

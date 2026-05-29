@@ -171,7 +171,7 @@ def render_docx(
     section.right_margin  = Inches(1.25)
 
     # ── Portada ───────────────────────────────────────────────────────────────
-    titulo = doc_meta.get("titulo", doc_meta.get("document_id", "Documento ÁGORA"))
+    titulo = doc_meta.get("titulo", doc_meta.get("document_id", "Documento ALQUIMIA"))
 
     p_title = doc.add_paragraph()
     p_title.alignment = WD_ALIGN_PARAGRAPH.CENTER

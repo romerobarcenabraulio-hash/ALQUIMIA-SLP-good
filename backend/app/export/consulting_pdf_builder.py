@@ -114,7 +114,7 @@ def build_toc_page(story: list, bp: DocumentBlueprint) -> None:
 
 
 def build_section_skeleton(story: list, bp: DocumentBlueprint) -> None:
-    """Esqueleto de secciones con títulos de acción — contenido se completa en ÁGORA/DOCX."""
+    """Esqueleto de secciones con títulos de acción — contenido se completa en flujo documental/DOCX."""
     from reportlab.platypus import Paragraph, Spacer
 
     styles = consulting_styles()
@@ -124,7 +124,7 @@ def build_section_skeleton(story: list, bp: DocumentBlueprint) -> None:
     story.append(Paragraph(
         f"Extensión objetivo: ≤{bp.max_paginas} páginas. "
         "Las secciones siguientes siguen el blueprint consultoría ALQUIMIA; "
-        "el contenido detallado se genera en el pipeline ÁGORA (Markdown/DOCX).",
+        "el contenido detallado se genera en el pipeline documental (Markdown/DOCX).",
         styles["body"],
     ))
     story.append(Spacer(1, 0.15 * MARGINS["top"]))
@@ -136,7 +136,7 @@ def build_section_skeleton(story: list, bp: DocumentBlueprint) -> None:
         ))
         story.append(Paragraph(f"<i>{entry.action_title}</i>", styles["body"]))
         story.append(Paragraph(
-            "[Contenido generado por ÁGORA según datos del escenario y trazabilidad activa.]",
+            "[Contenido generado por la plataforma según datos del escenario y trazabilidad activa.]",
             styles["legal"],
         ))
 

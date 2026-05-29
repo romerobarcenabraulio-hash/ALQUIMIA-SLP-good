@@ -27,7 +27,7 @@ _ESTRATEGIAS: dict[ReformEstrategia, dict] = {
         "nombre": "Reforma integral",
         "descripcion": (
             "El reglamento requiere adición o sustitución de 3-7 artículos. "
-            "Se recomienda un proceso participativo con ÁGORA-Arquitecto generando los "
+            "Se recomienda un proceso participativo con la plataforma generando los "
             "textos propuestos, presentación en dos sesiones de Cabildo."
         ),
         "plazo_meses": 6,
@@ -36,7 +36,7 @@ _ESTRATEGIAS: dict[ReformEstrategia, dict] = {
         "nombre": "Nuevo reglamento",
         "descripcion": (
             "La brecha normativa es estructural. El reglamento vigente no puede parcharse; "
-            "requiere sustitución completa. ÁGORA-Ghostwriter redacta el borrador completo "
+            "requiere sustitución completa. la plataforma redacta el borrador completo "
             "en 30 días; proceso formal 10-12 meses."
         ),
         "plazo_meses": 12,
@@ -85,7 +85,7 @@ def select_strategy(diag: LegalDiagnostic) -> ReformStrategyOutput:
     if diag.agora_bloqueado:
         motivo = (
             f"Reglamento '{diag.reglamento_nombre}' (v{diag.reglamento_version}) "
-            f"no tiene fuente verificada. ÁGORA no puede generar documentos legales "
+            f"no tiene fuente verificada. la plataforma no puede generar documentos legales "
             f"hasta que un jurista valide la fuente ({diag.reglamento_fuente})."
         )
 

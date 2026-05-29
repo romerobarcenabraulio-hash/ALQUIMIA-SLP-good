@@ -32,7 +32,7 @@
     "alerta_roja_no_calidad": false
   },
   "alertas_y_acciones": [
-    "Sin feeds HERMES en /Users/braulioromerobarcena/Documents/alquimia-slp/data/logistics/daily_summary — pipeline opera con estructura vacía/sintética"
+    "Sin feeds operativos en /Users/braulioromerobarcena/Documents/alquimia-slp/data/logistics/daily_summary — pipeline opera con estructura vacía/sintética"
   ],
   "fuentes": {
     "hermes": "data/logistics/daily_summary/",

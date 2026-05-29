@@ -1,7 +1,7 @@
 """
 Fase 3 — ÁGORA Document Intelligence: especificaciones estándar de documentos.
 
-Este módulo define los 7 tipos de documentos que ÁGORA puede generar y el
+Este módulo define los 7 tipos de documentos que la plataforma puede generar y el
 Director de Paquete que decide cuáles generar según el ScenarioBundle.
 
 Reglas editoriales (del Estándar Documental ALQUIMIA):
@@ -183,7 +183,7 @@ def spec_juridico_municipal(municipio_id: str) -> DocumentSpec:
         figuras_obligatorias=[
             "Matriz de brechas",
             "Diagrama de ruta normativa",
-            "Semáforo de gate ÁGORA",
+            "Semáforo de revisión documental",
         ],
         anexos_obligatorios=[
             "Texto completo del reglamento vigente (fuente verificada)",

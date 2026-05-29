@@ -43,7 +43,7 @@
   ],
   "hermes_disponible": false,
   "notas": [
-    "HERMES sin tonelaje registrado — Fase 0-1 sin báscula conectada.",
+    "No hay tonelaje operativo registrado — Fase 0-1 sin báscula conectada.",
     "Fallback: volúmenes anuales del escenario Modelo_BASED (ZM SLP, horizonte año 3)."
   ]
 }

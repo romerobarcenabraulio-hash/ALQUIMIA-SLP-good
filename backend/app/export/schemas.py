@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 class DocumentTheme(BaseModel):
     """Tema visual e institucional del paquete documental."""
-    brand_name:      str = "ALQUIMIA · ÁGORA GOV"
+    brand_name:      str = "ALQUIMIA · paquete documental"
     municipio:       str = ""
     zm:              str = ""
     date:            str = ""
@@ -23,7 +23,7 @@ class DocumentTheme(BaseModel):
     color_primary:   str = "#3B6D11"     # Verde ALQUIMIA
     color_secondary: str = "#1A5FA8"     # Azul institucional
     typography:      str = "Times New Roman"
-    footer_text:     str = "Generado por ÁGORA GOV — ALQUIMIA · Confidencial"
+    footer_text:     str = "Generado por paquete documental — ALQUIMIA · Confidencial"
     logo_path:       Optional[str] = None
 
 

@@ -120,7 +120,7 @@ def render_package(
         date=today,
         version=version,
         footer_text=(
-            f"ÁGORA GOV — ALQUIMIA  |  ZM {zm}  |  {today}  |  v{version}"
+            f"paquete documental — ALQUIMIA  |  ZM {zm}  |  {today}  |  v{version}"
         ),
     )
 

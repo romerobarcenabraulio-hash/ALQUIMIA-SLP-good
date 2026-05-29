@@ -146,7 +146,7 @@ def manifest_from_pdf_file(
         blockers=[
             "Validación jurídica externa requerida antes de tratar sanciones propuestas o documentos definitivos como defendibles.",
         ],
-        next_action="Análisis municipal habilitado. Los agentes ALQUIMIA pueden extraer artículos y proponer adendos.",
+        next_action="Análisis municipal habilitado. Los sistemas internos de ALQUIMIA pueden extraer artículos y proponer adendos.",
     )
 
 

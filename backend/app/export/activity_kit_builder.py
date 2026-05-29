@@ -62,7 +62,7 @@ CÓMO USAR
 • Operación: abra implementacion/00_Maestro/00_Guia_Implementacion.pdf
 • Día a día: navegue implementacion/Fxx_.../Exx_.../actividades/Axx_.../README.txt
 
-Generado por ÁGORA GOV · ALQUIMIA
+Generado por paquete documental · ALQUIMIA
 """
 
 

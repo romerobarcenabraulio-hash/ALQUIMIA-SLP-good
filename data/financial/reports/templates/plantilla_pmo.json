@@ -14,7 +14,7 @@
   ],
   "formato": "json+markdown",
   "frecuencia": "quincenal",
-  "destinatario": "KRONOS + equipo PMO municipal",
+  "destinatario": "Equipo PMO municipal",
   "qhc_obligatorio": true,
   "estructura_ref": "docs/style/estructura_reportes_por_audiencia.md"
 }

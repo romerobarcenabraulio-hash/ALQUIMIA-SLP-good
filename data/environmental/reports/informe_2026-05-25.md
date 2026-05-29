@@ -35,10 +35,10 @@
 > **QHC · CO₂e por fracción**
 > - **Qué:** Desglose de emisiones evitadas por material valorizado según factores LCA ISO 14040.
 > - **Cómo:** Aluminio y PET suelen concentrar CO₂e por factor de producción virgen evitada.
-> - **Cuidado:** Tonelaje de fallback Modelo_BASED si HERMES no tiene báscula — ver notas al pie.
+> - **Cuidado:** Tonelaje de fallback Modelo_BASED si no hay báscula operativa — ver notas al pie.
 
 ### Notas de proveniencia
-- HERMES sin tonelaje registrado — Fase 0-1 sin báscula conectada.
+- No hay tonelaje operativo registrado — Fase 0-1 sin báscula conectada.
 - Fallback: volúmenes anuales del escenario Modelo_BASED (ZM SLP, horizonte año 3).
 
 ## Sensibilidad VPN (tornado)

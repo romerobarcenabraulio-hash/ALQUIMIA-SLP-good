@@ -193,7 +193,7 @@ def ingest_municipal_legal_source(
         next_action = "Subir PDF del reglamento en el apartado «Alimentar reglamento»."
         can_enable_simulation = False
     elif ingest_status == LegalSourceIngestStatus.descargado:
-        next_action = "Análisis municipal habilitado. Los agentes ALQUIMIA pueden extraer artículos y proponer adendos."
+        next_action = "Análisis municipal habilitado. Los sistemas internos de ALQUIMIA pueden extraer artículos y proponer adendos."
 
     manifest = MunicipalLegalSourceManifest(
         source_id=_source_id(municipio_id, title),
