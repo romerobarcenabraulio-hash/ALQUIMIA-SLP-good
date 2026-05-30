@@ -18,6 +18,11 @@ import { assertTenantPlatformAccess, fetchTenantState } from '@/lib/tenantStateC
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
 import { Watermark } from '@/components/Watermark'
 import { DocumentGapBanner } from '@/components/DocumentGapBanner'
+import {
+  PillarModulePanel,
+  moduleDocumentStatus,
+  moduleDocumentStatusLabel,
+} from '@/components/platform/PillarModulePanel'
 import { useTenantData } from '@/hooks/useTenantData'
 import {
   filterModulesForPlatform,
@@ -171,10 +176,12 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
   useEffect(() => {
     if (!platformModules.length) { setActiveModuleId(null); return }
     setActiveModuleId(prev => {
+      const requestedModule = searchParams.get('module')
+      if (requestedModule && platformModules.some(module => module.module_id === requestedModule)) return requestedModule
       if (prev && platformModules.some(module => module.module_id === prev)) return prev
       return platformModules[0]?.module_id ?? null
     })
-  }, [platformModules])
+  }, [platformModules, searchParams])
 
   const activeModule = useMemo(
     () => platformModules.find(module => module.module_id === activeModuleId) ?? platformModules[0] ?? null,
@@ -186,6 +193,18 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     const verified = metrics.filter(metric => metric.status === 'verificado').length
     return Math.round((verified / metrics.length) * 100)
   }, [tenantData.data?.metrics])
+  const moduleStatusById = useMemo(() => {
+    const data = tenantData.data
+    if (!data) return undefined
+    return Object.fromEntries(
+      platformModules
+        .filter(module => module.module_id !== 'guia_circularidad')
+        .map(module => [
+          module.module_id,
+          moduleDocumentStatusLabel(moduleDocumentStatus(module.module_id, data)),
+        ]),
+    )
+  }, [platformModules, tenantData.data])
 
   const moduleNav = platformModules.length > 0 && !portalJourneyLoading ? (
     <ModuleNav
@@ -198,6 +217,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
       onOpenChapterCover={anchor => shellNavRef.current?.openChapterCover(anchor)}
       readOnlyModuleIds={readOnlyIds}
       platformLabel={PLATFORM_LABEL_BY_STAGE[platformStage]}
+      moduleStatusById={moduleStatusById}
       theme="dark"
     />
   ) : undefined
@@ -210,13 +230,13 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
         <div className="border-b border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 sm:px-6">
           <div className="flex flex-wrap items-center gap-3">
             <PlatformStageBadge stage={badgeStage} />
-            <p className="text-[12px] text-[#6B6760]">
+            <p className="min-w-0 max-w-[30ch] break-words text-[12px] leading-5 text-[#6B6760] sm:max-w-full">
               {tenantData.data?.municipality ?? `Tenant ${tenantState?.tenant_id ?? 'sin seleccionar'}`} · diagnóstico inicial con fuente, método y confianza
             </p>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-x-hidden overflow-y-auto">
           {accessError ? (
             <div className="m-6 border border-[#EBC0BA] bg-[#FBEAEA] px-5 py-4 text-[#A8322A]">
               <p className="flex items-center gap-2 text-[13px] font-semibold">
@@ -227,14 +247,14 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           ) : (
             <>
               {tenantData.data && (
-                <section className="mx-6 mt-6 rounded-[8px] border border-[#D8D2C5] bg-[#FDFCFA] p-5">
+                <section className="mx-4 mt-6 max-w-full overflow-hidden rounded-[8px] border border-[#D8D2C5] bg-[#FDFCFA] p-4 sm:mx-6 sm:p-5">
                   <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div>
+                    <div className="min-w-0">
                       <p className="text-[12px] font-semibold uppercase text-[#6B6760]">Diagnóstico inicial preparado</p>
-                      <h1 className="mt-1 font-serif text-[30px] leading-tight text-[#1C1B18]">
+                      <h1 className="mt-1 max-w-[14ch] break-words font-serif text-[28px] leading-tight text-[#1C1B18] sm:max-w-full sm:text-[30px]">
                         {tenantData.data.municipality}
                       </h1>
-                      <p className="mt-2 text-[13px] text-[#6B6760]">
+                      <p className="mt-2 max-w-[31ch] text-[13px] leading-6 text-[#6B6760] sm:max-w-3xl">
                         Algunos datos requieren validación. Municipio y zona metropolitana se mantienen separados.
                       </p>
                     </div>
@@ -247,15 +267,15 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   </div>
                   <div className="mt-5 grid gap-3 md:grid-cols-3">
                     {tenantData.data.metrics.map(metric => (
-                      <article key={metric.id} className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="text-[13px] font-semibold text-[#1C1B18]">{metric.label}</p>
+                      <article key={metric.id} className="min-w-0 rounded-[8px] border border-[#E8E4DC] bg-white p-4">
+                        <div className="flex flex-col items-start gap-2 sm:flex-row sm:justify-between">
+                          <p className="min-w-0 max-w-[24ch] text-[13px] font-semibold text-[#1C1B18] sm:flex-1 sm:max-w-none">{metric.label}</p>
                           <MetricConfidencePill confidence={metric.confidence} />
                         </div>
                         <p className="mt-3 text-[24px] font-semibold text-[#1C1B18]">
                           {metric.value ?? 'Brecha crítica'} <span className="text-[13px] font-normal text-[#6B6760]">{metric.unit}</span>
                         </p>
-                        <p className="mt-3 text-[11px] leading-5 text-[#6B6760]">
+                        <p className="mt-3 max-w-[32ch] break-words text-[11px] leading-5 text-[#6B6760] sm:max-w-none">
                           Fuente: {metric.source} · Fecha: {metric.source_date} · Método: {metric.method} · Alcance: {metric.territorial_scope}
                         </p>
                       </article>
@@ -272,6 +292,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   onChanged={tenantData.reload}
                 />
               )}
+              <PillarModulePanel module={activeModule} tenantData={tenantData.data ?? null} />
               <DecisionModuleShell
                 modules={platformModules}
                 activeModule={activeModule}

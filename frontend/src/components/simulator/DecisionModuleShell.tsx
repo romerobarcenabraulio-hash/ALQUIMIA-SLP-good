@@ -60,6 +60,7 @@ export function ModuleNav({
   onOpenChapterCover,
   readOnlyModuleIds,
   platformLabel,
+  moduleStatusById,
   className,
   theme = 'light',
 }: {
@@ -70,6 +71,7 @@ export function ModuleNav({
   onOpenChapterCover?: (chapterFirstModuleId: string) => void
   readOnlyModuleIds?: ReadonlySet<string>
   platformLabel?: string
+  moduleStatusById?: Record<string, string>
   className?: string
   theme?: 'light' | 'dark'
 }) {
@@ -137,6 +139,7 @@ export function ModuleNav({
             isDark={isDark}
             onChange={onChange}
             readOnly={readOnlyModuleIds?.has('guia_circularidad') ?? false}
+            statusLabel={moduleStatusById?.guia_circularidad}
           />
         )}
 
@@ -230,6 +233,7 @@ export function ModuleNav({
                             isDark={isDark}
                             onChange={onChange}
                             readOnly={readOnlyModuleIds?.has(m.module_id) ?? false}
+                            statusLabel={moduleStatusById?.[m.module_id]}
                             indent
                           />
                         ))}
@@ -247,7 +251,7 @@ export function ModuleNav({
 }
 
 function ModuleNavItem({
-  m, active, isDark, onChange, readOnly = false, indent = false,
+  m, active, isDark, onChange, readOnly = false, indent = false, statusLabel,
 }: {
   m: DecisionModule
   active: boolean
@@ -255,6 +259,7 @@ function ModuleNavItem({
   onChange: (id: string) => void
   readOnly?: boolean
   indent?: boolean
+  statusLabel?: string
 }) {
   const blocked = m.status === 'blocked'
   const num = moduleNumber(m.module_id)
@@ -306,7 +311,7 @@ function ModuleNavItem({
           {moduleTitle(m.module_id, m.label)}
         </p>
         <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
-          {blocked ? 'Requiere acción' : readOnly ? 'Lectura' : moduleSubtitle(m.module_id, m.nav_subtitle ?? m.audience_mode)}
+          {statusLabel ?? (blocked ? 'Requiere acción' : readOnly ? 'Lectura' : moduleSubtitle(m.module_id, m.nav_subtitle ?? m.audience_mode))}
         </p>
       </div>
 
@@ -349,7 +354,7 @@ function MobileModuleSelect({
       >
         {guiaModule && (
           <option value="guia_circularidad">
-            00. {guiaModule.label}
+            00. {moduleTitle('guia_circularidad', guiaModule.label)}
           </option>
         )}
         {CHAPTERS.map(ch =>
@@ -360,7 +365,7 @@ function MobileModuleSelect({
                 if (!m) return null
                 return (
                   <option key={id} value={id}>
-                    {moduleNumber(id)}. {m.label}
+                    {moduleNumber(id)}. {moduleTitle(id, m.label)}
                     {readOnlyModuleIds?.has(id) ? ' — Lectura' : ''}
                     {m.status === 'blocked' ? ' — requiere acción' : ''}
                   </option>
@@ -501,7 +506,7 @@ function ModuleContextHeader({
   const brief = getModuleEditorialBrief(moduleId, briefCtx)
   const num = moduleNumber(moduleId)
   const chapter = getChapterForModule(moduleId)
-  const title = brief?.title ?? module.label
+  const title = brief?.title ?? moduleTitle(moduleId, module.label)
   const preguntaGuia = brief?.pregunta_guia ?? null
   const rsuEntry = buscarTermino('RSU')
   const conf = MODULE_CONFIDENCE[moduleId]
@@ -531,7 +536,7 @@ function ModuleContextHeader({
               <span className="mx-1.5">›</span>
             </>
           ) : null}
-          M{num} · {module.label}
+          M{num} · {moduleTitle(moduleId, module.label)}
         </p>
         <div className="flex items-center gap-2 shrink-0">
           {chapter && onOpenChapterIndex && (

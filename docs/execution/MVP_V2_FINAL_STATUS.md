@@ -11,6 +11,7 @@ Fecha: 2026-05-29.
 | Prompt 3 V2 | `docs/execution/MVP_V2_PROMPT_3_STATUS.md` | PASS |
 | Prompt 4 V2 | `docs/execution/MVP_V2_PROMPT_4_STATUS.md` | PASS |
 | Prompt 4A V2 | `docs/execution/MVP_V2_PROMPT_4A_STATUS.md` | PASS |
+| Prompt 4B V2 | `docs/execution/MVP_V2_PROMPT_4B_STATUS.md` | PASS |
 | Prompt 5 V2 | `docs/execution/MVP_V2_PROMPT_5_STATUS.md` | PASS |
 | ARCHIVO MVP | `docs/execution/MVP_ARCHIVO_STATUS.md` | PASS |
 
