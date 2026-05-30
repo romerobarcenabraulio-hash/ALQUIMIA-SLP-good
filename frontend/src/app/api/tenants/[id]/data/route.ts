@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { tenantDiagnosticDataFor } from '@/lib/tenantDiagnosticData'
+import { getTenantArchiveData } from '@/lib/documentArchiveStore'
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
-  return NextResponse.json(tenantDiagnosticDataFor(id))
+  return NextResponse.json(getTenantArchiveData(id))
 }

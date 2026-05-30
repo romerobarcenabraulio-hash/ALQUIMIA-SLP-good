@@ -11,6 +11,7 @@ Fecha: 2026-05-29.
 | Prompt 3 V2 | `docs/execution/MVP_V2_PROMPT_3_STATUS.md` | PASS |
 | Prompt 4 V2 | `docs/execution/MVP_V2_PROMPT_4_STATUS.md` | PASS |
 | Prompt 5 V2 | `docs/execution/MVP_V2_PROMPT_5_STATUS.md` | PASS |
+| ARCHIVO MVP | `docs/execution/MVP_ARCHIVO_STATUS.md` | PASS |
 
 ## Pruebas finales
 
@@ -22,6 +23,7 @@ Fecha: 2026-05-29.
 - Registro real local: PASS.
 - Tenant data: PASS.
 - ZIP preliminar: PASS.
+- ARCHIVO embebido: PASS.
 
 ## Bloqueos P0
 

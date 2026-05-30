@@ -17,6 +17,7 @@ import { buildFunctionaryJourney } from '@/lib/simulator/clientModuleRegistry'
 import { assertTenantPlatformAccess, fetchTenantState } from '@/lib/tenantStateClient'
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
 import { Watermark } from '@/components/Watermark'
+import { DocumentGapBanner } from '@/components/DocumentGapBanner'
 import { useTenantData } from '@/hooks/useTenantData'
 import {
   filterModulesForPlatform,
@@ -255,6 +256,15 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                     ))}
                   </div>
                 </section>
+              )}
+              {tenantData.data && (
+                <DocumentGapBanner
+                  tenantId={tenantData.data.tenant_id}
+                  moduleId={activeModule?.module_id ?? null}
+                  gaps={tenantData.data.document_gaps}
+                  documents={tenantData.data.tenant_documents}
+                  onChanged={tenantData.reload}
+                />
               )}
               <DecisionModuleShell
                 modules={platformModules}

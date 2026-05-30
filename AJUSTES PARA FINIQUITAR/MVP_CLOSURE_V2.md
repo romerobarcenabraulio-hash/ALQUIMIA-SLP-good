@@ -422,24 +422,26 @@ REPORTE FINAL:
 
 ---
 
-## Prompt 4 · Pipeline HERMES + títulos legibles + marca de agua (5-7 horas)
+## Prompt 4 · Diagnóstico inicial + títulos legibles + marca de agua + brechas documentales (5-7 horas)
 
 El más denso. Tres cosas técnicas pero todas necesarias para que el cliente vea SU municipio precargado con confianza.
 
 ```
-TAREA: PIPELINE DE INFERENCIA HERMES + TÍTULOS LEGIBLES + MARCA DE AGUA
+TAREA: DIAGNÓSTICO INICIAL + TÍTULOS LEGIBLES + MARCA DE AGUA + BRECHAS DOCUMENTALES
 
 Contexto: cuando un funcionario se registra desde dominio institucional,
-HERMES debe precargar datos de SU municipio desde fuentes públicas
-en menos de 15 minutos. Mientras tanto, cada módulo debe mostrar título
-humano (no "M08"). Cada página debe llevar marca de agua honesta
-mientras los datos están en estado preliminar.
+la plataforma debe precargar datos de SU municipio desde fuentes públicas
+en menos de 15 minutos y registrar las brechas documentales que impiden
+cerrar módulos. Mientras tanto, cada módulo debe mostrar título humano
+(no "M08"). Cada página debe llevar marca de agua honesta mientras los
+datos están en estado preliminar.
 
 ANTES DE TOCAR NADA:
 1. Branch feature/hermes-titulos-marcaagua desde feature/landing-narrativa
 2. API key de Perplexity activa (PERPLEXITY_API_KEY en .env.local y Vercel)
-3. Para esta primera versión, HERMES es minimalista. Si algo falla,
-   degrada graceful (carga lo que pueda, marca el resto como pendiente).
+3. Para esta primera versión, el motor de diagnóstico es minimalista.
+   Si algo falla, degrada graceful: carga lo que pueda, registra
+   `document_gaps` y marca el resto como pendiente o brecha crítica.
 
 ACCIONES CONCRETAS EN ORDEN:
 
@@ -536,7 +538,7 @@ Inclúyelo en los layouts de /v, /p, /e.
 Cuando el cliente firma contrato (tenantStatus pasa a "official"),
 la marca de agua desaparece automáticamente.
 
-PASO 4 · Endpoint /api/hermes/inferencia/start.
+PASO 4 · Endpoint /api/diagnostic/start.
 
 import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
@@ -550,21 +552,20 @@ export async function POST(req: NextRequest) {
 
   // Dispara pipeline asíncrono via Inngest
   await inngest.send({
-    name: 'hermes/inference.start',
+    name: 'diagnostic/start',
     data: { tenantId, municipio, estado, inegiClave, requestedBy: userId }
   })
 
   return NextResponse.json({ status: 'started', tenantId })
 }
 
-PASO 5 · Función Inngest del pipeline.
-/inngest/functions/hermes_inference.ts:
+PASO 5 · Función del pipeline de diagnóstico inicial.
 
 import { inngest } from '@/lib/inngest'
 
-export const hermesInference = inngest.createFunction(
-  { id: 'hermes-inference', name: 'HERMES Initial Inference' },
-  { event: 'hermes/inference.start' },
+export const initialDiagnostic = inngest.createFunction(
+  { id: 'initial-diagnostic', name: 'Initial Diagnostic' },
+  { event: 'diagnostic/start' },
   async ({ event, step }) => {
     const { tenantId, municipio, estado, inegiClave } = event.data
 
@@ -597,7 +598,13 @@ export const hermesInference = inngest.createFunction(
       )
     } catch (e) {
       await step.run('mark-reglamento-pending', () =>
-        markFieldPending(tenantId, 'reglamento_limpia', 'manual_required')
+        createDocumentGap(tenantId, {
+          module_id: 'marco_legal',
+          document_type: 'reglamento_limpia',
+          reason: 'No se localizó reglamento vigente en fuente pública accesible.',
+          detection_method: 'initial_inference',
+          priority: 'critical'
+        })
       )
     }
 
@@ -640,6 +647,8 @@ Para MVP, usar:
   - ineData = mock para SLP, Querétaro y 3-5 municipios más
   - pntData = mock genérico
   - reglamento = mock o null
+  - document_gaps = brechas para reglamento, presupuesto, organigrama,
+    plan municipal, cuenta pública, padrón o acuerdo si faltan fuentes
 
 El objetivo del MVP es que el FLUJO funcione end-to-end. La inferencia
 real se itera después.
@@ -652,23 +661,46 @@ Al entrar a /v primera vez:
   - Sidebar con módulos de Validación
   - Watermark activa
 
+PASO 7 · Brecha documental visible por módulo.
+Cuando un módulo tenga `document_gaps.status = pending`, muestra banner:
+
+Título:
+  Documento pendiente para completar este módulo
+
+Texto:
+  La plataforma no pudo acceder a [tipo de documento]. Si tu municipio
+  lo tiene, súbelo aquí para mejorar la trazabilidad del diagnóstico.
+  Si no aplica, puedes marcarlo como no aplicable.
+
+Botones:
+  - Subir documento
+  - Marcar como no aplica
+
+No usar nombres internos de agentes. No decir que la plataforma validó
+el documento. El módulo permanece visible y conserva brecha crítica.
+
 CRITERIO BINARIO DE CIERRE:
 1. Cero módulos muestran "M0X" como título principal
 2. Cada módulo tiene título humano + código M0X como subtítulo discreto
 3. Sidebar muestra títulos humanos primero
 4. Watermark visible en cada página cuando tenantStatus = preliminary
 5. Watermark desaparece cuando tenantStatus = official
-6. /api/hermes/inferencia/start dispara Inngest job
+6. /api/diagnostic/start inicia preparación de diagnóstico
 7. Pipeline completa para municipio mock en <15 min
 8. Email de "diagnóstico listo" llega al usuario
 9. Magic link entra a /v con su municipio precargado
 10. Cifras precargadas tienen sello de confianza visible
+11. Faltantes crean `document_gaps` por tenant/módulo
+12. Módulo con brecha documental muestra banner y no se oculta
+13. Opción "no aplica" conserva trazabilidad sin borrar el gap
 
 LO QUE NO DEBES HACER:
 - No construyas integración real con APIs gubernamentales en este prompt
   (eso es trabajo de mes 2-3, no de MVP)
 - No bloquees al usuario si una fuente falla (degradación graceful)
 - No expongas PERPLEXITY_API_KEY al cliente
+- No uses nombres internos de agentes en UI cliente-facing
+- No conviertas documento faltante en claim ni ocultes el módulo
 - No olvides el caso donde el usuario entra antes de que termine
   HERMES (mostrar pantalla "todavía preparando")
 
@@ -685,17 +717,19 @@ REPORTE FINAL:
 
 ---
 
-## Prompt 5 · Personalización por tenant + ZIP exportable (4-5 horas)
+## Prompt 5 · Personalización por tenant + ZIP exportable + upload documental mínimo (4-5 horas)
 
 Último prompt. Cierra el círculo del MVP comercial.
 
 ```
-TAREA: PERSONALIZACIÓN POR TENANT + EXPORTACIÓN A ZIP CON CONTRASEÑA
+TAREA: PERSONALIZACIÓN POR TENANT + EXPORTACIÓN A ZIP CON CONTRASEÑA + DOCUMENTOS RECIBIDOS
 
 Contexto: el usuario ya entró y ve su municipio precargado con marca
 de agua. Falta dos cosas para cerrar MVP: (1) que los módulos
 muestren cifras del tenant correcto, no de SLP hardcodeado, (2) que
-el usuario pueda exportar su diagnóstico preliminar a ZIP con contraseña.
+el usuario pueda exportar su diagnóstico preliminar a ZIP con contraseña,
+(3) que pueda subir documentos mínimos para cerrar brechas documentales
+sin que eso los convierta automáticamente en datos validados.
 
 ANTES DE TOCAR NADA:
 1. Branch feature/personalization-export desde feature/hermes-titulos-marcaagua
@@ -746,6 +780,12 @@ export async function GET(_, { params }) {
   const data = await db.tenant_data.findFirst({ where: { tenant_id: params.id } })
   return NextResponse.json(data)
 }
+
+La respuesta debe incluir:
+  - document_gaps
+  - tenant_documents
+  - document_index con mismo número de documentos por ciudad
+  - estado documental por módulo
 
 PASO 3 · Refactor de cada módulo pilar para consumir useTenantData.
 
@@ -843,7 +883,46 @@ Al click:
 Límite: máximo 3 exportaciones por mes por tenant en estado preliminary.
 Después de firmar contrato, ilimitado.
 
-PASO 6 · El momento de conversión.
+PASO 6 · Upload documental mínimo.
+
+Crea:
+  - tabla/modelo `document_gaps`
+  - tabla/modelo `tenant_documents`
+  - endpoint `/api/tenants/[id]/documents/upload`
+  - endpoint `/api/tenants/[id]/document-gaps/[gapId]/not-applicable`
+
+Validaciones obligatorias:
+  - PDF, DOCX, XLSX, JPG, PNG solamente
+  - tamaño máximo 25 MB
+  - tenant ownership; bloquear cross-tenant
+  - rechazo explícito si falla
+  - no ejecutar archivos ni procesar macros
+
+El upload debe registrar:
+  - tenant_id
+  - uploaded_by_user_id
+  - module_id
+  - document_type
+  - original_filename
+  - mime_type
+  - file_size_bytes
+  - storage_path/url
+  - upload_status
+  - classification_confidence
+  - uploaded_at
+  - processed_at nullable
+
+El cliente ve:
+  - documento recibido
+  - pendiente de validación
+  - módulo afectado
+  - responsable humano
+
+Advertencia obligatoria:
+  Subir un documento no lo convierte automáticamente en dato validado.
+  La información extraída requiere revisión humana.
+
+PASO 7 · El momento de conversión.
 Modificación al /v: después de que el usuario haya estado activo
 en la plataforma >5 minutos (medible con analytics simple), aparece
 slide-in suave desde la derecha:
@@ -864,7 +943,7 @@ Click en "Seguir explorando":
   - Cierra slide-in
   - Reaparece 5 min después o al navegar a otro módulo
 
-PASO 7 · Pantalla /pendiente-validacion.
+PASO 8 · Pantalla /pendiente-validacion.
 Para usuarios que entraron por dominio genérico (gmail) y esperan
 aprobación manual del founder:
 
@@ -892,13 +971,19 @@ CRITERIO BINARIO DE CIERRE:
 9. Submit de "Agendar conversación" envía email al founder
 10. /pendiente-validacion existe para usuarios gmail
 11. Founder puede aprobar manualmente desde Plataforma 0 (botón simple)
-12. Aprobación manual dispara HERMES y notifica al usuario
+12. Aprobación manual inicia diagnóstico y notifica al usuario
+13. Upload acepta documento válido y lo asocia al tenant/módulo
+14. Upload rechaza tipo no permitido y archivo demasiado grande
+15. Opción "no aplica" oculta solicitud sin borrar trazabilidad
+16. ZIP refleja estado documental: pendiente, recibido, no aplica o brecha crítica
 
 LO QUE NO DEBES HACER:
 - No exportes ZIPs sin watermark embedded en los PDFs
 - No envíes link y contraseña en el mismo email (riesgo de seguridad)
 - No permitas exportar más de 3 ZIPs por mes en estado preliminary
 - No olvides el caso de gmail pendiente de validación
+- No conviertas documento subido en dato validado sin revisión humana
+- No uses nombres internos de agentes en UI, email, ZIP o reportes cliente-facing
 
 REPORTE FINAL:
 - Screenshots del flujo completo:

@@ -1,16 +1,18 @@
 # ARCHIVO · Especificación del agente de documentos y detección de gaps
 
-**Estado:** Propuesto · Pendiente de firma del founder
+**Estado:** MVP integrado · versión mínima funcional
 **Fecha:** 29 mayo 2026
 **Dependencias:** ADR-0010, AUTOMATION_AND_PERSONALIZATION_LAYER, LEARNING_AND_FEEDBACK_LAYER, MVP_CLOSURE_V2
 **Construye:** KRONOS (backend), HERMES (coordinación con inferencia inicial), AUDITOR (trazabilidad), POLIS (UI de banner y upload)
-**Implementación:** Sprint 2 (después del MVP_CLOSURE_V2 live)
+**Implementación:** MVP_CLOSURE_V2 actual · alcance mínimo embebido
 
 ---
 
 ## 1 · Propósito
 
 Definir el agente ARCHIVO que vive embebido en la plataforma Alquimia. Su rol único es detectar documentos institucionales que el sistema necesita pero no puede acceder, solicitarlos al cliente con humildad operativa, procesarlos cuando llegan, e integrar la información extraída a los módulos correspondientes con trazabilidad completa.
+
+Corrección founder del MVP: ARCHIVO no queda diferido a Sprint 2. Entra al MVP actual con alcance mínimo: `document_gaps`, `tenant_documents`, banner por módulo, carga segura de archivos, opción "no aplica", estado documental visible y reflejo en ZIP/export. La extracción avanzada, OCR, inbound email, digest automático y uso LLM quedan fuera del MVP salvo que ya existan apagados por feature flag.
 
 ARCHIVO existe porque la realidad documental del gobierno mexicano es que mucha información crítica vive en PDFs escaneados sin OCR, en sitios web inestables, en correos internos, en archiveros físicos. Perplexity puede identificar que el documento existe; ARCHIVO le pide al cliente que lo suba y lo procesa cuando llega.
 

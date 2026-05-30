@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
 
 export function useTenantData(tenantId: string | null) {
@@ -8,11 +8,11 @@ export function useTenantData(tenantId: string | null) {
   const [loading, setLoading] = useState(Boolean(tenantId))
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
+  const reload = useCallback(() => {
     if (!tenantId) {
       setData(null)
       setLoading(false)
-      return
+      return () => {}
     }
     let cancelled = false
     setLoading(true)
@@ -29,5 +29,7 @@ export function useTenantData(tenantId: string | null) {
     return () => { cancelled = true }
   }, [tenantId])
 
-  return { data, loading, error }
+  useEffect(() => reload(), [reload])
+
+  return { data, loading, error, reload }
 }

@@ -24,6 +24,47 @@ export interface TenantDocumentSlot {
   title: string
   required: boolean
   status: 'ready' | 'partial' | 'critical_gap'
+  documentary_status?: 'complete' | 'pending_document' | 'received_pending_validation' | 'not_applicable'
+}
+
+export type DocumentGapStatus =
+  | 'pending'
+  | 'received'
+  | 'processing'
+  | 'integrated'
+  | 'rejected'
+  | 'not_applicable'
+
+export interface DocumentGap {
+  id: string
+  tenant_id: string
+  module_id: string
+  document_type: string
+  label: string
+  reason: string
+  detection_method: 'initial_inference' | 'manual_review' | 'filename_classification'
+  status: DocumentGapStatus
+  priority: 'low' | 'medium' | 'high' | 'critical'
+  marked_not_applicable: boolean
+  created_at: string
+  updated_at: string
+  fulfilled_by_document_id?: string
+}
+
+export interface TenantReceivedDocument {
+  id: string
+  tenant_id: string
+  uploaded_by_user_id: string
+  module_id: string
+  document_type: string
+  original_filename: string
+  mime_type: string
+  file_size_bytes: number
+  storage_path: string
+  upload_status: 'received' | 'processing' | 'integrated' | 'rejected'
+  classification_confidence: 'suggested_by_filename' | 'manual' | 'low'
+  uploaded_at: string
+  processed_at: string | null
 }
 
 export interface TenantDiagnosticData {
@@ -35,6 +76,8 @@ export interface TenantDiagnosticData {
   generated_at: string
   metrics: TenantMetric[]
   document_index: TenantDocumentSlot[]
+  document_gaps: DocumentGap[]
+  tenant_documents: TenantReceivedDocument[]
 }
 
 export const STANDARD_CITY_DOCUMENT_INDEX: TenantDocumentSlot[] = [
@@ -47,6 +90,43 @@ export const STANDARD_CITY_DOCUMENT_INDEX: TenantDocumentSlot[] = [
 ]
 
 const today = '2026-05-29'
+
+const documentLabels: Record<string, string> = {
+  reglamento_limpia: 'Reglamento de limpia o gestión integral de residuos',
+  presupuesto_egresos: 'Presupuesto de egresos municipal',
+  organigrama_servicios: 'Organigrama de servicios públicos',
+  plan_municipal_desarrollo: 'Plan Municipal de Desarrollo',
+  cuenta_publica: 'Cuenta pública municipal',
+  padron_vehicular: 'Padrón vehicular operativo',
+  acuerdo_cabildo: 'Acuerdo de Cabildo relacionado',
+}
+
+export function documentLabel(documentType: string): string {
+  return documentLabels[documentType] ?? documentType.replaceAll('_', ' ')
+}
+
+function gap(
+  tenantId: string,
+  moduleId: string,
+  documentType: string,
+  reason: string,
+  priority: DocumentGap['priority'] = 'high',
+): DocumentGap {
+  return {
+    id: `${tenantId}-${moduleId}-${documentType}`,
+    tenant_id: tenantId,
+    module_id: moduleId,
+    document_type: documentType,
+    label: documentLabel(documentType),
+    reason,
+    detection_method: 'initial_inference',
+    status: 'pending',
+    priority,
+    marked_not_applicable: false,
+    created_at: today,
+    updated_at: today,
+  }
+}
 
 const commonMetrics: TenantMetric[] = [
   {
@@ -100,6 +180,10 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       commonMetrics[1],
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
+    document_gaps: [
+      gap('complete-city', 'marco_legal', 'acuerdo_cabildo', 'El acuerdo de Cabildo no está cargado; se requiere para cerrar validación institucional.', 'medium'),
+    ],
+    tenant_documents: [],
   },
   'partial-city': {
     tenant_id: 'partial-city',
@@ -125,6 +209,11 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       commonMetrics[1],
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
+    document_gaps: [
+      gap('partial-city', 'marco_legal', 'reglamento_limpia', 'No se localizó reglamento vigente en fuente pública accesible.', 'critical'),
+      gap('partial-city', 'escenarios_financieros', 'presupuesto_egresos', 'El presupuesto de egresos no está disponible con fuente suficiente para alimentar escenarios.', 'high'),
+    ],
+    tenant_documents: [],
   },
   'gap-city': {
     tenant_id: 'gap-city',
@@ -150,6 +239,13 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       },
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
+    document_gaps: [
+      gap('gap-city', 'city_baseline', 'plan_municipal_desarrollo', 'Falta antecedente municipal para contextualizar diagnóstico sin inventar narrativa.', 'critical'),
+      gap('gap-city', 'marco_legal', 'reglamento_limpia', 'No hay reglamento municipal accesible; el módulo conserva brecha documental.', 'critical'),
+      gap('gap-city', 'organigrama', 'organigrama_servicios', 'No hay organigrama público suficiente para asignar responsables humanos.', 'high'),
+      gap('gap-city', 'escenarios_financieros', 'presupuesto_egresos', 'No hay presupuesto validable para escenarios financieros defendibles.', 'critical'),
+    ],
+    tenant_documents: [],
   },
 }
 
