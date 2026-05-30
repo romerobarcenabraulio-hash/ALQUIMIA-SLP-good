@@ -180,6 +180,12 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     () => platformModules.find(module => module.module_id === activeModuleId) ?? platformModules[0] ?? null,
     [activeModuleId, platformModules],
   )
+  const validationPct = useMemo(() => {
+    const metrics = tenantData.data?.metrics ?? []
+    if (!metrics.length) return 0
+    const verified = metrics.filter(metric => metric.status === 'verificado').length
+    return Math.round((verified / metrics.length) * 100)
+  }, [tenantData.data?.metrics])
 
   const moduleNav = platformModules.length > 0 && !portalJourneyLoading ? (
     <ModuleNav
@@ -291,6 +297,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   version={tenantData.data.version}
                   date={tenantData.data.generated_at}
                   status={tenantData.data.status}
+                  validationPct={validationPct}
                 />
               )}
             </>

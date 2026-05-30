@@ -6,6 +6,7 @@ import {
   registerTenantDocument,
   validateArchiveFile,
   MAX_DOCUMENT_BYTES,
+  moduleMatches,
 } from '@/lib/documentArchiveStore'
 
 describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
@@ -23,12 +24,14 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
   it('clasifica filename sin usar nombres internos cliente-facing', () => {
     expect(classifyDocumentByFilename('Reglamento de limpia 2025.pdf')).toMatchObject({
       document_type: 'reglamento_limpia',
-      module_id: 'marco_legal',
+      module_id: 'M03B',
     })
     expect(classifyDocumentByFilename('presupuesto-egresos.xlsx')).toMatchObject({
       document_type: 'presupuesto_egresos',
-      module_id: 'escenarios_financieros',
+      module_id: 'M09',
     })
+    expect(moduleMatches('M03B', 'marco_legal')).toBe(true)
+    expect(moduleMatches('M09', 'escenarios_financieros')).toBe(true)
   })
 
   it('acepta PDF válido, registra documento y mantiene pendiente de validación', async () => {

@@ -7,6 +7,23 @@ import {
   type TenantReceivedDocument,
 } from '@/lib/tenantDiagnosticData'
 
+const MODULE_ID_ALIASES: Record<string, string[]> = {
+  M00B: ['antecedentes_municipales', 'city_baseline'],
+  M01: ['city_baseline'],
+  M02: ['social_diagnostico'],
+  M03B: ['marco_legal'],
+  M06: ['infraestructura'],
+  M07: ['organigrama'],
+  M08: ['logistica'],
+  M09: ['costos_programa', 'escenarios_financieros'],
+  M15: ['expediente_cabildo'],
+}
+
+export function moduleMatches(gapModuleId: string, activeModuleId: string | null): boolean {
+  if (!activeModuleId) return false
+  return gapModuleId === activeModuleId || (MODULE_ID_ALIASES[gapModuleId] ?? []).includes(activeModuleId)
+}
+
 const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
   'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
@@ -31,13 +48,17 @@ function state(): ArchiveState {
 
 export function classifyDocumentByFilename(filename: string): { document_type: string; module_id: string; confidence: TenantReceivedDocument['classification_confidence'] } {
   const normalized = filename.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
-  if (normalized.includes('reglamento')) return { document_type: 'reglamento_limpia', module_id: 'marco_legal', confidence: 'suggested_by_filename' }
-  if (normalized.includes('presupuesto') || normalized.includes('egresos')) return { document_type: 'presupuesto_egresos', module_id: 'escenarios_financieros', confidence: 'suggested_by_filename' }
-  if (normalized.includes('organigrama')) return { document_type: 'organigrama_servicios', module_id: 'organigrama', confidence: 'suggested_by_filename' }
-  if (normalized.includes('desarrollo') || normalized.includes('pmd')) return { document_type: 'plan_municipal_desarrollo', module_id: 'city_baseline', confidence: 'suggested_by_filename' }
-  if (normalized.includes('cuenta')) return { document_type: 'cuenta_publica', module_id: 'escenarios_financieros', confidence: 'suggested_by_filename' }
-  if (normalized.includes('cabildo') || normalized.includes('acuerdo')) return { document_type: 'acuerdo_cabildo', module_id: 'marco_legal', confidence: 'suggested_by_filename' }
-  return { document_type: 'documento_soporte', module_id: 'city_baseline', confidence: 'low' }
+  if (normalized.includes('reglamento')) return { document_type: 'reglamento_limpia', module_id: 'M03B', confidence: 'suggested_by_filename' }
+  if (normalized.includes('presupuesto') || normalized.includes('egresos')) return { document_type: 'presupuesto_egresos', module_id: 'M09', confidence: 'suggested_by_filename' }
+  if (normalized.includes('organigrama')) return { document_type: 'organigrama', module_id: 'M07', confidence: 'suggested_by_filename' }
+  if (normalized.includes('desarrollo') || normalized.includes('pmd')) return { document_type: 'plan_desarrollo', module_id: 'M00B', confidence: 'suggested_by_filename' }
+  if (normalized.includes('cuenta')) return { document_type: 'cuenta_publica', module_id: 'M09', confidence: 'suggested_by_filename' }
+  if (normalized.includes('cabildo') || normalized.includes('acuerdo')) return { document_type: 'acuerdo_cabildo', module_id: 'M15', confidence: 'suggested_by_filename' }
+  if (normalized.includes('cuarteo') || normalized.includes('caracterizacion')) return { document_type: 'estudio_cuarteo', module_id: 'M01', confidence: 'suggested_by_filename' }
+  if (normalized.includes('rutas')) return { document_type: 'estudio_rutas', module_id: 'M08', confidence: 'suggested_by_filename' }
+  if (normalized.includes('pepenador')) return { document_type: 'censo_pepenadores', module_id: 'M02', confidence: 'suggested_by_filename' }
+  if (normalized.includes('infraestructura')) return { document_type: 'auditoria_infraestructura', module_id: 'M06', confidence: 'suggested_by_filename' }
+  return { document_type: 'documento_soporte', module_id: 'M01', confidence: 'low' }
 }
 
 export function validateArchiveFile(file: File): string | null {
@@ -79,7 +100,7 @@ export async function registerTenantDocument(tenantId: string, file: File, uploa
     original_filename: file.name,
     mime_type: file.type,
     file_size_bytes: file.size,
-    storage_path: `mvp-memory://${tenantId}/${encodeURIComponent(file.name)}`,
+    storage_path_or_url: `mvp-memory://${tenantId}/${encodeURIComponent(file.name)}`,
     upload_status: 'received',
     classification_confidence: classification.confidence,
     uploaded_at: now,

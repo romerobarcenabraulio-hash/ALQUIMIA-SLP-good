@@ -53,7 +53,7 @@ class TenantDocument(Base):
     original_filename: Mapped[str] = mapped_column(String(260), nullable=False)
     mime_type: Mapped[str] = mapped_column(String(120), nullable=False)
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
-    storage_path: Mapped[str] = mapped_column(Text, nullable=False)
+    storage_path_or_url: Mapped[str] = mapped_column(Text, nullable=False)
     upload_status: Mapped[str] = mapped_column(String(32), nullable=False, default="received")
     classification_confidence: Mapped[str] = mapped_column(String(32), nullable=False, default="suggested_by_filename")
     uploaded_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, nullable=False)

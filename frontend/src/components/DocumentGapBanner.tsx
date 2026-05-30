@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react'
 import { Upload, X } from 'lucide-react'
 import type { DocumentGap, TenantReceivedDocument } from '@/lib/tenantDiagnosticData'
+import { moduleMatches } from '@/lib/documentArchiveStore'
 
 type Props = {
   tenantId: string
@@ -20,11 +21,11 @@ export function DocumentGapBanner({ tenantId, moduleId, gaps, documents, onChang
   const [busy, setBusy] = useState(false)
 
   const moduleGaps = useMemo(
-    () => gaps.filter(gap => gap.module_id === moduleId && gap.status === 'pending' && !gap.marked_not_applicable),
+    () => gaps.filter(gap => moduleMatches(gap.module_id, moduleId) && gap.status === 'pending' && !gap.marked_not_applicable),
     [gaps, moduleId],
   )
   const moduleDocuments = useMemo(
-    () => documents.filter(document => document.module_id === moduleId),
+    () => documents.filter(document => moduleMatches(document.module_id, moduleId)),
     [documents, moduleId],
   )
 

@@ -60,7 +60,7 @@ export interface TenantReceivedDocument {
   original_filename: string
   mime_type: string
   file_size_bytes: number
-  storage_path: string
+  storage_path_or_url: string
   upload_status: 'received' | 'processing' | 'integrated' | 'rejected'
   classification_confidence: 'suggested_by_filename' | 'manual' | 'low'
   uploaded_at: string
@@ -93,12 +93,15 @@ const today = '2026-05-29'
 
 const documentLabels: Record<string, string> = {
   reglamento_limpia: 'Reglamento de limpia o gestión integral de residuos',
+  plan_desarrollo: 'Plan Municipal de Desarrollo',
   presupuesto_egresos: 'Presupuesto de egresos municipal',
-  organigrama_servicios: 'Organigrama de servicios públicos',
-  plan_municipal_desarrollo: 'Plan Municipal de Desarrollo',
+  organigrama: 'Organigrama de servicios públicos',
   cuenta_publica: 'Cuenta pública municipal',
-  padron_vehicular: 'Padrón vehicular operativo',
   acuerdo_cabildo: 'Acuerdo de Cabildo relacionado',
+  estudio_cuarteo: 'Estudio de cuarteo y caracterización',
+  estudio_rutas: 'Estudio de rutas y tiempos',
+  censo_pepenadores: 'Censo de pepenadores y trabajadores informales',
+  auditoria_infraestructura: 'Auditoría de infraestructura existente',
 }
 
 export function documentLabel(documentType: string): string {
@@ -126,6 +129,35 @@ function gap(
     created_at: today,
     updated_at: today,
   }
+}
+
+const DOCUMENT_TYPE_MODULE: Record<string, string> = {
+  reglamento_limpia: 'M03B',
+  plan_desarrollo: 'M00B',
+  presupuesto_egresos: 'M09',
+  organigrama: 'M07',
+  cuenta_publica: 'M09',
+  acuerdo_cabildo: 'M15',
+  estudio_cuarteo: 'M01',
+  estudio_rutas: 'M08',
+  censo_pepenadores: 'M02',
+  auditoria_infraestructura: 'M06',
+}
+
+export function requiredDocumentGapsForTenant(
+  tenantId: string,
+  missingDocumentTypes: string[],
+  reasonByType: Partial<Record<string, string>> = {},
+): DocumentGap[] {
+  return missingDocumentTypes.map(documentType =>
+    gap(
+      tenantId,
+      DOCUMENT_TYPE_MODULE[documentType] ?? 'M01',
+      documentType,
+      reasonByType[documentType] ?? 'Documento requerido no disponible en fuente pública accesible.',
+      documentType.startsWith('estudio_') || documentType === 'reglamento_limpia' ? 'critical' : 'high',
+    ),
+  )
 }
 
 const commonMetrics: TenantMetric[] = [
@@ -180,9 +212,9 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       commonMetrics[1],
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
-    document_gaps: [
-      gap('complete-city', 'marco_legal', 'acuerdo_cabildo', 'El acuerdo de Cabildo no está cargado; se requiere para cerrar validación institucional.', 'medium'),
-    ],
+    document_gaps: requiredDocumentGapsForTenant('complete-city', ['acuerdo_cabildo'], {
+      acuerdo_cabildo: 'El acuerdo de Cabildo no está cargado; se requiere para cerrar validación institucional.',
+    }),
     tenant_documents: [],
   },
   'partial-city': {
@@ -209,10 +241,12 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       commonMetrics[1],
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
-    document_gaps: [
-      gap('partial-city', 'marco_legal', 'reglamento_limpia', 'No se localizó reglamento vigente en fuente pública accesible.', 'critical'),
-      gap('partial-city', 'escenarios_financieros', 'presupuesto_egresos', 'El presupuesto de egresos no está disponible con fuente suficiente para alimentar escenarios.', 'high'),
-    ],
+    document_gaps: requiredDocumentGapsForTenant('partial-city', ['reglamento_limpia', 'presupuesto_egresos', 'estudio_rutas', 'estudio_cuarteo'], {
+      reglamento_limpia: 'No se localizó reglamento vigente en fuente pública accesible.',
+      presupuesto_egresos: 'El presupuesto de egresos no está disponible con fuente suficiente para alimentar escenarios.',
+      estudio_rutas: 'El estudio de rutas y tiempos no fue provisto; no se optimizan rutas como verdad local.',
+      estudio_cuarteo: 'No existe estudio local de cuarteo; la composición se mantiene como brecha crítica.',
+    }),
     tenant_documents: [],
   },
   'gap-city': {
@@ -239,12 +273,25 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
       },
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,
-    document_gaps: [
-      gap('gap-city', 'city_baseline', 'plan_municipal_desarrollo', 'Falta antecedente municipal para contextualizar diagnóstico sin inventar narrativa.', 'critical'),
-      gap('gap-city', 'marco_legal', 'reglamento_limpia', 'No hay reglamento municipal accesible; el módulo conserva brecha documental.', 'critical'),
-      gap('gap-city', 'organigrama', 'organigrama_servicios', 'No hay organigrama público suficiente para asignar responsables humanos.', 'high'),
-      gap('gap-city', 'escenarios_financieros', 'presupuesto_egresos', 'No hay presupuesto validable para escenarios financieros defendibles.', 'critical'),
-    ],
+    document_gaps: requiredDocumentGapsForTenant('gap-city', [
+      'plan_desarrollo',
+      'reglamento_limpia',
+      'organigrama',
+      'presupuesto_egresos',
+      'cuenta_publica',
+      'estudio_cuarteo',
+      'censo_pepenadores',
+      'auditoria_infraestructura',
+    ], {
+      plan_desarrollo: 'Falta antecedente municipal para contextualizar diagnóstico sin inventar narrativa.',
+      reglamento_limpia: 'No hay reglamento municipal accesible; el módulo conserva brecha documental.',
+      organigrama: 'No hay organigrama público suficiente para asignar responsables humanos.',
+      presupuesto_egresos: 'No hay presupuesto validable para escenarios financieros defendibles.',
+      cuenta_publica: 'No hay cuenta pública disponible para contraste presupuestal.',
+      estudio_cuarteo: 'No existe estudio local de cuarteo; benchmark no sustituye dato local.',
+      censo_pepenadores: 'No existe censo social documentado; no se infiere población informal.',
+      auditoria_infraestructura: 'No hay inventario físico validable de infraestructura.',
+    }),
     tenant_documents: [],
   },
 }
