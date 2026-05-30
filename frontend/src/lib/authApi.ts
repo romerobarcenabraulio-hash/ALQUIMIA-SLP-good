@@ -9,6 +9,11 @@ export interface RegisterPayload {
   apellido_paterno: string
   apellido_materno?: string
   telefono: string
+  cargo?: string
+  dependencia?: string
+  municipio_nombre?: string
+  estado_mx?: string
+  zm?: string
 }
 
 export interface TokenResponse {
@@ -73,7 +78,7 @@ export async function authRegister(payload: RegisterPayload) {
   }))
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(data.detail ?? 'No se pudo crear la cuenta')
-  return data as { message: string; email: string }
+  return data as { message: string; email: string; verification_url?: string }
 }
 
 export async function authVerifyEmail(token: string) {

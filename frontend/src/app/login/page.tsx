@@ -168,8 +168,8 @@ function LoginForm() {
         </div>
 
         <div className="mt-5 pt-5 border-t border-[#E8E4DC] flex justify-between text-[12px]">
-          <a href="/" className="text-[#A8A49C] hover:text-[#3B6D11]">← Inicio</a>
-          <a href="/aprende" className="text-[#A8A49C] hover:text-[#3B6D11]">Centro educativo →</a>
+          <Link href="/" className="text-[#A8A49C] hover:text-[#3B6D11]">← Inicio</Link>
+          <Link href="/aprende" className="text-[#A8A49C] hover:text-[#3B6D11]">Centro educativo →</Link>
         </div>
       </div>
     </div>

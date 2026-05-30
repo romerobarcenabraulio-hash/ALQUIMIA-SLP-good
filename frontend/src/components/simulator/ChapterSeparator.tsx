@@ -1,5 +1,8 @@
 'use client'
 
+// TODO_CLEANUP_REVIEW: componente decorativo candidato a retirar, pero DecisionModuleShell lo usa.
+// No eliminar hasta confirmar que la navegación del simulador mantiene transición y sin regresión visual.
+
 import { useMemo } from 'react'
 import { ArrowRight, CheckCircle2, BookOpen } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'

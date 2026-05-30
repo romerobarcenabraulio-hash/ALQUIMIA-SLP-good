@@ -11,6 +11,7 @@ import {
   HUB_DOCUMENTOS_CAPITULO,
   HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO,
   conteoDocumentosIncluiblesEnZip,
+  documentosHub,
   documentosHubIncluiblesEnZip,
   type HubDocumentoCapitulo,
 } from '@/data/hubDocumentosCapitulo'
@@ -47,5 +48,13 @@ describe('hubDocumentosCapitulo · Q-023 conteo ZIP', () => {
   it('QRO y MTY: ningún incluible hasta completar public/', () => {
     expect(conteoDocumentosIncluiblesEnZip(HUB_DOCUMENTOS_CAPITULO.QRO)).toBe(0)
     expect(conteoDocumentosIncluiblesEnZip(HUB_DOCUMENTOS_CAPITULO.MTY)).toBe(0)
+  })
+
+  it('todas las ciudades mantienen el mismo índice documental visible', () => {
+    const expected = documentosHub('SLP').length
+    expect(documentosHub('QRO')).toHaveLength(expected)
+    expect(documentosHub('MTY')).toHaveLength(expected)
+    expect(documentosHub('QRO').some(d => d.descripcionLinea.includes('Brecha crítica'))).toBe(true)
+    expect(documentosHub('MTY').some(d => d.descripcionLinea.includes('Brecha crítica'))).toBe(true)
   })
 })

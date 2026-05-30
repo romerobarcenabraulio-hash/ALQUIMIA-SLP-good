@@ -281,7 +281,7 @@ def _user_phone_e164(user) -> str:
     return phone
 
 
-async def _send_user_sms(db: Session, user, purpose: str) -> str:
+async def _send_user_sms(db: Session, user, purpose: str) -> tuple[str, str | None]:
     if count_recent_sms_sends(db, user.id) >= settings.SMS_MAX_SENDS_PER_HOUR:
         raise HTTPException(status_code=429, detail="Demasiados SMS enviados. Espera una hora.")
     raw, code_hash = generate_sms_code()
@@ -289,7 +289,9 @@ async def _send_user_sms(db: Session, user, purpose: str) -> str:
     phone = _user_phone_e164(user)
     await send_sms_code(to_e164=phone, code=raw, purpose=purpose)
     log_access(db, event=f"sms_sent_{purpose}", user=user)
-    return mask_phone(phone)
+    provider = (settings.SMS_PROVIDER or "console").lower()
+    dev_code = raw if provider == "console" or (provider == "twilio" and not settings.TWILIO_ACCOUNT_SID) else None
+    return mask_phone(phone), dev_code
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInfo:
@@ -360,10 +362,13 @@ async def register(req: RegisterRequest, db: Session = Depends(get_db)):
         logger.exception("Fallo envío correo verificación para %s", user.email)
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     log_access(db, event="register", user=user)
-    return {
+    response = {
         "message": "Revisa tu correo. Después elegirás tu perfil, verificarás SMS y configurarás TOTP.",
         "email": user.email,
     }
+    if settings.EMAIL_PROVIDER == "console" or not settings.RESEND_API_KEY:
+        response["verification_url"] = verify_url
+    return response
 
 
 @router.post("/verify-email")
@@ -453,8 +458,11 @@ async def sms_send(req: SmsSendRequest, db: Session = Depends(get_db)):
     if db is None:
         raise HTTPException(status_code=503, detail="SMS requiere PostgreSQL")
     user = _resolve_setup_user(db, req.setup_token)
-    masked = await _send_user_sms(db, user, "onboarding")
-    return {"message": "Código SMS enviado", "phone_masked": masked}
+    masked, dev_code = await _send_user_sms(db, user, "onboarding")
+    response = {"message": "Código SMS enviado", "phone_masked": masked}
+    if dev_code:
+        response["dev_sms_code"] = dev_code
+    return response
 
 
 @router.post("/sms/verify")
@@ -521,7 +529,7 @@ async def onboarding_upload_reglamento(
         "municipio_id": mid,
         "analysis_ready": habilitado,
         "message": (
-            "Reglamento registrado. Los agentes iniciarán el análisis al activar TOTP."
+            "Reglamento registrado. La plataforma iniciará el análisis al activar TOTP."
             if habilitado
             else "PDF registrado; revisión jurídica pendiente."
         ),

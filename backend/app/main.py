@@ -160,6 +160,17 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Fallback de desarrollo: con lifespan activo, los handlers @on_event no
+    # ejecutan en algunas versiones de FastAPI/Starlette. El MVP local necesita
+    # tablas de auth disponibles para creación real de cuentas.
+    try:
+        from app.db.session import create_all_tables
+        created = create_all_tables()
+        if created:
+            logger.info("DB: tablas verificadas vía create_all (solo desarrollo).")
+    except Exception as exc:
+        logger.warning("DB startup table creation skipped: %s", exc)
+
     # Cargar ADN SLP al arrancar (solo lectura)
     try:
         await load_slp_dna()
@@ -242,19 +253,6 @@ app.include_router(planning_risk_router,   prefix="/api/planning/risk",   tags=[
 app.include_router(planning_prices_router, prefix="/api/planning/prices", tags=["planning-prices"])
 app.include_router(lifecycle_router, prefix="/api/v1/lifecycle", tags=["bios-lifecycle"])
 
-
-@app.on_event("startup")
-async def _create_tables():
-    """Fallback de desarrollo: crea tablas si aún no existen.
-    En producción correr: alembic upgrade head (o ./db_migrate.sh).
-    """
-    try:
-        from app.db.session import create_all_tables
-        created = create_all_tables()
-        if created:
-            logger.info("DB: tablas verificadas vía create_all (solo desarrollo).")
-    except Exception as exc:
-        logger.warning("DB startup table creation skipped: %s", exc)
 
 @app.api_route("/health", methods=["GET", "HEAD"])
 async def health():

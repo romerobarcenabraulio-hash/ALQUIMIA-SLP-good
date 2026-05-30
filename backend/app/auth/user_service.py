@@ -16,6 +16,12 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
+def _as_utc(value: datetime) -> datetime:
+    if value.tzinfo is None:
+        return value.replace(tzinfo=timezone.utc)
+    return value.astimezone(timezone.utc)
+
+
 def _hash_token(raw: str) -> str:
     return hashlib.sha256(raw.encode("utf-8")).hexdigest()
 
@@ -81,7 +87,7 @@ def consume_email_verification(db: Session, raw_token: str) -> UserAccount | Non
         .filter(EmailVerificationToken.token_hash == token_hash)
         .first()
     )
-    if not row or row.used_at is not None or row.expires_at < _now():
+    if not row or row.used_at is not None or _as_utc(row.expires_at) < _now():
         return None
     user = get_user_by_id(db, row.user_id)
     if not user:
@@ -169,7 +175,7 @@ def consume_sms_code(db: Session, user_id: str, purpose: str, raw_code: str) -> 
 
 
 def is_account_locked(user: UserAccount) -> bool:
-    return user.locked_until is not None and user.locked_until > _now()
+    return user.locked_until is not None and _as_utc(user.locked_until) > _now()
 
 
 def record_failed_login_db(db: Session, user: UserAccount) -> None:

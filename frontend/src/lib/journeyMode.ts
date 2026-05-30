@@ -1,5 +1,7 @@
 /**
  * Modos de recorrido funcionario — activados desde M00.
+ * TODO_CLEANUP_REVIEW: ADR-0010 reemplaza el toggle Validar/Implementar por plataformas /v, /p, /e.
+ * Este contrato sigue referenciado en el simulador legacy; no eliminar sin prueba visual y de routing.
  *
  * - validar: comprender situación + decidir (Cap. 1 + Cap. 3)
  * - implementar: diseñar y operar (puentes Cap. 1 + Cap. 2 + Cap. 4)

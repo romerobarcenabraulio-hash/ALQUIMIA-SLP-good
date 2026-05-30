@@ -42,7 +42,13 @@ export function ConsultingExportButton({
         {loading ? (
           <>
             <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden />
-            Generando PDF…
+            <span className="hidden sm:inline">Generando PDF…</span>
+            <span className="sm:hidden">PDF…</span>
+          </>
+        ) : variant === 'header' && label === 'Exportar borrador PDF' ? (
+          <>
+            <span className="hidden sm:inline">Exportar borrador PDF</span>
+            <span className="sm:hidden">PDF</span>
           </>
         ) : (
           label

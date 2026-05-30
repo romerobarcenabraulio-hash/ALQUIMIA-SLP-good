@@ -15,6 +15,9 @@ import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaff
 import { enrichFunctionaryModules } from '@/lib/simulator/functionaryJourneyEnrichment'
 import { buildFunctionaryJourney } from '@/lib/simulator/clientModuleRegistry'
 import { assertTenantPlatformAccess, fetchTenantState } from '@/lib/tenantStateClient'
+import { MetricConfidencePill } from '@/components/MetricConfidencePill'
+import { Watermark } from '@/components/Watermark'
+import { useTenantData } from '@/hooks/useTenantData'
 import {
   filterModulesForPlatform,
   PLATFORM_LABEL_BY_STAGE,
@@ -25,6 +28,8 @@ import {
   type PlatformModule,
   type TenantStatePayload,
 } from '@/lib/platformRouting'
+
+const FALLBACK_TENANTS = new Set(['complete-city', 'partial-city', 'gap-city'])
 
 function tenantIdFromBrowser(searchParams: URLSearchParams): string | null {
   const fromQuery = searchParams.get('tenant_id') ?? searchParams.get('tenant')
@@ -51,6 +56,8 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
   const [accessError, setAccessError] = useState<string | null>(null)
   const [loadingTenant, setLoadingTenant] = useState(true)
   const [activeModuleId, setActiveModuleId] = useState<string | null>(null)
+  const [tenantId, setTenantId] = useState<string | null>(null)
+  const tenantData = useTenantData(tenantId)
   const shellNavRef = useRef<{
     navigateModule: (id: string) => void
     openChapterCover: (chapterFirstModuleId: string) => void
@@ -66,21 +73,44 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
       try {
         const tenantId = tenantIdFromBrowser(searchParams)
         if (!tenantId) throw new Error('No hay tenant activo. Abre la plataforma con ?tenant_id=<id>.')
+        if (!cancelled) setTenantId(tenantId)
 
         const [stateData, registryRes, accessResult] = await Promise.allSettled([
           fetchTenantState(tenantId),
           fetch('/api/capability-registry'),
           assertTenantPlatformAccess(tenantId, platformStage),
         ])
-        if (stateData.status === 'rejected') throw stateData.reason
-
         if (registryRes.status === 'rejected') throw registryRes.reason
         const registryResponse = registryRes.value
         const registryData = await registryResponse.json().catch(() => ({}))
         if (!registryResponse.ok) throw new Error(registryData.detail ?? `Registry HTTP ${registryResponse.status}`)
 
+        const fallbackState: TenantStatePayload | null =
+          stateData.status === 'rejected' && FALLBACK_TENANTS.has(tenantId)
+            ? {
+                tenant_id: tenantId,
+                state: { current_stage: platformStage, transition_mode: 'mvp_fixture' },
+                capabilities: (registryData as CapabilityRegistry).modules.map(module => ({
+                  module_id: module.module_id,
+                  active: true,
+                  source: 'mvp_fixture',
+                })),
+              }
+            : null
+
+        if (stateData.status === 'rejected' && !fallbackState) throw stateData.reason
+        const resolvedState = fallbackState ?? (stateData.status === 'fulfilled' ? stateData.value : null)
+        if (!resolvedState) throw new Error('No se pudo resolver tenant_state')
+
         if (accessResult.status === 'rejected') {
-          const currentPath = platformPathForStage(stateData.value.state.current_stage)
+          if (fallbackState) {
+            if (!cancelled) {
+              setTenantState(fallbackState)
+              setRegistry(registryData as CapabilityRegistry)
+            }
+            return
+          }
+          const currentPath = platformPathForStage(resolvedState.state.current_stage)
           if (currentPath !== pathname) {
             router.replace(`${currentPath}?tenant_id=${tenantId}`)
             return
@@ -88,14 +118,14 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           throw accessResult.reason
         }
 
-        const canonicalPath = platformPathForStage(stateData.value.state.current_stage)
+        const canonicalPath = platformPathForStage(resolvedState.state.current_stage)
         if (canonicalPath !== pathname) {
           router.replace(`${canonicalPath}?tenant_id=${tenantId}`)
           return
         }
 
         if (!cancelled) {
-          setTenantState(stateData.value)
+          setTenantState(resolvedState)
           setRegistry(registryData as CapabilityRegistry)
         }
       } catch (exc) {
@@ -174,7 +204,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           <div className="flex flex-wrap items-center gap-3">
             <PlatformStageBadge stage={badgeStage} />
             <p className="text-[12px] text-[#6B6760]">
-              Tenant {tenantState?.tenant_id ?? 'sin seleccionar'} · rutas por etapa desde tenant_state
+              {tenantData.data?.municipality ?? `Tenant ${tenantState?.tenant_id ?? 'sin seleccionar'}`} · diagnóstico inicial con fuente, método y confianza
             </p>
           </div>
         </div>
@@ -188,26 +218,72 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
               <p className="mt-2 text-[12px] leading-relaxed">{accessError}</p>
             </div>
           ) : (
-            <DecisionModuleShell
-              modules={platformModules}
-              activeModule={activeModule}
-              onModuleChange={setActiveModuleId}
-              bindNavigation={api => { shellNavRef.current = api }}
-              loading={loadingTenant || portalJourneyLoading}
-              error={portalError}
-              audience={portalEntry}
-              readOnlyModuleIds={readOnlyIds}
-              chapterVisibleModuleIds={visibleIds}
-              renderModule={(module, { navigateModule }) =>
-                renderDecisionModule({
-                  module,
-                  audience: 'functionary',
-                  isOrganizationJourney: false,
-                  sociodemographicBlock,
-                  onNavigate: navigateModule,
-                })
-              }
-            />
+            <>
+              {tenantData.data && (
+                <section className="mx-6 mt-6 rounded-[8px] border border-[#D8D2C5] bg-[#FDFCFA] p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                      <p className="text-[12px] font-semibold uppercase text-[#6B6760]">Diagnóstico inicial preparado</p>
+                      <h1 className="mt-1 font-serif text-[30px] leading-tight text-[#1C1B18]">
+                        {tenantData.data.municipality}
+                      </h1>
+                      <p className="mt-2 text-[13px] text-[#6B6760]">
+                        Algunos datos requieren validación. Municipio y zona metropolitana se mantienen separados.
+                      </p>
+                    </div>
+                    <a
+                      href={`/api/tenants/${encodeURIComponent(tenantData.data.tenant_id)}/export-zip`}
+                      className="rounded-[8px] bg-[#1C2B15] px-4 py-2 text-[13px] font-semibold text-white"
+                    >
+                      Exportar ZIP preliminar
+                    </a>
+                  </div>
+                  <div className="mt-5 grid gap-3 md:grid-cols-3">
+                    {tenantData.data.metrics.map(metric => (
+                      <article key={metric.id} className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <p className="text-[13px] font-semibold text-[#1C1B18]">{metric.label}</p>
+                          <MetricConfidencePill confidence={metric.confidence} />
+                        </div>
+                        <p className="mt-3 text-[24px] font-semibold text-[#1C1B18]">
+                          {metric.value ?? 'Brecha crítica'} <span className="text-[13px] font-normal text-[#6B6760]">{metric.unit}</span>
+                        </p>
+                        <p className="mt-3 text-[11px] leading-5 text-[#6B6760]">
+                          Fuente: {metric.source} · Fecha: {metric.source_date} · Método: {metric.method} · Alcance: {metric.territorial_scope}
+                        </p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+              <DecisionModuleShell
+                modules={platformModules}
+                activeModule={activeModule}
+                onModuleChange={setActiveModuleId}
+                bindNavigation={api => { shellNavRef.current = api }}
+                loading={loadingTenant || portalJourneyLoading}
+                error={portalError ?? tenantData.error}
+                audience={portalEntry}
+                readOnlyModuleIds={readOnlyIds}
+                chapterVisibleModuleIds={visibleIds}
+                renderModule={(module, { navigateModule }) =>
+                  renderDecisionModule({
+                    module,
+                    audience: 'functionary',
+                    isOrganizationJourney: false,
+                    sociodemographicBlock,
+                    onNavigate: navigateModule,
+                  })
+                }
+              />
+              {tenantData.data && (
+                <Watermark
+                  version={tenantData.data.version}
+                  date={tenantData.data.generated_at}
+                  status={tenantData.data.status}
+                />
+              )}
+            </>
           )}
         </div>
       </div>

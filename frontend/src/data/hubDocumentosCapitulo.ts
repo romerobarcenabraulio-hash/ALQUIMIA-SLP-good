@@ -328,7 +328,41 @@ export const HUB_DOCUMENTOS_CAPITULO: Record<'SLP' | 'QRO' | 'MTY', HubDocumento
 
 export type ZmHubKey = keyof typeof HUB_DOCUMENTOS_CAPITULO
 
+function normalizedDocumentForCity(
+  key: ZmHubKey,
+  template: HubDocumentoCapitulo,
+  index: number,
+): HubDocumentoCapitulo {
+  const cityLabel: Record<ZmHubKey, string> = {
+    SLP: 'San Luis Potosí',
+    QRO: 'Querétaro',
+    MTY: 'Monterrey',
+  }
+  return {
+    id: `${key.toLowerCase()}-${template.id.replace(/^slp-/, '') || `documento-${index + 1}`}`,
+    nombre: template.nombre
+      .replace(/San Luis Potosí capital|San Luis Potosí|SLP/g, cityLabel[key])
+      .replace(/parámetros Querétaro/g, `parámetros ${cityLabel[key]}`),
+    descripcionLinea:
+      key === 'SLP'
+        ? template.descripcionLinea
+        : `Brecha crítica: pendiente integrar evidencia local de ${cityLabel[key]}. ` +
+          'Se conserva el lugar en el índice; no debe presentarse como dato local validado.',
+    tipo: template.tipo,
+    formato: template.formato,
+    versionFecha: template.versionFecha,
+    estadoEntrega: 'en_elaboracion',
+  }
+}
+
+function normalizeCityPackage(key: ZmHubKey, docs: HubDocumentoCapitulo[]): HubDocumentoCapitulo[] {
+  const standardIndex = HUB_DOCUMENTOS_CAPITULO.SLP
+  if (key === 'SLP') return docs
+  return standardIndex.map((template, index) => docs[index] ?? normalizedDocumentForCity(key, template, index))
+}
+
 export function documentosHub(zm: string): HubDocumentoCapitulo[] {
   const k = zm.toUpperCase() as ZmHubKey
-  return HUB_DOCUMENTOS_CAPITULO[k] ?? HUB_DOCUMENTOS_CAPITULO.SLP
+  const key = HUB_DOCUMENTOS_CAPITULO[k] ? k : 'SLP'
+  return normalizeCityPackage(key, HUB_DOCUMENTOS_CAPITULO[key])
 }

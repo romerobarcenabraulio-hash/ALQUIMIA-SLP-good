@@ -47,6 +47,7 @@ import {
 } from '@/lib/chapterConfig'
 import { shouldForceChapterIndexEntry, shouldOfferChapterIndex } from '@/lib/chapterNarratives'
 import { JOURNEY_MODE_META } from '@/lib/journeyMode'
+import { moduleSubtitle, moduleTitle } from '@/lib/moduleTitles'
 
 // ─── Top KPI strip ────────────────────────────────────────────────────────────
 
@@ -302,10 +303,10 @@ function ModuleNavItem({
               : active ? 'text-[#1C1B18]' : 'text-[#4A4642]',
           )}
         >
-          {m.label}
+          {moduleTitle(m.module_id, m.label)}
         </p>
         <p className={cn('text-[9px] mt-0.5 leading-tight', isDark ? 'text-[#4A7A35]' : 'text-[#A8A49C]')}>
-          {blocked ? 'Requiere acción' : readOnly ? 'Lectura' : m.nav_subtitle ?? m.audience_mode ?? 'Disponible'}
+          {blocked ? 'Requiere acción' : readOnly ? 'Lectura' : moduleSubtitle(m.module_id, m.nav_subtitle ?? m.audience_mode)}
         </p>
       </div>
 

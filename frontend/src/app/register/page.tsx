@@ -9,6 +9,7 @@ function RegisterForm() {
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const [emailSent, setEmailSent] = useState('')
+  const [verificationUrl, setVerificationUrl] = useState('')
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -25,6 +26,7 @@ function RegisterForm() {
         telefono: String(fd.get('telefono') ?? ''),
       })
       setEmailSent(res.email)
+      setVerificationUrl(res.verification_url ?? '')
       setDone(true)
     }
     catch (err) {
@@ -43,7 +45,16 @@ function RegisterForm() {
           <p className="text-[13px] text-[#4A4740] leading-relaxed mb-6">
             Enviamos un enlace a <strong>{emailSent}</strong>.
             Después elegirás tu perfil (público o empresarial), verificarás SMS y configurarás TOTP.
+            El alta de municipio oficial queda sujeta a revisión founder/admin.
           </p>
+          {verificationUrl && (
+            <Link
+              href={verificationUrl}
+              className="mb-4 inline-flex rounded-[8px] bg-[#3B6D11] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2D5409]"
+            >
+              Continuar verificación local
+            </Link>
+          )}
           <Link href="/login" className="text-[13px] text-[#3B6D11] hover:underline">Ir a iniciar sesión</Link>
         </div>
       </div>

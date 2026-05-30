@@ -1,4 +1,4 @@
-# Informe ambiental-financiero · BIOS
+# Informe ambiental-financiero · ALQUIMIA
 
 **Audiencia:** Cabildo · Inversionista · PMO ambiental
 **Fecha:** 2026-05-25
@@ -20,7 +20,7 @@
 > **QHC · Resumen ambiental-financiero**
 > - **Qué:** Consolida emisiones evitadas del escenario y métricas de retorno (VPN, TIR, payback).
 > - **Cómo:** Compare CO₂e con metas municipales de descarbonización; TIR vs. WACC declarado (20.0%).
-> - **Cuidado:** CO₂e usa factores LCA (Ecoinvent/IPCC); no es inventario GEI certificado. TIR >50% requiere revisión AURUM/BIOS antes de presentar a Cabildo.
+> - **Cuidado:** CO₂e usa factores LCA (Ecoinvent/IPCC); no es inventario GEI certificado. TIR >50% requiere revisión técnica y financiera antes de presentar a Cabildo.
 
 ## CO₂e por fracción
 
@@ -35,7 +35,7 @@
 > **QHC · CO₂e por fracción**
 > - **Qué:** Desglose de emisiones evitadas por material valorizado según factores LCA ISO 14040.
 > - **Cómo:** Aluminio y PET suelen concentrar CO₂e por factor de producción virgen evitada.
-> - **Cuidado:** Tonelaje de fallback Modelo_BASED si no hay báscula operativa — ver notas al pie.
+> - **Cuidado:** Tonelaje de fallback Modelo_BASED si la plataforma no tiene báscula operativa — ver notas al pie.
 
 ### Notas de proveniencia
 - No hay tonelaje operativo registrado — Fase 0-1 sin báscula conectada.
@@ -63,4 +63,4 @@
 > - **Cómo:** Variable con mayor Δ VPN % es el driver de riesgo prioritario para negociación con concesionario.
 > - **Cuidado:** Escenarios ±30% son ilustrativos; no sustituyen contrato de compra-venta de materiales.
 
-*Proyección BIOS · Modelo_BASED.xlsx · No sustituye auditoría ambiental ni dictamen financiero.*
+*Proyección ALQUIMIA · Modelo_BASED.xlsx · No sustituye auditoría ambiental ni dictamen financiero.*

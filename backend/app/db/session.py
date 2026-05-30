@@ -47,13 +47,17 @@ def _init_engine() -> bool:
         if not db_url:
             return False
 
-        _engine = create_engine(
-            db_url,
-            pool_pre_ping=True,
-            pool_size=5,
-            max_overflow=10,
-            connect_args={"connect_timeout": 5},
-        )
+        engine_kwargs = {"pool_pre_ping": True}
+        if db_url.startswith("sqlite"):
+            engine_kwargs["connect_args"] = {"check_same_thread": False}
+        else:
+            engine_kwargs.update({
+                "pool_size": 5,
+                "max_overflow": 10,
+                "connect_args": {"connect_timeout": 5},
+            })
+
+        _engine = create_engine(db_url, **engine_kwargs)
         _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
         _DB_AVAILABLE = True
         logger.info("PostgreSQL conectado: %s", db_url.split("@")[-1])
@@ -119,6 +123,27 @@ def create_all_tables() -> bool:
         from app.db.base import Base, import_all_models
 
         import_all_models()
+        db_url = _get_database_url() or ""
+        if db_url.startswith("sqlite"):
+            from app.models.user_account import (
+                AccessLog,
+                EmailVerificationToken,
+                SmsVerificationCode,
+                UserAccount,
+            )
+
+            Base.metadata.create_all(
+                bind=_engine,
+                tables=[
+                    UserAccount.__table__,
+                    EmailVerificationToken.__table__,
+                    SmsVerificationCode.__table__,
+                    AccessLog.__table__,
+                ],
+            )
+            logger.info("Tablas de auth verificadas/creadas en SQLite local")
+            return True
+
         Base.metadata.create_all(bind=_engine)
         logger.info("Tablas verificadas/creadas en PostgreSQL")
         return True
