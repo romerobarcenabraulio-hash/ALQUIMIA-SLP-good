@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { PublicHero, PublicPageShell } from '@/components/public/PublicPageShell'
 
 const sections = [
   {
@@ -29,26 +29,12 @@ const notDo = [
 
 export default function MethodologyPage() {
   return (
-    <main className="min-h-screen bg-[#F4F2ED] text-[#1C1B18]">
-      <header className="border-b border-[#E8E4DC] bg-[#FDFCFA]">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-4">
-          <Link href="/" className="font-serif text-[22px] font-semibold">ALQUIMIA</Link>
-          <Link href="/comenzar" className="rounded-[8px] bg-[#1C2B15] px-4 py-2 text-[13px] font-semibold text-white">
-            Ver mi municipio
-          </Link>
-        </div>
-      </header>
-
-      <section className="mx-auto max-w-6xl px-5 py-16">
-        <p className="mb-3 text-[12px] font-semibold uppercase text-[#6B6760]">Metodología pública</p>
-        <h1 className="max-w-4xl font-serif text-[44px] leading-tight">
-          Evidencia primero. Inferencia marcada. Brecha crítica cuando falta estudio local.
-        </h1>
-        <p className="mt-5 max-w-3xl text-[17px] leading-8 text-[#4A4740]">
-          ALQUIMIA organiza el diagnóstico municipal con una regla simple: nada estimado se presenta
-          como oficial y ningún benchmark se presenta como estudio local.
-        </p>
-      </section>
+    <PublicPageShell actionLabel="Ver mi municipio">
+      <PublicHero
+        eyebrow="Metodología pública"
+        title="Evidencia primero. Inferencia marcada. Brecha crítica cuando falta estudio local."
+        body="ALQUIMIA organiza el diagnóstico municipal con una regla simple: nada estimado se presenta como oficial y ningún benchmark se presenta como estudio local."
+      />
 
       <section className="mx-auto grid max-w-6xl gap-4 px-5 pb-10 md:grid-cols-2">
         {sections.map(section => (
@@ -71,6 +57,6 @@ export default function MethodologyPage() {
           </div>
         </div>
       </section>
-    </main>
+    </PublicPageShell>
   )
 }

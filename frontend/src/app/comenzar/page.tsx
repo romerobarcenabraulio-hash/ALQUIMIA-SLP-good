@@ -3,6 +3,7 @@
 import { FormEvent, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { PublicPageShell } from '@/components/public/PublicPageShell'
 import { authRegister } from '@/lib/authApi'
 import { isInstitutionalDomain } from '@/lib/institutionalDomains'
 
@@ -83,8 +84,8 @@ export default function ComenzarPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4F2ED] px-5 py-10">
-      <section className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+    <PublicPageShell actionLabel="Metodología" actionHref="/metodologia">
+      <section className="mx-auto grid max-w-7xl gap-10 px-5 py-12 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-16">
         <div className="flex flex-col justify-center">
           <p className="mb-3 text-[12px] font-semibold uppercase text-[#6B6760]">Acceso institucional</p>
           <h1 className="font-serif text-[46px] leading-tight text-[#1C1B18]">
@@ -126,7 +127,7 @@ export default function ComenzarPage() {
           </p>
         </form>
       </section>
-    </main>
+    </PublicPageShell>
   )
 }
 

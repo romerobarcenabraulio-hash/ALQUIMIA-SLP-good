@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { PublicHero, PublicPageShell } from '@/components/public/PublicPageShell'
 
 const journey = [
   ['Validación', 'Comienza viendo dónde estás'],
@@ -8,39 +9,15 @@ const journey = [
 
 export default function LandingPage() {
   return (
-    <main className="min-h-screen bg-[#F4F2ED] text-[#1C1B18]">
-      <header className="border-b border-[#E8E4DC] bg-[#FDFCFA]">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
-          <span className="font-serif text-[22px] font-semibold">ALQUIMIA</span>
-          <nav className="flex items-center gap-3 text-[13px]">
-            <Link href="/metodologia" className="hidden text-[#4A4740] hover:text-[#1C1B18] sm:inline">
-              Metodología
-            </Link>
-            <Link href="/sign-in" className="text-[#4A4740] hover:text-[#1C1B18]">
-              Iniciar sesión
-            </Link>
-            <Link href="/comenzar" className="rounded-[8px] bg-[#1C2B15] px-4 py-2 font-semibold text-white">
-              Comenzar
-            </Link>
-          </nav>
-        </div>
-      </header>
-
-      <section className="mx-auto grid max-w-7xl items-center gap-12 px-5 py-16 lg:grid-cols-[1.1fr_0.9fr] lg:py-24">
-        <div>
-          <p className="mb-4 text-[12px] font-semibold uppercase text-[#6B6760]">
-            Diagnóstico municipal trazable
-          </p>
-          <h1 className="max-w-4xl font-serif text-[52px] leading-[1.05] tracking-[0] text-[#1C1B18] md:text-[68px]">
-            La circularidad en tu ciudad sí se puede.
-          </h1>
+    <PublicPageShell>
+      <section className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-6 lg:grid-cols-[1.1fr_0.9fr] lg:py-20">
+        <PublicHero
+          eyebrow="Diagnóstico municipal trazable"
+          title="La circularidad en tu ciudad sí se puede."
+          body="ALQUIMIA es una plataforma dedicada a crear, impulsar y aterrizar política pública. Hoy enfocada en convertir el diagnóstico de residuos en una ruta municipal accionable, trazable y defendible."
+        >
           <p className="mt-4 max-w-2xl text-[24px] leading-8 text-[#2F5B0D]">
             Súmate al cambio. Toma las medidas. Hazlas acción.
-          </p>
-          <p className="mt-6 max-w-2xl text-[16px] leading-8 text-[#4A4740]">
-            ALQUIMIA es una plataforma dedicada a crear, impulsar y aterrizar política pública.
-            Hoy enfocada en convertir el diagnóstico de residuos en una ruta municipal accionable,
-            trazable y defendible.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
             <Link href="/comenzar" className="rounded-[8px] bg-[#1C2B15] px-5 py-3 text-[14px] font-semibold text-white">
@@ -50,7 +27,7 @@ export default function LandingPage() {
               Conocer la metodología
             </Link>
           </div>
-        </div>
+        </PublicHero>
 
         <aside className="rounded-[8px] border border-[#D8D2C5] bg-[#FDFCFA] p-6">
           <p className="text-[13px] font-semibold text-[#1C1B18]">Respaldo institucional</p>
@@ -112,6 +89,6 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
-    </main>
+    </PublicPageShell>
   )
 }

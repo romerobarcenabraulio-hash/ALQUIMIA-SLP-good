@@ -1,9 +1,10 @@
 import Link from 'next/link'
+import { PublicPageShell } from '@/components/public/PublicPageShell'
 
 export default function PendienteValidacionPage() {
   return (
-    <main className="min-h-screen bg-[#F4F2ED] px-5 py-12">
-      <section className="mx-auto flex min-h-[70vh] max-w-3xl flex-col justify-center">
+    <PublicPageShell actionLabel="Metodología" actionHref="/metodologia">
+      <section className="mx-auto flex min-h-[70vh] max-w-4xl flex-col justify-center px-5 py-12 sm:px-6">
         <p className="mb-3 text-[12px] font-semibold uppercase text-[#8A5C05]">Validación humana requerida</p>
         <h1 className="font-serif text-[42px] leading-tight text-[#1C1B18]">
           Tu solicitud está pendiente de validación.
@@ -28,6 +29,6 @@ export default function PendienteValidacionPage() {
           </Link>
         </div>
       </section>
-    </main>
+    </PublicPageShell>
   )
 }
