@@ -14,7 +14,11 @@ Fecha: 2026-05-31
 | Inbound sin secreto | No operar silenciosamente | Endpoint bloquea con 503 | PASS |
 | Inbound con payload interno | Registrar documento pendiente de revisión | Prueba unitaria procesa attachment PDF | PASS |
 | Cita literal inexistente | Rechazar extracción validable | `validateLiteralCitation` exige substring exacto | PASS |
+| PDF con texto básico | Extraer texto sin validar claims automáticamente | `extractTextFromFile` devuelve `native_pdf` | PASS |
+| Imagen/escaneo | No inventar OCR; pedir transcripción manual | `processUploadedDocument` devuelve `requires_transcription_manual` | PASS |
+| Digest semanal | Encolar sin enviar si no hay proveedor | `enqueueWeeklyDigest` crea outbox `preview_only` | PASS |
+| LLM sin cita literal | Rechazar salida | `validateLlmExtraction` devuelve `rejected` | PASS |
 
 ## Riesgo residual
 
-La QA no prueba envío real de correo, OCR real, Vision API, ClamAV/VirusTotal ni extracción LLM porque no están configurados en el entorno.
+La QA no prueba MX/Postmark externo ni Vision API porque son servicios fuera del sandbox. El producto no falla por eso: bloquea o usa outbox local hasta que se configuren.

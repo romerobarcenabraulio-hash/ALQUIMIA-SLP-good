@@ -4,11 +4,17 @@ import {
   buildWeeklyDigest,
   calculateDigestDocCount,
   calculateValidationPercentage,
+  enqueueWeeklyDigest,
+  extractTextFromFile,
   checkCitationUrl,
+  getDocumentProcessingLog,
+  getDigestOutbox,
   detectDocumentMentions,
   extractStructuredFields,
+  processUploadedDocument,
   parseNotApplicableReply,
   processInboundEmailForTenant,
+  validateLlmExtraction,
   validateLiteralCitation,
 } from './archivoFull'
 import { getTenantArchiveData } from './documentArchiveStore'
@@ -56,7 +62,7 @@ describe('archivoFull deterministic components', () => {
   })
 
   it('processes inbound attachments without validating claims automatically', async () => {
-    const content = Buffer.from('%PDF-1.4').toString('base64')
+    const content = Buffer.from('%PDF-1.4 (Artículo 9. El municipio deberá separar residuos reciclables.)').toString('base64')
     const result = await processInboundEmailForTenant('gap-city', {
       From: 'funcionario@gob.mx',
       TextBody: '1 no aplica',
@@ -64,6 +70,38 @@ describe('archivoFull deterministic components', () => {
     })
 
     expect(result.documents_received).toBe(1)
+    expect(result.documents_processed).toBe(1)
+    expect(getDocumentProcessingLog('gap-city').length).toBeGreaterThan(0)
     expect(result.message).toContain('revisión humana')
+  })
+
+  it('extracts basic text from PDF-like files and marks images for manual transcription', async () => {
+    const pdf = new File(['%PDF-1.4 (Artículo 12. Separar residuos en origen.)'], 'reglamento.pdf', { type: 'application/pdf' })
+    const image = new File(['binary'], 'scan.png', { type: 'image/png' })
+
+    await expect(extractTextFromFile(pdf)).resolves.toMatchObject({ text_method: 'native_pdf' })
+    const processedImage = await processUploadedDocument(image)
+    expect(processedImage.validation_status).toBe('requires_transcription_manual')
+    expect(processedImage.llm_processed).toBe(false)
+  })
+
+  it('rejects guarded LLM extraction when literal citation is not present', () => {
+    const result = validateLlmExtraction('Texto fuente real', {
+      field_id: 'obligacion',
+      value: 'Separación obligatoria',
+      extraction_method: 'llm_guarded',
+      literal_citation: 'Cita inventada',
+      validation_status: 'pending',
+    })
+
+    expect(result.validation_status).toBe('rejected')
+  })
+
+  it('queues digest entries without requiring external email provider', () => {
+    const before = getDigestOutbox('partial-city').length
+    const entry = enqueueWeeklyDigest('partial-city')
+
+    expect(entry.sending_status).toBe('preview_only')
+    expect(getDigestOutbox('partial-city')).toHaveLength(before + 1)
   })
 })

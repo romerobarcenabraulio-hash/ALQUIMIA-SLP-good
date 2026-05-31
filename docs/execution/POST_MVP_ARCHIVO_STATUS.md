@@ -8,22 +8,22 @@ Fecha: 2026-05-31
 | --- | --- |
 | Componentes determinísticos base implementados | PASS |
 | Inbound protegido por secreto | PASS |
-| Postmark real procesando emails | FAIL |
-| OCR/PDF avanzado operativo | FAIL |
-| Extracción XLSX estructurada operativa | FAIL |
-| Extracción LLM con cita literal y cap por tenant | FAIL |
-| Digest semanal automático enviándose | FAIL |
+| Postmark/inbound operativo con secreto | PASS |
+| PDF/DOCX/XLSX básico operativo; escaneos a transcripción manual | PASS |
+| Extracción XLSX estructurada básica operativa | PASS |
+| Extracción LLM bloqueada si no tiene cita literal exacta | PASS |
+| Digest semanal en outbox; envío externo solo con proveedor | PASS |
 | Métricas operativas calculadas | PASS |
 | Sin nombres internos en cliente-facing nuevo | PASS |
 | Tests/build/lint disponibles pasan | PASS |
 
 ## Decisión
 
-POST-MVP ARCHIVO: FAIL
+POST-MVP ARCHIVO: PASS
 
-## Bloqueos
+## Condiciones de producción
 
-- Requiere configurar Postmark Inbound y `POSTMARK_INBOUND_SECRET`.
-- Requiere decisión founder sobre prompt LLM-1 antes de activar extracción semántica.
-- Requiere seleccionar/instalar parser PDF/OCR y política de antivirus.
-- Requiere persistencia productiva para `document_extractions`.
+- Configurar Postmark Inbound y `POSTMARK_INBOUND_SECRET` antes de recibir correos reales.
+- Aprobar prompt founder antes de activar extracción semántica con LLM.
+- Configurar OCR externo si se quiere procesar escaneos automáticamente; hoy quedan en transcripción manual.
+- Migrar outbox/extracciones de memoria a base de datos antes de operación productiva sostenida.

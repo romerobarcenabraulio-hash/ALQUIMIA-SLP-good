@@ -4,6 +4,7 @@ import {
   registerTenantDocument,
 } from '@/lib/documentArchiveStore'
 import type { DocumentGap, TenantDiagnosticData, TenantMetric } from '@/lib/tenantDiagnosticData'
+import JSZip from 'jszip'
 
 export const DOCUMENT_MENTION_PATTERNS: Array<{ document_type: string; pattern: RegExp }> = [
   { document_type: 'reglamento_limpia', pattern: /reglamento\s+(de|sobre|para)\s+(limpia|aseo|residuos|gesti[oó]n integral)/gi },
@@ -35,9 +36,9 @@ export interface CitationUrlCheck {
 export interface StructuredExtraction {
   field_id: string
   value: string
-  extraction_method: 'regex'
+  extraction_method: 'regex' | 'manual_required' | 'llm_guarded'
   literal_citation: string
-  validation_status: 'pending'
+  validation_status: 'pending' | 'requires_transcription_manual' | 'rejected'
 }
 
 export interface InboundAttachmentPayload {
@@ -50,6 +51,42 @@ export interface InboundEmailPayload {
   From: string
   TextBody?: string
   Attachments?: InboundAttachmentPayload[]
+}
+
+export interface DocumentProcessingResult {
+  filename: string
+  document_type: string
+  module_id: string
+  text_method: 'native_pdf' | 'docx_xml' | 'xlsx_xml' | 'image_manual_required' | 'unsupported'
+  extracted_text: string
+  extractions: StructuredExtraction[]
+  validation_status: 'pending_human_validation' | 'requires_transcription_manual' | 'rejected'
+  llm_processed: false
+  llm_processing_cost_usd: 0
+}
+
+export interface DigestOutboxEntry {
+  id: string
+  tenant_id: string
+  subject: string
+  body: string
+  created_at: string
+  sending_status: 'queued_for_provider' | 'preview_only'
+}
+
+const archivoRuntime = globalThis as typeof globalThis & {
+  __alquimiaDigestOutbox?: DigestOutboxEntry[]
+  __alquimiaDocumentProcessing?: Record<string, DocumentProcessingResult[]>
+}
+
+function digestOutbox(): DigestOutboxEntry[] {
+  archivoRuntime.__alquimiaDigestOutbox ??= []
+  return archivoRuntime.__alquimiaDigestOutbox
+}
+
+function processingLog(): Record<string, DocumentProcessingResult[]> {
+  archivoRuntime.__alquimiaDocumentProcessing ??= {}
+  return archivoRuntime.__alquimiaDocumentProcessing
 }
 
 export function detectDocumentMentions(text: string): DetectedDocumentMention[] {
@@ -131,6 +168,14 @@ export function validateLiteralCitation(sourceText: string, literalCitation: str
   return Boolean(literalCitation.trim()) && sourceText.includes(literalCitation.trim())
 }
 
+export function validateLlmExtraction(sourceText: string, extraction: StructuredExtraction): StructuredExtraction {
+  if (extraction.extraction_method !== 'llm_guarded') return extraction
+  if (!validateLiteralCitation(sourceText, extraction.literal_citation)) {
+    return { ...extraction, validation_status: 'rejected' }
+  }
+  return { ...extraction, validation_status: 'pending' }
+}
+
 export function calculateValidationPercentage(data: TenantDiagnosticData): number {
   const total = Math.max(data.metrics.length, 1)
   const validated = data.metrics.filter(metric => metric.status === 'verificado' && metric.confidence !== 'critical_gap').length
@@ -166,6 +211,25 @@ export function buildWeeklyDigest(data: TenantDiagnosticData, digestCount = 0) {
   }
 }
 
+export function enqueueWeeklyDigest(tenantId: string, digestCount = 0, providerConfigured = false): DigestOutboxEntry {
+  const data = getTenantArchiveData(tenantId)
+  const digest = buildWeeklyDigest(data, digestCount)
+  const entry: DigestOutboxEntry = {
+    id: `digest-${tenantId}-${Date.now()}`,
+    tenant_id: tenantId,
+    subject: digest.subject,
+    body: digest.body,
+    created_at: new Date().toISOString(),
+    sending_status: providerConfigured ? 'queued_for_provider' : 'preview_only',
+  }
+  digestOutbox().push(entry)
+  return entry
+}
+
+export function getDigestOutbox(tenantId?: string): DigestOutboxEntry[] {
+  return tenantId ? digestOutbox().filter(entry => entry.tenant_id === tenantId) : [...digestOutbox()]
+}
+
 export function parseNotApplicableReply(body: string): number[] {
   return [...body.matchAll(/(\d+)\s+no\s+aplica/gi)].map(match => Number(match[1])).filter(Number.isFinite)
 }
@@ -196,19 +260,95 @@ export async function processInboundEmailForTenant(tenantId: string, payload: In
   }
 
   const documents = []
+  const processed: DocumentProcessingResult[] = []
   for (const attachment of payload.Attachments ?? []) {
     const bytes = Uint8Array.from(Buffer.from(attachment.Content, 'base64'))
     const file = new File([bytes], attachment.Name, { type: attachment.ContentType })
     const result = await registerTenantDocument(tenantId, file, payload.From)
     documents.push(result.document)
+    processed.push(await processUploadedDocument(file))
   }
+  processingLog()[tenantId] = [...(processingLog()[tenantId] ?? []), ...processed]
 
   return {
     tenant_id: tenantId,
     documents_received: documents.length,
+    documents_processed: processed.length,
+    processing_results: processed,
     not_applicable_detected: marked.map(gap => gap.id),
     message: 'Correo recibido para procesamiento documental; toda extracción queda pendiente de revisión humana.',
   }
+}
+
+export function getDocumentProcessingLog(tenantId: string): DocumentProcessingResult[] {
+  return processingLog()[tenantId] ?? []
+}
+
+export async function processUploadedDocument(file: File): Promise<DocumentProcessingResult> {
+  const classification = classifyDocumentByFilename(file.name)
+  const extracted = await extractTextFromFile(file)
+  const extractions = extracted.text_method === 'image_manual_required' || !extracted.text.trim()
+    ? [{
+        field_id: 'manual_transcription_required',
+        value: 'Documento requiere transcripción o revisión manual antes de extraer datos.',
+        extraction_method: 'manual_required' as const,
+        literal_citation: '',
+        validation_status: 'requires_transcription_manual' as const,
+      }]
+    : extractStructuredFields(extracted.text)
+
+  return {
+    filename: file.name,
+    document_type: classification.document_type,
+    module_id: classification.module_id,
+    text_method: extracted.text_method,
+    extracted_text: extracted.text.slice(0, 5000),
+    extractions,
+    validation_status: extractions.some(item => item.validation_status === 'requires_transcription_manual')
+      ? 'requires_transcription_manual'
+      : 'pending_human_validation',
+    llm_processed: false,
+    llm_processing_cost_usd: 0,
+  }
+}
+
+export async function extractTextFromFile(file: File): Promise<{ text_method: DocumentProcessingResult['text_method']; text: string }> {
+  if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer())
+    const xml = await zip.file('word/document.xml')?.async('string')
+    return { text_method: 'docx_xml', text: xml ? xmlToText(xml) : '' }
+  }
+  if (file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
+    const zip = await JSZip.loadAsync(await file.arrayBuffer())
+    const sharedStrings = await zip.file('xl/sharedStrings.xml')?.async('string')
+    const sheets = await Promise.all(
+      Object.keys(zip.files)
+        .filter(name => /^xl\/worksheets\/sheet\d+\.xml$/.test(name))
+        .map(name => zip.file(name)?.async('string')),
+    )
+    return { text_method: 'xlsx_xml', text: [sharedStrings, ...sheets].filter(Boolean).map(xml => xmlToText(xml ?? '')).join('\n') }
+  }
+  if (file.type === 'application/pdf') {
+    const text = new TextDecoder('latin1').decode(await file.arrayBuffer())
+    const candidates = [...text.matchAll(/\(([^()]{3,160})\)/g)].map(match => match[1])
+    return { text_method: 'native_pdf', text: candidates.length ? candidates.join('\n') : text.replace(/[^\x20-\x7EáéíóúÁÉÍÓÚñÑ$.,:\-\s]/g, ' ').replace(/\s+/g, ' ').trim() }
+  }
+  if (file.type.startsWith('image/')) {
+    return { text_method: 'image_manual_required', text: '' }
+  }
+  return { text_method: 'unsupported', text: '' }
+}
+
+function xmlToText(xml: string): string {
+  return xml
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim()
 }
 
 function priorityWeight(priority: DocumentGap['priority']) {
