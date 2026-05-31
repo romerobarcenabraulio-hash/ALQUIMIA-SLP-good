@@ -34,6 +34,7 @@ function exportPdfTitle(pathname: string, audience: Audience | null, baselineRea
 
 export function Header() {
   const pathname = usePathname()
+  const isPlatformPath = pathname === '/v' || pathname === '/p' || pathname === '/e'
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
   const circularityBaseline = useSimulatorStore(s => s.circularityBaseline)
@@ -109,6 +110,10 @@ export function Header() {
                 Municipio: <span className="font-medium text-[#1C1B18]">{seleccion.nombre}</span>
                 {' · '}
                 Estado: <span className="font-medium text-[#1C1B18]">{seleccion.estadoNombre}</span>
+              </span>
+            ) : isPlatformPath ? (
+              <span className="hidden sm:block text-[12px] text-[#A8A49C] uppercase tracking-wide truncate">
+                Diagnóstico municipal
               </span>
             ) : (
               <span className="hidden sm:block text-[12px] text-[#A8A49C] uppercase tracking-wide truncate">{zmActiva}</span>

@@ -3,6 +3,14 @@ import JSZip from 'jszip'
 import { buildBibliography, citationForMetric, hasMinimumEvidence, metricCitationLabel } from '@/lib/citations'
 import { getTenantArchiveData } from '@/lib/documentArchiveStore'
 
+const exportState = globalThis as typeof globalThis & {
+  __alquimiaPreliminaryExportCounts?: Record<string, number>
+}
+
+function currentMonthKey() {
+  return new Date().toISOString().slice(0, 7)
+}
+
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params
   const callerTenant = _request.headers.get('x-tenant-id')
@@ -11,6 +19,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 
   const data = getTenantArchiveData(id)
+  if (data.status !== 'official') {
+    exportState.__alquimiaPreliminaryExportCounts ??= {}
+    const countKey = `${id}:${currentMonthKey()}`
+    const currentCount = exportState.__alquimiaPreliminaryExportCounts[countKey] ?? 0
+    if (currentCount >= 3) {
+      return NextResponse.json(
+        { detail: 'Límite MVP de 3 exportaciones preliminares por mes alcanzado. Requiere revisión humana.' },
+        { status: 429 },
+      )
+    }
+    exportState.__alquimiaPreliminaryExportCounts[countKey] = currentCount + 1
+  }
   const zip = new JSZip()
   const watermark = data.status === 'official'
     ? ''

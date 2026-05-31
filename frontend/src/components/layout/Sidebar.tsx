@@ -30,12 +30,15 @@ const TOP_NAV = [
 
 export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
   const pathname = usePathname()
+  const isPlatformPath = pathname === '/v' || pathname === '/p' || pathname === '/e'
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
   const audience = useSimulatorStore(s => s.audience)
 
   const cityLabel = seleccion?.nombre
     ? `${seleccion.nombre}, ${seleccion.estadoNombre}`
+    : isPlatformPath
+      ? 'Municipio seleccionado'
     : `ZM ${zmActiva}`
 
   return (

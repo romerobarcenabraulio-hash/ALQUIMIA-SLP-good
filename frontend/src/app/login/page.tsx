@@ -54,13 +54,7 @@ function LoginForm() {
       finishLogin(data.access_token)
     }
     catch (err: unknown) {
-      if (email === 'demo@alquimia.mx' && password === 'demo2025') {
-        persistSession('demo-token')
-        router.push(loginDestination(next))
-      }
-      else {
-        setError(err instanceof Error ? err.message : 'Credenciales inválidas')
-      }
+      setError(err instanceof Error ? err.message : 'Credenciales inválidas')
     }
     finally {
       setLoading(false)
@@ -155,16 +149,8 @@ function LoginForm() {
         <div className="mt-6 pt-6 border-t border-[#E8E4DC] space-y-3">
           <p className="text-[12px] text-center text-[#6B6760]">
             ¿Primera vez?{' '}
-            <Link href="/register" className="text-[#3B6D11] font-medium hover:underline">Crear cuenta</Link>
+            <Link href="/comenzar" className="text-[#3B6D11] font-medium hover:underline">Solicitar acceso institucional</Link>
           </p>
-          <p className="text-[11px] text-[#A8A49C] text-center mb-2">Acceso de demostración</p>
-          <button
-            type="button"
-            onClick={() => { setEmail('demo@alquimia.mx'); setPassword('demo2025') }}
-            className="w-full text-[12px] text-[#3B6D11] border border-[#3B6D11]/30 rounded-[8px] py-2 hover:bg-[#EAF3DE] transition-colors"
-          >
-            Usar cuenta demo
-          </button>
         </div>
 
         <div className="mt-5 pt-5 border-t border-[#E8E4DC] flex justify-between text-[12px]">
