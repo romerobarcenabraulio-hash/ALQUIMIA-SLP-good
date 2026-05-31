@@ -1,4 +1,5 @@
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
+import { Citation } from '@/components/Citation'
 import type { TenantMetric } from '@/lib/tenantDiagnosticData'
 
 type Props = {
@@ -24,7 +25,8 @@ export function ModuleEvidenceFooter({ metrics, blockedClaims = [] }: Props) {
                   <MetricConfidencePill confidence={metric.confidence} />
                 </div>
                 <p className="mt-2 max-w-[32ch] break-words text-[11px] leading-5 text-[#6B6760] sm:max-w-none">
-                  Fuente: {metric.source} · Fecha: {metric.source_date} · Método: {metric.method} · Alcance: {metric.territorial_scope}
+                  Fuente: {metric.source}
+                  <Citation metric={metric} metrics={metrics} /> · Fecha: {metric.source_date} · Método: {metric.method} · Alcance: {metric.territorial_scope}
                 </p>
               </div>
             )) : (

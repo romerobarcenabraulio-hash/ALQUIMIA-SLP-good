@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
+import { Citation } from '@/components/Citation'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DecisionModuleShell, ModuleNav } from '@/components/simulator/DecisionModuleShell'
@@ -274,6 +275,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                         </div>
                         <p className="mt-3 text-[24px] font-semibold text-[#1C1B18]">
                           {metric.value ?? 'Brecha crítica'} <span className="text-[13px] font-normal text-[#6B6760]">{metric.unit}</span>
+                          <Citation metric={metric} metrics={tenantData.data?.metrics ?? []} />
                         </p>
                         <p className="mt-3 max-w-[32ch] break-words text-[11px] leading-5 text-[#6B6760] sm:max-w-none">
                           Fuente: {metric.source} · Fecha: {metric.source_date} · Método: {metric.method} · Alcance: {metric.territorial_scope}
@@ -291,6 +293,35 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   documents={tenantData.data.tenant_documents}
                   onChanged={tenantData.reload}
                 />
+              )}
+              {tenantData.data && (
+                <section className="mx-4 mt-5 max-w-full rounded-[8px] border border-[#D8D2C5] bg-white p-4 sm:mx-6 sm:p-5">
+                  <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div className="max-w-3xl">
+                      <p className="text-[12px] font-semibold uppercase text-[#6B6760]">Siguiente paso humano</p>
+                      <h2 className="mt-1 font-serif text-[24px] leading-tight text-[#1C1B18]">
+                        Tu diagnóstico inicial está listo.
+                      </h2>
+                      <p className="mt-2 text-[13px] leading-6 text-[#5C574F]">
+                        El siguiente paso es revisarlo con el equipo ALQUIMIA, validar datos críticos y definir si el municipio puede avanzar a una ruta de implementación.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <a
+                        href="mailto:contacto@alquimiaplatform.com?subject=Revisión%20de%20diagnóstico%20inicial"
+                        className="rounded-[8px] bg-[#1C2B15] px-4 py-2 text-[13px] font-semibold text-white"
+                      >
+                        Agendar revisión
+                      </a>
+                      <button
+                        type="button"
+                        className="rounded-[8px] border border-[#D8D2C5] px-4 py-2 text-[13px] font-semibold text-[#3B3326]"
+                      >
+                        Seguir explorando
+                      </button>
+                    </div>
+                  </div>
+                </section>
               )}
               <PillarModulePanel module={activeModule} tenantData={tenantData.data ?? null} />
               <DecisionModuleShell

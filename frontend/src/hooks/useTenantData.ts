@@ -17,7 +17,9 @@ export function useTenantData(tenantId: string | null) {
     let cancelled = false
     setLoading(true)
     setError(null)
-    fetch(`/api/tenants/${encodeURIComponent(tenantId)}/data`)
+    fetch(`/api/tenants/${encodeURIComponent(tenantId)}/data`, {
+      headers: { 'x-tenant-id': tenantId },
+    })
       .then(async response => {
         const body = await response.json().catch(() => ({}))
         if (!response.ok) throw new Error(body.detail ?? `HTTP ${response.status}`)

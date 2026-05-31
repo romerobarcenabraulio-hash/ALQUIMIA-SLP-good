@@ -17,6 +17,7 @@ export interface TenantMetric {
   confidence: MetricConfidence
   territorial_scope: 'municipio' | 'zm' | 'estado' | 'nacional'
   status: 'verificado' | 'inferido' | 'pendiente' | 'brecha_critica'
+  citation_id?: string
 }
 
 export interface TenantDocumentSlot {
@@ -90,6 +91,59 @@ export const STANDARD_CITY_DOCUMENT_INDEX: TenantDocumentSlot[] = [
 ]
 
 const today = '2026-05-29'
+
+export interface CitationRecord {
+  id: string
+  institution: string
+  title: string
+  parent_document?: string
+  year_or_date: string
+  url?: string
+  consulted_at: string
+}
+
+export const CITATION_REGISTRY: Record<string, CitationRecord> = {
+  public_municipal_preliminary: {
+    id: 'public_municipal_preliminary',
+    institution: 'Fuente publica municipal o estatal disponible',
+    title: 'Cotejo documental preliminar para diagnostico de residuos',
+    parent_document: 'Expediente inicial ALQUIMIA',
+    year_or_date: today,
+    consulted_at: today,
+  },
+  local_field_study_gap: {
+    id: 'local_field_study_gap',
+    institution: 'Municipio solicitante',
+    title: 'Estudio local NMX-AA-015-1985 no cargado',
+    parent_document: 'Registro de brecha critica',
+    year_or_date: today,
+    consulted_at: today,
+  },
+  municipal_operations_report: {
+    id: 'municipal_operations_report',
+    institution: 'Reporte operativo municipal provisto',
+    title: 'Cobertura de recoleccion reportada',
+    parent_document: 'Documentacion preliminar del tenant',
+    year_or_date: today,
+    consulted_at: today,
+  },
+  missing_routes_study: {
+    id: 'missing_routes_study',
+    institution: 'Municipio solicitante',
+    title: 'Estudio de rutas y tiempos no provisto',
+    parent_document: 'Registro de brecha critica',
+    year_or_date: today,
+    consulted_at: today,
+  },
+  missing_psp_study: {
+    id: 'missing_psp_study',
+    institution: 'Municipio solicitante',
+    title: 'Estudio PSP no disponible',
+    parent_document: 'Registro de brecha critica',
+    year_or_date: today,
+    consulted_at: today,
+  },
+}
 
 const documentLabels: Record<string, string> = {
   reglamento_limpia: 'Reglamento de limpia o gestión integral de residuos',
@@ -172,6 +226,7 @@ const commonMetrics: TenantMetric[] = [
     confidence: 'inferred_medium',
     territorial_scope: 'municipio',
     status: 'inferido',
+    citation_id: 'public_municipal_preliminary',
   },
   {
     id: 'field_characterization',
@@ -184,6 +239,7 @@ const commonMetrics: TenantMetric[] = [
     confidence: 'critical_gap',
     territorial_scope: 'municipio',
     status: 'brecha_critica',
+    citation_id: 'local_field_study_gap',
   },
 ]
 
@@ -208,6 +264,7 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
         confidence: 'verified_secondary',
         territorial_scope: 'municipio',
         status: 'verificado',
+        citation_id: 'municipal_operations_report',
       },
       commonMetrics[1],
     ],
@@ -237,6 +294,7 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
         confidence: 'critical_gap',
         territorial_scope: 'municipio',
         status: 'brecha_critica',
+        citation_id: 'missing_routes_study',
       },
       commonMetrics[1],
     ],
@@ -270,6 +328,7 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
         confidence: 'critical_gap',
         territorial_scope: 'municipio',
         status: 'brecha_critica',
+        citation_id: 'missing_psp_study',
       },
     ],
     document_index: STANDARD_CITY_DOCUMENT_INDEX,

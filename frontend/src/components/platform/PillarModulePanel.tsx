@@ -1,6 +1,7 @@
 'use client'
 
 import { AlertTriangle, CheckCircle2, FileText } from 'lucide-react'
+import { Citation } from '@/components/Citation'
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
 import { ModuleEvidenceFooter } from '@/components/ModuleEvidenceFooter'
 import { moduleMatches } from '@/lib/documentArchiveStore'
@@ -147,7 +148,10 @@ export function PillarModulePanel({
                 <p className="min-w-0 max-w-[24ch] text-[12px] font-semibold leading-5 text-[#1C1B18] sm:flex-1 sm:max-w-none">{metric.label}</p>
                 <MetricConfidencePill confidence={metric.confidence} />
               </div>
-              <p className="mt-3 text-[22px] font-semibold leading-none text-[#1C1B18]">{metricValue(metric)}</p>
+              <p className="mt-3 text-[22px] font-semibold leading-none text-[#1C1B18]">
+                {metricValue(metric)}
+                <Citation metric={metric} metrics={metrics} />
+              </p>
             </article>
           ))}
         </div>
@@ -162,6 +166,9 @@ export function PillarModulePanel({
               </p>
               <p className="mt-2 text-[13px] font-semibold text-[#1C1B18]">{gap.label}</p>
               <p className="mt-1 text-[12px] leading-5 text-[#5F584A]">{gap.reason}</p>
+              <p className="mt-2 text-[11px] leading-5 text-[#756C5A]">
+                Efecto: condiciona o bloquea claims del módulo hasta revisión humana.
+              </p>
             </div>
           ))}
           {docs.map(document => (

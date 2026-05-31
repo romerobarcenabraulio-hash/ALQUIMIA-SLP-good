@@ -19,6 +19,11 @@ Todas las ciudades generan el mismo paquete documental:
 - Mismo número de documentos.
 - Misma secuencia.
 - Misma ubicación para fuentes, brechas críticas, claims bloqueados, próximos pasos y validación humana.
+- Misma ubicación para bibliografía mínima al final del paquete.
+- Misma marca metodológica en cada documento exportado:
+  `Documento preliminar elaborado con metodología ALQUIMIA · Fuentes y confianza visibles · Revisión humana requerida antes de uso oficial.`
+- Misma sección de `Brechas documentales y documentos pendientes`.
+- Misma regla de cumplimiento de estándares: referencia metodológica / cumplimiento parcial / cumplimiento completo. Cumplimiento completo queda bloqueado si faltan campos obligatorios.
 - El contenido cambia por investigación, cotejo, fuente, método, confianza y diagnóstico.
 - Una ciudad con menos datos conserva el paquete completo con brechas críticas explícitas.
 
