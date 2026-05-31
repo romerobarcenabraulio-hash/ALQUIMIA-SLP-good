@@ -31,6 +31,14 @@ export default clerkMiddleware(async (auth, request: NextRequest) => {
 })
 
 export const config = {
-  /** Excluir `/data/**` para servir JSON bajo `public/data/` sin pasar por el middleware (PR3 sociodemográfico). */
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|data/).*)', '/(api|trpc)(.*)'],
+  matcher: [
+    '/v/:path*',
+    '/p/:path*',
+    '/e/:path*',
+    '/admin/:path*',
+    '/simulator/:path*',
+    '/hub/:path*',
+    '/ca-studio/:path*',
+    '/gobierno/rsu/:path*',
+  ],
 }
