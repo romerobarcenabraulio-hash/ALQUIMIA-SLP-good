@@ -3,6 +3,7 @@
 import { AlertTriangle, CheckCircle2, FileText } from 'lucide-react'
 import { Citation } from '@/components/Citation'
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
+import { ModuleDiagram } from '@/components/ModuleDiagram'
 import { ModuleEvidenceFooter } from '@/components/ModuleEvidenceFooter'
 import { moduleMatches } from '@/lib/documentArchiveStore'
 import { moduleSubtitle, moduleTitle } from '@/lib/moduleTitles'
@@ -16,6 +17,7 @@ const PILLAR_MODULE_IDS = new Set([
   'escenarios_financieros',
   'riesgos_modelo',
   'expediente_cabildo',
+  'risk_dashboard',
 ])
 
 const MODULE_METRIC_IDS: Record<string, string[]> = {
@@ -25,6 +27,7 @@ const MODULE_METRIC_IDS: Record<string, string[]> = {
   escenarios_financieros: ['rsu_generation', 'routes_time_study'],
   riesgos_modelo: ['rsu_generation', 'routes_time_study', 'field_characterization', 'psp_acceptance'],
   expediente_cabildo: ['rsu_generation', 'field_characterization', 'psp_acceptance'],
+  risk_dashboard: ['rsu_generation', 'routes_time_study', 'field_characterization', 'psp_acceptance'],
 }
 
 const MODULE_CONCLUSION: Record<string, string> = {
@@ -34,6 +37,7 @@ const MODULE_CONCLUSION: Record<string, string> = {
   escenarios_financieros: 'Los escenarios financieros son sensibles a documentos presupuestales y estudios locales pendientes.',
   riesgos_modelo: 'El riesgo principal es metodológico: decidir con cifras incompletas o documentos no validados.',
   expediente_cabildo: 'El expediente conserva estructura completa, pero bloquea claims sin evidencia mínima defendible.',
+  risk_dashboard: 'Los gates de ejecución quedan condicionados a evidencia trazable, revisión humana y separación territorial.',
 }
 
 const MODULE_BLOCKED_CLAIMS: Record<string, string[]> = {
@@ -58,6 +62,10 @@ const MODULE_BLOCKED_CLAIMS: Record<string, string[]> = {
   expediente_cabildo: [
     'No llevar a Cabildo un claim bloqueado por evidencia insuficiente.',
     'No decir que la plataforma aprueba decisiones públicas.',
+  ],
+  risk_dashboard: [
+    'No cerrar gates por automatización o por recomendación asistida.',
+    'No activar ejecución si faltan evidencia mínima, responsable humano o decisión documentada.',
   ],
 }
 
@@ -139,6 +147,7 @@ export function PillarModulePanel({
           <p className="mt-3 max-w-3xl text-[12px] leading-6 text-[#6B6760]">
             Municipio: <span className="font-semibold text-[#1C1B18]">{tenantData.municipality}</span>. Alcance territorial de las métricas: municipio salvo que una fuente indique otra cosa. Zona metropolitana, estado y país no se mezclan con dato municipal.
           </p>
+          <ModuleDiagram moduleId={module.module_id} metrics={metrics} />
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">

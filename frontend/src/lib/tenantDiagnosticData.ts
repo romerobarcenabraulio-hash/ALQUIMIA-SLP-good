@@ -13,11 +13,16 @@ export interface TenantMetric {
   unit: string
   source: string
   source_date: string
+  consulted_at?: string
   method: string
   confidence: MetricConfidence
   territorial_scope: 'municipio' | 'zm' | 'estado' | 'nacional'
   status: 'verificado' | 'inferido' | 'pendiente' | 'brecha_critica'
   citation_id?: string
+  field_id?: string
+  derived_from?: string[]
+  formula?: string
+  validation_status?: 'validated_human' | 'pending_human_validation' | 'blocked_by_gap'
 }
 
 export interface TenantDocumentSlot {

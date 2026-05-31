@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import JSZip from 'jszip'
 import { buildBibliography, citationForMetric, hasMinimumEvidence, metricCitationLabel } from '@/lib/citations'
 import { getTenantArchiveData } from '@/lib/documentArchiveStore'
+import { auditMetricsForExport } from '@/lib/standardsCompliance'
 
 const exportState = globalThis as typeof globalThis & {
   __alquimiaPreliminaryExportCounts?: Record<string, number>
@@ -37,13 +38,17 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     : `ALQUIMIA · Diagnóstico inicial · Versión ${data.version} · ${data.generated_at}\n\n`
   const methodologicalMarker = 'Documento preliminar elaborado con metodología ALQUIMIA · Fuentes y confianza visibles · Revisión humana requerida antes de uso oficial.'
   const bibliography = buildBibliography(data.metrics)
+  const exportAudit = auditMetricsForExport(data.metrics)
   const missingEvidence = data.metrics.filter(metric => !hasMinimumEvidence(metric) || !citationForMetric(metric))
   const standardsSection = [
     '## Cumplimiento de estándares',
     '',
     '- GRI, ISO, PMI, CSRD, NMX y SDG se usan como referencias metodológicas salvo que exista evidencia completa.',
     '- Este paquete no declara cumplimiento completo de ningún estándar.',
+    `- Estado pre-export: ${exportAudit.label}.`,
+    `- Cumplimiento completo declarado: ${exportAudit.canClaimFullCompliance ? 'permitido' : 'bloqueado'}.`,
     '- Si faltan campos obligatorios, el claim se mantiene como referencia metodológica, cumplimiento parcial o queda removido.',
+    ...exportAudit.warnings.map(warning => `- ${warning}`),
     missingEvidence.length
       ? `- Métricas sin evidencia completa: ${missingEvidence.map(metric => metric.label).join(', ')}.`
       : '- Las métricas incluidas tienen fuente, fecha, método, confianza y cita o brecha explícita.',
