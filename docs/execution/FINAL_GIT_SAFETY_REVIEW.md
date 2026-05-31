@@ -13,7 +13,7 @@ Fecha: 2026-05-31
 | Archivo | Motivo | Decisión |
 | --- | --- | --- |
 | `docs/execution/MASTER_AUDIT_STATUS.md` | Auditoría maestra requerida para habilitar cierre | Incluir |
-| `docs/execution/MASTER_BLOCKERS_REGISTER.md` | Registro honesto de bloqueos abiertos | Incluir |
+| `docs/execution/MASTER_BLOCKERS_REGISTER.md` | Registro honesto de prerrequisitos externos | Incluir |
 | `docs/execution/MASTER_11_DOCS_COVERAGE_MATRIX.md` | Cobertura contra documentos rectores | Incluir |
 | `docs/execution/FINAL_EXECUTION_READINESS.md` | Readiness operativo final | Incluir |
 | `docs/execution/FINAL_GIT_SAFETY_REVIEW.md` | Revisión de seguridad Git | Incluir |

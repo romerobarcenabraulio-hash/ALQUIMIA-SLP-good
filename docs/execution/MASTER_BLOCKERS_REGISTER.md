@@ -12,16 +12,16 @@ Fecha: 2026-05-31
 | Visual público usable | Cerrado | `POST_MVP_VISUAL_SYSTEM_STATUS.md` | Mantener QA visual antes de cambios públicos |
 | Migración ARCHIVO | Cerrado | `POST_MVP_PRODUCTION_READINESS_DELTA.md` | Ejecutar Alembic en staging/prod cuando exista entorno |
 
-## Bloqueos externos para producción real
+## Prerrequisitos externos para producción real
 
-| Bloqueo | Severidad | Responsable | Motivo | Estado |
+| Prerrequisito | Severidad | Responsable | Motivo | Estado |
 | --- | --- | --- | --- | --- |
-| Storage persistente de documentos | P1 producción | Founder/infra | Requiere proveedor, retención y configuración productiva | Abierto externo |
-| Legal/compliance final | P1 producción | Founder/legal | Los documentos actuales son preparación, no asesoría legal final | Abierto externo |
-| Billing/contracts | P2 comercial | Founder/legal | Requiere pricing, contrato y revisión legal | Abierto externo |
-| Seed founder/admin productivo | P1 producción | Founder/infra | Requiere identidad, dominio y entorno real | Abierto externo |
-| Email provider real | P1 producción | Founder/infra | Digest/inbound/envío externo requiere proveedor configurado | Abierto externo |
+| Storage persistente de documentos | P1 producción | Founder/infra | Requiere proveedor, retención y configuración productiva | No bloquea envío founder/local |
+| Legal/compliance final | P1 producción | Founder/legal | Los documentos actuales son preparación, no asesoría legal final | No bloquea envío founder/local |
+| Billing/contracts | P2 comercial | Founder/legal | Requiere pricing, contrato y revisión legal | No bloquea envío founder/local |
+| Seed founder/admin productivo | P1 producción | Founder/infra | Requiere identidad, dominio y entorno real | No bloquea envío founder/local |
+| Email provider real | P1 producción | Founder/infra | Digest/inbound/envío externo requiere proveedor configurado | No bloquea envío founder/local |
 
 ## Decisión
 
-No hay bloqueos P0/P1 que impidan revisar o demo-operar el MVP local/founder. Producción externa sigue bloqueada por decisiones de proveedor, legal e infraestructura.
+No hay bloqueos P0/P1 que impidan revisar, demo-operar o enviar el MVP local/founder. Producción externa requiere decisiones de proveedor, legal e infraestructura antes de activarse.

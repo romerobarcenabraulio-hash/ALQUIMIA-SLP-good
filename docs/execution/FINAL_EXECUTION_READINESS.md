@@ -34,9 +34,9 @@ Fecha: 2026-05-31
 - Programa de partners comercial.
 - Claims de certificación, ahorro garantizado o validación oficial.
 
-## Bloqueos abiertos
+## Prerrequisitos externos
 
-Ver `MASTER_BLOCKERS_REGISTER.md`. Son bloqueos externos de producción, no bloqueos P0/P1 para revisión founder/local.
+Ver `MASTER_BLOCKERS_REGISTER.md`. Son prerrequisitos de producción externa, no bloqueos P0/P1 para revisión, demo u operación founder/local.
 
 ## Decisión
 

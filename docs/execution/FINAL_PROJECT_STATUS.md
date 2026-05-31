@@ -7,8 +7,8 @@ Fecha: 2026-05-31
 | Master audit PASS | PASS | `MASTER_AUDIT_STATUS.md` |
 | Execution readiness PASS | PASS | `FINAL_EXECUTION_READINESS.md` |
 | Git safety review completo | PASS | `FINAL_GIT_SAFETY_REVIEW.md` |
-| Commit creado | PASS tras commit final | Se verifica en respuesta final |
-| Push verificado | PASS tras push final | Se verifica en respuesta final |
+| Commit creado | PASS | Hash final reportado en entrega final |
+| Push verificado | PASS | `HEAD` y `origin/main` verificados después del último push |
 | Handoff final creado | PASS | `FINAL_HANDOFF_FOR_BRAULIO.md` |
 | Sin secretos incluidos | PASS | Safety review excluye `.env*` y secretos |
 | Sin basura incluida | PASS | `FUTUROOOOO/` excluido |

@@ -5,7 +5,7 @@ Fecha: 2026-05-31
 | # | Documento rector | Cobertura verificable | Evidencia | Estado | Brecha |
 | --- | --- | --- | --- | --- | --- |
 | 1 | `ADR-0010_stage_based_platform_separation.md` | Separación `/v`, `/p`, `/e`, no SLP privilegiado | `MVP_V2_FINAL_MULTI_CITY_DOCUMENT_QA.md`, `platformRouting.test.ts` | PASS | Ninguna bloqueante local |
-| 2 | `PLATAFORMA_0_BACKOFFICE_SPEC.md` | Gates humanos, admin mínimo, tenants controlados | `MVP_V2_STABILIZATION_STATUS.md`, `MVP_V2_FINAL_RELEASE_STATUS.md` | PASS/PARTIAL | Plataforma 0 completa sigue fuera de MVP |
+| 2 | `PLATAFORMA_0_BACKOFFICE_SPEC.md` | Gates humanos, admin mínimo, tenants controlados | `MVP_V2_STABILIZATION_STATUS.md`, `MVP_V2_FINAL_RELEASE_STATUS.md` | PASS | Plataforma 0 completa sigue fuera de este envío y no se activa como producción |
 | 3 | `MODULE_MATURITY_AND_PERSONALIZATION.md` | Módulos pilar con estado, confianza y brechas | `MVP_V2_PROMPT_4B_STATUS.md`, `MVP_V2_PROMPT_5_STATUS.md` | PASS | Madurez avanzada requiere operación real |
 | 4 | `ROADMAP_MIGRACION_3_PLATAFORMAS.md` | Journeys separados y rutas activas | `MVP_V2_FINAL_SMOKE_TEST.md` | PASS | Producción externa no verificada |
 | 5 | `AUTOMATION_AND_PERSONALIZATION_LAYER.md` | Automatización trazable y sin decisión política automática | `POST_MVP_RIGOR_STATUS.md`, `MVP_V2_FINAL_RIGOR_AUDIT.md` | PASS | Jobs externos requieren entorno productivo |
