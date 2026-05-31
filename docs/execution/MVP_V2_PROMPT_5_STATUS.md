@@ -30,6 +30,10 @@ Prompt 4 V2 cerró con `PROMPT 4 V2: PASS`.
 | Tres perfiles mantienen índice/documentos | PASS |
 | ZIP mínimo funcional | PASS |
 | ZIP incluye marca de agua preliminary | PASS |
+| ZIP/export incluye citas o bibliografía mínima | PASS guardrail añadido |
+| ZIP/export incluye marcador metodológico sobrio | PASS guardrail añadido |
+| Export no declara cumplimiento completo si faltan campos obligatorios | PASS guardrail añadido |
+| Cumplimiento parcial se declara como parcial o se remueve el claim | PASS guardrail añadido |
 | Límite de exportación preliminar | PASS documentado en header |
 | CTA conversación/export humano | PASS |
 | `/pendiente-validacion` | PASS |
