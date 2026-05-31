@@ -7,8 +7,8 @@ import { isPlatformDeveloper } from '@/lib/authSession'
 
 function loginDestination(next?: string | null): string {
   if (next) return next
-  if (isPlatformDeveloper()) return '/simulator'
-  return '/gobierno'
+  if (isPlatformDeveloper()) return '/v'
+  return '/v'
 }
 
 export default function LoginPage() {
@@ -71,7 +71,7 @@ function LoginForm() {
       finishLogin(data.access_token)
     }
     catch (err) {
-      setError(err instanceof Error ? err.message : 'Código TOTP incorrecto')
+      setError(err instanceof Error ? err.message : 'Código incorrecto')
     }
     finally {
       setLoading(false)
@@ -83,7 +83,7 @@ function LoginForm() {
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[20px] p-8 w-full max-w-md shadow-md">
         <div className="text-center mb-8">
           <h1 className="font-serif text-[32px] text-[#3B6D11]">ALQUIMIA</h1>
-          <p className="text-[13px] text-[#6B6760] mt-1">Acceso seguro · contraseña + TOTP</p>
+          <p className="text-[13px] text-[#6B6760] mt-1">Acceso seguro · correo y contraseña</p>
         </div>
 
         {!pendingToken ? (
@@ -118,7 +118,7 @@ function LoginForm() {
         ) : (
           <form onSubmit={handleTotp} className="flex flex-col gap-4">
             <p className="text-[13px] text-[#4A4740] leading-relaxed">
-              Ingresa el código de 6 dígitos de tu aplicación autenticadora.
+              Ingresa el código de verificación de 6 dígitos.
             </p>
             <input
               inputMode="numeric"

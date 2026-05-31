@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { authUploadReglamento, getSetupToken } from '@/lib/authApi'
+import { authUploadReglamento, clearSetupToken, getSetupToken, persistSession } from '@/lib/authApi'
 
 function ReglamentoUploadForm() {
   const router = useRouter()
@@ -29,6 +29,10 @@ function ReglamentoUploadForm() {
       const res = await authUploadReglamento(setupToken, file)
       setPdfReady(true)
       setMessage(res.message)
+      if (res.access_token) {
+        persistSession(res.access_token)
+        clearSetupToken()
+      }
     }
     catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo subir el PDF')
@@ -76,14 +80,14 @@ function ReglamentoUploadForm() {
         <button
           type="button"
           disabled={!pdfReady || !setupToken}
-          onClick={() => router.push('/setup-2fa')}
+          onClick={() => router.push('/v')}
           className="btn-primary w-full mt-6 disabled:opacity-40"
         >
-          Continuar a TOTP
+          Entrar a la plataforma
         </button>
 
         <p className="mt-5 text-center text-[12px]">
-          <Link href="/onboarding/sms" className="text-[#A8A49C] hover:text-[#3B6D11]">← Volver a SMS</Link>
+          <Link href="/v" className="text-[#A8A49C] hover:text-[#3B6D11]">Entrar a la plataforma</Link>
         </p>
       </div>
     </div>

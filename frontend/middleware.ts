@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
-const PROTECTED = ['/simulator', '/hub', '/ca-studio', '/gobierno/rsu']
+const PROTECTED = ['/v', '/p', '/e', '/admin', '/simulator', '/hub', '/ca-studio', '/gobierno/rsu']
 const LEGACY_COOKIE = 'alquimia_access'
 const SESSION_COOKIE = 'alquimia_session'
 
@@ -26,7 +26,7 @@ export function middleware(request: NextRequest) {
   }
 
   const login = request.nextUrl.clone()
-  login.pathname = '/login'
+  login.pathname = '/sign-in'
   login.searchParams.set('next', pathname)
   const response = NextResponse.redirect(login)
   response.headers.set('X-Robots-Tag', 'noindex, nofollow')

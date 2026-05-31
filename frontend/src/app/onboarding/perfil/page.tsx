@@ -6,7 +6,9 @@ import { useRouter } from 'next/navigation'
 import { getEstadosMx, getMunicipiosMx } from '@/lib/api'
 import {
   authOnboardingProfile,
+  clearSetupToken,
   getSetupToken,
+  persistSession,
 } from '@/lib/authApi'
 import {
   ONBOARDING_SEGMENTS,
@@ -62,7 +64,7 @@ function PerfilWizard() {
     const estadoNombre = estados.find(ed => ed.estado_id === estadoId)?.nombre
 
     try {
-      await authOnboardingProfile({
+      const res = await authOnboardingProfile({
         setup_token: setupToken,
         client_segment: segment,
         service_interest: serviceId,
@@ -75,7 +77,13 @@ function PerfilWizard() {
         municipio_id: selectedMunicipio?.municipio_simulator_id,
         zm: selectedMunicipio?.zm_simulator_id ?? 'SLP',
       })
-      router.push('/onboarding/sms')
+      if (res.access_token) {
+        persistSession(res.access_token)
+        clearSetupToken()
+        router.push('/v')
+        return
+      }
+      router.push(res.next_path || '/v')
     }
     catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar')
@@ -244,7 +252,7 @@ function PerfilWizard() {
             {error && <p className="text-[12px] text-[#C0392B] bg-[#FBEAEA] px-3 py-2 rounded-[6px]">{error}</p>}
 
             <button type="submit" disabled={loading || !setupToken} className="btn-primary w-full mt-2">
-              {loading ? 'Guardando…' : 'Continuar a verificación SMS'}
+              {loading ? 'Guardando…' : 'Continuar'}
             </button>
           </form>
         )}
