@@ -43,6 +43,22 @@ export function buildLegacyQuarantineManifest(): LegacyQuarantineManifest {
         deletion_criteria: 'Existe reemplazo admin/founder y no hay journeys comerciales activos que dependan de la ruta.',
       },
       {
+        file: 'frontend/src/app/informe/[municipio_id]/page.tsx',
+        usage: 'Informe imprimible heredado que antes consumía simulatorStore y mostraba cifras prospectivas como documento tipo reporte.',
+        client_facing: false,
+        replacement: 'Redirección al paquete consultivo /v con tenant_id; export defendible vive en Evidence Kernel y consulting package.',
+        deletion_risk: 'low',
+        deletion_criteria: 'Ruta ya no importa simulatorStore ni componentes simulator; guardrail clientFacingConsultingGuardrails lo protege.',
+      },
+      {
+        file: 'frontend/src/app/proyecto/[municipio_id]/page.tsx',
+        usage: 'Portal de proyecto vivo heredado que antes montaba ProyectoVivoPortal desde components/simulator.',
+        client_facing: false,
+        replacement: 'Redirección a /e con tenant_id para monitoreo institucional por etapa.',
+        deletion_risk: 'low',
+        deletion_criteria: 'Ruta ya no importa ProyectoVivoPortal ni components/simulator; guardrail clientFacingConsultingGuardrails lo protege.',
+      },
+      {
         file: 'backend/app/routers/simulate.py',
         usage: 'Endpoint histórico de simulación.',
         client_facing: false,
