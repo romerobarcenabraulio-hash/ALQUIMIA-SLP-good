@@ -60,7 +60,7 @@ describe('consultingInputRegistry', () => {
     expect(registry.sources.find(source => source.label === 'Reglamento municipal vigente')?.status).toBe('available')
   })
 
-  it('keeps received market documents as gaps until human integration', () => {
+  it('uses received market documents as available traced inputs', () => {
     const base = TENANT_DIAGNOSTIC_FIXTURES['partial-city']
     const tenantData: TenantDiagnosticData = {
       ...base,
@@ -86,8 +86,8 @@ describe('consultingInputRegistry', () => {
     const registry = buildConsultingInputRegistry(tenantData)
     const source = registry.sources.find(item => item.label === 'Catálogo de compradores')
 
-    expect(registry.buyers_available).toBe(false)
-    expect(source?.status).toBe('gap')
-    expect(source?.method).toMatch(/no habilita afirmaciones/i)
+    expect(registry.buyers_available).toBe(true)
+    expect(source?.status).toBe('available')
+    expect(source?.method).toMatch(/integrado automaticamente/i)
   })
 })
