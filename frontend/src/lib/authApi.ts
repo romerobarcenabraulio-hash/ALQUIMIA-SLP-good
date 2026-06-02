@@ -38,6 +38,7 @@ export interface UserProfile {
   client_segment?: string | null
   service_interest?: string | null
   municipio_id?: string | null
+  clave_inegi?: string | null
   municipio_nombre?: string | null
   estado_mx?: string | null
   reglamento_uploaded?: boolean
@@ -106,34 +107,27 @@ export async function authOnboardingProfile(payload: OnboardingProfilePayload) {
     service_interest: string
     requires_reglamento_pdf: boolean
     municipio_id?: string
+    clave_inegi?: string
+    zm?: string
+    next_path?: string
+    access_token?: string
+    refresh_token?: string
+    token_type?: string
+    expires_in?: number
   }
 }
 
 export async function authSmsSend(setupToken: string) {
-  const res = await fetch(`${getApiUrl()}/auth/sms/send`, withRequestId({
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ setup_token: setupToken, purpose: 'onboarding' }),
-  }))
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail ?? 'No se pudo enviar SMS')
-  return data as { message: string; phone_masked: string }
+  // REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+  void setupToken
+  throw new Error('SMS desactivado. Continúa con activación por correo.')
 }
 
 export async function authSmsVerify(setupToken: string, smsCode: string) {
-  const res = await fetch(`${getApiUrl()}/auth/sms/verify`, withRequestId({
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ setup_token: setupToken, sms_code: smsCode }),
-  }))
-  const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail ?? 'Código SMS incorrecto')
-  return data as {
-    message: string
-    phone_masked: string
-    requires_reglamento_pdf: boolean
-    next_path: string
-  }
+  // REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+  void setupToken
+  void smsCode
+  throw new Error('SMS desactivado. Continúa con activación por correo.')
 }
 
 export async function authUploadReglamento(setupToken: string, file: File) {
@@ -146,7 +140,27 @@ export async function authUploadReglamento(setupToken: string, file: File) {
   }))
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(data.detail ?? 'No se pudo subir el PDF')
-  return data as { ok: boolean; municipio_id: string; analysis_ready: boolean; message: string }
+  return data as {
+    ok: boolean
+    municipio_id: string
+    analysis_ready: boolean
+    message: string
+    access_token?: string
+    refresh_token?: string
+    token_type?: string
+    expires_in?: number
+  }
+}
+
+export async function authCompleteSetup(setupToken: string) {
+  const res = await fetch(`${getApiUrl()}/auth/setup/complete`, withRequestId({
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ setup_token: setupToken }),
+  }))
+  const data = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(data.detail ?? 'No se pudo activar la cuenta')
+  return data as TokenResponse
 }
 
 export async function authTotpSetup(setupToken: string) {
@@ -156,7 +170,7 @@ export async function authTotpSetup(setupToken: string) {
     body: JSON.stringify({ setup_token: setupToken }),
   }))
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail ?? 'No se pudo iniciar TOTP')
+  if (!res.ok) throw new Error(data.detail ?? 'No se pudo iniciar la verificación adicional')
   return data as { otpauth_uri: string; secret_preview: string }
 }
 
@@ -167,7 +181,7 @@ export async function authTotpActivate(setupToken: string, totpCode: string) {
     body: JSON.stringify({ setup_token: setupToken, totp_code: totpCode }),
   }))
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail ?? 'Código TOTP incorrecto')
+  if (!res.ok) throw new Error(data.detail ?? 'Código incorrecto')
   return data as TokenResponse
 }
 
@@ -189,7 +203,7 @@ export async function authLoginTotp(pendingToken: string, totpCode: string) {
     body: JSON.stringify({ pending_token: pendingToken, totp_code: totpCode }),
   }))
   const data = await res.json().catch(() => ({}))
-  if (!res.ok) throw new Error(data.detail ?? 'Código TOTP incorrecto')
+  if (!res.ok) throw new Error(data.detail ?? 'Código incorrecto')
   return data as TokenResponse
 }
 

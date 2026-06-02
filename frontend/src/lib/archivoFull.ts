@@ -4,6 +4,9 @@ import {
   registerTenantDocument,
 } from '@/lib/documentArchiveStore'
 import type { DocumentGap, TenantDiagnosticData, TenantMetric } from '@/lib/tenantDiagnosticData'
+import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
+import { buildConsultingPackage, renderableClaims } from '@/lib/consultingPackageEngine'
+import { CONSULTING_API_LAYER_CONTRACTS } from '@/lib/consultingApiLayerContracts'
 import JSZip from 'jszip'
 
 export const DOCUMENT_MENTION_PATTERNS: Array<{ document_type: string; pattern: RegExp }> = [
@@ -17,6 +20,8 @@ export const DOCUMENT_MENTION_PATTERNS: Array<{ document_type: string; pattern: 
   { document_type: 'estudio_rutas', pattern: /estudio\s+de\s+rutas|rutas\s+de\s+recolecci[oó]n/gi },
   { document_type: 'censo_pepenadores', pattern: /censo\s+de\s+pepenadores|padr[oó]n\s+de\s+recicladores/gi },
   { document_type: 'auditoria_infraestructura', pattern: /auditor[ií]a\s+de\s+infraestructura|inventario\s+de\s+infraestructura/gi },
+  { document_type: 'catalogo_compradores', pattern: /cat[aá]logo\s+de\s+compradores|compradores\s+de\s+materiales|centros\s+de\s+acopio/gi },
+  { document_type: 'cotizacion_materiales', pattern: /cotizaci[oó]n\s+de\s+materiales|precios\s+de\s+materiales|precio\s+ponderado/gi },
 ]
 
 export interface DetectedDocumentMention {
@@ -365,4 +370,66 @@ export function missingEvidenceFields(metric: TenantMetric): string[] {
     ['method', metric.method],
     ['confidence', metric.confidence],
   ].filter(([, value]) => !value).map(([key]) => key)
+}
+
+export function buildConsultingExportManifest(data: TenantDiagnosticData) {
+  const consultingPackage = buildConsultingPackage({
+    tenantData: data,
+    bibliographyTenants: Object.values(TENANT_DIAGNOSTIC_FIXTURES),
+  })
+  const affirmableClaims = renderableClaims(consultingPackage.claim_ledger)
+  const blockedClaims = consultingPackage.claim_ledger.filter(claim => claim.confidence === 'blocked')
+
+  return {
+    package_type: 'consulting_package_rsu_gobierno',
+    tenant_id: data.tenant_id,
+    municipality: data.municipality,
+    state: data.state,
+    generated_at: data.generated_at,
+    status: data.status,
+    product_positioning: 'Paquete de consultoría automatizada; no dashboard, no simulador libre, no acto de autoridad.',
+    human_review_required: true,
+    client_controls_enabled: consultingPackage.scenario_set.client_controls_enabled,
+    founder_calibration_required: consultingPackage.scenario_set.founder_calibration_required,
+    evidence_gaps: consultingPackage.evidence_gaps.map(gap => ({
+      id: gap.id,
+      module_id: gap.module_id,
+      label: gap.label,
+      reason: gap.reason,
+      priority: gap.priority,
+      blocks: gap.blocks,
+    })),
+    api_layer_contracts: CONSULTING_API_LAYER_CONTRACTS,
+    input_registry: consultingPackage.input_registry,
+    scenarios: consultingPackage.scenario_set.scenarios.map(scenario => ({
+      id: scenario.id,
+      label: scenario.label,
+      capture_ton_day: scenario.capture_ton_day,
+      circularity_pct: scenario.circularity_pct,
+      gross_revenue_mxn_month: scenario.gross_revenue_mxn_month,
+      confidence: scenario.confidence,
+      blocked_by: scenario.blocked_by,
+      assumptions: scenario.assumptions,
+    })),
+    claim_ledger: {
+      affirmable_count: affirmableClaims.length,
+      blocked_count: blockedClaims.length,
+      affirmable: affirmableClaims,
+      blocked: blockedClaims,
+    },
+    private_generator_mix: consultingPackage.private_generator_mix,
+    material_price_mix: consultingPackage.material_price_mix,
+    readiness_gates: consultingPackage.readiness_gates,
+    bibliography_recommendations: consultingPackage.evidence_recommendations,
+    stage_evidence_map: consultingPackage.stage_evidence_map,
+    roadmap: consultingPackage.roadmap,
+    risk_matrix: consultingPackage.risk_matrix,
+    non_negotiables: [
+      'Nada calculado o inferido se presenta como oficial.',
+      'Benchmark no sustituye estudio local.',
+      'Municipio y zona metropolitana no se mezclan.',
+      'Toda afirmación fuerte requiere fuente, fecha, método, alcance, confianza y revisión humana.',
+      'Si falta evidencia, se muestra brecha crítica.',
+    ],
+  }
 }

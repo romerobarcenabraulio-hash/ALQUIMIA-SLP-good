@@ -131,7 +131,7 @@ function RoleSelector({ onSelect }: { onSelect: (role: Audience) => void }) {
 export function AccesoForm({ initialStep }: { initialStep: 'code' | 'role' }) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextPath = searchParams.get('next') ?? '/simulator'
+  const nextPath = searchParams.get('next') ?? '/v'
   const setAudience = useSimulatorStore(s => s.setAudience)
 
   const [code, setCode] = useState('')

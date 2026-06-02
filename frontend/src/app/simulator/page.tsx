@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ChevronDown, Info } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { SIMULATION_BANNER_BODY, SIMULATION_BANNER_TITLE } from '@/lib/simulationDisclaimer'
 import { cn } from '@/lib/utils'
@@ -67,6 +68,7 @@ function SimulatorSimulationRibbon() {
 }
 
 export default function SimulatorPage() {
+  const router = useRouter()
   const recalcular = useSimulatorStore(s => s.recalcular)
   const zmActiva = useSimulatorStore(s => s.zmActiva)
   const audience = useSimulatorStore(s => s.audience)
@@ -79,6 +81,11 @@ export default function SimulatorPage() {
   useEffect(() => {
     setSessionReady(true)
   }, [])
+  useEffect(() => {
+    if (!sessionReady || isPlatformDeveloper()) return
+    const tenantId = localStorage.getItem('alquimia.tenantId') ?? 'municipio-demo'
+    router.replace(`/v?tenant_id=${encodeURIComponent(tenantId)}`)
+  }, [router, sessionReady])
   const portalEntry = useSimulatorStore(s => s.portalEntry)
   const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
   const portalJourney = useSimulatorStore(s => s.portalJourney)
@@ -156,6 +163,17 @@ export default function SimulatorPage() {
 
   const needsClientOnboarding =
     sessionReady && !isPlatformDeveloper() && !clientSetupComplete
+
+  if (sessionReady && !isPlatformDeveloper()) {
+    return (
+      <div className="h-screen flex flex-col overflow-hidden bg-surface-base">
+        <Header />
+        <main className="flex-1 p-6 text-[13px] text-[#5C574F]">
+          Redirigiendo al paquete consultivo.
+        </main>
+      </div>
+    )
+  }
 
   if (needsClientOnboarding) {
     return (

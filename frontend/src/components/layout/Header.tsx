@@ -27,9 +27,9 @@ function exportPdfTitle(pathname: string, audience: Audience | null, baselineRea
     if (!baselineReady) {
       return 'Complete la línea base municipal en esta pantalla antes de exportar desde el módulo lateral.'
     }
-    return 'Abra el módulo de exportación en la navegación lateral del simulador (#sim-exportador-reporte).'
+    return 'Abra el módulo de exportación en la navegación lateral del laboratorio interno.'
   }
-  return 'La exportación de borrador está disponible en el simulador (perfil institucional o empresarial).'
+  return 'La exportación de borrador está disponible en el paquete consultivo o en el laboratorio interno autorizado.'
 }
 
 export function Header() {
@@ -145,7 +145,7 @@ export function Header() {
             )}
             {pathname === '/simulator' && audience === 'functionary' ? (
               <Link
-                href="/simulator#propuestas-simulador"
+                href="#propuestas-simulador"
                 className="hidden sm:inline-block text-[12px] font-medium text-[#3B6D11] border border-[#3B6D11] px-3 py-1.5 rounded-[6px] hover:bg-[#EAF3DE] transition-colors"
               >
                 3 propuestas
@@ -171,7 +171,7 @@ export function Header() {
                   audience === 'citizen' ||
                   !baselineReady
                 }
-                moduleLabel="Barra superior simulador"
+                moduleLabel="Barra superior"
               />
             </span>
           </div>
@@ -179,7 +179,7 @@ export function Header() {
             <span className="xl:hidden text-[9px] text-[#A8A49C] text-right leading-tight max-w-[11rem]">
               {audience === 'citizen'
                 ? 'Sin exportación en esta vista ciudadana.'
-                : 'Exportación en el módulo lateral del simulador.'}
+                : 'Exportación en el módulo lateral autorizado.'}
             </span>
           )}
         </div>

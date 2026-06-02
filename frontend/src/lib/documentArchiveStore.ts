@@ -16,6 +16,7 @@ const MODULE_ID_ALIASES: Record<string, string[]> = {
   M07: ['organigrama'],
   M08: ['logistica'],
   M09: ['costos_programa', 'escenarios_financieros'],
+  M13: ['escenarios_financieros', 'market_readiness'],
   M15: ['expediente_cabildo'],
 }
 
@@ -58,6 +59,12 @@ export function classifyDocumentByFilename(filename: string): { document_type: s
   if (normalized.includes('rutas')) return { document_type: 'estudio_rutas', module_id: 'M08', confidence: 'suggested_by_filename' }
   if (normalized.includes('pepenador')) return { document_type: 'censo_pepenadores', module_id: 'M02', confidence: 'suggested_by_filename' }
   if (normalized.includes('infraestructura')) return { document_type: 'auditoria_infraestructura', module_id: 'M06', confidence: 'suggested_by_filename' }
+  if (
+    normalized.includes('comprador')
+    || normalized.includes('buyer')
+    || (normalized.includes('catalogo') && (normalized.includes('centro') || normalized.includes('acopio') || normalized.includes('material')))
+  ) return { document_type: 'catalogo_compradores', module_id: 'M13', confidence: 'suggested_by_filename' }
+  if (normalized.includes('cotizacion') || normalized.includes('precio') || normalized.includes('materiales')) return { document_type: 'cotizacion_materiales', module_id: 'M13', confidence: 'suggested_by_filename' }
   return { document_type: 'documento_soporte', module_id: 'M01', confidence: 'low' }
 }
 

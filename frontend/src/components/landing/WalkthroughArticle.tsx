@@ -16,7 +16,7 @@ const COMP = {
 const PCT_PET_DE_PLASTICO    = 0.50
 const PCT_ALUMINIO_DE_METAL  = 0.70
 
-// PRECIOS MXN/kg — base documental; el simulador permite ajustar supuestos del escenario.
+// PRECIOS MXN/kg — base documental; la plataforma pondera supuestos por escenario.
 const PRECIO = {
   organico:  1.00,
   papel:     2.50,
@@ -358,8 +358,8 @@ export function WalkthroughArticle() {
         requieren cotización local antes de usarse como presupuesto o convenio.
       </p>
       <Fuente>
-        Precios base: Investigacion_Precios_RSU_SLP.xlsx y matriz de trazabilidad documental.
-        Composición RSU: Bootstrap §2.1 / Modelo_BASED.xlsx — validado contra SEMARNAT DBGIR 2022 y medición directa en SLP.
+        Precios base: matriz de trazabilidad documental y cotizaciones integradas cuando existan.
+        Composición RSU: estudio local o fuente pública trazable; si falta, se marca brecha crítica y no se declara como verdad municipal.
       </Fuente>
 
       {/* ════════════════════════════════════════════════════════════
@@ -506,7 +506,7 @@ export function WalkthroughArticle() {
       </div>
       <Fuente>
         Composición fija del modelo (Bootstrap §2.1). Cálculo: ton/año × % fracción × precio base MXN/kg.
-        Los precios varían; la API Serper los actualiza en el simulador. Este desglose usa precios base §2.2.
+        Los precios varían; el paquete consultivo usa mezcla ponderada por fuente, fecha, calidad, merma y logística.
       </Fuente>
 
       {/* ════════════════════════════════════════════════════════════
@@ -705,7 +705,7 @@ export function WalkthroughArticle() {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         {[
-          { n: '01', titulo: 'Simulador financiero', desc: 'Modela ingresos, CAPEX, OPEX, TIR, VPN y payback para cualquier mix de centros de acopio.' },
+          { n: '01', titulo: 'Motor financiero', desc: 'Modela ingresos, CAPEX, OPEX, TIR, VPN y payback por escenarios cerrados y trazables.' },
           { n: '02', titulo: 'Marco legal y reforma', desc: 'Diagnóstico del reglamento vigente, brechas con la LGPGIR e iniciativa de reforma lista para Cabildo.' },
           { n: '03', titulo: 'Plan de implementación', desc: 'Gantt por fases, mix P/M/G de centros de acopio, rutas diferenciadas y KPIs operativos por fase.' },
           { n: '04', titulo: 'Documentos para Cabildo', desc: 'Reporte ejecutivo, presentación, modelo CFO y adenda al contrato de concesión. Generados en minutos.' },
@@ -719,15 +719,13 @@ export function WalkthroughArticle() {
       </div>
 
       <p className="text-[15px] text-[#6B6760] leading-[1.7] mb-2">
-        El proceso es: seleccionas tu municipio, configuras el escenario —horizonte,
-        tasa de captura, mix de infraestructura— y el sistema genera el expediente técnico
-        completo. Un director de servicios públicos o un regidor puede entrar a la plataforma
-        por la mañana y tener para la tarde una presentación con todos los números
-        verificados para llevar a la siguiente sesión de Cabildo.
+        El proceso es: seleccionas tu municipio, integras documentos y fuentes, la plataforma coteja evidencia,
+        calcula escenarios cerrados y genera el paquete técnico preliminar. Un director de servicios públicos
+        o un regidor puede revisar brechas, supuestos y matriz de evidencia antes de decidir qué se presenta a Cabildo.
       </p>
       <Fuente>
         ALQUIMIA integra datos de INEGI API, SEMARNAT DBGIR, Serper (precios spot) y Banxico (tipo de cambio).
-        Cada variable muestra su fuente y cada variable calculada muestra su fórmula en tooltip dentro del simulador.
+        Cada variable relevante debe mostrar fuente, fecha, método, alcance territorial, confianza y estado humano.
       </Fuente>
 
       {/* ════════════════════════════════════════════════════════════
@@ -762,8 +760,8 @@ export function WalkthroughArticle() {
         </p>
         <div className="text-[11px] text-[#6B6760] leading-relaxed space-y-2">
           <p><strong className="text-[#1C1B18]">Generación per cápita:</strong> SEMARNAT, Base de Datos de Generación y Composición de Residuos (DBGIR) 2022. Para ciudades no en DBGIR, se usa el rango SEMARNAT por estrato de ciudad (megalópolis, grande, media, pequeña).</p>
-          <p><strong className="text-[#1C1B18]">Composición RSU:</strong> 45% orgánico / 20% papel / 15% plásticos / 5% vidrio / 5% metales / 10% otros — SEMARNAT y validación con el Modelo_BASED.xlsx del proyecto SLP. Esta composición es fija en el modelo.</p>
-          <p><strong className="text-[#1C1B18]">Precios de reciclaje:</strong> Precios base trazados en Investigacion_Precios_RSU_SLP.xlsx, Recicladoras_por_Giro.xlsx y matriz documental. Los valores son supuestos editables; no son cotización local ni precio oficial.</p>
+          <p><strong className="text-[#1C1B18]">Composición RSU:</strong> estudio local cuando exista; si falta, la plataforma muestra brecha crítica y puede conservar un supuesto interno no oficial para planeación.</p>
+          <p><strong className="text-[#1C1B18]">Precios de reciclaje:</strong> precios ponderados por escenario con fuente, fecha, calidad, merma, logística y comprador probable. No son cotización local ni precio oficial.</p>
           <p><strong className="text-[#1C1B18]">Costo disposición final:</strong> referencia editable por tonelada enterrada — debe sustituirse por contrato, concesión o cotización municipal cuando exista. No es presupuesto oficial.</p>
           <p><strong className="text-[#1C1B18]">Emisiones CO₂e:</strong> Factor CH₄ 0.234 m³/kg (SEMARNAT), GWP₁₀₀ = 27 (IPCC AR6 2021). Factores de emisión virgen: EPA/IPCC por material.</p>
           <p><strong className="text-[#1C1B18]">Costo salud pública:</strong> $145 MXN/hab/año — multiplicador OMS-OPS LATAM para gestión inadecuada RSU (Bootstrap §2.8).</p>

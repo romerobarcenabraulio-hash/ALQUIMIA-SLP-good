@@ -11,14 +11,40 @@ import {
 
 describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
   it('crea gaps documentales por tenant y conserva índice común', () => {
+    const demo = getTenantArchiveData('municipio-demo')
     const complete = getTenantArchiveData('complete-city')
     const partial = getTenantArchiveData('partial-city')
     const gap = getTenantArchiveData('gap-city')
+    const canonicalIndex = partial.document_index.map(item => ({
+      id: item.id,
+      title: item.title,
+      required: item.required,
+    }))
 
+    expect(demo.document_index).toHaveLength(partial.document_index.length)
     expect(complete.document_index).toHaveLength(partial.document_index.length)
     expect(gap.document_index).toHaveLength(partial.document_index.length)
+    for (const data of [demo, complete, partial, gap]) {
+      expect(data.document_index.map(item => ({
+        id: item.id,
+        title: item.title,
+        required: item.required,
+      }))).toEqual(canonicalIndex)
+    }
+    expect(demo.document_gaps.length).toBeGreaterThan(partial.document_gaps.length)
     expect(partial.document_gaps.some(item => item.status === 'pending')).toBe(true)
+    expect(demo.document_index.every(item => item.documentary_status === 'pending_document')).toBe(true)
     expect(gap.document_index.every(item => item.documentary_status === 'pending_document')).toBe(true)
+  })
+
+  it('mantiene Municipio Demo como sandbox vacio sin cifras', () => {
+    const demo = getTenantArchiveData('municipio-demo')
+
+    expect(demo.municipality).toBe('Municipio Demo')
+    expect(demo.state).toContain('INEGI DEMO-001')
+    expect(demo.metrics.every(metric => metric.value === null)).toBe(true)
+    expect(demo.metrics.every(metric => metric.status === 'brecha_critica')).toBe(true)
+    expect(demo.tenant_documents).toHaveLength(0)
   })
 
   it('clasifica filename sin usar nombres internos cliente-facing', () => {
@@ -30,8 +56,21 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
       document_type: 'presupuesto_egresos',
       module_id: 'M09',
     })
+    expect(classifyDocumentByFilename('catalogo-compradores-locales.xlsx')).toMatchObject({
+      document_type: 'catalogo_compradores',
+      module_id: 'M13',
+    })
+    expect(classifyDocumentByFilename('cotizacion-precios-materiales-mayo.pdf')).toMatchObject({
+      document_type: 'cotizacion_materiales',
+      module_id: 'M13',
+    })
+    expect(classifyDocumentByFilename('catalogo-documental-general.pdf')).toMatchObject({
+      document_type: 'documento_soporte',
+      module_id: 'M01',
+    })
     expect(moduleMatches('M03B', 'marco_legal')).toBe(true)
     expect(moduleMatches('M09', 'escenarios_financieros')).toBe(true)
+    expect(moduleMatches('M13', 'market_readiness')).toBe(true)
   })
 
   it('acepta PDF válido, registra documento y mantiene pendiente de validación', async () => {
@@ -42,6 +81,22 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     expect(result.document.upload_status).toBe('received')
     expect(data.tenant_documents.some(document => document.original_filename === 'reglamento_limpia.pdf')).toBe(true)
     expect(data.document_gaps.some(gap => gap.status === 'received' && gap.fulfilled_by_document_id)).toBe(true)
+  })
+
+  it('recibe documentos de mercado sin convertirlos automáticamente en insumo integrado', async () => {
+    const file = new File(['precio,material'], 'catalogo_compradores_2026.xlsx', {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    })
+    const result = await registerTenantDocument('market-upload-city', file, 'user-market')
+    const data = getTenantArchiveData('market-upload-city')
+
+    expect(result.document.document_type).toBe('catalogo_compradores')
+    expect(result.document.module_id).toBe('M13')
+    expect(result.suggested_label).toBe('Catálogo de compradores y centros de acopio')
+    expect(data.tenant_documents.some(document => (
+      document.document_type === 'catalogo_compradores'
+      && document.upload_status === 'received'
+    ))).toBe(true)
   })
 
   it('rechaza tipo no permitido y archivo demasiado grande', () => {

@@ -190,6 +190,8 @@ def build_reasoning_graph(request: ReasoningGraphRequest) -> ReasoningGraph:
         _attach_macros(request.macro_impact_summary, nodes, edges, warnings)
     if request.legal_summary:
         _attach_legal(request.legal_summary, nodes, edges, warnings)
+    if request.evidence_recommendations:
+        _attach_evidence_recommendations(request.evidence_recommendations, nodes, edges)
 
     for idx, warning in enumerate(warnings):
         warning_id = _node_id("warning", idx)
@@ -319,3 +321,51 @@ def _attach_documents(nodes: dict[str, CausalNode], edges: list[CausalEdge]) -> 
                 explanation="El KPI debe citarse con trazabilidad en el resumen ejecutivo.",
             ))
 
+
+def _attach_evidence_recommendations(
+    recommendations: list[Dict[str, Any]],
+    nodes: dict[str, CausalNode],
+    edges: list[CausalEdge],
+) -> None:
+    for index, item in enumerate(recommendations[:12]):
+        record = item.get("record") or {}
+        tag = item.get("tag") or "no_usable"
+        source_id = _node_id("source", record.get("id") or f"bibliografia_{index}")
+        claim_id = _node_id("kpi", record.get("claim_id") or f"claim_bibliografia_{index}")
+        _add_node(nodes, CausalNode(
+            node_id=source_id,
+            type=NodeType.source,
+            label=record.get("title") or "Fuente bibliografica compatible",
+            value=record.get("institution"),
+            source_id=record.get("id"),
+            source_type=f"bibliography_{tag}",
+            confidence=(item.get("score") or {}).get("total", 0) / 100,
+            status=tag,
+            metadata={
+                "territorial_scope": record.get("territorial_scope"),
+                "method": record.get("method"),
+                "unsupported_claim": item.get("unsupported_claim"),
+            },
+        ))
+        if claim_id not in nodes:
+            _add_node(nodes, CausalNode(
+                node_id=claim_id,
+                type=NodeType.kpi,
+                label=record.get("claim_label") or "Claim bibliografico",
+                source_id=source_id,
+                source_type="bibliography_claim",
+                confidence=(item.get("score") or {}).get("total", 0) / 100,
+                status="bibliography_context",
+            ))
+        if tag == "local":
+            relation = EdgeRelation.supports
+        elif tag in {"comparable", "benchmark", "solo_contexto"}:
+            relation = EdgeRelation.contextualizes
+        else:
+            relation = EdgeRelation.cannot_support
+        edges.append(CausalEdge(
+            from_node=source_id,
+            to_node=claim_id,
+            relation=relation,
+            explanation=item.get("explanation") or "La fuente se evalua por compatibilidad bibliografica deterministica.",
+        ))

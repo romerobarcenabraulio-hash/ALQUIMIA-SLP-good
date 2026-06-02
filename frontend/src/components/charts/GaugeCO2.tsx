@@ -6,9 +6,8 @@ export function GaugeCO2() {
   const { resultados } = useSimulatorStore()
   // Bug 1 fix: usar co2eEvitadasAnualTon (anual) como KPI principal del gauge
   const val    = resultados?.co2eEvitadasAnualTon ?? 0
-  const maxVal = 600000  // 600K t/año = techo para SLP/QRO (MTY puede superar)
+  const maxVal = 600000  // Techo visual conservador para ciudades medias y zonas metropolitanas.
   const pct   = Math.min(1, val / maxVal)
-  const angle = pct * 270 - 135
 
   // SVG semicircle 270° gauge
   const R = 80, cx = 100, cy = 100

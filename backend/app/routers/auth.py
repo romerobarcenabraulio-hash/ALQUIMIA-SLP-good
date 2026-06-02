@@ -20,7 +20,8 @@ from app.auth.onboarding_catalog import (
 )
 from app.auth.onboarding_trigger import schedule_kickoff
 from app.auth.phone_utils import mask_phone, normalize_phone_mx
-from app.auth.sms_service import generate_sms_code, send_sms_code
+# REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+# El servicio SMS queda fuera del flujo activo de login/registro.
 from app.auth.totp_service import (
     decrypt_totp_secret,
     encrypt_totp_secret,
@@ -32,14 +33,11 @@ from app.auth.user_service import (
     apply_onboarding_profile,
     clear_login_failures,
     consume_email_verification,
-    consume_sms_code,
-    count_recent_sms_sends,
     create_user,
     get_user_by_email,
     get_user_by_id,
     is_account_locked,
     issue_email_verification,
-    issue_sms_code,
     log_access,
     record_failed_login_db,
 )
@@ -186,6 +184,7 @@ class UserInfo(BaseModel):
     client_segment: str | None = None
     service_interest: str | None = None
     municipio_id: str | None = None
+    clave_inegi: str | None = None
     municipio_nombre: str | None = None
     estado_mx: str | None = None
     reglamento_uploaded: bool = False
@@ -225,6 +224,17 @@ def _issue_session_tokens(*, email: str, rol: str, client_segment: str | None = 
     )
 
 
+def _complete_setup_without_totp(db: Session, user) -> TokenResponse:
+    """Completa acceso temporal sin segundo factor para recuperación P0."""
+    user.totp_enabled = False
+    user.totp_secret_enc = None
+    user.onboarding_completed_at = datetime.utcnow()
+    user.last_login_at = datetime.utcnow()
+    clear_login_failures(db, user)
+    log_access(db, event="setup_completed_without_totp", user=user)
+    return _issue_session_tokens(email=user.email, rol=user.rol, client_segment=user.client_segment)
+
+
 def _user_display_name(user) -> str:
     parts = [user.nombre, user.apellido_paterno]
     if user.apellido_materno:
@@ -242,6 +252,7 @@ def _user_info_from_db(user) -> UserInfo:
         client_segment=user.client_segment,
         service_interest=user.service_interest,
         municipio_id=user.municipio_id,
+        clave_inegi=user.clave_inegi,
         municipio_nombre=user.municipio_nombre,
         estado_mx=user.estado_mx,
         reglamento_uploaded=user.reglamento_uploaded_at is not None,
@@ -282,16 +293,8 @@ def _user_phone_e164(user) -> str:
 
 
 async def _send_user_sms(db: Session, user, purpose: str) -> tuple[str, str | None]:
-    if count_recent_sms_sends(db, user.id) >= settings.SMS_MAX_SENDS_PER_HOUR:
-        raise HTTPException(status_code=429, detail="Demasiados SMS enviados. Espera una hora.")
-    raw, code_hash = generate_sms_code()
-    issue_sms_code(db, user.id, purpose, code_hash)
-    phone = _user_phone_e164(user)
-    await send_sms_code(to_e164=phone, code=raw, purpose=purpose)
-    log_access(db, event=f"sms_sent_{purpose}", user=user)
-    provider = (settings.SMS_PROVIDER or "console").lower()
-    dev_code = raw if provider == "console" or (provider == "twilio" and not settings.TWILIO_ACCOUNT_SID) else None
-    return mask_phone(phone), dev_code
+    # REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+    raise HTTPException(status_code=410, detail="SMS desactivado. Usa correo y contraseña.")
 
 
 async def get_current_user(token: str = Depends(oauth2_scheme)) -> UserInfo:
@@ -319,7 +322,7 @@ async def auth_status():
     return AuthStatusResponse(
         registration_enabled=settings.REGISTRATION_ENABLED,
         email_provider=settings.EMAIL_PROVIDER,
-        sms_provider=settings.SMS_PROVIDER,
+        sms_provider="disabled",
         email_ready=email_ready,
     )
 
@@ -363,7 +366,7 @@ async def register(req: RegisterRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     log_access(db, event="register", user=user)
     response = {
-        "message": "Revisa tu correo. Después elegirás tu perfil, verificarás SMS y configurarás TOTP.",
+        "message": "Revisa tu correo. Después elegirás tu perfil y activarás tu acceso.",
         "email": user.email,
     }
     if settings.EMAIL_PROVIDER == "console" or not settings.RESEND_API_KEY:
@@ -444,45 +447,33 @@ async def onboarding_profile(req: OnboardingProfileRequest, db: Session = Depend
     )
     log_access(db, event="onboarding_profile", user=user)
     needs_pdf = service_requires_reglamento(req.client_segment, req.service_interest)
+    tokens = None if needs_pdf else _complete_setup_without_totp(db, user)
     return {
-        "message": "Perfil guardado. Verifica tu teléfono por SMS.",
+        "message": "Perfil guardado. Acceso temporal listo." if tokens else "Perfil guardado. Sube el reglamento para activar tu acceso.",
         "client_segment": user.client_segment,
         "service_interest": user.service_interest,
         "requires_reglamento_pdf": needs_pdf,
         "municipio_id": user.municipio_id,
+        "clave_inegi": user.clave_inegi,
+        "zm": user.zm,
+        "next_path": "/onboarding/reglamento" if needs_pdf else "/v",
+        "access_token": tokens.access_token if tokens else None,
+        "refresh_token": tokens.refresh_token if tokens else None,
+        "token_type": tokens.token_type if tokens else None,
+        "expires_in": tokens.expires_in if tokens else None,
     }
 
 
 @router.post("/sms/send")
 async def sms_send(req: SmsSendRequest, db: Session = Depends(get_db)):
-    if db is None:
-        raise HTTPException(status_code=503, detail="SMS requiere PostgreSQL")
-    user = _resolve_setup_user(db, req.setup_token)
-    masked, dev_code = await _send_user_sms(db, user, "onboarding")
-    response = {"message": "Código SMS enviado", "phone_masked": masked}
-    if dev_code:
-        response["dev_sms_code"] = dev_code
-    return response
+    # REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+    raise HTTPException(status_code=410, detail="SMS desactivado. Continúa con activación por correo.")
 
 
 @router.post("/sms/verify")
 async def sms_verify(req: SmsVerifyRequest, db: Session = Depends(get_db)):
-    if db is None:
-        raise HTTPException(status_code=503, detail="SMS requiere PostgreSQL")
-    user = _resolve_setup_user(db, req.setup_token)
-    if not consume_sms_code(db, user.id, "onboarding", req.sms_code):
-        log_access(db, event="sms_verify_failed", user=user)
-        raise HTTPException(status_code=401, detail="Código SMS incorrecto o expirado")
-    user.phone_verified_at = datetime.utcnow()
-    user.sms_enabled = True
-    log_access(db, event="sms_verified", user=user)
-    needs_pdf = service_requires_reglamento(user.client_segment or "", user.service_interest or "")
-    return {
-        "message": "Teléfono verificado.",
-        "phone_masked": mask_phone(_user_phone_e164(user)),
-        "requires_reglamento_pdf": needs_pdf,
-        "next_path": "/onboarding/reglamento" if needs_pdf else "/setup-2fa",
-    }
+    # REMOVED_TWILIO_29MAY2026 - SMS fuera del flujo activo.
+    raise HTTPException(status_code=410, detail="SMS desactivado. Continúa con activación por correo.")
 
 
 @router.post("/onboarding/upload-reglamento")
@@ -524,55 +515,44 @@ async def onboarding_upload_reglamento(
     habilitado = bool(diag and pdf_ingested_for_analysis(manifest) and not diag.agora_bloqueado)
     user.reglamento_uploaded_at = datetime.utcnow()
     log_access(db, event="reglamento_uploaded", user=user)
+    tokens = _complete_setup_without_totp(db, user)
     return {
         "ok": True,
         "municipio_id": mid,
         "analysis_ready": habilitado,
         "message": (
-            "Reglamento registrado. La plataforma iniciará el análisis al activar TOTP."
+            "Reglamento registrado. Acceso temporal activado."
             if habilitado
-            else "PDF registrado; revisión jurídica pendiente."
+            else "PDF registrado; revisión jurídica pendiente. Acceso temporal activado."
         ),
+        "access_token": tokens.access_token,
+        "refresh_token": tokens.refresh_token,
+        "token_type": tokens.token_type,
+        "expires_in": tokens.expires_in,
     }
+
+
+@router.post("/setup/complete", response_model=TokenResponse)
+async def setup_complete(req: SetupTokenRequest, db: Session = Depends(get_db)):
+    if db is None:
+        raise HTTPException(status_code=503, detail="Activación requiere PostgreSQL")
+    user = _resolve_setup_user(db, req.setup_token)
+    if not user.client_segment or not user.service_interest:
+        raise HTTPException(status_code=400, detail="Completa tu perfil de cliente primero")
+    if service_requires_reglamento(user.client_segment or "", user.service_interest or "") and not user.reglamento_uploaded_at:
+        raise HTTPException(status_code=400, detail="Sube el PDF del reglamento municipal primero")
+    return _complete_setup_without_totp(db, user)
 
 
 @router.post("/totp/setup")
 async def totp_setup(req: SetupTokenRequest, db: Session = Depends(get_db)):
-    if db is None:
-        raise HTTPException(status_code=503, detail="TOTP requiere PostgreSQL")
-    user = _resolve_setup_user(db, req.setup_token)
-    if not user.client_segment or not user.service_interest:
-        raise HTTPException(status_code=400, detail="Completa tu perfil de cliente primero")
-    if not user.phone_verified_at:
-        raise HTTPException(status_code=400, detail="Verifica tu teléfono por SMS primero")
-    if service_requires_reglamento(user.client_segment or "", user.service_interest or ""):
-        if not user.reglamento_uploaded_at:
-            raise HTTPException(status_code=400, detail="Sube el PDF del reglamento municipal primero")
-    secret = generate_totp_secret()
-    user.totp_secret_enc = encrypt_totp_secret(settings.SECRET_KEY, secret)
-    db.flush()
-    uri = totp_provisioning_uri(secret, user.email)
-    return {"otpauth_uri": uri, "secret_preview": f"{secret[:4]}…{secret[-4:]}"}
+    # EMERGENCY_AUTH_RECOVERY - segundo factor desactivado temporalmente; usar /setup/complete.
+    raise HTTPException(status_code=410, detail="Verificación adicional desactivada temporalmente. Usa activación por correo.")
 
 
 @router.post("/totp/activate", response_model=TokenResponse)
 async def totp_activate(req: TotpActivateRequest, db: Session = Depends(get_db)):
-    if db is None:
-        raise HTTPException(status_code=503, detail="TOTP requiere PostgreSQL")
-    user = _resolve_setup_user(db, req.setup_token)
-    if not user.totp_secret_enc:
-        raise HTTPException(status_code=400, detail="Configura TOTP primero")
-    secret = decrypt_totp_secret(settings.SECRET_KEY, user.totp_secret_enc)
-    if not verify_totp_code(secret, req.totp_code):
-        raise HTTPException(status_code=401, detail="Código TOTP incorrecto")
-    user.totp_enabled = True
-    user.onboarding_completed_at = datetime.utcnow()
-    user.last_login_at = datetime.utcnow()
-    clear_login_failures(db, user)
-    log_access(db, event="totp_activated", user=user)
-    if user.reglamento_uploaded_at and user.municipio_id:
-        schedule_kickoff(user)
-    return _issue_session_tokens(email=user.email, rol=user.rol, client_segment=user.client_segment)
+    raise HTTPException(status_code=410, detail="Segundo factor desactivado temporalmente. Usa activación por correo.")
 
 
 @router.post("/login")
@@ -594,21 +574,17 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
                 if not user.email_verified_at:
                     raise HTTPException(status_code=403, detail="Confirma tu correo antes de ingresar")
                 if not user.onboarding_completed_at:
-                    raise HTTPException(status_code=403, detail="Completa el registro (perfil, SMS y TOTP)")
+                    raise HTTPException(status_code=403, detail="Completa el registro y activa tu acceso")
 
                 login_attempts[request.email] = []
                 clear_login_failures(db, user)
 
-                if user.totp_enabled and user.totp_secret_enc:
-                    pending = create_token(
-                        {"sub": user.id, "type": "pending_login", "email": user.email},
-                        timedelta(minutes=5),
-                    )
-                    log_access(db, event="login_pending_totp", user=user)
-                    return LoginPendingTotp(
-                        pending_token=pending,
-                        message="Ingresa el código de tu autenticador.",
-                    )
+                # EMERGENCY_AUTH_RECOVERY - segundo factor desactivado temporalmente.
+                # Si una cuenta antigua tiene segundo factor habilitado, se permite acceso con
+                # correo y contraseña mientras se integra Clerk sin costo adicional.
+                if user.totp_enabled or user.totp_secret_enc:
+                    user.totp_enabled = False
+                    user.totp_secret_enc = None
 
                 user.last_login_at = datetime.utcnow()
                 log_access(db, event="login", user=user)
@@ -623,23 +599,7 @@ async def login(request: LoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/login/totp", response_model=TokenResponse)
 async def login_totp(req: LoginTotpRequest, db: Session = Depends(get_db)):
-    if db is None:
-        raise HTTPException(status_code=503, detail="TOTP requiere PostgreSQL")
-    payload = verify_token(req.pending_token)
-    if payload.get("type") != "pending_login":
-        raise HTTPException(status_code=400, detail="Sesión TOTP inválida")
-    user = get_user_by_id(db, payload.get("sub", ""))
-    if not user or not user.totp_enabled or not user.totp_secret_enc:
-        raise HTTPException(status_code=400, detail="Cuenta sin TOTP activo")
-    secret = decrypt_totp_secret(settings.SECRET_KEY, user.totp_secret_enc)
-    if not verify_totp_code(secret, req.totp_code):
-        record_failed_login_db(db, user)
-        log_access(db, event="login_totp_failed", user=user)
-        raise HTTPException(status_code=401, detail="Código TOTP incorrecto")
-    user.last_login_at = datetime.utcnow()
-    clear_login_failures(db, user)
-    log_access(db, event="login_totp", user=user)
-    return _issue_session_tokens(email=user.email, rol=user.rol, client_segment=user.client_segment)
+    raise HTTPException(status_code=410, detail="Segundo factor desactivado temporalmente. Usa correo y contraseña.")
 
 
 @router.get("/me", response_model=UserInfo)

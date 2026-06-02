@@ -16,15 +16,20 @@ import {
   processInboundEmailForTenant,
   validateLlmExtraction,
   validateLiteralCitation,
+  buildConsultingExportManifest,
 } from './archivoFull'
 import { getTenantArchiveData } from './documentArchiveStore'
 
 describe('archivoFull deterministic components', () => {
   it('detects document mentions with deterministic patterns', () => {
-    const hits = detectDocumentMentions('No se localizó el Reglamento de limpia ni el Plan Municipal de Desarrollo.')
+    const hits = detectDocumentMentions(
+      'No se localizó el Reglamento de limpia ni el Plan Municipal de Desarrollo. Falta catálogo de compradores y cotización de materiales.',
+    )
 
     expect(hits.map(hit => hit.document_type)).toContain('reglamento_limpia')
     expect(hits.map(hit => hit.document_type)).toContain('plan_desarrollo')
+    expect(hits.map(hit => hit.document_type)).toContain('catalogo_compradores')
+    expect(hits.map(hit => hit.document_type)).toContain('cotizacion_materiales')
   })
 
   it('checks citation URLs without accepting invalid URLs', async () => {
@@ -103,5 +108,29 @@ describe('archivoFull deterministic components', () => {
 
     expect(entry.sending_status).toBe('preview_only')
     expect(getDigestOutbox('partial-city')).toHaveLength(before + 1)
+  })
+
+  it('builds consulting export manifest without turning gaps into claims', () => {
+    const manifest = buildConsultingExportManifest(getTenantArchiveData('municipio-demo'))
+
+    expect(manifest.package_type).toBe('consulting_package_rsu_gobierno')
+    expect(manifest.human_review_required).toBe(true)
+    expect(manifest.client_controls_enabled).toBe(false)
+    expect(manifest.claim_ledger.affirmable_count).toBe(0)
+    expect(manifest.claim_ledger.blocked_count).toBeGreaterThan(0)
+    expect(manifest.scenarios.every(scenario => scenario.capture_ton_day === null)).toBe(true)
+    expect(manifest.input_registry.buyers_available).toBe(false)
+    expect(manifest.api_layer_contracts.map(contract => contract.layer).sort()).toEqual([
+      'centros_acopio',
+      'data',
+      'documents',
+      'legal',
+      'macros',
+      'market',
+      'national',
+      'operations',
+      'standards',
+    ])
+    expect(manifest.readiness_gates.some(gate => gate.id === 'critical_gaps' && !gate.passed)).toBe(true)
   })
 })

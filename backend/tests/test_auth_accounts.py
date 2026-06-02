@@ -64,3 +64,48 @@ def test_phone_normalize_mx():
 
     assert normalize_phone_mx("4441234567") == "+524441234567"
     assert mask_phone("+524441234567").endswith("67")
+
+
+def test_temporary_admin_email_keeps_admin_role_through_onboarding():
+    from app.auth.user_service import apply_onboarding_profile, create_user, is_temporary_admin_email
+
+    class DummyDb:
+        def __init__(self):
+            self.user = None
+
+        def add(self, user):
+            self.user = user
+
+        def flush(self):
+            return None
+
+    db = DummyDb()
+    assert is_temporary_admin_email(" Romero.Barcena.Braulio@Gmail.com ")
+
+    user = create_user(
+        db,
+        email="romero.barcena.braulio@gmail.com",
+        password="MiClaveSegura2025!",
+        nombre="Braulio",
+        apellido_paterno="Romero",
+        apellido_materno=None,
+        telefono="4441234567",
+        zm="SLP",
+    )
+    assert user.rol == "admin"
+
+    apply_onboarding_profile(
+        db,
+        user,
+        client_segment="politica_publica",
+        service_interest="reforma_rsu",
+        cargo="",
+        dependencia="",
+        organizacion=None,
+        municipio_nombre="San Luis Potosi",
+        estado_mx="San Luis Potosi",
+        municipio_id="slp",
+        clave_inegi="24028",
+        zm="SLP",
+    )
+    assert user.rol == "admin"

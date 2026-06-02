@@ -44,7 +44,7 @@ function RegisterForm() {
           <h1 className="font-serif text-[24px] text-[#3B6D11] mb-3">Revisa tu correo</h1>
           <p className="text-[13px] text-[#4A4740] leading-relaxed mb-6">
             Enviamos un enlace a <strong>{emailSent}</strong>.
-            Después elegirás tu perfil (público o empresarial), verificarás SMS y configurarás TOTP.
+            Después elegirás tu perfil (público o empresarial) y activarás tu acceso.
             El alta de municipio oficial queda sujeta a revisión founder/admin.
           </p>
           {verificationUrl && (
@@ -66,7 +66,7 @@ function RegisterForm() {
       <div className="bg-[#FDFCFA] border border-[#E8E4DC] rounded-[20px] p-8 w-full max-w-lg shadow-md">
         <div className="text-center mb-6">
           <h1 className="font-serif text-[28px] text-[#3B6D11]">Crear cuenta</h1>
-          <p className="text-[13px] text-[#6B6760] mt-1">Paso 1 · identidad · correo + teléfono + contraseña segura</p>
+          <p className="text-[13px] text-[#6B6760] mt-1">Paso 1 · identidad · correo + contraseña segura</p>
         </div>
 
         <form onSubmit={handleSubmit} className="grid grid-cols-1 sm:grid-cols-2 gap-3">

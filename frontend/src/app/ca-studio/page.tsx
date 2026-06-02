@@ -21,7 +21,7 @@ export default function CAStudioPage() {
     <AppShell>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
         <div className="mb-6">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">CA-Studio — Módulo SimCity</p>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">CA-Studio — Laboratorio técnico interno</p>
           <h1 className="font-serif text-[32px] text-[#1C1B18]">Diseña tu Centro de Acopio</h1>
           <SimulatorGatewayHint variant="compact" className="mt-3 max-w-2xl" />
         </div>
@@ -29,7 +29,7 @@ export default function CAStudioPage() {
         {/* Pestañas */}
         <div className="flex gap-1 mb-6 bg-[#FDFCFA] border border-[#E8E4DC] rounded-[10px] p-1 w-fit">
           {[
-            { id: 'studio',   label: 'Simulador 3D' },
+            { id: 'studio',   label: 'Modelo 3D' },
             { id: 'guia',     label: 'Guía operativa' },
             { id: 'idoneidad', label: 'Estudios de idoneidad' },
           ].map(t => (

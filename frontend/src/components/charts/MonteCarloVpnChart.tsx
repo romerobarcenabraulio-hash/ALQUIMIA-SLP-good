@@ -41,7 +41,7 @@ export function MonteCarloVpnChart() {
   if (!state.resultados) {
     return (
       <p className="text-[11px] text-[#A8A49C] p-4">
-        Configura el simulador para ver la distribución Monte Carlo del VPN.
+        Completa la evidencia mínima para ver la distribución Monte Carlo del VPN.
       </p>
     )
   }

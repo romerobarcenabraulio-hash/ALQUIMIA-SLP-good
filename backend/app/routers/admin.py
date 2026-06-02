@@ -58,6 +58,13 @@ from app.automation.nous_observational import (
     record_projection_delta,
     review_internal_pattern,
 )
+from app.automation.bibliography_intelligence import (
+    Stage,
+    STAGE_MODULES,
+    build_bibliography_records,
+    build_evidence_recommendations,
+    build_stage_evidence_map,
+)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -2725,6 +2732,111 @@ async def list_cross_tenant_analytics_audit(_: UserInfo = Depends(require_admin)
     return {"audit_log": _analytics_audit_mem, "minimum_n": MIN_ANALYTICS_N}
 
 
+def _all_tenant_dicts(db) -> list[dict[str, Any]]:
+    if db is None:
+        return [_serialize_mem(tenant) for tenant in _tenants_mem.values()]
+    from sqlalchemy.orm import selectinload
+    from app.models.admin_tenant import AdminTenant
+    tenants = (
+        db.query(AdminTenant)
+        .options(selectinload(AdminTenant.state), selectinload(AdminTenant.municipal_profile))
+        .order_by(AdminTenant.created_at.desc())
+        .all()
+    )
+    return [_tenant_to_dict(tenant) for tenant in tenants]
+
+
+@router.get("/bibliography")
+async def list_bibliography(
+    stage: Stage | None = None,
+    module_id: str | None = None,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    tenants = _all_tenant_dicts(db)
+    records = build_bibliography_records(tenants)
+    if stage:
+        records = [record for record in records if record.module_id in STAGE_MODULES[stage]]
+    if module_id:
+        records = [record for record in records if record.module_id == module_id]
+    return {
+        "records": [record.model_dump(mode="json") for record in records],
+        "record_count": len(records),
+        "deterministic": True,
+        "llm_used": False,
+    }
+
+
+@router.get("/bibliography/recommendations")
+async def list_bibliography_recommendations(
+    tenant_id: str,
+    stage: Stage | None = None,
+    module_id: str | None = None,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    tenants = _all_tenant_dicts(db)
+    target = next((tenant for tenant in tenants if tenant["id"] == tenant_id), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado")
+    recommendations = build_evidence_recommendations(target, tenants, stage=stage, module_id=module_id)
+    return {
+        "tenant_id": tenant_id,
+        "recommendations": [item.model_dump(mode="json") for item in recommendations],
+        "automatic_recalibration": False,
+        "llm_used": False,
+    }
+
+
+@router.get("/bibliography/coverage")
+async def get_bibliography_coverage(
+    tenant_id: str | None = None,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    tenants = _all_tenant_dicts(db)
+    target = next((tenant for tenant in tenants if tenant["id"] == tenant_id), tenants[0] if tenants else None)
+    if target is None:
+        return {"stage_evidence_map": [], "tenant_count": 0, "llm_used": False}
+    stage_map = build_stage_evidence_map(target, tenants)
+    return {
+        "tenant_id": target["id"],
+        "tenant_count": len(tenants),
+        "stage_evidence_map": [item.model_dump(mode="json") for item in stage_map],
+        "llm_used": False,
+    }
+
+
+@router.get("/tenants/{tenant_id}/evidence-recommendations")
+async def list_tenant_evidence_recommendations(
+    tenant_id: str,
+    stage: Stage | None = None,
+    module_id: str | None = None,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    tenants = _all_tenant_dicts(db)
+    target = next((tenant for tenant in tenants if tenant["id"] == tenant_id), None)
+    if target is None:
+        raise HTTPException(status_code=404, detail="Tenant no encontrado")
+    recommendations = build_evidence_recommendations(target, tenants, stage=stage, module_id=module_id)
+    safe = []
+    for item in recommendations:
+        dumped = item.model_dump(mode="json")
+        if dumped["tag"] != "local":
+            dumped["record"].pop("tenant_id", None)
+            dumped["record"].pop("inegi_clave", None)
+            dumped["record"]["municipality"] = "Municipio comparable anonimizado"
+        safe.append(dumped)
+    return {
+        "tenant_id": tenant_id,
+        "recommendations": safe,
+        "cross_tenant_private_data_exposed": False,
+        "automatic_recalibration": False,
+        "llm_used": False,
+    }
+
+
 @router.patch("/tenants/{tenant_id}/analytics-consent")
 async def update_tenant_analytics_consent(
     tenant_id: str,
@@ -3042,8 +3154,19 @@ async def update_tenant(
 @router.get("/tenants/{tenant_id}/state")
 async def get_tenant_state(tenant_id: str, _: UserInfo = Depends(require_admin), db=Depends(get_db)):
     tenant = _serialize_mem(_mem_get_tenant(tenant_id)) if db is None else _tenant_to_dict(_db_get_tenant(db, tenant_id))
+    from app.city.inegi_catalog import zm_for_estado
+
+    clave_inegi = tenant.get("inegi_clave")
+    zm = zm_for_estado(clave_inegi[:2]) if isinstance(clave_inegi, str) and len(clave_inegi) >= 2 else None
     return {
         "tenant_id": tenant["id"],
+        "municipal_context": {
+            "municipio_id": tenant.get("municipio_id"),
+            "clave_inegi": clave_inegi,
+            "zm": zm,
+            "municipality": tenant.get("nombre"),
+            "state": tenant.get("estado_mx"),
+        },
         "state": tenant["state"],
         "gates": tenant["gates"],
         "capabilities": tenant["capabilities"],
@@ -3278,6 +3401,51 @@ async def check_tenant_document_export(
     else:
         document = _document_model_to_dict(_db_get_document(db, tenant_id, document_id))
     return export_gate(document)
+
+
+@router.get("/legacy/manifest")
+async def get_legacy_quarantine_manifest(_: UserInfo = Depends(require_admin)):
+    return {
+        "generated_at": _now_iso(),
+        "policy": (
+            "No borrar legacy mientras exista import activo desde /v, /p, /e, /admin o export. "
+            "Primero cortar dependencias cliente-facing, luego eliminar por grafo de imports y pruebas."
+        ),
+        "items": [
+            {
+                "file": "frontend/src/store/simulatorStore.ts",
+                "usage": "Store historico del simulador; contiene defaults SLP, sliders y estado de laboratorio.",
+                "client_facing": False,
+                "replacement": "CityConsultingContext + StageWorkspace + motores deterministicos de consultoria.",
+                "deletion_risk": "high",
+                "deletion_criteria": "rg confirma cero imports fuera de /simulator y pruebas legacy explicitas.",
+            },
+            {
+                "file": "frontend/src/components/simulator/**",
+                "usage": "Componentes antiguos de simulacion y modulos visuales heredados.",
+                "client_facing": False,
+                "replacement": "Componentes platform/* conectados a Evidence Kernel y StageWorkspace.",
+                "deletion_risk": "high",
+                "deletion_criteria": "Ningun componente cliente importa /components/simulator; piezas utiles extraidas a lib pura.",
+            },
+            {
+                "file": "frontend/src/app/simulator/**",
+                "usage": "Ruta de laboratorio interno/founder para pruebas de motores y visualizaciones.",
+                "client_facing": False,
+                "replacement": "Laboratorio founder aislado o motores puros sin UI cliente.",
+                "deletion_risk": "medium",
+                "deletion_criteria": "Existe reemplazo admin/founder y no hay journeys comerciales activos que dependan de la ruta.",
+            },
+            {
+                "file": "backend/app/routers/simulate.py",
+                "usage": "Endpoint historico de simulacion.",
+                "client_facing": False,
+                "replacement": "Pipeline de consulting package, escenarios cerrados y registros de evidencia.",
+                "deletion_risk": "medium",
+                "deletion_criteria": "No hay consumidores frontend ni tests de MVP que lo requieran.",
+            },
+        ],
+    }
 
 
 @router.get("/logs")

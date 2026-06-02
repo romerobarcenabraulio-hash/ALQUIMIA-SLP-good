@@ -181,7 +181,7 @@ export default function AprendePage() {
         </section>
 
         <section className="mb-16">
-          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Desde la guía al simulador</p>
+          <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-3">Desde la guía al paquete consultivo</p>
           <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
             <SimulatorGatewayHint />
           </div>

@@ -18,7 +18,7 @@ async def send_verification_email(*, to_email: str, verify_url: str, nombre: str
       <h1 style="font-size: 22px;">Hola, {nombre}</h1>
       <p style="font-size: 14px; line-height: 1.7; color: #4A4740;">
         Recibimos tu solicitud de acceso a la plataforma de consultoría municipal.
-        Confirma tu correo para continuar con la configuración de seguridad (código TOTP).
+        Confirma tu correo para continuar con la activación de tu acceso.
       </p>
       <p style="margin: 28px 0;">
         <a href="{verify_url}" style="background:#3B6D11;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-size:14px;">
