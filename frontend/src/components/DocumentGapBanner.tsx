@@ -50,7 +50,7 @@ export function DocumentGapBanner({ tenantId, moduleId, gaps, documents, onChang
       setError(body.detail ?? 'No se pudo recibir el documento')
       return
     }
-    setMessage('Documento recibido · pendiente de validación humana')
+    setMessage('Documento integrado automáticamente · se usará con fuente, alcance y límites visibles')
     setFile(null)
     setSelectedGap(null)
     onChanged()
@@ -107,10 +107,10 @@ export function DocumentGapBanner({ tenantId, moduleId, gaps, documents, onChang
       ))}
       {moduleDocuments.length > 0 && (
         <div className="mt-3 rounded-[8px] border border-[#D8D2C5] bg-white p-3">
-          <p className="text-[12px] font-semibold text-[#1C1B18]">Documento recibido · pendiente de validación</p>
+            <p className="text-[12px] font-semibold text-[#1C1B18]">Documento integrado automáticamente</p>
           {moduleDocuments.map(document => (
             <p key={document.id} className="mt-1 text-[11px] text-[#6B6760]">
-              {document.original_filename} · {document.uploaded_at} · fuente/documento disponible para revisión humana
+              {document.original_filename} · {document.uploaded_at} · fuente disponible para cálculos y claims con límites de uso
             </p>
           ))}
         </div>
@@ -140,7 +140,7 @@ export function DocumentGapBanner({ tenantId, moduleId, gaps, documents, onChang
                 className="w-full rounded-[8px] border border-[#D8D2C5] px-3 py-2"
               />
               <p className="rounded-[8px] bg-[#F7F3EA] p-3 text-[12px] leading-5">
-                Subir un documento no lo convierte automáticamente en dato validado. La información extraída requiere revisión humana.
+                La plataforma integrará el documento como fuente del módulo y usará lo extraíble según jerarquía de evidencia, citas y límites de uso.
               </p>
             </div>
             <div className="mt-5 flex justify-end gap-2">
