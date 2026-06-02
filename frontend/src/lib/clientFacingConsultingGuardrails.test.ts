@@ -83,10 +83,25 @@ describe('client-facing consulting guardrails', () => {
     expect(gobierno).not.toContain('Agenda una demo')
     expect(faq).toContain('se muestra una brecha crítica')
     expect(faq).not.toContain('TIRs de 109%')
-    expect(walkthrough).toContain('fuente, fecha, método, alcance territorial, confianza y estado humano')
+    expect(walkthrough).toContain('fuente, fecha, metodo, alcance y confianza')
+    expect(walkthrough).toContain('De evidencia municipal a paquete consultivo defendible')
+    expect(walkthrough).not.toContain('CIUDADES')
+    expect(walkthrough).not.toContain('CiudadSelector')
+    expect(walkthrough).not.toContain('San Luis Potos')
     expect(walkthrough).not.toContain('medición directa en SLP')
+    expect(walkthrough).not.toContain('PRECIO')
     expect(catalog).toContain('Escenarios financieros')
     expect(catalog).not.toContain('Simulador económico')
+  })
+
+  it('does not show another municipality template as a usable regulation draft', () => {
+    const modal = readFrontend('src/components/reglamento/ReglamentoModal.tsx')
+
+    expect(modal).toContain('Adendo local pendiente')
+    expect(modal).toContain('La plataforma conserva la brecha')
+    expect(modal).not.toContain('Borrador redactado para San Luis Potos')
+    expect(modal).not.toContain('base SLP')
+    expect(modal).not.toContain('adendo?.adendoPropuesto')
   })
 
   it('keeps the legacy simulator quarantined away from client users', () => {
