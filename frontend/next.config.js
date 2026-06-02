@@ -1,3 +1,10 @@
+const isVercelProduction = process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'production'
+const publicApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim()
+
+if (isVercelProduction && !publicApiUrl) {
+  throw new Error('NEXT_PUBLIC_API_URL is required for Vercel production builds. Refusing to deploy with localhost API fallback.')
+}
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
@@ -28,7 +35,7 @@ const nextConfig = {
   },
   env: {
     NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY,
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000',
+    NEXT_PUBLIC_API_URL: publicApiUrl || 'http://localhost:8000',
   },
 }
 
