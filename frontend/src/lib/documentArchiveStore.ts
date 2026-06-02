@@ -96,7 +96,7 @@ export function getTenantArchiveData(tenantId: string): TenantDiagnosticData {
     const hasReceived = documents.length > 0
     return {
       ...slot,
-      documentary_status: hasReceived ? 'received_pending_validation' : hasPendingGap ? 'pending_document' : 'complete',
+      documentary_status: hasReceived ? 'complete' : hasPendingGap ? 'pending_document' : 'complete',
     } satisfies typeof slot
   })
   return { ...base, document_index, document_gaps, tenant_documents: documents }
@@ -127,10 +127,10 @@ export async function registerTenantDocument(
     mime_type: file.type,
     file_size_bytes: file.size,
     storage_path_or_url: `mvp-memory://${tenantId}/${encodeURIComponent(file.name)}`,
-    upload_status: 'received',
+    upload_status: 'integrated',
     classification_confidence: classification.confidence,
     uploaded_at: now,
-    processed_at: null,
+    processed_at: now,
   }
   state().documentsByTenant[tenantId] = [...(state().documentsByTenant[tenantId] ?? []), document]
 
@@ -139,7 +139,7 @@ export async function registerTenantDocument(
   if (matchingGap) {
     state().gapOverridesByTenant[tenantId] ??= {}
     state().gapOverridesByTenant[tenantId][matchingGap.id] = {
-      status: 'received',
+      status: 'integrated',
       fulfilled_by_document_id: document.id,
       updated_at: now,
     }
