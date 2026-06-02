@@ -1,4 +1,5 @@
 import { buildConsultingExportManifest } from '@/lib/archivoFull'
+import { buildChicagoBibliography, formatChicagoCitationSource } from '@/lib/citations'
 import { CONSULTING_API_LAYER_CONTRACTS } from '@/lib/consultingApiLayerContracts'
 import {
   buildConsultingPackage,
@@ -25,6 +26,14 @@ export function buildTenantConsultingPackageResponse(
   const consultingPackage = buildConsultingPackage({ tenantData, bibliographyTenants })
   const exportManifest = buildConsultingExportManifest(tenantData)
   const apiContextStatus = buildTenantConsultingApiContext(tenantData)
+  const compatibleBibliographyChicago = consultingPackage.evidence_recommendations.map(recommendation => ({
+    id: recommendation.id,
+    tag: recommendation.tag,
+    score: recommendation.score.total,
+    supported_claim: recommendation.supported_claim,
+    unsupported_claim: recommendation.unsupported_claim,
+    citation: formatChicagoCitationSource(recommendation.record),
+  }))
 
   return {
     tenant_id: tenantData.tenant_id,
@@ -37,6 +46,8 @@ export function buildTenantConsultingPackageResponse(
     human_review_required: true,
     officiality: tenantData.status === 'official' ? 'official_source_package' : 'preliminary_not_official',
     api_layer_contracts: CONSULTING_API_LAYER_CONTRACTS,
+    bibliography_chicago: buildChicagoBibliography(tenantData.metrics),
+    compatible_bibliography_chicago: compatibleBibliographyChicago,
     api_request_context_status: apiContextStatus.ready
       ? { ready: true, missing: [], context: apiContextStatus.context }
       : { ready: false, missing: apiContextStatus.missing, context: null },
@@ -103,10 +114,19 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
     evidenceRegistryRecommendations,
     bibliographyTenants: Object.values(TENANT_DIAGNOSTIC_FIXTURES),
   })
+  const compatibleBibliographyChicago = consultingPackage.evidence_recommendations.map(recommendation => ({
+    id: recommendation.id,
+    tag: recommendation.tag,
+    score: recommendation.score.total,
+    supported_claim: recommendation.supported_claim,
+    unsupported_claim: recommendation.unsupported_claim,
+    citation: formatChicagoCitationSource(recommendation.record),
+  }))
 
   return {
     ...buildTenantConsultingPackageResponse(tenantId, context),
     consulting_package: consultingPackage,
+    compatible_bibliography_chicago: compatibleBibliographyChicago,
     api_layer_fetch_status: {
       enabled: true,
       reason: 'founder_admin_gate',
