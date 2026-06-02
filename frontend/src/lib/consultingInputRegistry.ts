@@ -127,15 +127,12 @@ export function buildConsultingInputRegistry(tenantData: TenantDiagnosticData): 
   const documentSources: ConsultingInputSource[] = DOCUMENT_TO_LAYER.map(contract => {
     const document = documentByType.get(contract.documentType)
     const isGap = pendingGapTypes.has(contract.documentType)
-    const isIntegrated = document?.upload_status === 'integrated'
-    const isReceived = document?.upload_status === 'received' || document?.upload_status === 'processing'
+    const isIntegrated = Boolean(document && document.upload_status !== 'rejected')
     const isEmissionBlocker = contract.documentType === 'reglamento_limpia'
     const hasMinimumLegalReadiness = isEmissionBlocker && !isGap
     const status: ConsultingInputStatus = isIntegrated || hasMinimumLegalReadiness
       ? 'available'
-      : isReceived
-        ? 'gap'
-        : isGap && isEmissionBlocker
+      : isGap && isEmissionBlocker
           ? 'blocked'
           : 'gap'
     return {
@@ -145,16 +142,14 @@ export function buildConsultingInputRegistry(tenantData: TenantDiagnosticData): 
       source: document?.original_filename ?? (hasMinimumLegalReadiness ? 'Reglamento vigente registrado en expediente base' : isGap ? 'Documento pendiente no cargado' : 'Fuente no integrada'),
       source_date: document?.processed_at ?? document?.uploaded_at ?? tenantData.generated_at,
       method: isIntegrated
-        ? 'Documento integrado al tenant; requiere revisión humana si alimenta decisión institucional.'
+        ? 'Documento integrado automaticamente al tenant; alimenta calculos y claims segun fuente, alcance, metodo, confianza y limite de uso.'
         : hasMinimumLegalReadiness
-          ? 'Sin brecha abierta de reglamento; habilita emisión condicionada del plan con revisión humana y límites explícitos.'
-        : isReceived
-          ? 'Documento recibido o en proceso; no habilita afirmaciones hasta integración.'
+          ? 'Sin brecha abierta de reglamento; habilita emisión condicionada del plan con límites explícitos.'
           : isEmissionBlocker
             ? 'Brecha documental obligatoria; sin reglamento no se emite plan ni declaratoria.'
             : 'Brecha documental; no bloquea plan si existe reglamento, pero condiciona alcance, confianza o claims específicos.',
       territorial_scope: 'municipio',
-      confidence: isIntegrated ? 'high' : hasMinimumLegalReadiness ? 'medium' : isReceived ? 'low' : isEmissionBlocker && isGap ? 'blocked' : 'low',
+      confidence: isIntegrated ? 'high' : hasMinimumLegalReadiness ? 'medium' : isEmissionBlocker && isGap ? 'blocked' : 'low',
       blocks: isIntegrated || hasMinimumLegalReadiness ? [] : contract.blocks,
     }
   })
@@ -163,7 +158,7 @@ export function buildConsultingInputRegistry(tenantData: TenantDiagnosticData): 
   const layerIsReady = (layer: ConsultingInputLayer) =>
     sources.some(source => source.layer === layer && source.status === 'available')
   const hasAvailableDocument = (documentType: string) =>
-    documentByType.get(documentType)?.upload_status === 'integrated'
+    Boolean(documentByType.get(documentType) && documentByType.get(documentType)?.upload_status !== 'rejected')
 
   return {
     sources,
