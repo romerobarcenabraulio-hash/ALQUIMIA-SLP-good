@@ -42,8 +42,9 @@ describe('client-facing consulting guardrails', () => {
     const aprende = readFrontend('src/app/aprende/page.tsx')
     const caStudio = readFrontend('src/app/ca-studio/page.tsx')
     const informe = readFrontend('src/app/informe/[municipio_id]/page.tsx')
+    const proyecto = readFrontend('src/app/proyecto/[municipio_id]/page.tsx')
 
-    expect(gobiernoRsu).toContain("const target = tenantId ? `/v?tenant_id=${encodeURIComponent(tenantId)}` : '/v'")
+    expect(gobiernoRsu).toContain('/v?tenant_id=')
     expect(gobiernoRsu).not.toContain("router.replace('/simulator')")
     expect(acceso).toContain("searchParams.get('next') ?? '/v'")
     expect(onboarding).toContain('Continuar al paquete consultivo')
@@ -51,8 +52,15 @@ describe('client-facing consulting guardrails', () => {
     expect(gatewayHint).toContain('href="/v"')
     expect(aprende).toContain('Desde la guía al paquete consultivo')
     expect(caStudio).toContain('Laboratorio técnico interno')
-    expect(informe).toContain("router.push('/v')")
-    expect(informe).toContain('laboratorio interno')
+    expect(informe).toContain('router.replace(target)')
+    expect(informe).toContain('/v?tenant_id=')
+    expect(informe).not.toContain('@/store/simulatorStore')
+    expect(informe).not.toContain('@/components/simulator')
+    expect(proyecto).toContain('/e?tenant_id=')
+    expect(proyecto).toContain('redirect(target)')
+    expect(proyecto).not.toContain('@/store/simulatorStore')
+    expect(proyecto).not.toContain('@/components/simulator')
+    expect(proyecto).not.toContain('ProyectoVivoPortal')
   })
 
   it('keeps login and account creation redirects on the consulting package path', () => {
@@ -116,7 +124,7 @@ describe('client-facing consulting guardrails', () => {
   it('keeps the legacy simulator quarantined away from client users', () => {
     const source = readFrontend('src/app/simulator/page.tsx')
 
-    expect(source).toContain("router.replace(`/v?tenant_id=${encodeURIComponent(tenantId)}`)")
+    expect(source).toContain('router.replace(`/v?tenant_id=${encodeURIComponent(tenantId)}`)')
     expect(source).toContain('Redirigiendo al paquete consultivo.')
     expect(source).toContain('isPlatformDeveloper()')
   })
