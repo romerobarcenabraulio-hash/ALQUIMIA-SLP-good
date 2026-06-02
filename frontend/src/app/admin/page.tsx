@@ -96,6 +96,36 @@ interface NousA11Panel {
   }>
 }
 
+interface EvidenceRecommendation {
+  id: string
+  tag: 'local' | 'comparable' | 'benchmark' | 'solo_contexto' | 'no_usable'
+  confidence: 'high' | 'medium' | 'low' | 'blocked'
+  supported_claim: string
+  unsupported_claim: string
+  explanation: string
+  stage: TenantStage
+  module_id: string
+  score: { total: number }
+  record: {
+    title: string
+    institution: string
+    municipality: string
+    territorial_scope: string
+    method: string
+    source_date: string
+  }
+}
+
+interface StageEvidenceCoverage {
+  stage: TenantStage
+  label: string
+  local_count: number
+  comparable_count: number
+  benchmark_count: number
+  blocked_count: number
+  recommendations: EvidenceRecommendation[]
+}
+
 const documentTypes = [
   ['expediente_cabildo', 'Expediente Cabildo'],
   ['reforma_reglamentaria_3_articulos', 'Reforma reglamentaria'],
@@ -129,47 +159,6 @@ function statusClass(status: string) {
   return 'bg-[#FDFCFA] text-[#6B6760] border-[#E8E4DC]'
 }
 
-function sourceLabelFrom(value: unknown): string {
-  if (!value || typeof value !== 'object') return ''
-  const source = (value as Record<string, unknown>).fuente
-  if (!source || typeof source !== 'object') return ''
-  return String((source as Record<string, unknown>).label ?? '')
-}
-
-function pendingSource(label: string) {
-  return {
-    valor: null,
-    estado: 'pendiente_verificacion',
-    fuente: {
-      label: label || 'Pendiente carga de datos del municipio',
-      status: 'pendiente_verificacion',
-      fecha: new Date().toISOString().slice(0, 10),
-    },
-  }
-}
-
-function linesFromItems(items: unknown, fields: string[]) {
-  if (!Array.isArray(items)) return ''
-  return items.map(item => {
-    const row = item && typeof item === 'object' ? item as Record<string, unknown> : {}
-    return fields.map(field => String(row[field] ?? '')).join(' | ')
-  }).join('\n')
-}
-
-function itemsFromLines(value: string, fields: string[], fallback: Record<string, unknown> = {}) {
-  return value
-    .split('\n')
-    .map(line => line.trim())
-    .filter(Boolean)
-    .map(line => {
-      const parts = line.split('|').map(part => part.trim())
-      return fields.reduce<Record<string, unknown>>((acc, field, idx) => {
-        acc[field] = parts[idx] || fallback[field] || 'pendiente_verificacion'
-        return acc
-      }, { ...fallback })
-    })
-}
-
 export default function AdminPage() {
   const [tenants, setTenants] = useState<AdminTenant[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
@@ -192,11 +181,22 @@ export default function AdminPage() {
   const [documents, setDocuments] = useState<TenantDocumentDraft[]>([])
   const [documentType, setDocumentType] = useState<(typeof documentTypes)[number][0]>('expediente_cabildo')
   const [a11, setA11] = useState<NousA11Panel | null>(null)
+  const [bibliographyStage, setBibliographyStage] = useState<TenantStage>('validation')
+  const [bibliographyModule, setBibliographyModule] = useState('')
+  const [evidenceRecommendations, setEvidenceRecommendations] = useState<EvidenceRecommendation[]>([])
+  const [evidenceCoverage, setEvidenceCoverage] = useState<StageEvidenceCoverage[]>([])
 
   const selected = useMemo(
     () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
     [selectedId, tenants],
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    const tenantId = params.get('tenant_id') ?? params.get('tenant')
+    if (tenantId) setSelectedId(tenantId)
+  }, [])
 
   useEffect(() => {
     const profile = selected?.municipal_profile
@@ -215,6 +215,7 @@ export default function AdminPage() {
       return
     }
     void loadDocuments(selected.id)
+    void loadBibliographyPanel(selected.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id])
 
@@ -222,7 +223,7 @@ export default function AdminPage() {
     setLoading(true)
     setError(null)
     try {
-      const res = await fetch(`${getApiUrl()}/admin/tenants`, { headers: authHeaders() })
+      const res = await fetch('/api/admin/tenants')
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
       const next = data.tenants ?? []
@@ -254,7 +255,27 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
       setA11(data)
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : 'No se pudo cargar A11 NOUS')
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar A11 aprendizaje')
+    }
+  }
+
+  async function loadBibliographyPanel(tenantId = selected?.id) {
+    if (!tenantId) return
+    try {
+      const params = new URLSearchParams({ tenant_id: tenantId, stage: bibliographyStage })
+      if (bibliographyModule.trim()) params.set('module_id', bibliographyModule.trim())
+      const [recommendationsRes, coverageRes] = await Promise.all([
+        fetch(`${getApiUrl()}/admin/bibliography/recommendations?${params.toString()}`, { headers: authHeaders() }),
+        fetch(`${getApiUrl()}/admin/bibliography/coverage?tenant_id=${encodeURIComponent(tenantId)}`, { headers: authHeaders() }),
+      ])
+      const recommendationsData = await recommendationsRes.json().catch(() => ({}))
+      const coverageData = await coverageRes.json().catch(() => ({}))
+      if (!recommendationsRes.ok) throw new Error(recommendationsData.detail ?? `HTTP ${recommendationsRes.status}`)
+      if (!coverageRes.ok) throw new Error(coverageData.detail ?? `HTTP ${coverageRes.status}`)
+      setEvidenceRecommendations(recommendationsData.recommendations ?? [])
+      setEvidenceCoverage(coverageData.stage_evidence_map ?? [])
+    } catch (exc) {
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar bibliografía compatible')
     }
   }
 
@@ -263,6 +284,11 @@ export default function AdminPage() {
     void loadA11Panel()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    if (selected?.id) void loadBibliographyPanel(selected.id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bibliographyStage, bibliographyModule])
 
   async function createTenant() {
     setError(null)
@@ -375,10 +401,10 @@ export default function AdminPage() {
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
-      setMessage(`NOUS: ${data.pattern_status}`)
+      setMessage(`Aprendizaje: ${data.pattern_status}`)
       await loadA11Panel()
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : 'No se pudo revisar patrón NOUS')
+      setError(exc instanceof Error ? exc.message : 'No se pudo revisar patrón de aprendizaje')
     }
   }
 
@@ -390,11 +416,11 @@ export default function AdminPage() {
         body: JSON.stringify({ action: 'retire', notes: 'Retiro manual desde A11' }),
       })
       const data = await res.json()
-      if (!res.ok) throw new Error(data.detail ?? 'No se pudo retirar sugerencia NOUS')
-      setMessage('NOUS: sugerencia retirada de cliente')
+      if (!res.ok) throw new Error(data.detail ?? 'No se pudo retirar sugerencia de aprendizaje')
+      setMessage('Aprendizaje: sugerencia retirada de cliente')
       await loadA11Panel()
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : 'No se pudo retirar sugerencia NOUS')
+      setError(exc instanceof Error ? exc.message : 'No se pudo retirar sugerencia de aprendizaje')
     }
   }
 
@@ -421,26 +447,6 @@ export default function AdminPage() {
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'No se pudo guardar perfil municipal')
     }
-  }
-
-  function parseProfileDraft(key: 'antecedentes' | 'mapa_social' | 'organigrama_servicio') {
-    try {
-      return JSON.parse(profileDraft[key]) as Record<string, unknown>
-    } catch {
-      return {}
-    }
-  }
-
-  function updateProfileDraft(
-    key: 'antecedentes' | 'mapa_social' | 'organigrama_servicio',
-    updater: (draft: Record<string, unknown>) => Record<string, unknown>,
-  ) {
-    const next = updater(parseProfileDraft(key))
-    setProfileDraft(prev => ({ ...prev, [key]: JSON.stringify(next, null, 2) }))
-  }
-
-  function updateAntecedenteSource(key: string, label: string) {
-    updateProfileDraft('antecedentes', draft => ({ ...draft, [key]: pendingSource(label) }))
   }
 
   return (
@@ -561,6 +567,33 @@ export default function AdminPage() {
                         <strong className="text-[#1C1B18]">{selected.tier_comercial}</strong>
                       </div>
                     </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {([
+                      ['/v', 'Validación'],
+                      ['/p', 'Planeación'],
+                      ['/e', 'Ejecución'],
+                    ] as const).map(([href, label]) => (
+                      <a
+                        key={href}
+                        href={`${href}?tenant_id=${encodeURIComponent(selected.id)}`}
+                        className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
+                      >
+                        Ver {label}
+                      </a>
+                    ))}
+                    <a
+                      href={`/api/admin/tenants/${encodeURIComponent(selected.id)}/command-center?stage=${selected.state.current_stage === 'planning' || selected.state.current_stage === 'execution' ? selected.state.current_stage : 'validation'}`}
+                      className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
+                    >
+                      JSON command center
+                    </a>
+                    <a
+                      href="/api/admin/legacy/manifest"
+                      className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
+                    >
+                      Manifest legacy
+                    </a>
                   </div>
                 </section>
 
@@ -739,11 +772,93 @@ export default function AdminPage() {
                 </section>
 
                 <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                    <div>
+                      <div className="mb-1 flex items-center gap-2">
+                        <ScrollText size={16} className="text-[#3B6D11]" />
+                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">Bibliografía y evidencia comparable</h2>
+                      </div>
+                      <p className="text-[11px] leading-5 text-[#6B6760]">
+                        Recomendador determinístico. No recalibra modelos, no usa LLM y no convierte benchmarks en estudio local.
+                      </p>
+                    </div>
+                    <div className="flex flex-col gap-2 sm:flex-row">
+                      <select
+                        value={bibliographyStage}
+                        onChange={event => setBibliographyStage(event.target.value as TenantStage)}
+                        className="h-8 border border-[#D8D1C4] bg-white px-3 text-[11px] text-[#1C1B18]"
+                      >
+                        <option value="validation">Validación</option>
+                        <option value="planning">Planeación</option>
+                        <option value="execution">Ejecución</option>
+                      </select>
+                      <input
+                        value={bibliographyModule}
+                        onChange={event => setBibliographyModule(event.target.value)}
+                        placeholder="Módulo, ej. M01"
+                        className="h-8 w-[130px] border border-[#D8D1C4] bg-white px-3 text-[11px] text-[#1C1B18]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => void loadBibliographyPanel()}
+                        className="h-8 border border-[#D8D1C4] px-3 text-[11px] font-semibold text-[#1C1B18]"
+                      >
+                        Actualizar
+                      </button>
+                    </div>
+                  </div>
+                  <div className="grid gap-3 md:grid-cols-3">
+                    {evidenceCoverage.map(item => (
+                      <div key={item.stage} className="border border-[#E8E4DC] bg-white p-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">{item.label}</p>
+                        <dl className="mt-2 grid grid-cols-4 gap-2 text-[11px]">
+                          <div><dt className="text-[#8E8980]">Local</dt><dd className="font-semibold text-[#1C1B18]">{item.local_count}</dd></div>
+                          <div><dt className="text-[#8E8980]">Comp.</dt><dd className="font-semibold text-[#1C1B18]">{item.comparable_count}</dd></div>
+                          <div><dt className="text-[#8E8980]">Bench.</dt><dd className="font-semibold text-[#1C1B18]">{item.benchmark_count}</dd></div>
+                          <div><dt className="text-[#8E8980]">No</dt><dd className="font-semibold text-[#A8322A]">{item.blocked_count}</dd></div>
+                        </dl>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-4 overflow-x-auto">
+                    <table className="w-full min-w-[860px] text-[12px]">
+                      <thead>
+                        <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+                          <th className="py-2 pr-3 font-medium">Fuente</th>
+                          <th className="py-2 pr-3 font-medium">Uso</th>
+                          <th className="py-2 pr-3 font-medium">Score</th>
+                          <th className="py-2 pr-3 font-medium">Soporta</th>
+                          <th className="py-2 pr-3 font-medium">No soporta</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {evidenceRecommendations.length === 0 ? (
+                          <tr>
+                            <td colSpan={5} className="py-5 text-[#8E8980]">Sin recomendaciones para los filtros actuales.</td>
+                          </tr>
+                        ) : evidenceRecommendations.slice(0, 10).map(item => (
+                          <tr key={item.id} className="border-b border-[#EEE8DE]">
+                            <td className="py-3 pr-3">
+                              <span className="block font-semibold text-[#1C1B18]">{item.record.title}</span>
+                              <span className="text-[11px] text-[#8E8980]">{item.record.institution} · {item.record.territorial_scope} · {item.record.source_date}</span>
+                            </td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{item.tag}</td>
+                            <td className="py-3 pr-3 font-mono text-[#1C1B18]">{item.score.total}</td>
+                            <td className="py-3 pr-3 text-[#6B6760]">{item.supported_claim}</td>
+                            <td className="py-3 pr-3 text-[#8C6A13]">{item.unsupported_claim}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </section>
+
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="mb-1 flex items-center gap-2">
                         <BrainCircuit size={16} className="text-[#3B6D11]" />
-                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">A11 NOUS Insights Panel</h2>
+                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">A11 Panel de aprendizaje</h2>
                       </div>
                       <p className="text-[11px] text-[#6B6760]">
                         Revisión interna. Sin publicación al cliente ni recalibración automática.
@@ -764,7 +879,7 @@ export default function AdminPage() {
                       return (
                         <div key={tabId} className="border border-[#E8E4DC] bg-white p-3">
                           <span className="text-[10px] font-semibold uppercase text-[#8E8980]">{tabId}</span>
-                          <h3 className="mt-1 min-h-[32px] text-[12px] font-semibold text-[#1C1B18]">{tab?.label ?? 'NOUS pendiente'}</h3>
+                          <h3 className="mt-1 min-h-[32px] text-[12px] font-semibold text-[#1C1B18]">{tab?.label ?? 'Aprendizaje pendiente'}</h3>
                           {'metrics' in (tab ?? {}) ? (
                             <dl className="mt-3 space-y-1 text-[11px] text-[#6B6760]">
                               {Object.entries(tab?.metrics ?? {}).map(([key, value]) => (
@@ -797,7 +912,7 @@ export default function AdminPage() {
                       <tbody>
                         {([...(a11?.tabs?.['A11.1']?.patterns ?? []), ...(a11?.tabs?.['A11.2']?.published_to_clients ?? [])]).length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="py-5 text-[#8E8980]">Sin patrones pendientes. NOUS sigue observando.</td>
+                            <td colSpan={6} className="py-5 text-[#8E8980]">Sin patrones pendientes. La plataforma sigue observando.</td>
                           </tr>
                         ) : ([...(a11?.tabs?.['A11.1']?.patterns ?? []), ...(a11?.tabs?.['A11.2']?.published_to_clients ?? [])]).map(pattern => (
                           <tr key={pattern.id} className="border-b border-[#EEE8DE]">
@@ -825,7 +940,7 @@ export default function AdminPage() {
                     </table>
                   </div>
                   <p className="mt-3 text-[11px] text-[#6B6760]">
-                    Cliente: apagado hasta patrón aprobado, bias check, MARCOS y founder gate. No se muestra patrón estadístico crudo.
+                    Cliente: apagado hasta patrón aprobado, bias check, revisión fundadora y trazabilidad. No se muestra patrón estadístico crudo.
                   </p>
                 </section>
 
