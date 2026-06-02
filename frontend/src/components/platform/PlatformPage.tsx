@@ -1005,7 +1005,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
         {tenantId === 'municipio-demo' && (
           <div className="border-b border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 sm:px-6">
             <p className="text-[12px] font-semibold leading-5 text-[#765814]">
-              Demo bibliográfico · San Luis Potosí usa fuentes públicas y cálculos trazables. No sustituye revisión humana ni estudios locales faltantes.
+              Sandbox interno · usa bibliografía pública y cálculos trazables para verificar navegación. No sustituye revisión humana ni estudios locales faltantes.
             </p>
           </div>
         )}
