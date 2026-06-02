@@ -1,7 +1,10 @@
 import { buildConsultingExportManifest } from '@/lib/archivoFull'
 import { buildChicagoBibliography, formatChicagoCitationSource } from '@/lib/citations'
 import { CONSULTING_API_LAYER_CONTRACTS } from '@/lib/consultingApiLayerContracts'
-import { buildConsultingPackage } from '@/lib/consultingPackageEngine'
+import {
+  buildConsultingPackage,
+  type EvidenceRegistryRecommendation,
+} from '@/lib/consultingPackageEngine'
 import {
   fetchConsultingApiLayerPayloads,
   type ConsultingApiFetchOptions,
@@ -40,7 +43,7 @@ export function buildTenantConsultingPackageResponse(
     status: tenantData.status,
     version: tenantData.version,
     generated_at: tenantData.generated_at,
-    human_review_required: true,
+    human_review_required: false,
     officiality: tenantData.status === 'official' ? 'official_source_package' : 'preliminary_not_official',
     api_layer_contracts: CONSULTING_API_LAYER_CONTRACTS,
     bibliography_chicago: buildChicagoBibliography(tenantData.metrics),
@@ -54,6 +57,28 @@ export function buildTenantConsultingPackageResponse(
 }
 
 export type TenantConsultingPackageResponse = ReturnType<typeof buildTenantConsultingPackageResponse>
+
+async function fetchEvidenceRegistryRecommendations(
+  tenantId: string,
+  context: TenantMunicipalContextOverride,
+  options: ConsultingApiFetchOptions,
+): Promise<EvidenceRegistryRecommendation[]> {
+  const request = options.fetcher ?? fetch
+  const baseUrl = options.baseUrl ?? 'http://localhost:8000'
+  const municipioId = context.municipio_id
+  if (!municipioId) return []
+  const url = new URL('/research/bibliography/recommendations', baseUrl)
+  url.searchParams.set('municipio_id', municipioId)
+  if (context.zm) url.searchParams.set('zm_id', context.zm)
+  try {
+    const response = await request(url.toString(), { method: 'GET' })
+    if (!response.ok) return []
+    const payload = await response.json() as { recommendations?: EvidenceRegistryRecommendation[] }
+    return Array.isArray(payload.recommendations) ? payload.recommendations : []
+  } catch {
+    return []
+  }
+}
 
 export async function buildTenantConsultingPackageResponseWithApiLayers(
   tenantId: string,
@@ -76,9 +101,17 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
   }
 
   const apiLayerPayloads = await fetchConsultingApiLayerPayloads(apiContextStatus.context, options)
+  const evidenceRegistryRecommendations = await fetchEvidenceRegistryRecommendations(tenantId, {
+    ...context,
+    municipio_id: apiContextStatus.context.municipioId,
+    clave_inegi: apiContextStatus.context.claveInegi,
+    zm: apiContextStatus.context.zm,
+    municipality: apiContextStatus.context.municipioNombre,
+  }, options)
   const consultingPackage = buildConsultingPackage({
     tenantData,
     apiLayerPayloads,
+    evidenceRegistryRecommendations,
     bibliographyTenants: Object.values(TENANT_DIAGNOSTIC_FIXTURES),
   })
   const compatibleBibliographyChicago = consultingPackage.evidence_recommendations.map(recommendation => ({
@@ -99,6 +132,7 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
       reason: 'founder_admin_gate',
       fetched_layers: apiLayerPayloads.filter(payload => payload.available).map(payload => payload.layer),
       blocked_layers: apiLayerPayloads.filter(payload => !payload.available).map(payload => payload.layer),
+      evidence_registry_recommendations: evidenceRegistryRecommendations.length,
     },
   }
 }
