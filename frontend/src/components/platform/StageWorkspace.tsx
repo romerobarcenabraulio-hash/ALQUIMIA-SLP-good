@@ -270,7 +270,7 @@ function ModuleRail({
 }) {
   return (
     <div className="space-y-1 p-3">
-      <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#9E9A91]">
+      <p className="px-2 pb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#A8C898]">
         Módulos
       </p>
       {modules.map(module => (
@@ -278,13 +278,88 @@ function ModuleRail({
           key={module.module_id}
           type="button"
           onClick={() => onChange(module.module_id)}
-          className={`block w-full px-2 py-2 text-left text-[12px] leading-5 ${activeModuleId === module.module_id ? 'bg-[#F4F2ED] font-semibold text-[#1C1B18]' : 'text-[#5C574F] hover:bg-[#FAFAF8]'}`}
+          className={`block w-full px-2 py-2 text-left text-[12px] leading-5 transition-colors ${activeModuleId === module.module_id ? 'bg-[#F4F2ED] font-semibold text-[#1C1B18]' : 'text-[#8AAD78] hover:bg-[#243320] hover:text-white'}`}
         >
           <span className="block">{module.module_id}</span>
           <span className="block">{module.label}</span>
         </button>
       ))}
     </div>
+  )
+}
+
+function ModuleIndex({
+  modules,
+  activeModuleId,
+  onChange,
+}: {
+  modules: StageWorkspaceModule[]
+  activeModuleId: string
+  onChange: (moduleId: string) => void
+}) {
+  return (
+    <section className="border-y border-[#D8D2C5] py-4">
+      <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+            Índice modular
+          </p>
+          <p className="mt-1 text-[12px] leading-5 text-[#6B6760]">
+            Orden único por ciudad; cambia la evidencia, no la arquitectura.
+          </p>
+        </div>
+        <p className="text-[12px] font-semibold text-[#1C1B18]">{modules.length} módulos visibles</p>
+      </div>
+      <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+        {modules.map(module => (
+          <button
+            key={module.module_id}
+            type="button"
+            onClick={() => onChange(module.module_id)}
+            className={`min-h-[78px] border px-3 py-3 text-left transition-colors ${activeModuleId === module.module_id ? 'border-[#1C2B15] bg-[#1C2B15] text-white' : 'border-[#D8D2C5] bg-[#FDFCFA] text-[#1C1B18] hover:border-[#8AA66F]'}`}
+          >
+            <span className={`block text-[11px] font-semibold ${activeModuleId === module.module_id ? 'text-[#EAF3DE]' : 'text-[#6B6760]'}`}>
+              {module.module_id}
+            </span>
+            <span className="mt-1 block text-[13px] font-semibold leading-5">{module.label}</span>
+            <span className={`mt-2 inline-flex border px-2 py-0.5 text-[10px] font-semibold ${activeModuleId === module.module_id ? 'border-[#C9DDB1] text-[#EAF3DE]' : statusTone(module.status)}`}>
+              {statusLabel(module.status)}
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function ActiveModulePanel({ module }: { module: StageWorkspaceModule | null }) {
+  return (
+    <section className="border-t border-[#D8D2C5] pt-5">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+        Módulo activo
+      </p>
+      {module ? (
+        <div className="mt-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`border px-2 py-1 text-[11px] font-semibold ${statusTone(module.status)}`}>
+              {statusLabel(module.status)}
+            </span>
+            <span className="border border-[#D8D2C5] bg-white px-2 py-1 text-[11px] font-semibold text-[#6B6760]">
+              {module.module_id}
+            </span>
+          </div>
+          <h2 className="mt-3 font-serif text-[34px] leading-tight text-[#1C1B18] sm:text-[42px]">{module.label}</h2>
+          <p className="mt-3 max-w-3xl text-[15px] leading-8 text-[#4A4740]">{module.conclusion}</p>
+          {module.evidence_gap_ids.length > 0 && (
+            <div className="mt-4 border-l-4 border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 text-[12px] leading-5 text-[#765814]">
+              Este módulo tiene {module.evidence_gap_ids.length} brecha(s). Se puede planear, pero no declarar como verdad municipal lo que no esté soportado.
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="mt-3 text-[13px] text-[#6B6760]">Sin módulos para esta etapa.</p>
+      )}
+    </section>
   )
 }
 
@@ -456,11 +531,11 @@ export function StageWorkspace({ platformStage }: { platformStage: ClientPlatfor
               Preparando contexto de ciudad...
             </section>
           ) : context && tenantData ? (
-            <div className="mx-auto w-full max-w-7xl px-5 py-7 sm:px-8">
-              <section className="grid gap-6 border-b border-[#D8D2C5] pb-7 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
+            <div className="mx-auto w-full max-w-[1500px] px-5 py-6 sm:px-8">
+              <section className="grid gap-6 pb-6 xl:grid-cols-[minmax(0,1.08fr)_minmax(420px,0.92fr)]">
                 <div>
                   <p className="text-[12px] font-semibold uppercase tracking-[0.12em] text-[#6B6760]">{copy.eyebrow}</p>
-                  <h1 className="mt-3 max-w-4xl font-serif text-[36px] leading-tight text-[#1C1B18] sm:text-[46px]">
+                  <h1 className="mt-3 max-w-4xl font-serif text-[34px] leading-tight text-[#1C1B18] sm:text-[44px]">
                     {copy.title}
                   </h1>
                   <p className="mt-4 max-w-3xl text-[15px] leading-8 text-[#4A4740]">{copy.body}</p>
@@ -489,6 +564,12 @@ export function StageWorkspace({ platformStage }: { platformStage: ClientPlatfor
                 </div>
               </section>
 
+              <ModuleIndex
+                modules={context.stage_workspace.visible_modules}
+                activeModuleId={activeModule?.module_id ?? ''}
+                onChange={setActiveModuleId}
+              />
+
               {!clientPreview && (
                 <div className="mt-5 flex flex-wrap gap-2">
                   <a
@@ -516,33 +597,8 @@ export function StageWorkspace({ platformStage }: { platformStage: ClientPlatfor
                 />
               )}
 
-              <section className="mt-6 grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(360px,1.1fr)]">
-                <div className="border-t border-[#D8D2C5] pt-5">
-                  <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
-                    Módulo activo
-                  </p>
-                  {activeModule ? (
-                    <div className="mt-3">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className={`border px-2 py-1 text-[11px] font-semibold ${statusTone(activeModule.status)}`}>
-                          {statusLabel(activeModule.status)}
-                        </span>
-                        <span className="border border-[#D8D2C5] bg-white px-2 py-1 text-[11px] font-semibold text-[#6B6760]">
-                          {activeModule.module_id}
-                        </span>
-                      </div>
-                      <h2 className="mt-3 font-serif text-[30px] leading-tight text-[#1C1B18]">{activeModule.label}</h2>
-                      <p className="mt-3 max-w-2xl text-[14px] leading-7 text-[#4A4740]">{activeModule.conclusion}</p>
-                      {activeModule.evidence_gap_ids.length > 0 && (
-                        <div className="mt-4 border-l-4 border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 text-[12px] leading-5 text-[#765814]">
-                          Este módulo tiene {activeModule.evidence_gap_ids.length} brecha(s). Se puede planear, pero no declarar como verdad municipal lo que no esté soportado.
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="mt-3 text-[13px] text-[#6B6760]">Sin módulos para esta etapa.</p>
-                  )}
-                </div>
+              <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(420px,0.86fr)]">
+                <ActiveModulePanel module={activeModule} />
                 <EvidenceKernelPanel context={context} />
               </section>
 
