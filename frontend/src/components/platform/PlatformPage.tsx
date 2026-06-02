@@ -570,7 +570,7 @@ function SandboxModulePlaceholder({ module, tenantData }: { module: PlatformModu
         {module?.label ?? 'Modulo pendiente'}
       </h2>
       <p className="mt-2 max-w-3xl text-[13px] leading-6 text-[#5C574F]">
-        En Municipio Demo no se renderizan graficas, diagnósticos ni textos normativos precargados. La pantalla conserva el índice y muestra los documentos necesarios para activar análisis real.
+        Este módulo conserva estructura, brechas y fuentes trazables. Si no hay dato municipal, muestra la brecha; si hay bibliografía o cálculo, declara alcance, método y confianza.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(gaps.length ? gaps : tenantData?.document_gaps.slice(0, 4) ?? []).map(gap => (
@@ -942,7 +942,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     )
   }, [platformModules, tenantData.data])
   const clientPreview = viewMode === 'client'
-  const sandboxDemo = tenantId === 'municipio-demo'
+  const sandboxDemo = false
   const activeModuleIsPillar = isPillarModule(activeModule?.module_id)
   const activeModuleHasOperationalSpec = Boolean(validationModuleSpecFor(activeModule?.module_id))
 
@@ -985,10 +985,10 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             <FounderViewModeSwitcher />
           </div>
         </div>
-        {sandboxDemo && (
+        {tenantId === 'municipio-demo' && (
           <div className="border-b border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 sm:px-6">
             <p className="text-[12px] font-semibold leading-5 text-[#765814]">
-              Sandbox founder · estructura vacia para demostrar navegacion. No contiene datos reales ni estimados.
+              Demo bibliográfico · San Luis Potosí usa fuentes públicas y cálculos trazables. No sustituye revisión humana ni estudios locales faltantes.
             </p>
           </div>
         )}
