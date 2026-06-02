@@ -76,11 +76,9 @@ export function ReglamentoModal({
 
   const textoVigente = ciudadData?.textoVigente ?? ''
   const esNoExiste   = textoVigente.startsWith('[NO EXISTE]') || textoVigente.startsWith('[NO DISPONIBLE')
-  const textoPropuesto       = ciudadData?.adendoPropuesto ?? ''
+  // El adendo es por-ciudad si existe; si no, cae al genérico (redactado base SLP).
+  const textoPropuesto       = ciudadData?.adendoPropuesto ?? adendo?.adendoPropuesto ?? ''
   const adendoEstaLocalizado = Boolean(ciudadData?.adendoPropuesto)
-  const textoPropuestoSeguro = adendoEstaLocalizado
-    ? textoPropuesto
-    : 'Adendo local pendiente de construccion. La plataforma no muestra una plantilla de otro municipio como borrador utilizable. Primero debe cargarse o validarse el reglamento local, identificar articulos equivalentes, autoridad competente, ley estatal aplicable y alcance operativo antes de redactar una propuesta para revision humana.'
   const efectoOp             = adendo?.efectoOperativo ?? ''
   const archivosLocales      = registro?.archivo_local ?? []
   const pdfPrimario          = archivosLocales.find(path => path.toLowerCase().endsWith('.pdf'))
@@ -222,20 +220,21 @@ export function ReglamentoModal({
             </div>
 
             <div className="flex-1 overflow-y-auto px-6 py-5">
-              {!adendoEstaLocalizado && (
+              {/* Aviso cuando el texto es genérico (redactado base SLP) en otra ciudad */}
+              {!adendoEstaLocalizado && ciudadKey !== 'slp' && (
                 <div className="mb-4 rounded-[10px] border border-amber-300 bg-amber-50 px-4 py-3">
                   <p className="text-[12px] font-semibold text-[#8B5A00] mb-1">
-                    Adendo local pendiente
+                    Borrador redactado para San Luis Potosí
                   </p>
                   <p className="text-[11px] leading-relaxed text-[#8B5A00]">
-                    No existe una propuesta localizada para {nombreMunicipio}. La plataforma conserva la brecha y exige revisar el reglamento municipal, autoridad competente y ley estatal aplicable antes de redactar una propuesta para Cabildo.
+                    El texto de abajo cita instrumentos de SLP (Reglamento de Aseo Público, Dirección de Aseo Público, Ley sobre Régimen de Propiedad en Condominio del Estado de SLP). Antes de presentar a Cabildo de {nombreMunicipio}, sustituir referencias por las equivalentes locales: <strong>{ciudadData?.nombreReglamento ?? 'reglamento municipal de RSU'}</strong>, autoridad de aseo correspondiente y ley estatal de condominios aplicable.
                   </p>
                 </div>
               )}
 
               {/* Texto del adendo — grande y legible */}
               <pre className="text-[15px] leading-[1.9] whitespace-pre-wrap font-sans text-[#1C1B18]">
-                {textoPropuestoSeguro}
+                {textoPropuesto}
               </pre>
             </div>
 

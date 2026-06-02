@@ -29,6 +29,9 @@ function ReglamentoUploadForm() {
       const res = await authUploadReglamento(setupToken, file)
       setPdfReady(true)
       setMessage(res.message)
+      if (res.tenant_id) {
+        localStorage.setItem('alquimia.tenantId', res.tenant_id)
+      }
       if (res.access_token) {
         persistSession(res.access_token)
         clearSetupToken()
@@ -80,14 +83,17 @@ function ReglamentoUploadForm() {
         <button
           type="button"
           disabled={!pdfReady || !setupToken}
-          onClick={() => router.push('/v')}
+          onClick={() => {
+            const tenantId = localStorage.getItem('alquimia.tenantId')
+            router.push(tenantId ? `/v?tenant_id=${encodeURIComponent(tenantId)}` : '/v')
+          }}
           className="btn-primary w-full mt-6 disabled:opacity-40"
         >
           Entrar a la plataforma
         </button>
 
         <p className="mt-5 text-center text-[12px]">
-          <Link href="/v" className="text-[#A8A49C] hover:text-[#3B6D11]">Entrar a la plataforma</Link>
+          <Link href="/onboarding/perfil" className="text-[#A8A49C] hover:text-[#3B6D11]">Volver al perfil territorial</Link>
         </p>
       </div>
     </div>

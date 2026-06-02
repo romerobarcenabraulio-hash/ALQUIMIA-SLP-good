@@ -20,6 +20,10 @@ const PILLAR_MODULE_IDS = new Set([
   'risk_dashboard',
 ])
 
+export function isPillarModule(moduleId: string | null | undefined) {
+  return Boolean(moduleId && PILLAR_MODULE_IDS.has(moduleId))
+}
+
 const MODULE_METRIC_IDS: Record<string, string[]> = {
   city_baseline: ['rsu_generation', 'field_characterization'],
   marco_legal: ['field_characterization'],

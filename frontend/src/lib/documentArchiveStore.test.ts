@@ -99,6 +99,18 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     ))).toBe(true)
   })
 
+  it('respeta la clasificación sugerida por el módulo aunque el filename sea genérico', async () => {
+    const file = new File(['contenido'], 'documento-general.pdf', { type: 'application/pdf' })
+    const result = await registerTenantDocument('module-directed-upload-city', file, 'user-module', {
+      module_id: 'M03B',
+      document_type: 'reglamento_limpia',
+    })
+
+    expect(result.document.module_id).toBe('M03B')
+    expect(result.document.document_type).toBe('reglamento_limpia')
+    expect(result.document.classification_confidence).toBe('manual')
+  })
+
   it('rechaza tipo no permitido y archivo demasiado grande', () => {
     const script = new File(['alert(1)'], 'malware.js', { type: 'text/javascript' })
     expect(validateArchiveFile(script)).toMatch(/Tipo de archivo/)

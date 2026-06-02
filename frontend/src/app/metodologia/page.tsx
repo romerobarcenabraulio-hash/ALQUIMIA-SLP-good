@@ -2,25 +2,25 @@ import { PublicHero, PublicPageShell } from '@/components/public/PublicPageShell
 
 const sections = [
   {
-    title: 'Cómo se construye el diagnóstico inicial',
-    body: 'La plataforma reúne fuentes públicas, datos provistos por el municipio o institución y evidencia documental disponible. Cada dato se clasifica por fuente, fecha, método, confianza y alcance territorial.',
+    title: 'A · Datos investigados',
+    body: 'Vienen de una fuente externa identificable. Cada dato conserva institución emisora, título, año, URL cuando aplique, fecha de consulta, alcance territorial y referencia bibliográfica en formato Chicago.',
   },
   {
-    title: 'Cómo se validan las cifras',
-    body: 'Una cifra solo puede avanzar como dato validado cuando existe fuente suficiente, fecha de corte, método claro y revisión humana. Las estimaciones permanecen marcadas como preliminares.',
+    title: 'B · Datos calculados',
+    body: 'Derivan de datos investigados mediante fórmula transparente. La plataforma conserva la fórmula, los campos fuente, la metodología y el sello “Calculado · ver metodología”.',
   },
   {
-    title: 'Cómo se evita inventar datos',
-    body: 'Si falta estudio local, el sistema no rellena el vacío con narrativa. Muestra brecha crítica. Un benchmark no es estudio local y una inferencia no es dato validado.',
+    title: 'C · Datos del cliente',
+    body: 'Vienen de documentos que el municipio o institución sube a la plataforma. Cada dato conserva documento, página, cita literal, usuario de carga, fecha y estado de revisión humana.',
   },
   {
-    title: 'Paquete documental por ciudad',
-    body: 'Todas las ciudades usan el mismo índice y el mismo número de documentos. El contenido cambia por investigación, cotejo, diagnóstico y evidencia disponible.',
+    title: 'Sin dato · Brecha crítica',
+    body: 'Si una cifra no encaja en A, B o C, no entra al sistema. El campo queda pendiente con la instrucción de qué documento, fuente o cálculo se requiere para llenarlo.',
   },
 ]
 
 const notDo = [
-  'No certifica resultados oficiales.',
+  'No certifica resultados como oficiales.',
   'No sustituye estudios locales.',
   'No sustituye decisiones públicas, jurídicas o de cabildo.',
   'No convierte benchmarks en verdad municipal.',
@@ -46,14 +46,27 @@ export default function MethodologyPage() {
       </section>
 
       <section className="mx-auto max-w-6xl px-5 pb-20">
-        <div className="rounded-[8px] border border-[#D8D2C5] bg-white p-6">
-          <h2 className="text-[20px] font-semibold">Qué no hace ALQUIMIA</h2>
-          <div className="mt-4 grid gap-3 md:grid-cols-2">
+        <div className="border-t border-[#D8D2C5] bg-transparent py-8">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8C8880]">
+                Regla operativa
+              </p>
+              <h2 className="mt-2 max-w-md font-serif text-[30px] leading-tight text-[#1C1B18]">
+                Cero cifras sin cita; cero benchmarks tratados como estudio local.
+              </h2>
+              <p className="mt-4 max-w-md text-[14px] leading-7 text-[#5C574F]">
+                La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un claim
+                municipal local ni sustituye reglamento, estudio local o documento del cliente.
+              </p>
+            </div>
+            <div className="grid gap-3 md:grid-cols-2">
             {notDo.map(item => (
-              <p key={item} className="rounded-[6px] bg-[#F4F2ED] px-4 py-3 text-[13px] text-[#4A4740]">
+              <p key={item} className="border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 text-[13px] text-[#4A4740]">
                 {item}
               </p>
             ))}
+            </div>
           </div>
         </div>
       </section>

@@ -11,12 +11,17 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const form = await request.formData()
   const file = form.get('file')
   const uploadedByUserId = String(form.get('uploaded_by_user_id') ?? 'mvp_user')
+  const moduleId = form.get('module_id')
+  const documentType = form.get('document_type')
   if (!(file instanceof File)) {
     return NextResponse.json({ detail: 'Archivo requerido' }, { status: 400 })
   }
 
   try {
-    const result = await registerTenantDocument(id, file, uploadedByUserId)
+    const result = await registerTenantDocument(id, file, uploadedByUserId, {
+      module_id: typeof moduleId === 'string' && moduleId ? moduleId : undefined,
+      document_type: typeof documentType === 'string' && documentType ? documentType : undefined,
+    })
     return NextResponse.json({
       ...result,
       warning: 'Subir un documento no lo convierte automáticamente en dato validado. La información extraída requiere revisión humana.',

@@ -5,7 +5,7 @@ import { CAIsometrico } from '@/components/ca-studio/CAIsometrico'
 import { CAPanelLateral } from '@/components/ca-studio/CAPanelLateral'
 import { GuiaOperativa } from '@/components/ca-studio/GuiaOperativa'
 import { EstudiosIdoneidad } from '@/components/ca-studio/EstudiosIdoneidad'
-import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
+import { PlatformGatewayHint } from '@/components/platform/PlatformGatewayHint'
 import { cn } from '@/lib/utils'
 
 type Pestaña = 'studio' | 'guia' | 'idoneidad'
@@ -23,7 +23,7 @@ export default function CAStudioPage() {
         <div className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">CA-Studio — Laboratorio técnico interno</p>
           <h1 className="font-serif text-[32px] text-[#1C1B18]">Diseña tu Centro de Acopio</h1>
-          <SimulatorGatewayHint variant="compact" className="mt-3 max-w-2xl" />
+          <PlatformGatewayHint variant="compact" className="mt-3 max-w-2xl" />
         </div>
 
         {/* Pestañas */}

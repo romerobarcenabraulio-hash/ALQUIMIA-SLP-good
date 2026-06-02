@@ -20,7 +20,7 @@ export function TraceRibbon({
         <span className="font-semibold text-[#1C1B18]">Hecho verificado:</span> {hecho}
       </p>
       <p>
-        <span className="font-semibold text-[#1C1B18]">Supuesto de simulación:</span> {supuesto}
+        <span className="font-semibold text-[#1C1B18]">Supuesto de escenario:</span> {supuesto}
       </p>
       <p>
         <span className="font-semibold text-[#1C1B18]">Fuente:</span> {fuente}

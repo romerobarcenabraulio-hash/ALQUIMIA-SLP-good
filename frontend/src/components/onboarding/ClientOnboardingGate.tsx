@@ -1,18 +1,16 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ArrowRight, FileUp, MapPin } from 'lucide-react'
 import { getEstadosMx, getLegalSourceManifest, getMunicipiosMx, registerMunicipioNacional, uploadLegalReglamentoPdf } from '@/lib/api'
 import { isPlatformDeveloper } from '@/lib/authSession'
 import { notifyLegalPdfUploaded, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
-import { ZMS } from '@/lib/constants'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import type { EstadoMxOption, MunicipioMxApi } from '@/types'
 
 export function ClientOnboardingGate() {
   const {
-    zmActiva,
     municipiosActivos,
     seleccionMunicipioCatalog,
     applyMunicipioCatalog,
@@ -36,7 +34,6 @@ export function ClientOnboardingGate() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const activeMid = municipiosActivos[0] ?? null
-  const zm = useMemo(() => ZMS.find(z => z.id === zmActiva), [zmActiva])
 
   const refreshPdfStatus = useCallback(async (mid: string) => {
     setCheckingPdf(true)
@@ -133,7 +130,8 @@ export function ClientOnboardingGate() {
         </h1>
         <p className="text-[14px] text-[#7AAB60] leading-[1.7] max-w-2xl">
           Antes de entrar al paquete consultivo, elige el estado y municipio de trabajo y sube el PDF del reglamento
-          de aseo o limpia. Sin PDF no se habilita el análisis jurídico ni los módulos que dependen de él.
+          de aseo o limpia. El reglamento es el único bloqueo formal para emitir plan; los demás documentos elevan
+          confianza, alcance y precisión sin detener toda la plataforma.
         </p>
       </div>
 
@@ -190,8 +188,8 @@ export function ClientOnboardingGate() {
               <div className="mt-3 rounded-[8px] border border-[#C9DDB1] bg-[#EAF3DE]/60 px-3 py-2 text-[11px] text-[#23470A]">
                 <span className="font-medium">{seleccionMunicipioCatalog.nombre}</span>
                 {' · '}
-                Zona de análisis: <span className="font-mono">{zmActiva}</span>
-                {zm && <span className="text-[#3B6D11]"> ({zm.nombre})</span>}
+                Clave INEGI municipal: <span className="font-mono">{seleccionMunicipioCatalog.claveInegi}</span>
+                <span className="text-[#3B6D11]"> · Municipio y ZM se analizan por separado.</span>
               </div>
             )}
           </section>
@@ -210,7 +208,8 @@ export function ClientOnboardingGate() {
                 <p className="text-[12px] text-[#6B6760] mb-3">
                   Sube el reglamento de aseo, limpia o gestión integral de residuos del municipio{' '}
                   <span className="font-medium text-[#1C1B18]">{seleccionMunicipioCatalog?.nombre ?? activeMid}</span>.
-                  Al confirmarse la carga se dispara el análisis jurídico base.
+                  Al confirmarse la carga se dispara el análisis jurídico base. Si falta otro documento, el sistema
+                  seguirá calculando sólo hasta donde exista evidencia investigada, calculada o provista por el cliente.
                 </p>
 
                 <div className="flex flex-wrap items-center gap-2">

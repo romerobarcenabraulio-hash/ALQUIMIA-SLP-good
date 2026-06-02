@@ -107,9 +107,11 @@ export async function authOnboardingProfile(payload: OnboardingProfilePayload) {
     service_interest: string
     requires_reglamento_pdf: boolean
     municipio_id?: string
+    tenant_id?: string | null
     clave_inegi?: string
     zm?: string
     next_path?: string
+    preliminary_research_started?: boolean
     access_token?: string
     refresh_token?: string
     token_type?: string
@@ -143,7 +145,9 @@ export async function authUploadReglamento(setupToken: string, file: File) {
   return data as {
     ok: boolean
     municipio_id: string
+    tenant_id?: string | null
     analysis_ready: boolean
+    preliminary_research_started?: boolean
     message: string
     access_token?: string
     refresh_token?: string

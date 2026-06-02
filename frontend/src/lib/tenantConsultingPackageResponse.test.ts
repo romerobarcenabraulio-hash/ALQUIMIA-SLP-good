@@ -19,7 +19,12 @@ describe('tenantConsultingPackageResponse', () => {
     expect(response.consulting_package.scenario_set.client_controls_enabled).toBe(false)
     expect(response.consulting_package.scenario_set.scenarios.every(scenario => scenario.capture_ton_day === null)).toBe(true)
     expect(response.api_layer_contracts.map(contract => contract.layer)).toContain('market')
+    expect(response.bibliography_chicago.length).toBeGreaterThan(0)
+    expect(response.bibliography_chicago[0]).toContain('Consultado el')
+    expect(response.compatible_bibliography_chicago.length).toBeGreaterThan(0)
+    expect(response.compatible_bibliography_chicago[0]).toHaveProperty('unsupported_claim')
     expect(response.export_manifest.claim_ledger.affirmable_count).toBe(0)
+    expect(response.export_manifest.bibliography_chicago).toEqual(response.bibliography_chicago)
     expect(response.export_manifest.input_registry.buyers_available).toBe(false)
   })
 

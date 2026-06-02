@@ -211,7 +211,7 @@ export const MODULE_NUMBERS: Record<string, string> = {
   costo_omision: '04',
   evaluacion_socioeconomica: '04B',
   teoria_cambio: '04C',
-  roadmap_implementacion: '05D',
+  roadmap_implementacion: '05',
   plan_maestro: '05',
   ruta_critica: '05B',
   oleadas_territoriales: '05C',

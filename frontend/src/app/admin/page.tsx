@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, ShieldCheck } from 'lucide-react'
+import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, Search, ShieldCheck, Users } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
 
@@ -54,6 +54,47 @@ interface AdminTenant {
     organigrama_servicio: Record<string, unknown>
     provenance_status: string
   }
+}
+
+interface InegiState {
+  estado_id: string
+  estado_nombre: string
+}
+
+interface InegiMunicipality {
+  clave_inegi: string
+  nombre: string
+  estado_id: string
+  estado_nombre: string
+  municipio_id: string
+  zm: string
+  datos_estimados: boolean
+  source: string
+}
+
+interface AdminErpMunicipalityRow {
+  clave_inegi: string
+  municipio: string
+  estado: string
+  estado_id?: string
+  municipio_id: string
+  zm: string
+  tenant_id?: string | null
+  tenant_nombre?: string | null
+  stage?: TenantStage | null
+  tier?: TierComercial | null
+  regulation_status: string
+  users_count: number
+  client_users_count: number
+  admin_users_count: number
+  primary_contact?: {
+    email?: string | null
+    nombre?: string | null
+    organizacion?: string | null
+    rol?: string | null
+  } | null
+  link_status: 'sin_tenant' | 'tenant_sin_usuario' | 'usuario_sin_tenant' | 'vinculado' | 'duplicado'
+  duplicate_tenants_count: number
 }
 
 interface TenantDocumentDraft {
@@ -143,6 +184,17 @@ const emptyForm = {
   tier_comercial: 'diagnostico' as TierComercial,
 }
 
+const fallbackStates: InegiState[] = [
+  ['01', 'Aguascalientes'], ['02', 'Baja California'], ['03', 'Baja California Sur'], ['04', 'Campeche'],
+  ['05', 'Coahuila de Zaragoza'], ['06', 'Colima'], ['07', 'Chiapas'], ['08', 'Chihuahua'],
+  ['09', 'Ciudad de México'], ['10', 'Durango'], ['11', 'Guanajuato'], ['12', 'Guerrero'],
+  ['13', 'Hidalgo'], ['14', 'Jalisco'], ['15', 'México'], ['16', 'Michoacán de Ocampo'],
+  ['17', 'Morelos'], ['18', 'Nayarit'], ['19', 'Nuevo León'], ['20', 'Oaxaca'],
+  ['21', 'Puebla'], ['22', 'Querétaro'], ['23', 'Quintana Roo'], ['24', 'San Luis Potosí'],
+  ['25', 'Sinaloa'], ['26', 'Sonora'], ['27', 'Tabasco'], ['28', 'Tamaulipas'],
+  ['29', 'Tlaxcala'], ['30', 'Veracruz de Ignacio de la Llave'], ['31', 'Yucatán'], ['32', 'Zacatecas'],
+].map(([estado_id, estado_nombre]) => ({ estado_id, estado_nombre }))
+
 function authHeaders(): HeadersInit {
   if (typeof window === 'undefined') return { 'Content-Type': 'application/json' }
   const token = localStorage.getItem('alquimia_token')
@@ -159,8 +211,48 @@ function statusClass(status: string) {
   return 'bg-[#FDFCFA] text-[#6B6760] border-[#E8E4DC]'
 }
 
+function linkStatusLabel(status: AdminErpMunicipalityRow['link_status']) {
+  if (status === 'vinculado') return 'Vinculado'
+  if (status === 'tenant_sin_usuario') return 'Tenant sin usuario'
+  if (status === 'usuario_sin_tenant') return 'Usuario sin tenant'
+  if (status === 'duplicado') return 'Duplicado'
+  return 'Sin tenant'
+}
+
+function linkStatusClass(status: AdminErpMunicipalityRow['link_status']) {
+  if (status === 'vinculado') return 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'
+  if (status === 'duplicado') return 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]'
+  if (status === 'tenant_sin_usuario' || status === 'usuario_sin_tenant') return 'border-[#F5DCA0] bg-[#FEF7E7] text-[#8A5C05]'
+  return 'border-[#E8E4DC] bg-white text-[#6B6760]'
+}
+
+async function fetchAdminJson<T>(backendPath: string, localPath: string, headers: HeadersInit): Promise<T> {
+  const backendUrl = `${getApiUrl()}${backendPath}`
+  try {
+    const backendRes = await fetch(backendUrl, { headers })
+    const backendData = await backendRes.json().catch(() => ({}))
+    if (backendRes.ok) return backendData as T
+  } catch {
+    // Fall back to the local Next route below.
+  }
+  const localRes = await fetch(localPath)
+  const localData = await localRes.json().catch(() => ({}))
+  if (!localRes.ok) throw new Error((localData as { detail?: string }).detail ?? `HTTP ${localRes.status}`)
+  return localData as T
+}
+
 export default function AdminPage() {
   const [tenants, setTenants] = useState<AdminTenant[]>([])
+  const [states, setStates] = useState<InegiState[]>(fallbackStates)
+  const [municipalities, setMunicipalities] = useState<InegiMunicipality[]>([])
+  const [erpRows, setErpRows] = useState<AdminErpMunicipalityRow[]>([])
+  const [erpFilters, setErpFilters] = useState({
+    q: '',
+    estado_id: '',
+    stage: '',
+    tier: '',
+    status: '',
+  })
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [form, setForm] = useState(emptyForm)
   const [evidence, setEvidence] = useState({
@@ -190,6 +282,34 @@ export default function AdminPage() {
     () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
     [selectedId, tenants],
   )
+
+  const fallbackErpRows = useMemo<AdminErpMunicipalityRow[]>(() => tenants.map(tenant => ({
+    clave_inegi: tenant.inegi_clave,
+    municipio: tenant.nombre,
+    estado: tenant.estado_mx,
+    municipio_id: tenant.municipio_id,
+    zm: '',
+    tenant_id: tenant.id,
+    tenant_nombre: tenant.nombre,
+    stage: tenant.state.current_stage,
+    tier: tenant.tier_comercial,
+    regulation_status: 'unknown',
+    users_count: 0,
+    client_users_count: 0,
+    admin_users_count: 0,
+    primary_contact: null,
+    link_status: 'tenant_sin_usuario' as const,
+    duplicate_tenants_count: 1,
+  })).filter(row => {
+    const q = erpFilters.q.trim().toLowerCase()
+    const matchesQ = !q || `${row.municipio} ${row.estado} ${row.clave_inegi} ${row.tenant_nombre}`.toLowerCase().includes(q)
+    const matchesStage = !erpFilters.stage || row.stage === erpFilters.stage
+    const matchesTier = !erpFilters.tier || row.tier === erpFilters.tier
+    const matchesStatus = !erpFilters.status || row.link_status === erpFilters.status
+    return matchesQ && matchesStage && matchesTier && matchesStatus
+  }), [erpFilters.q, erpFilters.stage, erpFilters.status, erpFilters.tier, tenants])
+
+  const visibleErpRows = erpRows.length ? erpRows : fallbackErpRows
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -234,6 +354,51 @@ export default function AdminPage() {
       setError(exc instanceof Error ? exc.message : 'No se pudo cargar tenants')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function loadInegiStates() {
+    try {
+      const data = await fetchAdminJson<{ states?: InegiState[] }>('/admin/inegi/states', '/api/admin/inegi/states', authHeaders())
+      if (Array.isArray(data.states)) setStates(data.states)
+    } catch {
+      setStates(fallbackStates)
+    }
+  }
+
+  async function loadMunicipalitiesForState(estadoId = erpFilters.estado_id, query = erpFilters.q) {
+    if (!estadoId) {
+      setMunicipalities([])
+      return
+    }
+    try {
+      const params = new URLSearchParams({ estado_id: estadoId, limit: '120' })
+      if (query.trim()) params.set('q', query.trim())
+      const data = await fetchAdminJson<{ municipalities?: InegiMunicipality[] }>(
+        `/admin/inegi/municipalities?${params.toString()}`,
+        `/api/admin/inegi/municipalities?${params.toString()}`,
+        authHeaders(),
+      )
+      setMunicipalities(data.municipalities ?? [])
+    } catch {
+      setMunicipalities([])
+    }
+  }
+
+  async function loadErpRows() {
+    try {
+      const params = new URLSearchParams()
+      Object.entries(erpFilters).forEach(([key, value]) => {
+        if (value.trim()) params.set(key, value.trim())
+      })
+      const data = await fetchAdminJson<{ rows?: AdminErpMunicipalityRow[] }>(
+        `/admin/erp/municipalities?${params.toString()}`,
+        `/api/admin/erp/municipalities?${params.toString()}`,
+        authHeaders(),
+      )
+      setErpRows(data.rows ?? [])
+    } catch {
+      setErpRows([])
     }
   }
 
@@ -282,8 +447,15 @@ export default function AdminPage() {
   useEffect(() => {
     void loadTenants()
     void loadA11Panel()
+    void loadInegiStates()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => {
+    void loadErpRows()
+    void loadMunicipalitiesForState()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [erpFilters.estado_id, erpFilters.stage, erpFilters.status, erpFilters.tier])
 
   useEffect(() => {
     if (selected?.id) void loadBibliographyPanel(selected.id)
@@ -308,6 +480,17 @@ export default function AdminPage() {
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'No se pudo crear tenant')
     }
+  }
+
+  function selectMunicipality(row: InegiMunicipality) {
+    setForm(prev => ({
+      ...prev,
+      nombre: row.nombre,
+      estado_mx: row.estado_nombre,
+      municipio_id: row.municipio_id,
+      inegi_clave: row.clave_inegi,
+    }))
+    setMessage(`Municipio seleccionado desde INEGI: ${row.nombre}`)
   }
 
   async function registerEvidence() {
@@ -455,11 +638,15 @@ export default function AdminPage() {
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="mb-1 text-[10px] uppercase tracking-[0.08em] text-[#8E8980]">/admin · Plataforma 0</p>
-            <h1 className="font-serif text-[26px] text-[#1C1B18]">Backoffice de tenants</h1>
+            <h1 className="font-serif text-[26px] text-[#1C1B18]">Gestor municipal</h1>
           </div>
           <button
             type="button"
-            onClick={() => void loadTenants()}
+            onClick={() => {
+              void loadTenants()
+              void loadErpRows()
+              void loadMunicipalitiesForState()
+            }}
             className="inline-flex h-9 items-center gap-2 border border-[#D8D1C4] bg-[#FDFCFA] px-3 text-[12px] font-medium text-[#1C1B18]"
           >
             <RefreshCw size={14} /> Actualizar
@@ -471,6 +658,141 @@ export default function AdminPage() {
             {error ?? message}
           </div>
         )}
+
+        <section className="mb-5 border border-[#E1DACE] bg-[#FDFCFA]">
+          <div className="border-b border-[#E8E4DC] px-4 py-4">
+            <div className="mb-3 flex items-center gap-2">
+              <Users size={16} className="text-[#3B6D11]" />
+              <h2 className="text-[13px] font-semibold text-[#1C1B18]">Municipios, clientes y usuarios</h2>
+            </div>
+            <div className="grid gap-2 md:grid-cols-[minmax(180px,1fr)_150px_150px_150px_150px_auto]">
+              <label className="relative block">
+                <Search size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8E8980]" />
+                <input
+                  value={erpFilters.q}
+                  onChange={event => setErpFilters(prev => ({ ...prev, q: event.target.value }))}
+                  onKeyDown={event => {
+                    if (event.key === 'Enter') {
+                      void loadErpRows()
+                      void loadMunicipalitiesForState()
+                    }
+                  }}
+                  placeholder="Municipio, INEGI, cliente o usuario"
+                  className="h-9 w-full border border-[#D8D1C4] bg-white pl-9 pr-3 text-[12px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
+                />
+              </label>
+              <select
+                value={erpFilters.estado_id}
+                onChange={event => setErpFilters(prev => ({ ...prev, estado_id: event.target.value }))}
+                className="h-9 border border-[#D8D1C4] bg-white px-2 text-[12px] text-[#1C1B18]"
+              >
+                <option value="">Todos los estados</option>
+                {states.map(state => <option key={state.estado_id} value={state.estado_id}>{state.estado_nombre}</option>)}
+              </select>
+              <select
+                value={erpFilters.stage}
+                onChange={event => setErpFilters(prev => ({ ...prev, stage: event.target.value }))}
+                className="h-9 border border-[#D8D1C4] bg-white px-2 text-[12px] text-[#1C1B18]"
+              >
+                <option value="">Todas las etapas</option>
+                <option value="validation">Validación</option>
+                <option value="planning">Planeación</option>
+                <option value="execution">Ejecución</option>
+              </select>
+              <select
+                value={erpFilters.tier}
+                onChange={event => setErpFilters(prev => ({ ...prev, tier: event.target.value }))}
+                className="h-9 border border-[#D8D1C4] bg-white px-2 text-[12px] text-[#1C1B18]"
+              >
+                <option value="">Todos los tiers</option>
+                <option value="diagnostico">Diagnóstico</option>
+                <option value="implementacion">Implementación</option>
+                <option value="operacion_completa">Operación completa</option>
+              </select>
+              <select
+                value={erpFilters.status}
+                onChange={event => setErpFilters(prev => ({ ...prev, status: event.target.value }))}
+                className="h-9 border border-[#D8D1C4] bg-white px-2 text-[12px] text-[#1C1B18]"
+              >
+                <option value="">Todos los vínculos</option>
+                <option value="vinculado">Vinculado</option>
+                <option value="tenant_sin_usuario">Tenant sin usuario</option>
+                <option value="usuario_sin_tenant">Usuario sin tenant</option>
+                <option value="sin_tenant">Sin tenant</option>
+                <option value="duplicado">Duplicado</option>
+              </select>
+              <button
+                type="button"
+                onClick={() => {
+                  void loadErpRows()
+                  void loadMunicipalitiesForState()
+                }}
+                className="h-9 bg-[#1C1B18] px-4 text-[12px] font-semibold text-white"
+              >
+                Filtrar
+              </button>
+            </div>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[1080px] text-[12px]">
+              <thead>
+                <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+                  <th className="px-4 py-2 font-medium">Municipio</th>
+                  <th className="px-3 py-2 font-medium">Tenant</th>
+                  <th className="px-3 py-2 font-medium">Cliente / usuario</th>
+                  <th className="px-3 py-2 font-medium">Etapa</th>
+                  <th className="px-3 py-2 font-medium">Vínculo</th>
+                  <th className="px-3 py-2 font-medium">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visibleErpRows.length === 0 ? (
+                  <tr><td colSpan={6} className="px-4 py-6 text-[#8E8980]">Sin filas para los filtros actuales.</td></tr>
+                ) : visibleErpRows.slice(0, 80).map(row => (
+                  <tr key={`${row.clave_inegi}-${row.tenant_id ?? 'catalog'}`} className="border-b border-[#EEE8DE]">
+                    <td className="px-4 py-3">
+                      <strong className="block text-[#1C1B18]">{row.municipio}</strong>
+                      <span className="text-[11px] text-[#8E8980]">{row.estado} · INEGI {row.clave_inegi} · municipio {row.municipio_id || '-'}</span>
+                    </td>
+                    <td className="px-3 py-3 text-[#6B6760]">{row.tenant_nombre ?? 'Pendiente de crear'}</td>
+                    <td className="px-3 py-3">
+                      <span className="block text-[#1C1B18]">{row.primary_contact?.email ?? 'Sin usuario vinculado'}</span>
+                      <span className="text-[11px] text-[#8E8980]">{row.users_count} usuario(s) · {row.primary_contact?.organizacion ?? 'organización pendiente'}</span>
+                    </td>
+                    <td className="px-3 py-3 text-[#6B6760]">{row.stage ?? 'Sin etapa'} · {row.tier ?? 'sin tier'}</td>
+                    <td className="px-3 py-3">
+                      <span className={`border px-2 py-1 text-[11px] ${linkStatusClass(row.link_status)}`}>{linkStatusLabel(row.link_status)}</span>
+                    </td>
+                    <td className="px-3 py-3">
+                      <div className="flex flex-wrap gap-2">
+                        {row.tenant_id ? (
+                          <>
+                            <button type="button" onClick={() => setSelectedId(row.tenant_id ?? null)} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Abrir</button>
+                            <a href={`/v?tenant_id=${encodeURIComponent(row.tenant_id)}`} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Ver cliente</a>
+                          </>
+                        ) : (
+                          <button
+                            type="button"
+                            onClick={() => setForm(prev => ({
+                              ...prev,
+                              nombre: row.municipio,
+                              estado_mx: row.estado,
+                              municipio_id: row.municipio_id,
+                              inegi_clave: row.clave_inegi,
+                            }))}
+                            className="border border-[#3B6D11] bg-white px-2 py-1 text-[11px] font-semibold text-[#2F5B0D]"
+                          >
+                            Preparar tenant
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
           <aside className="space-y-5">
@@ -495,6 +817,21 @@ export default function AdminPage() {
                     />
                   </label>
                 ))}
+                {municipalities.length > 0 && (
+                  <div className="max-h-[220px] overflow-auto border border-[#E8E4DC] bg-white">
+                    {municipalities.slice(0, 40).map(row => (
+                      <button
+                        key={row.clave_inegi}
+                        type="button"
+                        onClick={() => selectMunicipality(row)}
+                        className="block w-full border-b border-[#EEE8DE] px-3 py-2 text-left hover:bg-[#F4F2ED]"
+                      >
+                        <span className="block text-[12px] font-semibold text-[#1C1B18]">{row.nombre}</span>
+                        <span className="text-[10px] text-[#8E8980]">{row.estado_nombre} · INEGI {row.clave_inegi}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <label className="block text-[11px] font-medium text-[#6B6760]">
                   Tier comercial
                   <select

@@ -26,7 +26,7 @@ describe('ConsultingPackagePanel', () => {
     expect(screen.getByText('Insumos conectados')).toBeTruthy()
     expect(screen.getByText('Gates de cierre')).toBeTruthy()
     expect(screen.getByText('Compradores/precios')).toBeTruthy()
-    expect(screen.getAllByText(/El plan sólo se bloquea si falta reglamento/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText(/Sin reglamento municipal vigente integrado/i).length).toBeGreaterThan(0)
     expect(screen.getAllByText('No cuantificado por brecha')).toHaveLength(5)
     expect(screen.getByText('Bloquea plan')).toBeTruthy()
     expect(screen.getAllByText('Condiciona').length).toBeGreaterThan(1)

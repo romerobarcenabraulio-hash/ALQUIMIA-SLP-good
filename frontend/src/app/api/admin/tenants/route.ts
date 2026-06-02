@@ -1,33 +1,9 @@
-import { currentUser } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 import { getTenantArchiveData } from '@/lib/documentArchiveStore'
 import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
+import { localAdminAuthContext } from '../_shared'
 
 export const dynamic = 'force-dynamic'
-
-const TEMPORARY_ADMIN_EMAILS = new Set(['romero.barcena.braulio@gmail.com'])
-
-function isAdminMetadata(metadata: Record<string, unknown> | null | undefined) {
-  return (
-    metadata?.role === 'founder'
-    || metadata?.role === 'admin'
-    || metadata?.has_admin_access === true
-    || metadata?.bypass_payment_gates === true
-  )
-}
-
-function normalizeEmail(email: string | null | undefined) {
-  return email?.toLowerCase().trim() ?? ''
-}
-
-function userEmails(user: Awaited<ReturnType<typeof currentUser>>) {
-  if (!user) return []
-  const all = [
-    user.primaryEmailAddress?.emailAddress,
-    ...user.emailAddresses.map(email => email.emailAddress),
-  ]
-  return Array.from(new Set(all.map(normalizeEmail).filter(Boolean)))
-}
 
 function regulationStatusForTenant(tenantId: string) {
   const data = getTenantArchiveData(tenantId)
@@ -37,21 +13,13 @@ function regulationStatusForTenant(tenantId: string) {
 }
 
 export async function GET() {
-  const user = await currentUser().catch(() => null)
-  const emails = userEmails(user)
-  const isTemporaryAdmin = emails.some(email => TEMPORARY_ADMIN_EMAILS.has(email))
-  const canViewAdminIndex = isTemporaryAdmin || isAdminMetadata(user?.publicMetadata as Record<string, unknown> | undefined)
+  const auth = await localAdminAuthContext()
 
-  if (!canViewAdminIndex) {
+  if (!auth.allowed) {
     return NextResponse.json(
       {
-        detail: 'Solo admins',
-        auth_debug: {
-          signed_in: Boolean(user),
-          email_count: emails.length,
-          primary_email_detected: Boolean(user?.primaryEmailAddress?.emailAddress),
-          admin_metadata_detected: isAdminMetadata(user?.publicMetadata as Record<string, unknown> | undefined),
-        },
+        detail: 'Solo admins o analistas internos',
+        auth_debug: auth,
       },
       { status: 403 },
     )
