@@ -13,7 +13,7 @@ describe('citations · MVP 5R rigor minimo', () => {
   })
 
   it('cada metrica fixture tiene metadata minima o queda tratable como brecha', () => {
-    for (const tenantId of ['complete-city', 'partial-city', 'gap-city']) {
+    for (const tenantId of ['municipio-demo', 'complete-city', 'partial-city', 'gap-city']) {
       const data = tenantDiagnosticDataFor(tenantId)
       expect(data.document_index).toHaveLength(6)
       for (const metric of data.metrics) {
