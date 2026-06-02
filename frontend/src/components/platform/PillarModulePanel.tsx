@@ -90,6 +90,59 @@ function documentsForModule(moduleId: string, documents: TenantReceivedDocument[
   return documents.filter(document => moduleMatches(document.module_id, moduleId))
 }
 
+function LegalTechnicalJustificationPanel({
+  gaps,
+  docs,
+}: {
+  gaps: DocumentGap[]
+  docs: TenantReceivedDocument[]
+}) {
+  const hasReglamento = docs.some(document => document.document_type === 'reglamento_limpia')
+  const reglamentoGap = gaps.find(gap => gap.document_type === 'reglamento_limpia')
+
+  return (
+    <div className="mt-5 border-l-4 border-[#D7B56D] bg-[#FFF9EA] px-4 py-4">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#765814]">
+        Justificación técnica preliminar
+      </p>
+      <h3 className="mt-2 font-serif text-[24px] leading-tight text-[#1C1B18]">
+        La propuesta reglamentaria queda condicionada por evidencia local y revisión humana.
+      </h3>
+      <div className="mt-4 grid gap-x-6 gap-y-4 md:grid-cols-2">
+        <div>
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Reglamento vigente</p>
+          <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">
+            {hasReglamento
+              ? 'Documento recibido; pendiente de cotejo y validación humana antes de habilitar obligaciones o sanciones.'
+              : reglamentoGap?.reason ?? 'Documento pendiente; no se afirma contenido normativo vigente.'}
+          </p>
+        </div>
+        <div>
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Documento pendiente</p>
+          <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">
+            Si falta reglamento, acuerdo de Cabildo o soporte técnico, el módulo muestra brecha crítica y no verdad municipal.
+          </p>
+        </div>
+        <div>
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Propuesta</p>
+          <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">
+            Cualquier texto reglamentario se presenta como borrador de trabajo; no es acto de autoridad, dictamen ni aprobación.
+          </p>
+        </div>
+        <div>
+          <p className="text-[12px] font-semibold text-[#1C1B18]">Revisión humana requerida</p>
+          <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">
+            Jurídico municipal, área técnica y decisores competentes deben cotejar fuente, método, proporcionalidad y procedimiento.
+          </p>
+        </div>
+      </div>
+      <p className="mt-4 text-[12px] leading-5 text-[#765814]">
+        Justificación: sin reglamento vigente trazable y estudios locales mínimos, la plataforma solo puede ordenar brechas y preparar preguntas técnicas. No firma, no aprueba y no cierra gates.
+      </p>
+    </div>
+  )
+}
+
 export function moduleDocumentStatus(moduleId: string, data: TenantDiagnosticData): 'complete' | 'received' | 'gap' | 'pending' {
   const gaps = gapsForModule(moduleId, data.document_gaps)
   if (gaps.length) return 'gap'
@@ -121,7 +174,7 @@ export function PillarModulePanel({
   const status = moduleDocumentStatus(module.module_id, tenantData)
 
   return (
-    <section className="mx-4 mt-5 max-w-full overflow-hidden rounded-[8px] border border-[#D8D2C5] bg-white p-4 sm:mx-6 sm:p-5">
+    <section className="mx-4 mt-5 max-w-full overflow-hidden border-t border-[#D8D2C5] pt-5 sm:mx-6">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1.05fr)_minmax(360px,0.95fr)]">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
@@ -148,6 +201,9 @@ export function PillarModulePanel({
             Municipio: <span className="font-semibold text-[#1C1B18]">{tenantData.municipality}</span>. Alcance territorial de las métricas: municipio salvo que una fuente indique otra cosa. Zona metropolitana, estado y país no se mezclan con dato municipal.
           </p>
           <ModuleDiagram moduleId={module.module_id} metrics={metrics} />
+          {module.module_id === 'marco_legal' && (
+            <LegalTechnicalJustificationPanel gaps={gaps} docs={docs} />
+          )}
         </div>
 
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
@@ -199,7 +255,7 @@ export function PillarModulePanel({
         blockedClaims={MODULE_BLOCKED_CLAIMS[module.module_id]}
       />
 
-      <div className="mt-4 flex items-start gap-2 rounded-[8px] border border-[#E8E4DC] bg-[#F7F3EA] p-3 text-[12px] leading-5 text-[#5C574F]">
+      <div className="mt-4 flex items-start gap-2 border-t border-[#E8E4DC] pt-3 text-[12px] leading-5 text-[#5C574F]">
         <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-[#3B6D11]" />
         <p>
           Este módulo conserva su lugar en el índice aunque falte evidencia. Las brechas se muestran como brechas, no como secciones eliminadas.

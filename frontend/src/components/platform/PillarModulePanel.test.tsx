@@ -19,7 +19,7 @@ describe('PillarModulePanel helpers', () => {
   })
 
   it('renders a readable pillar module with evidence and blocked claims', () => {
-    render(
+    const { container } = render(
       <PillarModulePanel
         module={{
           module_id: 'city_baseline',
@@ -39,5 +39,32 @@ describe('PillarModulePanel helpers', () => {
     expect(screen.getByText('Brecha documental visible')).toBeTruthy()
     expect(screen.getByText('Evidencia usada por este módulo')).toBeTruthy()
     expect(screen.getByText('Claims bloqueados o condicionados')).toBeTruthy()
+    const root = container.querySelector('section')
+    expect(root?.className).toContain('border-t')
+    expect(root?.className).not.toContain('rounded')
+  })
+
+  it('renders M03B technical justification without closing it as official', () => {
+    render(
+      <PillarModulePanel
+        module={{
+          module_id: 'marco_legal',
+          label: 'M03B',
+          audience_mode: 'city_team',
+          decision: 'Revisar marco legal',
+          evidence: 'Reglamento pendiente',
+          status: 'ready',
+          next_action: 'Cargar reglamento',
+        }}
+        tenantData={TENANT_DIAGNOSTIC_FIXTURES['municipio-demo']}
+      />,
+    )
+
+    expect(screen.getByText('Justificación técnica preliminar')).toBeTruthy()
+    expect(screen.getByText('Reglamento vigente')).toBeTruthy()
+    expect(screen.getByText('Documento pendiente')).toBeTruthy()
+    expect(screen.getByText('Propuesta')).toBeTruthy()
+    expect(screen.getByText('Revisión humana requerida')).toBeTruthy()
+    expect(screen.getByText(/no es acto de autoridad, dictamen ni aprobación/i)).toBeTruthy()
   })
 })

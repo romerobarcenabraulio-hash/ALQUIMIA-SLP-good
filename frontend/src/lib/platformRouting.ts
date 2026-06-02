@@ -27,6 +27,13 @@ export interface TenantCapability {
 
 export interface TenantStatePayload {
   tenant_id: string
+  municipal_context?: {
+    municipio_id?: string | null
+    clave_inegi?: string | null
+    zm?: string | null
+    municipality?: string | null
+    state?: string | null
+  } | null
   state: {
     current_stage: TenantStage
     transition_mode?: string

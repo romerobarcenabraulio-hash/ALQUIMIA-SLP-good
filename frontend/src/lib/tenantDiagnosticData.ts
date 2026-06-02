@@ -75,6 +75,9 @@ export interface TenantReceivedDocument {
 
 export interface TenantDiagnosticData {
   tenant_id: string
+  municipio_id?: string
+  clave_inegi?: string
+  zm?: string
   municipality: string
   state: string
   status: 'preliminary' | 'preliminary_ready' | 'preparing' | 'official'
@@ -94,6 +97,11 @@ export const STANDARD_CITY_DOCUMENT_INDEX: TenantDocumentSlot[] = [
   { id: '05_risk_register', title: 'Riesgos y brechas críticas', required: true, status: 'ready' },
   { id: '06_next_steps', title: 'Próximos pasos y validación humana', required: true, status: 'ready' },
 ]
+
+const DEMO_DOCUMENT_INDEX: TenantDocumentSlot[] = STANDARD_CITY_DOCUMENT_INDEX.map(slot => ({
+  ...slot,
+  status: 'critical_gap',
+}))
 
 const today = '2026-05-29'
 
@@ -148,6 +156,14 @@ export const CITATION_REGISTRY: Record<string, CitationRecord> = {
     year_or_date: today,
     consulted_at: today,
   },
+  demo_sandbox_gap: {
+    id: 'demo_sandbox_gap',
+    institution: 'ALQUIMIA',
+    title: 'Sandbox founder sin datos cargados',
+    parent_document: 'Registro interno de demostracion',
+    year_or_date: today,
+    consulted_at: today,
+  },
 }
 
 const documentLabels: Record<string, string> = {
@@ -161,6 +177,8 @@ const documentLabels: Record<string, string> = {
   estudio_rutas: 'Estudio de rutas y tiempos',
   censo_pepenadores: 'Censo de pepenadores y trabajadores informales',
   auditoria_infraestructura: 'Auditoría de infraestructura existente',
+  catalogo_compradores: 'Catálogo de compradores y centros de acopio',
+  cotizacion_materiales: 'Cotización vigente de materiales reciclables',
 }
 
 export function documentLabel(documentType: string): string {
@@ -201,6 +219,8 @@ const DOCUMENT_TYPE_MODULE: Record<string, string> = {
   estudio_rutas: 'M08',
   censo_pepenadores: 'M02',
   auditoria_infraestructura: 'M06',
+  catalogo_compradores: 'M13',
+  cotizacion_materiales: 'M13',
 }
 
 export function requiredDocumentGapsForTenant(
@@ -214,7 +234,7 @@ export function requiredDocumentGapsForTenant(
       DOCUMENT_TYPE_MODULE[documentType] ?? 'M01',
       documentType,
       reasonByType[documentType] ?? 'Documento requerido no disponible en fuente pública accesible.',
-      documentType.startsWith('estudio_') || documentType === 'reglamento_limpia' ? 'critical' : 'high',
+      documentType === 'reglamento_limpia' ? 'critical' : documentType.startsWith('estudio_') ? 'high' : 'high',
     ),
   )
 }
@@ -249,8 +269,102 @@ const commonMetrics: TenantMetric[] = [
 ]
 
 export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = {
+  'municipio-demo': {
+    tenant_id: 'municipio-demo',
+    municipality: 'Municipio Demo',
+    state: 'Estado Demo · INEGI DEMO-001',
+    status: 'preparing',
+    version: 1,
+    generated_at: today,
+    metrics: [
+      {
+        id: 'rsu_generation',
+        label: 'Generación RSU',
+        value: null,
+        unit: '',
+        source: 'Sin documento cargado',
+        source_date: today,
+        method: 'Sandbox estructural; no se estima ni se precarga benchmark',
+        confidence: 'critical_gap',
+        territorial_scope: 'municipio',
+        status: 'brecha_critica',
+        citation_id: 'demo_sandbox_gap',
+        validation_status: 'blocked_by_gap',
+      },
+      {
+        id: 'field_characterization',
+        label: 'Caracterización física local',
+        value: null,
+        unit: '',
+        source: 'Sin estudio local cargado',
+        source_date: today,
+        method: 'Brecha crítica; el benchmark no sustituye estudio local',
+        confidence: 'critical_gap',
+        territorial_scope: 'municipio',
+        status: 'brecha_critica',
+        citation_id: 'demo_sandbox_gap',
+        validation_status: 'blocked_by_gap',
+      },
+      {
+        id: 'routes_time_study',
+        label: 'Estudio de rutas y tiempos',
+        value: null,
+        unit: '',
+        source: 'Sin documento cargado',
+        source_date: today,
+        method: 'Brecha crítica para navegación de estructura; no hay dato operativo',
+        confidence: 'critical_gap',
+        territorial_scope: 'municipio',
+        status: 'brecha_critica',
+        citation_id: 'demo_sandbox_gap',
+        validation_status: 'blocked_by_gap',
+      },
+      {
+        id: 'psp_acceptance',
+        label: 'Aceptación a pago por servicio',
+        value: null,
+        unit: '',
+        source: 'Sin estudio PSP cargado',
+        source_date: today,
+        method: 'Brecha crítica; no se infiere disposición de pago',
+        confidence: 'critical_gap',
+        territorial_scope: 'municipio',
+        status: 'brecha_critica',
+        citation_id: 'demo_sandbox_gap',
+        validation_status: 'blocked_by_gap',
+      },
+    ],
+    document_index: DEMO_DOCUMENT_INDEX,
+    document_gaps: requiredDocumentGapsForTenant('municipio-demo', [
+      'plan_desarrollo',
+      'reglamento_limpia',
+      'organigrama',
+      'presupuesto_egresos',
+      'cuenta_publica',
+      'estudio_cuarteo',
+      'estudio_rutas',
+      'censo_pepenadores',
+      'auditoria_infraestructura',
+      'acuerdo_cabildo',
+    ], {
+      plan_desarrollo: 'Sandbox vacio: falta Plan Municipal de Desarrollo para iniciar narrativa local.',
+      reglamento_limpia: 'Sandbox vacio: falta reglamento vigente; no se muestra analisis legal como verdad municipal.',
+      organigrama: 'Sandbox vacio: falta organigrama para asignar responsables humanos.',
+      presupuesto_egresos: 'Sandbox vacio: falta presupuesto; no se renderizan escenarios financieros como cifras.',
+      cuenta_publica: 'Sandbox vacio: falta cuenta publica para cotejo presupuestal.',
+      estudio_cuarteo: 'Sandbox vacio: falta estudio local de cuarteo; no se usa benchmark como sustituto.',
+      estudio_rutas: 'Sandbox vacio: falta estudio de rutas y tiempos; no se optimizan rutas.',
+      censo_pepenadores: 'Sandbox vacio: falta censo social; no se infiere poblacion informal.',
+      auditoria_infraestructura: 'Sandbox vacio: falta inventario fisico validable.',
+      acuerdo_cabildo: 'Sandbox vacio: falta acuerdo o minuta para expediente institucional.',
+    }),
+    tenant_documents: [],
+  },
   'complete-city': {
     tenant_id: 'complete-city',
+    municipio_id: 'slp',
+    clave_inegi: '24028',
+    zm: 'SLP',
     municipality: 'Municipio con datos suficientes',
     state: 'San Luis Potosí',
     status: 'preliminary_ready',
@@ -281,6 +395,9 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
   },
   'partial-city': {
     tenant_id: 'partial-city',
+    municipio_id: 'slp',
+    clave_inegi: '24028',
+    zm: 'SLP',
     municipality: 'Municipio con datos parciales',
     state: 'San Luis Potosí',
     status: 'preliminary_ready',
@@ -314,6 +431,9 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
   },
   'gap-city': {
     tenant_id: 'gap-city',
+    municipio_id: 'slp',
+    clave_inegi: '24028',
+    zm: 'SLP',
     municipality: 'Municipio con brechas críticas',
     state: 'San Luis Potosí',
     status: 'preliminary',
@@ -362,4 +482,26 @@ export const TENANT_DIAGNOSTIC_FIXTURES: Record<string, TenantDiagnosticData> = 
 
 export function tenantDiagnosticDataFor(tenantId: string): TenantDiagnosticData {
   return TENANT_DIAGNOSTIC_FIXTURES[tenantId] ?? TENANT_DIAGNOSTIC_FIXTURES['partial-city']
+}
+
+export interface TenantMunicipalContextOverride {
+  municipio_id?: string | null
+  clave_inegi?: string | null
+  zm?: string | null
+  municipality?: string | null
+  state?: string | null
+}
+
+export function withTenantMunicipalContext(
+  data: TenantDiagnosticData,
+  context: TenantMunicipalContextOverride,
+): TenantDiagnosticData {
+  return {
+    ...data,
+    municipio_id: context.municipio_id?.trim() || data.municipio_id,
+    clave_inegi: context.clave_inegi?.trim() || data.clave_inegi,
+    zm: context.zm?.trim().toUpperCase() || data.zm,
+    municipality: context.municipality?.trim() || data.municipality,
+    state: context.state?.trim() || data.state,
+  }
 }
