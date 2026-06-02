@@ -318,9 +318,11 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
     ?? (input.apiLayerPayloads
       ? buildConsultingInputRegistryWithApiLayers(input.tenantData, input.apiLayerPayloads)
       : buildConsultingInputRegistry(input.tenantData))
-  const buyersAvailable = input.buyersAvailable ?? registry.buyers_available
+  const localBuyersAvailable = input.buyersAvailable ?? registry.buyers_available
   return MATERIALS.map(material => {
-    if (!buyersAvailable) {
+    const researchKey = MATERIAL_RESEARCH_KEY[material]
+    const research = researchKey ? MATERIAL_PRICE_RESEARCH[researchKey] : null
+    if (!localBuyersAvailable && !research) {
       return {
         material,
         weighted_price_mxn_per_kg: null,
@@ -332,24 +334,25 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
         derived_from_field_ids: [],
         confidence: 'blocked',
         source: 'Compradores y precios no cargados',
-        note: 'Sin comprador, cotización o catálogo vigente, el material no genera ingreso en el paquete cliente.',
+        note: 'Sin comprador, cotización o referencia documental suficiente, el material no genera ingreso en el paquete cliente.',
       }
     }
 
-    const researchKey = MATERIAL_RESEARCH_KEY[material]
-    const research = researchKey ? MATERIAL_PRICE_RESEARCH[researchKey] : null
     const basePrice = research?.recommended ?? 1
     const source = research
       ? `${research.sourceSummary}. ${research.explanation}`
       : 'Sin referencia documental especifica; usar sólo como supuesto interno de escenario.'
+    const scenarioSource = localBuyersAvailable
+      ? source
+      : `${source} Sin comprador local integrado: se usa como aproximacion bibliografica de escenario, no como precio contratado.`
     const channels: MaterialPriceChannel[] = QUALITY_DISTRIBUTIONS[material].map(channel => ({
       label: channel.label,
       share_pct: channel.share_pct,
       price_mxn_per_kg: Number((basePrice * channel.factor).toFixed(2)),
       rationale: channel.rationale,
       data_category: 'calculated',
-      source,
-      confidence: research ? (research.status === 'validado' ? 'medium' : 'low') : 'low',
+      source: scenarioSource,
+      confidence: localBuyersAvailable && research?.status === 'validado' ? 'medium' : 'low',
     }))
     const rejection_pct = channels.find(channel => /rechaz|sin salida|no aprovechable/i.test(channel.label))?.share_pct ?? 0
     const logistics = material === 'vidrio' ? 0.75 : material === 'orgánico' ? 0.3 : 0.45
@@ -367,11 +370,15 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
       derived_from_field_ids: [
         `material_research_${researchKey ?? material}`,
         `quality_distribution_${material}`,
-        `buyers_available_${input.tenantData.tenant_id}`,
+        localBuyersAvailable
+          ? `buyers_available_${input.tenantData.tenant_id}`
+          : `bibliographic_price_basis_${input.tenantData.tenant_id}`,
       ],
-      confidence: research?.status === 'validado' ? 'medium' : 'low',
-      source,
-      note: 'Precio ponderado de escenario por distribución de calidad; no precio oficial, cotización ni garantía contractual. La confianza sube con cotización local o datos del cliente.',
+      confidence: localBuyersAvailable && research?.status === 'validado' ? 'medium' : 'low',
+      source: scenarioSource,
+      note: localBuyersAvailable
+        ? 'Precio ponderado de escenario por distribución de calidad; no precio oficial, cotización ni garantía contractual. La confianza sube con cotización local o datos del cliente.'
+        : 'Precio ponderado bibliográfico de escenario. Permite aproximar derrama y sensibilidad, pero no acredita comprador local, precio oficial, cotización ni garantía contractual.',
     }
   })
 }
@@ -407,6 +414,10 @@ function buildScenarios(data: TenantDiagnosticData, materialMix: MaterialPriceMi
   const usablePrice = materialMix.find(item => item.weighted_price_mxn_per_kg !== null)?.weighted_price_mxn_per_kg ?? null
   const blockedBy = gaps.slice(0, 4).map(gap => gap.label)
   const canCalculate = rsuTonDay !== null && usablePrice !== null
+  const bibliographyOnlyPrice = materialMix.some(item =>
+    item.weighted_price_mxn_per_kg !== null
+    && item.derived_from_field_ids.some(fieldId => fieldId.startsWith('bibliographic_price_basis_')),
+  )
   const ids: ConsultingScenario['id'][] = ['minimum_viable', 'conservative', 'base_realistic', 'optimized', 'stress']
 
   return {
@@ -441,7 +452,9 @@ function buildScenarios(data: TenantDiagnosticData, materialMix: MaterialPriceMi
         confidence: 'low',
         assumptions: [
           'Mix privado urbano distribuido por categorías; requiere censo local para elevar confianza.',
-          'Precio ponderado de escenario; requiere cotización vigente antes de decisión comercial.',
+          bibliographyOnlyPrice
+            ? 'Precio ponderado bibliográfico; requiere comprador/cotización local antes de decisión comercial.'
+            : 'Precio ponderado de escenario; requiere cotización vigente antes de decisión comercial.',
         ],
         blocked_by: blockedBy,
       }
