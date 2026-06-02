@@ -205,3 +205,85 @@ Decision:
 - `codex/fix-module-order-risk-control`: contiene orden modular corregido, pero esta behind del `main` remoto actual.
 - `codex/backend-bibliography-registry`: contiene backend bibliography, pero esta behind del `main` remoto actual.
 - `codex/frontend-evidence-demo`: creada sin commits; usar solo cuando exista mecanismo de commit multiarchivo seguro.
+
+## Depuracion concreta · 2026-06-02 cierre operativo
+
+### Rama limpia creada desde main actual
+
+- `codex/git-sync-risk-register-v2`
+- Base: `e0972e702c013ae0fb61eeacf7800ed4245f3bdf`
+- Estado compare: `ahead_by=1`, `behind_by=0`
+- Uso: bitacora limpia de cierre y reglas para no volver a mezclar `main` local divergido.
+
+### Bloque funcional listo para recrear desde main actual
+
+#### Orden modular
+
+Archivos minimos:
+
+- `docs/architecture/capability_registry.json`
+- `frontend/src/lib/validationModuleSpecs.test.ts`
+
+Estado:
+
+- Cambio ya probado localmente.
+- Debe recrearse desde `e0972e7` para quitar `behind`.
+
+Bloqueo tecnico actual:
+
+- El conector permite `contents API`, pero para modificar `capability_registry.json` exige reemplazar archivo completo.
+- Sin `gh` ni `git fetch`, no hay ruta local segura para rebase.
+
+Decision:
+
+- No forzar update manual si implica transcribir un archivo grande con alto riesgo de error.
+
+#### Backend bibliography
+
+Archivos minimos:
+
+- `backend/app/research/router.py`
+- `backend/app/research/bibliography_registry.py`
+- `backend/tests/test_research_bibliography_registry.py`
+
+Estado:
+
+- Tests locales verdes: `python3 -m pytest backend/tests/test_bibliography_intelligence.py backend/tests/test_research_bibliography_registry.py -q`
+- Resultado: 7 passed.
+
+Decision:
+
+- Recrear desde `e0972e7` cuando exista mecanismo de commit multiarchivo seguro o GitHub CLI vuelva a conectar.
+
+#### Frontend evidence/demo
+
+Archivos minimos:
+
+- `frontend/src/components/platform/ConsultingPackagePanel.tsx`
+- `frontend/src/components/platform/ConsultingPackagePanel.test.tsx`
+- `frontend/src/lib/consultingPackageEngine.ts`
+- `frontend/src/lib/consultingPackageEngine.test.ts`
+- `frontend/src/lib/tenantConsultingPackageResponse.ts`
+- `frontend/src/lib/tenantConsultingPackageResponse.test.ts`
+- `frontend/src/lib/tenantDiagnosticData.ts`
+
+Estado:
+
+- Tests locales verdes: `npm run test -- ConsultingPackagePanel consultingPackageEngine tenantConsultingPackageResponse`
+- Resultado: 24 passed.
+
+Decision:
+
+- Mantener como paquete separado; no subir sin mecanismo multiarchivo seguro.
+
+### Riesgo cerrado
+
+- Ya no se recomienda empujar local `main`.
+- Ya no se recomienda integrar `c3c7f705` entero.
+- Ya no se recomienda mezclar orden modular, backend bibliography y frontend evidence en un solo PR.
+
+### Riesgo abierto
+
+- Git local no puede resolver `github.com`.
+- El conector no expone `tree_sha` base suficiente para commits multiarchivo limpios sin reemplazar archivos completos por contenido manual.
+- `main` local sigue divergido y debe tratarse como zona de rescate, no como fuente de verdad.
