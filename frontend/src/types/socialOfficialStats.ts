@@ -12,7 +12,7 @@ export interface OfficialStatSlice {
   value: number
   unit: string
   geoLevel: OfficialStatGeoLevel
-  /** CVE INEGI municipio (5 dígitos) o código entidad (2) o id ZM simulador, según geoLevel. */
+  /** CVE INEGI municipio (5 dígitos), código entidad (2) o id ZM estadística, según geoLevel. */
   geoCode?: string
   geoLabel: string
   vintageLabel: string

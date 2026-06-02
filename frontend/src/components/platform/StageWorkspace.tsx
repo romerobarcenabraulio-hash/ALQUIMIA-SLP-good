@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { AlertTriangle, CheckCircle2, FileText, Gauge, GitBranch, RefreshCw, Search, ShieldCheck } from 'lucide-react'
-import { Header } from '@/components/layout/Header'
+import { InstitutionalHeader } from '@/components/layout/InstitutionalHeader'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DocumentGapBanner } from '@/components/DocumentGapBanner'
 import { ConsultingPackagePanel } from '@/components/platform/ConsultingPackagePanel'
@@ -483,7 +483,7 @@ export function StageWorkspace({ platformStage }: { platformStage: ClientPlatfor
     <div className="flex h-screen overflow-hidden bg-[#F8F7F3]">
       <Sidebar moduleSection={moduleRail} />
       <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <Header />
+        <InstitutionalHeader label={`${PLATFORM_LABEL_BY_STAGE[platformStage]} municipal`} />
         <div className="border-b border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3 sm:px-6">
           <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex flex-wrap items-center gap-3">

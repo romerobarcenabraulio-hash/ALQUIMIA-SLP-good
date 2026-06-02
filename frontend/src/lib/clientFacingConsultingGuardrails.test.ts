@@ -20,23 +20,68 @@ describe('client-facing consulting guardrails', () => {
     }
   })
 
-  it('keeps /v, /p and /e on the StageWorkspace instead of legacy simulator rendering', () => {
+  it('keeps /v, /p and /e on the recognizable modular PlatformPage while StageWorkspace remains contract-only', () => {
     const routes = [
       readFrontend('src/app/v/page.tsx'),
       readFrontend('src/app/p/page.tsx'),
       readFrontend('src/app/e/page.tsx'),
     ]
     const workspace = readFrontend('src/components/platform/StageWorkspace.tsx')
+    const platformPage = readFrontend('src/components/platform/PlatformPage.tsx')
+    const shell = readFrontend('src/components/platform/ConsultingModuleShell.tsx')
+    const specs = readFrontend('src/lib/validationModuleSpecs.ts')
 
     for (const source of routes) {
-      expect(source).toContain('StageWorkspace')
-      expect(source).not.toContain('PlatformPage')
+      expect(source).toContain('PlatformPage')
+      expect(source).not.toContain('StageWorkspace')
       expect(source).not.toContain('renderDecisionModule')
       expect(source).not.toContain('simulatorStore')
     }
+    expect(platformPage).toContain('PlatformModuleNav')
+    expect(platformPage).toContain('PlatformModuleWorkspace')
+    expect(platformPage).toContain('ConsultingModuleShell')
+    expect(platformPage).toContain('Módulos de decisión')
+    expect(platformPage).toContain('chapterGroups.map')
+    expect(platformPage).not.toContain('chapter.rubros.map')
+    expect(platformPage).not.toContain('<details')
+    expect(platformPage).toContain('Sin controles libres de calibración para cliente')
+    expect(platformPage).not.toContain('@/store/simulatorStore')
+    expect(platformPage).not.toContain('@/components/simulator')
+    expect(platformPage).not.toContain('@/app/simulator/renderDecisionModule')
+    expect(platformPage).not.toContain('Este módulo no usa controles libres de simulador')
+    expect(platformPage).toContain('tenantData.data && !sandboxDemo')
+    expect(platformPage).toContain('activeModuleHasOperationalSpec')
+    expect(platformPage).toContain('!activeModuleHasOperationalSpec && !sandboxDemo && <PillarModulePanel')
+    expect(platformPage).toContain('activeModuleHasOperationalSpec || !activeModuleIsPillar')
+    expect(platformPage).toContain('!sandboxDemo && <StageReadinessNotice')
     expect(workspace).not.toContain('@/store/simulatorStore')
     expect(workspace).not.toContain('@/components/simulator')
     expect(workspace).not.toContain('@/app/simulator/renderDecisionModule')
+    expect(shell).toContain('DataPointDisplay')
+    expect(shell).toContain('PendingDataPointDisplay')
+    expect(shell).toContain('pendingDataPointLabels')
+    expect(shell).toContain('subir documento, fuente pública o cálculo trazable antes de afirmar')
+    expect(shell).toContain('EvidenceScopeBadge')
+    expect(shell).toContain('ModuleOperationalVisualization')
+    expect(shell).toContain('RsuSankeyPlaceholder')
+    expect(shell).toContain('ScenarioBars')
+    expect(shell).toContain('MatrixDiagram')
+    expect(shell).toContain('ClaimEvidenceMatrix')
+    expect(shell).toContain('ModuleDocumentUploadSection')
+    expect(shell).toContain('SectionCitations')
+    expect(shell).toContain('ModuleCompletionFooter')
+    expect(shell).toContain('onNavigateModule')
+    expect(shell).toContain('Siguiente módulo:')
+    expect(shell).toContain('Continuar')
+    expect(shell).toContain('Visualización operativa')
+    expect(shell).toContain('Si faltan datos, la figura queda estructural')
+    expect(shell).not.toContain('@/store/simulatorStore')
+    expect(shell).not.toContain('@/components/simulator')
+    expect(shell).not.toContain('@/app/simulator/renderDecisionModule')
+    expect(specs).toContain('VALIDATION_MODULE_ORDER')
+    expect(specs).toContain('Captura, costos y sensibilidad · M13')
+    expect(specs).toContain('Flujo 100% RSU + Sankey')
+    expect(specs).not.toContain('TIR · VPN · Monte Carlo')
   })
 
   it('shows planning and execution as human-gated stages instead of automatic decisions', () => {
@@ -92,15 +137,19 @@ describe('client-facing consulting guardrails', () => {
   it('does not route client access or onboarding copy back to the legacy simulator', () => {
     const acceso = readFrontend('src/app/acceso/AccesoForm.tsx')
     const onboarding = readFrontend('src/components/onboarding/ClientOnboardingGate.tsx')
-    const gatewayHint = readFrontend('src/components/simulator/SimulatorGatewayHint.tsx')
+    const gatewayHint = readFrontend('src/components/platform/PlatformGatewayHint.tsx')
     const aprende = readFrontend('src/app/aprende/page.tsx')
     const caStudio = readFrontend('src/app/ca-studio/page.tsx')
     const informe = readFrontend('src/app/informe/[municipio_id]/page.tsx')
 
     expect(acceso).toContain("searchParams.get('next') ?? '/v'")
+    expect(acceso).not.toContain('@/store/simulatorStore')
     expect(acceso).not.toContain("?? '/simulator'")
     expect(onboarding).toContain('Continuar al paquete consultivo')
-    expect(onboarding).toContain('Zona de análisis')
+    expect(onboarding).toContain('Clave INEGI municipal')
+    expect(onboarding).toContain('Municipio y ZM se analizan por separado')
+    expect(onboarding).toContain('El reglamento es el único bloqueo formal')
+    expect(onboarding).toContain('evidencia investigada, calculada o provista por el cliente')
     expect(onboarding).not.toContain('Continuar al simulador')
     expect(onboarding).not.toContain('ZM simulador')
     expect(gatewayHint).toContain('href="/v"')
@@ -139,6 +188,7 @@ describe('client-facing consulting guardrails', () => {
     const login = readFrontend('src/app/login/page.tsx')
     const signIn = readFrontend('src/app/sign-in/page.tsx')
     const signUp = readFrontend('src/app/sign-up/page.tsx')
+    const reglamentoOnboarding = readFrontend('src/app/onboarding/reglamento/page.tsx')
 
     expect(login).toContain('sanitizeAuthRedirectPath(params.next)')
     expect(login).toContain('redirect(`/sign-in${next}`)')
@@ -146,6 +196,26 @@ describe('client-facing consulting guardrails', () => {
     expect(signIn).not.toContain('forceRedirectUrl="/v"')
     expect(signUp).toContain('fallbackRedirectUrl="/v"')
     expect(signUp).not.toContain('forceRedirectUrl="/v"')
+    expect(reglamentoOnboarding).toContain('disabled={!pdfReady || !setupToken}')
+    expect(reglamentoOnboarding).toContain('Volver al perfil territorial')
+    expect(reglamentoOnboarding).not.toContain('<Link href="/v"')
+  })
+
+  it('keeps client-facing copy aligned to the consulting system rather than simulator promises', () => {
+    const acceso = readFrontend('src/app/acceso/AccesoForm.tsx')
+    const gobierno = readFrontend('src/app/gobierno/page.tsx')
+    const reglamentoIcon = readFrontend('src/components/reglamento/FuenteReglamentoIcon.tsx')
+    const confidencePill = readFrontend('src/components/MetricConfidencePill.tsx')
+
+    expect(acceso).toContain('escenarios cerrados')
+    expect(acceso).not.toContain('Simulación de ingresos')
+    expect(acceso).not.toContain('Generación de documentos para Cabildo con un clic')
+    expect(gobierno).toContain('Escenarios financieros cerrados y trazables')
+    expect(gobierno).not.toContain('Escenarios financieros TIR/VPN')
+    expect(reglamentoIcon).toContain('Abrir reglamento de referencia para cotejo jurídico')
+    expect(reglamentoIcon).not.toContain('se basa la simulación')
+    expect(confidencePill).toContain("verified_official: 'Fuente oficial'")
+    expect(confidencePill).not.toContain("verified_official: 'Verificado oficial'")
   })
 
   it('keeps onboarding service labels out of simulator positioning', () => {
@@ -159,6 +229,7 @@ describe('client-facing consulting guardrails', () => {
   it('keeps public educational copy aligned to consulting package evidence rules', () => {
     const faq = readFrontend('src/components/aprende/FAQSection.tsx')
     const walkthrough = readFrontend('src/components/landing/WalkthroughArticle.tsx')
+    const methodology = readFrontend('src/app/metodologia/page.tsx')
 
     expect(faq).toContain('se muestra una brecha crítica')
     expect(faq).toContain('no se rellena con benchmark')
@@ -170,6 +241,12 @@ describe('client-facing consulting guardrails', () => {
     expect(walkthrough).not.toContain('medición directa en SLP')
     expect(walkthrough).not.toContain('Simulador financiero')
     expect(walkthrough).not.toContain('tooltip dentro del simulador')
+    expect(methodology).toContain('A · Datos investigados')
+    expect(methodology).toContain('B · Datos calculados')
+    expect(methodology).toContain('C · Datos del cliente')
+    expect(methodology).toContain('formato Chicago')
+    expect(methodology).toContain('Cero cifras sin cita')
+    expect(methodology).toContain('No desbloquea un claim')
   })
 
   it('keeps the legacy simulator quarantined away from client users', () => {

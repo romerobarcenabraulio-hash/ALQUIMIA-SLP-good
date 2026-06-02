@@ -4,7 +4,6 @@ import { FormEvent, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowRight, Briefcase, HeartHandshake, Landmark, Lock, Recycle } from 'lucide-react'
-import { useSimulatorStore } from '@/store/simulatorStore'
 import type { Audience } from '@/types'
 import { cn } from '@/lib/utils'
 
@@ -24,7 +23,7 @@ const ROLES: RoleCard[] = [
     id: 'functionary',
     icon: Landmark,
     label: 'Funcionario público',
-    description: 'Sala de mando institucional: diagnóstico jurídico, infraestructura, escenarios y documentos para Cabildo.',
+    description: 'Sala institucional: diagnóstico, evidencia, escenarios cerrados, riesgos y ruta de decisión para Cabildo.',
     cta: 'Entrar como funcionario',
     accentColor: '#1A5FA8',
     bgColor: '#EBF3FB',
@@ -44,7 +43,7 @@ const ROLES: RoleCard[] = [
     id: 'entrepreneur',
     icon: Briefcase,
     label: 'Empresario',
-    description: 'Modelo de viabilidad: CAPEX, TIR, Monte Carlo, trazabilidad de mercado y narrativa de consultoría senior.',
+    description: 'Modelo de viabilidad privada: costos, mercado, trazabilidad y rutas de circularidad con supuestos visibles.',
     cta: 'Entrar como empresario',
     accentColor: '#8B6B4A',
     bgColor: '#F5EDE3',
@@ -132,7 +131,6 @@ export function AccesoForm({ initialStep }: { initialStep: 'code' | 'role' }) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextPath = searchParams.get('next') ?? '/v'
-  const setAudience = useSimulatorStore(s => s.setAudience)
 
   const [code, setCode] = useState('')
   const [loading, setLoading] = useState(false)
@@ -163,7 +161,7 @@ export function AccesoForm({ initialStep }: { initialStep: 'code' | 'role' }) {
   }
 
   async function handleRoleSelect(role: Audience) {
-    await setAudience(role)
+    localStorage.setItem('alquimia.audience', role)
     router.push(nextPath)
   }
 
@@ -183,15 +181,15 @@ export function AccesoForm({ initialStep }: { initialStep: 'code' | 'role' }) {
           </h1>
 
           <p className="text-[14px] text-[#7AAB60] leading-[1.7] mb-8">
-            Herramienta técnica para que municipios, funcionarios y empresas entiendan, modelen y ejecuten programas de separación de residuos sólidos urbanos.
+            Sistema consultivo para investigar, cotejar evidencia, modelar escenarios y preparar decisiones de circularidad municipal sin inventar datos.
           </p>
 
           <div className="space-y-3">
             {[
-              'Diagnóstico técnico y legal de tu municipio',
-              'Simulación de ingresos, empleos e impacto ambiental',
-              'Generación de documentos para Cabildo con un clic',
-              'Centros de acopio: diseño, CAPEX y TIR',
+              'Diagnóstico técnico, legal y documental del municipio',
+              'Escenarios financieros cerrados con supuestos trazables',
+              'Brechas críticas, claims citables y revisión humana',
+              'Hoja de ruta para planeación, ejecución y monitoreo',
             ].map(item => (
               <div key={item} className="flex items-start gap-2.5">
                 <span className="mt-1 w-1.5 h-1.5 rounded-full bg-[#5A9438] shrink-0" />

@@ -1,10 +1,10 @@
 import { Suspense } from 'react'
-import { StageWorkspace } from '@/components/platform/StageWorkspace'
+import { PlatformPage } from '@/components/platform/PlatformPage'
 
 export default function ExecutionPlatformRoute() {
   return (
     <Suspense fallback={null}>
-      <StageWorkspace platformStage="execution" />
+      <PlatformPage platformStage="execution" />
     </Suspense>
   )
 }

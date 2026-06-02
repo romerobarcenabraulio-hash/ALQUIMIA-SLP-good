@@ -13,10 +13,32 @@ import {
   type EvidenceRecommendation,
   type StageEvidenceMap,
 } from '@/lib/bibliographyIntelligence'
+import { MATERIAL_PRICE_RESEARCH } from '@/data/materialPriceResearch'
 
 export type ClaimSourceType = 'document' | 'api' | 'assumption' | 'model'
 export type ClaimHumanStatus = 'validated_human' | 'pending_human_validation' | 'blocked_by_gap'
 export type EvidenceConfidence = 'high' | 'medium' | 'low' | 'blocked'
+export type DataCategory = 'investigated' | 'calculated' | 'client_provided'
+
+export interface DataPoint {
+  field_id: string
+  value: number | string
+  unit?: string
+  category: DataCategory
+  source_institution?: string
+  source_document?: string
+  source_year?: number
+  source_url?: string
+  consulted_at?: string
+  formula?: string
+  derived_from_field_ids?: string[]
+  methodology_url?: string
+  source_document_id?: string
+  source_page?: number
+  literal_citation?: string
+  uploaded_at?: string
+  uploaded_by_user_id?: string
+}
 
 export interface ClaimLedgerEntry {
   id: string
@@ -54,6 +76,9 @@ export interface MaterialPriceChannel {
   share_pct: number
   price_mxn_per_kg: number
   rationale: string
+  data_category: DataCategory
+  source: string
+  confidence: EvidenceConfidence
 }
 
 export interface MaterialPriceMix {
@@ -63,6 +88,8 @@ export interface MaterialPriceMix {
   rejection_pct: number
   logistics_cost_mxn_per_kg: number
   quality_penalty_mxn_per_kg: number
+  formula: string
+  derived_from_field_ids: string[]
   confidence: EvidenceConfidence
   source: string
   note: string
@@ -96,6 +123,15 @@ export interface ReadinessGate {
   blocks: string
 }
 
+export interface PlanEmissionStatus {
+  can_emit_plan: boolean
+  blocked_by_regulation: boolean
+  mode: 'blocked_missing_regulation' | 'conditioned_with_gaps' | 'quantified_conditioned'
+  label: string
+  explanation: string
+  required_human_action: string
+}
+
 export interface ConsultingPackage {
   tenant_id: string
   municipality: string
@@ -110,6 +146,7 @@ export interface ConsultingPackage {
   conditional_recommendations: string[]
   input_registry: ConsultingInputRegistry
   readiness_gates: ReadinessGate[]
+  plan_emission: PlanEmissionStatus
   evidence_recommendations: EvidenceRecommendation[]
   stage_evidence_map: StageEvidenceMap[]
 }
@@ -136,7 +173,60 @@ const PRIVATE_CATEGORIES: Array<Omit<PrivateGeneratorMix, 'share_pct' | 'evidenc
   { id: 'macro_generators', label: 'Macrogeneradores', capture_difficulty: 'medium', material_bias: ['cartón', 'PET', 'HDPE'] },
 ]
 
-const MATERIALS = ['PET', 'HDPE', 'cartón', 'vidrio', 'aluminio', 'orgánico', 'otros']
+const MATERIALS = ['PET', 'HDPE', 'cartón', 'vidrio', 'aluminio', 'orgánico', 'otros'] as const
+type MaterialLabel = (typeof MATERIALS)[number]
+
+const MATERIAL_RESEARCH_KEY: Partial<Record<MaterialLabel, keyof typeof MATERIAL_PRICE_RESEARCH>> = {
+  PET: 'pet',
+  HDPE: 'hdpe',
+  cartón: 'papel',
+  vidrio: 'vidrio',
+  aluminio: 'aluminio',
+  orgánico: 'organico',
+}
+
+const QUALITY_DISTRIBUTIONS: Record<MaterialLabel, Array<{ label: string; share_pct: number; factor: number; rationale: string }>> = {
+  PET: [
+    { label: 'PET limpio alta calidad', share_pct: 30, factor: 1.18, rationale: 'Fracción premium condicionada a separación, compactación y comprador validado.' },
+    { label: 'PET calidad media', share_pct: 45, factor: 1.0, rationale: 'Fracción estándar esperada en escenario base con separación municipal incompleta.' },
+    { label: 'PET baja calidad', share_pct: 20, factor: 0.68, rationale: 'Castigo por mezcla, humedad, color o baja homogeneidad del lote.' },
+    { label: 'PET rechazado o sin salida', share_pct: 5, factor: 0, rationale: 'Merma de clasificación; no debe convertirse en ingreso.' },
+  ],
+  HDPE: [
+    { label: 'HDPE limpio', share_pct: 28, factor: 1.12, rationale: 'Premium sólo si hay segregación y comprador recurrente.' },
+    { label: 'HDPE mixto', share_pct: 47, factor: 1.0, rationale: 'Escenario base con calidad media.' },
+    { label: 'HDPE castigado', share_pct: 20, factor: 0.7, rationale: 'Castigo por contaminación, color o presentación.' },
+    { label: 'HDPE rechazado', share_pct: 5, factor: 0, rationale: 'Merma sin ingreso.' },
+  ],
+  cartón: [
+    { label: 'Cartón limpio seco', share_pct: 35, factor: 1.12, rationale: 'Mejor precio si se conserva seco y separado.' },
+    { label: 'Cartón mixto', share_pct: 40, factor: 1.0, rationale: 'Precio base documental para papel/cartón mezclado.' },
+    { label: 'Cartón húmedo o contaminado', share_pct: 20, factor: 0.55, rationale: 'Castigo por humedad, grasa o mezcla.' },
+    { label: 'Rechazo', share_pct: 5, factor: 0, rationale: 'Fracción sin valorización.' },
+  ],
+  vidrio: [
+    { label: 'Vidrio separado por color', share_pct: 20, factor: 1.15, rationale: 'Sólo aplica con acopio y comprador compatible.' },
+    { label: 'Vidrio mixto', share_pct: 55, factor: 1.0, rationale: 'Escenario más probable por manejo municipal.' },
+    { label: 'Vidrio con alta logística', share_pct: 20, factor: 0.5, rationale: 'Castigo por peso, distancia y baja densidad de valor.' },
+    { label: 'Rechazo', share_pct: 5, factor: 0, rationale: 'Material no valorizado.' },
+  ],
+  aluminio: [
+    { label: 'Aluminio limpio', share_pct: 45, factor: 1.08, rationale: 'Material con mercado más líquido, si hay separación.' },
+    { label: 'Aluminio mixto', share_pct: 40, factor: 1.0, rationale: 'Precio base documental conservador.' },
+    { label: 'Aluminio castigado', share_pct: 12, factor: 0.75, rationale: 'Castigo por mezcla o presentación.' },
+    { label: 'Rechazo', share_pct: 3, factor: 0, rationale: 'Merma menor esperada.' },
+  ],
+  orgánico: [
+    { label: 'Orgánico aprovechable', share_pct: 45, factor: 1.0, rationale: 'Sólo si existe manejo separado y salida de composta.' },
+    { label: 'Orgánico condicionado', share_pct: 30, factor: 0.65, rationale: 'Castigo por mezcla o humedad no controlada.' },
+    { label: 'Orgánico no aprovechable', share_pct: 25, factor: 0, rationale: 'Sin separación o comprador, no genera ingreso.' },
+  ],
+  otros: [
+    { label: 'Otros recuperables', share_pct: 20, factor: 0.8, rationale: 'Fracción heterogénea con comprador especializado.' },
+    { label: 'Otros condicionados', share_pct: 35, factor: 0.4, rationale: 'Requiere separación fina y volumen.' },
+    { label: 'Otros sin salida', share_pct: 45, factor: 0, rationale: 'No se monetiza sin evidencia de comprador.' },
+  ],
+}
 
 const SCENARIO_MULTIPLIER: Record<ConsultingScenario['id'], number> = {
   minimum_viable: 0.08,
@@ -196,6 +286,19 @@ export function renderableClaims(entries: ClaimLedgerEntry[]): ClaimLedgerEntry[
   )
 }
 
+export function isValidDataPoint(dp: DataPoint): boolean {
+  if (dp.category === 'investigated') {
+    return Boolean(dp.source_institution && dp.source_document && dp.source_year)
+  }
+  if (dp.category === 'calculated') {
+    return Boolean(dp.formula && dp.derived_from_field_ids && dp.derived_from_field_ids.length >= 2)
+  }
+  if (dp.category === 'client_provided') {
+    return Boolean(dp.source_document_id && dp.literal_citation)
+  }
+  return false
+}
+
 export function buildPrivateGeneratorMix(input: ConsultingPackageInput): PrivateGeneratorMix[] {
   return PRIVATE_CATEGORIES.map(category => {
     const share = input.documentedPrivateMix?.[category.id] ?? null
@@ -225,22 +328,34 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
         rejection_pct: 0,
         logistics_cost_mxn_per_kg: 0,
         quality_penalty_mxn_per_kg: 0,
+        formula: 'bloqueado_sin_compradores_ni_precios',
+        derived_from_field_ids: [],
         confidence: 'blocked',
         source: 'Compradores y precios no cargados',
         note: 'Sin comprador, cotización o catálogo vigente, el material no genera ingreso en el paquete cliente.',
       }
     }
 
-    const channels: MaterialPriceChannel[] = [
-      { label: 'Venta local', share_pct: 70, price_mxn_per_kg: 4.2, rationale: 'Canal de menor fricción y menor premio por calidad.' },
-      { label: 'Comprador regional', share_pct: 20, price_mxn_per_kg: 5.6, rationale: 'Requiere volumen y logística consolidada.' },
-      { label: 'Lote premium', share_pct: 10, price_mxn_per_kg: 6.4, rationale: 'Depende de separación limpia y comprador validado.' },
-    ]
-    const rejection_pct = material === 'orgánico' ? 18 : 12
-    const logistics = material === 'vidrio' ? 0.75 : 0.45
-    const qualityPenalty = material === 'orgánico' ? 0.35 : 0.25
+    const researchKey = MATERIAL_RESEARCH_KEY[material]
+    const research = researchKey ? MATERIAL_PRICE_RESEARCH[researchKey] : null
+    const basePrice = research?.recommended ?? 1
+    const source = research
+      ? `${research.sourceSummary}. ${research.explanation}`
+      : 'Sin referencia documental especifica; usar sólo como supuesto interno de escenario.'
+    const channels: MaterialPriceChannel[] = QUALITY_DISTRIBUTIONS[material].map(channel => ({
+      label: channel.label,
+      share_pct: channel.share_pct,
+      price_mxn_per_kg: Number((basePrice * channel.factor).toFixed(2)),
+      rationale: channel.rationale,
+      data_category: 'calculated',
+      source,
+      confidence: research ? (research.status === 'validado' ? 'medium' : 'low') : 'low',
+    }))
+    const rejection_pct = channels.find(channel => /rechaz|sin salida|no aprovechable/i.test(channel.label))?.share_pct ?? 0
+    const logistics = material === 'vidrio' ? 0.75 : material === 'orgánico' ? 0.3 : 0.45
+    const qualityPenalty = material === 'orgánico' ? 0.35 : material === 'vidrio' ? 0.2 : 0.25
     const weighted = channels.reduce((sum, channel) => sum + channel.price_mxn_per_kg * (channel.share_pct / 100), 0)
-    const net = weighted * (1 - rejection_pct / 100) - logistics - qualityPenalty
+    const net = weighted - logistics - qualityPenalty
     return {
       material,
       weighted_price_mxn_per_kg: Math.max(0, Number(net.toFixed(2))),
@@ -248,9 +363,15 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
       rejection_pct,
       logistics_cost_mxn_per_kg: logistics,
       quality_penalty_mxn_per_kg: qualityPenalty,
-      confidence: 'medium',
-      source: 'Escenario técnico con compradores disponibles; requiere cotización vigente para cierre comercial.',
-      note: 'Precio ponderado de escenario, no precio oficial ni garantía contractual.',
+      formula: 'sum(channel.price_mxn_per_kg * channel.share_pct / 100) - logistics_cost_mxn_per_kg - quality_penalty_mxn_per_kg',
+      derived_from_field_ids: [
+        `material_research_${researchKey ?? material}`,
+        `quality_distribution_${material}`,
+        `buyers_available_${input.tenantData.tenant_id}`,
+      ],
+      confidence: research?.status === 'validado' ? 'medium' : 'low',
+      source,
+      note: 'Precio ponderado de escenario por distribución de calidad; no precio oficial, cotización ni garantía contractual. La confianza sube con cotización local o datos del cliente.',
     }
   })
 }
@@ -401,6 +522,41 @@ function buildReadinessGates(
   ]
 }
 
+function buildPlanEmissionStatus(
+  inputRegistry: ConsultingInputRegistry,
+  scenarioSet: ScenarioSet,
+): PlanEmissionStatus {
+  const hasScenarioNumbers = scenarioSet.scenarios.some(scenario => scenario.capture_ton_day !== null)
+  if (!inputRegistry.legal_ready) {
+    return {
+      can_emit_plan: false,
+      blocked_by_regulation: true,
+      mode: 'blocked_missing_regulation',
+      label: 'Bloqueado por reglamento',
+      explanation: 'Sin reglamento municipal vigente integrado, la plataforma no debe emitir plan/declaratoria formal.',
+      required_human_action: 'Cargar, cotejar y validar reglamento antes de emitir plan.',
+    }
+  }
+  if (!hasScenarioNumbers) {
+    return {
+      can_emit_plan: true,
+      blocked_by_regulation: false,
+      mode: 'conditioned_with_gaps',
+      label: 'Plan condicionable',
+      explanation: 'Con reglamento integrado, la plataforma puede emitir plan razonable aunque existan brechas; las cifras faltantes quedan no cuantificadas.',
+      required_human_action: 'Revisar brechas, límites de uso y capítulos no cuantificados antes de presentar.',
+    }
+  }
+  return {
+    can_emit_plan: true,
+    blocked_by_regulation: false,
+    mode: 'quantified_conditioned',
+    label: 'Plan cuantificado preliminar',
+    explanation: 'Con reglamento y escenarios trazables, la plataforma puede emitir plan preliminar cuantificado sujeto a revisión humana.',
+    required_human_action: 'Validar supuestos, compradores, precios y límites antes de uso institucional externo.',
+  }
+}
+
 export function buildConsultingPackage(input: ConsultingPackageInput): ConsultingPackage {
   const { tenantData } = input
   const rawInputRegistry = input.inputRegistry
@@ -417,6 +573,7 @@ export function buildConsultingPackage(input: ConsultingPackageInput): Consultin
   const claimLedger = tenantData.metrics.map(claimFromMetric).filter((claim): claim is ClaimLedgerEntry => Boolean(claim))
   const scenarioSet = buildScenarios(tenantData, materialMix, evidenceGaps)
   const readinessGates = buildReadinessGates(tenantData, inputRegistry, scenarioSet, claimLedger)
+  const planEmission = buildPlanEmissionStatus(inputRegistry, scenarioSet)
   const hasScenarios = scenarioSet.scenarios.some(scenario => scenario.capture_ton_day !== null)
   const bibliographyTenants = input.bibliographyTenants ?? [tenantData]
   const evidenceRecommendations = buildEvidenceRecommendations(tenantData, bibliographyTenants).slice(0, 12)
@@ -454,6 +611,7 @@ export function buildConsultingPackage(input: ConsultingPackageInput): Consultin
     ],
     input_registry: inputRegistry,
     readiness_gates: readinessGates,
+    plan_emission: planEmission,
     evidence_recommendations: evidenceRecommendations,
     stage_evidence_map: stageEvidenceMap,
   }

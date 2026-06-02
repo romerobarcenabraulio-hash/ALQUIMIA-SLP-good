@@ -1,5 +1,5 @@
 import { Sidebar } from '@/components/layout/Sidebar'
-import { Header } from '@/components/layout/Header'
+import { InstitutionalHeader } from '@/components/layout/InstitutionalHeader'
 
 /**
  * Shell de aplicación completo: sidebar oscuro + header sticky + área de contenido.
@@ -10,7 +10,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen flex" style={{ background: '#F4F2ED' }}>
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
-        <Header />
+        <InstitutionalHeader />
         <main className="flex-1">
           {children}
         </main>

@@ -47,7 +47,13 @@ function state(): ArchiveState {
   return archiveState.__alquimiaDocumentArchive
 }
 
-export function classifyDocumentByFilename(filename: string): { document_type: string; module_id: string; confidence: TenantReceivedDocument['classification_confidence'] } {
+type DocumentClassification = {
+  document_type: string
+  module_id: string
+  confidence: TenantReceivedDocument['classification_confidence']
+}
+
+export function classifyDocumentByFilename(filename: string): DocumentClassification {
   const normalized = filename.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '')
   if (normalized.includes('reglamento')) return { document_type: 'reglamento_limpia', module_id: 'M03B', confidence: 'suggested_by_filename' }
   if (normalized.includes('presupuesto') || normalized.includes('egresos')) return { document_type: 'presupuesto_egresos', module_id: 'M09', confidence: 'suggested_by_filename' }
@@ -93,10 +99,20 @@ export function getTenantArchiveData(tenantId: string): TenantDiagnosticData {
   return { ...base, document_index, document_gaps, tenant_documents: documents }
 }
 
-export async function registerTenantDocument(tenantId: string, file: File, uploadedByUserId = 'mvp_user') {
+export async function registerTenantDocument(
+  tenantId: string,
+  file: File,
+  uploadedByUserId = 'mvp_user',
+  suggestedClassification?: Partial<Pick<DocumentClassification, 'document_type' | 'module_id'>>,
+) {
   const validationError = validateArchiveFile(file)
   if (validationError) throw new Error(validationError)
-  const classification = classifyDocumentByFilename(file.name)
+  const filenameClassification = classifyDocumentByFilename(file.name)
+  const classification: DocumentClassification = {
+    document_type: suggestedClassification?.document_type ?? filenameClassification.document_type,
+    module_id: suggestedClassification?.module_id ?? filenameClassification.module_id,
+    confidence: suggestedClassification?.document_type || suggestedClassification?.module_id ? 'manual' : filenameClassification.confidence,
+  }
   const now = new Date().toISOString()
   const document: TenantReceivedDocument = {
     id: `doc-${tenantId}-${Date.now()}`,

@@ -1,14 +1,30 @@
 import { CITATION_REGISTRY, type CitationRecord, type TenantMetric } from '@/lib/tenantDiagnosticData'
 
+export interface ChicagoCitationSource {
+  id?: string
+  institution: string
+  title: string
+  parent_document?: string
+  year_or_date?: string
+  source_date?: string
+  url?: string
+  consulted_at: string
+}
+
 export function citationForMetric(metric: TenantMetric): CitationRecord | null {
   if (!metric.citation_id) return null
   return CITATION_REGISTRY[metric.citation_id] ?? null
 }
 
-export function formatBibliographyEntry(citation: CitationRecord): string {
+export function formatChicagoCitationSource(citation: ChicagoCitationSource): string {
   const parent = citation.parent_document ? ` ${citation.parent_document}.` : ''
   const url = citation.url ? ` ${citation.url}.` : ''
-  return `${citation.institution}. "${citation.title}".${parent} ${citation.year_or_date}.${url} Consultado el ${citation.consulted_at}.`
+  const date = citation.year_or_date ?? citation.source_date
+  return `${citation.institution}. "${citation.title}".${parent} ${date ?? 's.f.'}.${url} Consultado el ${citation.consulted_at}.`
+}
+
+export function formatBibliographyEntry(citation: CitationRecord): string {
+  return formatChicagoCitationSource(citation)
 }
 
 export function buildBibliography(metrics: TenantMetric[]): string[] {
@@ -22,6 +38,10 @@ export function buildBibliography(metrics: TenantMetric[]): string[] {
       return true
     })
     .map(formatBibliographyEntry)
+}
+
+export function buildChicagoBibliography(metrics: TenantMetric[]): string[] {
+  return buildBibliography(metrics)
 }
 
 export function hasMinimumEvidence(metric: TenantMetric): boolean {

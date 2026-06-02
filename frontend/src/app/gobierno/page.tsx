@@ -25,15 +25,15 @@ const SERVICES: ServiceDef[] = [
   {
     id: 'rsu',
     label: 'Residuos Sólidos Urbanos',
-    tagline: 'Diagnóstico, plan y modelo financiero para separación y valorización',
+    tagline: 'Investigación, diagnóstico, escenarios y ruta de decisión para circularidad municipal',
     description:
-      'Análisis completo en 4 capítulos (Diagnóstico, Planificación, Modelo, Control): línea base RSU, ' +
-      'marco legal, centros de acopio, escenarios financieros y expediente para Cabildo.',
+      'Paquete consultivo en 4 capítulos (Diagnóstico, Planificación, Modelo, Control): línea base RSU, ' +
+      'marco legal, captura pública y privada, escenarios trazables, riesgos y expediente preliminar para Cabildo.',
     scope: [
       'Diagnóstico jurídico y PDF del reglamento',
       'Dimensionamiento de centros de acopio',
-      'Escenarios financieros TIR/VPN',
-      'Expediente ejecutivo para Cabildo',
+      'Escenarios financieros cerrados y trazables',
+      'Expediente preliminar para revisión humana',
       'Monitoreo y doble materialidad ESG',
     ],
     status: 'active',

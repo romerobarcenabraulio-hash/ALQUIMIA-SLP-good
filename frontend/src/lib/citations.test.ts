@@ -8,6 +8,8 @@ describe('citations · MVP 5R rigor minimo', () => {
     const bibliography = buildBibliography(data.metrics)
 
     expect(bibliography.length).toBeGreaterThan(0)
+    expect(bibliography[0]).toContain('"')
+    expect(bibliography[0]).toContain('.')
     expect(bibliography[0]).toContain('Consultado el')
     expect(new Set(bibliography).size).toBe(bibliography.length)
   })

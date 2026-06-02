@@ -16,7 +16,11 @@ describe('cityConsultingContext', () => {
       'M00B',
       'M01',
       'M02',
+      'M03',
       'M03B',
+      'M04',
+      'M13',
+      'M14',
       'M15',
     ])
   })
