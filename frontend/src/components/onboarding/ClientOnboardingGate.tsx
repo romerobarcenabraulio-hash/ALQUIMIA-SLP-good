@@ -132,7 +132,7 @@ export function ClientOnboardingGate() {
           ¿Dónde quieres que analicemos tu reglamento?
         </h1>
         <p className="text-[14px] text-[#7AAB60] leading-[1.7] max-w-2xl">
-          Antes de entrar al simulador, elige el estado y municipio de trabajo y sube el PDF del reglamento
+          Antes de entrar al paquete consultivo, elige el estado y municipio de trabajo y sube el PDF del reglamento
           de aseo o limpia. Sin PDF no se habilita el análisis jurídico ni los módulos que dependen de él.
         </p>
       </div>
@@ -190,7 +190,7 @@ export function ClientOnboardingGate() {
               <div className="mt-3 rounded-[8px] border border-[#C9DDB1] bg-[#EAF3DE]/60 px-3 py-2 text-[11px] text-[#23470A]">
                 <span className="font-medium">{seleccionMunicipioCatalog.nombre}</span>
                 {' · '}
-                ZM simulador: <span className="font-mono">{zmActiva}</span>
+                Zona de análisis: <span className="font-mono">{zmActiva}</span>
                 {zm && <span className="text-[#3B6D11]"> ({zm.nombre})</span>}
               </div>
             )}
@@ -261,13 +261,13 @@ export function ClientOnboardingGate() {
                 : 'bg-[#E8E4DC] text-[#A8A49C] cursor-not-allowed',
             )}
           >
-            Continuar al simulador
+            Continuar al paquete consultivo
             <ArrowRight className="w-4 h-4" />
           </button>
 
           {isPlatformDeveloper() && (
             <p className="text-[10px] text-[#A8A49C] text-center">
-              Vista equipo ALQUIMIA: puedes omitir este paso desde el simulador si ya tienes PDF en catálogo.
+              Vista equipo ALQUIMIA: puedes omitir este paso si ya tienes PDF integrado en catálogo.
             </p>
           )}
         </div>

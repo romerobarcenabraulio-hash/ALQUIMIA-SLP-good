@@ -10,6 +10,7 @@ import {
   getSetupToken,
   persistSession,
 } from '@/lib/authApi'
+import { persistTenantMunicipalContext } from '@/lib/tenantRuntimeMunicipalContext'
 import {
   ONBOARDING_SEGMENTS,
   type ClientSegment,
@@ -75,7 +76,14 @@ function PerfilWizard() {
         estado_mx: (estadoNombre ?? String(fd.get('estado_mx') ?? '')) || undefined,
         clave_inegi: selectedMunicipio?.clave_inegi,
         municipio_id: selectedMunicipio?.municipio_simulator_id,
-        zm: selectedMunicipio?.zm_simulator_id ?? 'SLP',
+        zm: selectedMunicipio?.zm_simulator_id,
+      })
+      persistTenantMunicipalContext({
+        municipio_id: res.municipio_id ?? selectedMunicipio?.municipio_simulator_id,
+        clave_inegi: res.clave_inegi ?? selectedMunicipio?.clave_inegi,
+        zm: res.zm ?? selectedMunicipio?.zm_simulator_id,
+        municipality: selectedMunicipio?.nombre,
+        state: estadoNombre,
       })
       if (res.access_token) {
         persistSession(res.access_token)

@@ -3,7 +3,7 @@
 /**
  * Punto de entrada para el módulo RSU del sector gobierno.
  * Si el usuario no tiene sesión activa, redirige a login.
- * Si tiene sesión, redirige al simulador (que maneja onboarding + audiencia).
+ * Si tiene sesión, redirige al paquete consultivo por tenant.
  */
 
 import { useEffect } from 'react'
@@ -15,8 +15,10 @@ export default function GobiernoRsuEntryPage() {
 
   useEffect(() => {
     const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    const tenantId = typeof window !== 'undefined' ? localStorage.getItem('alquimia.tenantId') : null
+    const target = tenantId ? `/v?tenant_id=${encodeURIComponent(tenantId)}` : '/v'
     if (token) {
-      router.replace('/simulator')
+      router.replace(target)
     } else {
       router.replace('/login?next=/gobierno/rsu')
     }
@@ -28,7 +30,7 @@ export default function GobiernoRsuEntryPage() {
         <div className="w-10 h-10 rounded-[10px] bg-[#EAF3DE] flex items-center justify-center">
           <Recycle className="w-5 h-5 text-[#3B6D11]" strokeWidth={1.75} />
         </div>
-        <p className="text-[13px] text-[#6B6760]">Cargando módulo RSU…</p>
+        <p className="text-[13px] text-[#6B6760]">Cargando paquete consultivo RSU…</p>
       </div>
     </div>
   )

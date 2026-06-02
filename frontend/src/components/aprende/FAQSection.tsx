@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils'
 const FAQS = [
   {
     q: '¿Mi ciudad ya tiene un programa de separación?',
-    a: 'La mayoría de ciudades medianas mexicanas tienen programas incipientes o inexistentes. El simulador ALQUIMIA permite evaluar el potencial de tu ZM específica. SLP tiene recicladoras establecidas (IPSL, PetStar) que ya absorben flujos pero sin programa formal de separación en fuente.',
+    a: 'No se debe asumir. La plataforma coteja reglamento, documentos municipales, infraestructura disponible y evidencia de campo. Si falta estudio local, se muestra una brecha crítica; no se rellena con benchmark ni con datos de otra ciudad.',
   },
   {
     q: '¿Cómo propongo a mi edificio instalar un centro de acopio?',
@@ -13,7 +13,7 @@ const FAQS = [
   },
   {
     q: '¿Puedo invertir en un centro de acopio?',
-    a: 'Sí. Los CAs tienen TIRs de 109%–212% según escala, con paybacks de 5-7 meses. El modelo es de co-inversión municipal-privada. Para más información, configura un escenario en el simulador y genera el modelo CFO.',
+    a: 'Puede evaluarse, pero no con una promesa fija. El paquete consultivo calcula escenarios cerrados con CAPEX, OPEX, compradores probables, logística, calidad esperada y confianza de evidencia. Sin cotización local y revisión humana, no se presenta como inversión validada.',
   },
   {
     q: '¿Qué hago con pilas y medicamentos?',

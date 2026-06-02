@@ -54,3 +54,14 @@ export const EXPORT_LIABILITY_WAIVER =
   'ni reformas reglamentarias adoptadas con base en los resultados de esta simulación. ' +
   'Los datos de INEGI y reglamentos municipales referenciados se reproducen como marco informativo; ' +
   'su uso específico requiere verificación en fuente oficial.'
+
+export const CONSULTING_EXPORT_COVER_DISCLAIMER =
+  'BORRADOR TÉCNICO · PAQUETE DE CONSULTORÍA ALQUIMIA · NO OFICIAL\n\n' +
+  'Este documento fue generado automáticamente como insumo de análisis, planeación y cotejo documental municipal. ' +
+  'No constituye dictamen jurídico, acto de autoridad, resolución administrativa, propuesta de ley oficial ni asesoría legal certificada. ' +
+  'Las cifras, escenarios y referencias normativas se publican solo cuando existe fuente, fecha, método, alcance, confianza y revisión humana pendiente o validada. ' +
+  'Cuando falta evidencia, el paquete conserva la brecha crítica y no la sustituye con benchmark.'
+
+export const CONSULTING_EXPORT_LIABILITY_WAIVER =
+  'ALQUIMIA no sustituye decisiones políticas, firma profesional, contratación pública, estudio local ni revisión jurídica competente. ' +
+  'Los escenarios son herramientas de planeación condicionadas a la evidencia cargada y a revisión humana.'

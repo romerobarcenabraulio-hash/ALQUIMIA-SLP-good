@@ -308,16 +308,16 @@ export default function GobiernoPage() {
       <section id="solicitar" className="bg-[#1C2B15] py-14">
         <div className="max-w-2xl mx-auto px-5 text-center">
           <p className="text-[11px] uppercase tracking-[0.12em] text-[#5A8A3A] mb-3">¿Aún no tienes acceso?</p>
-          <h2 className="font-serif text-[28px] text-white mb-4">Agenda una demo con tu municipio</h2>
+          <h2 className="font-serif text-[28px] text-white mb-4">Agenda una sesión de diagnóstico con tu municipio</h2>
           <p className="text-[14px] text-[#7AAB60] leading-[1.7] mb-8">
             Te mostramos el servicio sectorial RSU en 45 minutos con datos de tu municipio. Si queda claro el valor,
             coordinamos el contrato de acceso institucional.
           </p>
           <a
-            href="mailto:hola@alquimia.mx?subject=Solicitud%20de%20demo%20RSU"
+            href="mailto:hola@alquimia.mx?subject=Solicitud%20de%20diagnostico%20RSU"
             className="inline-flex items-center gap-2 rounded-[10px] bg-[#3B6D11] text-white px-6 py-3 text-[14px] font-medium hover:bg-[#4A8A16] transition-colors"
           >
-            Solicitar demo <ArrowRight className="w-4 h-4" />
+            Solicitar diagnóstico <ArrowRight className="w-4 h-4" />
           </a>
           <p className="text-[11px] text-[#4A7030] mt-4">Sin costo · sin compromiso · respuesta en 24 h</p>
         </div>

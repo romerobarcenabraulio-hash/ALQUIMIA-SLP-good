@@ -19,7 +19,7 @@ export const ONBOARDING_SEGMENTS: Record<ClientSegment, SegmentBlock> = {
     services: [
       { id: 'reforma_rsu', label: 'Reforma integral RSU', description: 'Diagnóstico, reglamento y hoja de ruta municipal.' },
       { id: 'dictamen_tecnico', label: 'Dictamen técnico', description: 'Evidencia normativa y técnica para decisiones de gabinete.' },
-      { id: 'simulador_economico', label: 'Simulador económico', description: 'Modelado de costos, ingresos y escenarios fiscales.' },
+      { id: 'simulador_economico', label: 'Escenarios financieros', description: 'Modelado de costos, ingresos y sensibilidad fiscal con supuestos trazables.' },
       { id: 'capacitacion_institucional', label: 'Capacitación institucional', description: 'Formación para equipos operativos y mandos medios.' },
       { id: 'consultoria_regulatoria', label: 'Consultoría regulatoria', description: 'Alineación normativa federal, estatal y municipal.' },
     ],

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, Suspense, useMemo } from 'react'
 import { useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { AlertTriangle } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { cn } from '@/lib/utils'
@@ -22,15 +23,14 @@ import {
 } from '@/lib/api'
 import type { PackageStatus, PackageAsset, PackageManifest } from '@/types'
 import { AdendoViewer } from '@/components/hub/AdendoViewer'
-import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
-import { SimulatorGatewayHint } from '@/components/simulator/SimulatorGatewayHint'
+import { CONSULTING_EXPORT_COVER_DISCLAIMER, CONSULTING_EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
 
 // ─── Tipos locales ────────────────────────────────────────────────────────────
 
 type DocEstadoHub = 'disponible_web' | 'en_elaboracion'
 type AudienciaHub = 'ciudadano' | 'funcionario' | 'empresa'
 
-const ZM_TABS_HUB = ['SLP', 'QRO', 'MTY'] as const
+const CITY_TABS_HUB = ['QRO', 'MTY', 'SLP'] as const
 const HUB_SECTIONS = ['Documentos', 'Adendos reglamentarios'] as const
 type HubSection = (typeof HUB_SECTIONS)[number]
 
@@ -89,7 +89,7 @@ const JOB_ASSET_CHIP = { bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' } as const
 
 function HubContent() {
   const searchParams   = useSearchParams()
-  const zmParam        = (searchParams.get('zm') ?? 'SLP').toUpperCase()
+  const zmParam        = (searchParams.get('zm') ?? CITY_TABS_HUB[0]).toUpperCase()
   const jobParam       = searchParams.get('job')
 
   const [zmActiva, setZmActiva]         = useState(zmParam)
@@ -262,25 +262,31 @@ function HubContent() {
         {/* Cabecera */}
         <div className="mb-6">
           <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C] mb-2">
-            /hub · Hub de documentos
+            /hub · Paquete consultivo
           </p>
-          <h1 className="font-serif text-[32px] text-[#1C1B18]">Documentos del programa</h1>
+          <h1 className="font-serif text-[32px] text-[#1C1B18]">Paquete de consultoría RSU</h1>
           <p className="text-[13px] text-[#6B6760] mt-2">
             {jobParam
-              ? 'Paquete documental generado por la plataforma — descarga, manifest y trazabilidad.'
-              : 'Repositorio de documentos generados por la plataforma.'}
+              ? 'Paquete generado por la plataforma con manifest, evidencia, brechas y trazabilidad.'
+              : 'Índice de referencia para preparar el paquete consultivo. No declara oficialidad ni sustituye revisión humana.'}
           </p>
           {!jobParam && (
             <div className="mt-3 rounded-[10px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-3">
-              <SimulatorGatewayHint variant="compact" />
+              <p className="text-[11px] leading-relaxed text-[#6B6760]">
+                Para generar un paquete con evidencia viva, entra a{' '}
+                <Link href="/v" className="font-medium text-[#3B6D11] hover:underline">
+                  validación consultiva
+                </Link>
+                {' '}y carga o revisa los documentos mínimos del municipio.
+              </p>
             </div>
           )}
           {!jobParam && (
             <div className="mt-3 rounded-[10px] border border-[#D4881E]/30 bg-[#FEF7E7] px-4 py-3 text-[12px] text-[#6B6760]">
-              <strong className="text-[#1C1B18]">Simulación · no confundir con oficialidad.</strong>{' '}
-              Inventario programa documental y control de acceso (blueprint&nbsp;17.1 + 26.B) declarado en{' '}
+              <strong className="text-[#1C1B18]">Índice de referencia · no confundir con paquete generado.</strong>{' '}
+              Inventario documental y control de acceso declarado en{' '}
               <span className="font-mono text-[11px]">hubDocumentosCapitulo.ts</span>. Los estados{' '}
-              <em>Disponible</em> / <em>En elaboración</em> describen entrega técnica en repo público, no publicación
+              <em>Disponible</em> / <em>En elaboración</em> describen entrega técnica interna, no publicación
               en periódico oficial.
             </div>
           )}
@@ -305,7 +311,7 @@ function HubContent() {
                 </button>
               ))}
             </div>
-            {/* Selector de audiencia para demostración */}
+            {/* Selector de audiencia */}
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-[#A8A49C]">Vista:</span>
               <select
@@ -346,12 +352,12 @@ function HubContent() {
                 <AlertTriangle className="h-4 w-4 shrink-0 text-[#D4881E]" aria-hidden />
                 Portada legal (toda exportación)
               </p>
-              <p className="mt-2 whitespace-pre-line">{AGORA_EXPORT_COVER_DISCLAIMER}</p>
-              <p className="mt-3 border-t border-[#E8E4DC] pt-3 text-[10px] leading-snug">{EXPORT_LIABILITY_WAIVER}</p>
+                <p className="mt-2 whitespace-pre-line">{CONSULTING_EXPORT_COVER_DISCLAIMER}</p>
+                <p className="mt-3 border-t border-[#E8E4DC] pt-3 text-[10px] leading-snug">{CONSULTING_EXPORT_LIABILITY_WAIVER}</p>
             </div>
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div>
-                <p className="text-[11px] uppercase tracking-wider text-[#A8A49C] mb-1">Paquete documental</p>
+                <p className="text-[11px] uppercase tracking-wider text-[#A8A49C] mb-1">Paquete consultivo</p>
                 <p className="font-mono text-[12px] text-[#6B6760] truncate max-w-[280px]">
                   ID: {jobParam}
                 </p>
@@ -443,7 +449,7 @@ function HubContent() {
                   {renderResult.has_xlsx && <span className="text-[10px] bg-[#EBF3FB] text-[#1A5FA8] px-2 py-0.5 rounded">XLSX ✓</span>}
                   {renderResult.has_pdf  && <span className="text-[10px] bg-[#EBF3FB] text-[#1A5FA8] px-2 py-0.5 rounded">PDF ✓</span>}
                   {!renderResult.has_pdf && <span className="text-[10px] bg-[#F0EDE5] text-[#A8A49C] px-2 py-0.5 rounded">PDF bloqueado</span>}
-                  <span className="text-[10px] text-[#A8A49C]">{renderResult.n_rendered} assets</span>
+                  <span className="text-[10px] text-[#A8A49C]">{renderResult.n_rendered} archivos</span>
                 </div>
               </div>
             )}
@@ -565,7 +571,7 @@ function HubContent() {
           <>
             <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
-              {ZM_TABS_HUB.map(m => (
+              {CITY_TABS_HUB.map(m => (
                 <button
                   key={m}
                   onClick={() => { setZmActiva(m); setFiltroTipo('Todos') }}
@@ -584,7 +590,7 @@ function HubContent() {
                 type="button"
                 onClick={() => void handleDescargarPaqueteCapitulo()}
                 disabled={zipLoading}
-                title="Solo archivos estáticos del repositorio — no es el paquete generado por la plataforma"
+                title="Solo archivos estáticos del índice interno — no es el paquete consultivo generado por la plataforma"
                 className={cn(
                   'flex items-center gap-1.5 text-[12px] font-medium px-4 py-2 rounded-[8px] border transition-colors shrink-0',
                   zipLoading
@@ -592,7 +598,7 @@ function HubContent() {
                     : 'border-[#E8E4DC] bg-[#FDFCFA] text-[#6B6760] hover:bg-[#F4F1EB]',
                 )}
               >
-                {zipLoading ? 'Generando ZIP…' : '📁 ZIP demo capítulo (estático)'}
+                {zipLoading ? 'Generando ZIP…' : 'ZIP índice de referencia'}
               </button>
             </div>
             {zipPaqueteError && (
@@ -610,13 +616,13 @@ function HubContent() {
               data-testid="hub-q023-zip-status"
             >
               <strong className="text-[#1C1B18]">Importante — dos tipos de ZIP distintos.</strong>{' '}
-              El botón gris <em>ZIP demo capítulo</em> empaqueta archivos estáticos de{' '}
+              El botón gris <em>ZIP índice de referencia</em> empaqueta archivos estáticos de{' '}
               <span className="font-mono">public/</span> (borradores de referencia).{' '}
               <strong>No sustituye</strong> el paquete consultoría generado por la plataforma con carpetas{' '}
               <span className="font-mono">analisis/</span> e{' '}
-              <span className="font-mono">implementacion/</span>: genere el plan en el simulador y descargue desde ahí o desde el Hub con un{' '}
+              <span className="font-mono">implementacion/</span>: genere el paquete desde el flujo consultivo y descargue desde el Hub con un{' '}
               <span className="font-mono">job=</span> activo.
-              {' '}Incluibles en demo estático: <strong>{nDocsZipListos}</strong> (objetivo Q-023 ≥{HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO}).
+              {' '}Incluibles en índice estático: <strong>{nDocsZipListos}</strong> (objetivo Q-023 ≥{HUB_Q023_DOCUMENTOS_LISTOS_OBJETIVO}).
             </div>
 
             <div className="flex gap-2 mb-6 flex-wrap">
@@ -673,7 +679,7 @@ function HubContent() {
           {/* Estado: sin assets pero paquete cargado */}
           {usePackageAssets && !loadingPkg && assetsDocumentos.length === 0 && !pkgError && (
             <div className="text-center py-8">
-              <p className="text-[#A8A49C] text-[13px]">Paquete sin assets disponibles.</p>
+              <p className="text-[#A8A49C] text-[13px]">Paquete sin archivos disponibles.</p>
               <p className="text-[11px] text-[#A8A49C] mt-1">
                 El paquete puede haberse generado sin contenido persistido.
               </p>

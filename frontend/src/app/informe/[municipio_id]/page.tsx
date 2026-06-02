@@ -1,8 +1,10 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { isPlatformDeveloper } from '@/lib/authSession'
 
 // ─── Format helpers ───────────────────────────────────────────────────────────
 
@@ -96,6 +98,7 @@ function Formula({ name, expr }: { name: string; expr: string }) {
 export default function InformePage() {
   const params  = useParams()
   const router  = useRouter()
+  const [internalAllowed, setInternalAllowed] = useState(false)
   const municipio_id = typeof params?.municipio_id === 'string' ? params.municipio_id : ''
 
   const {
@@ -112,6 +115,27 @@ export default function InformePage() {
     seleccionMunicipioCatalog,
   } = useSimulatorStore()
 
+  useEffect(() => {
+    if (isPlatformDeveloper()) {
+      setInternalAllowed(true)
+      return
+    }
+    router.replace('/v')
+  }, [router])
+
+  if (!internalAllowed) {
+    return (
+      <div className="min-h-screen bg-[#F4F2ED] flex items-center justify-center p-8">
+        <div className="max-w-md text-center">
+          <h1 className="font-serif text-[24px] text-[#1C1B18] mb-3">Redirigiendo al paquete consultivo</h1>
+          <p className="text-[13px] text-[#6B6760]">
+            Esta vista queda reservada como laboratorio interno. La experiencia cliente se abre desde validación consultiva.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   // ─── Guard — sin resultados ─────────────────────────────────────────────────
   if (!resultados) {
     return (
@@ -121,13 +145,13 @@ export default function InformePage() {
             Informe no disponible
           </h1>
           <p className="text-gray-600 mb-6">
-            Configura el simulador primero para generar el informe.
+            Abre el paquete consultivo y completa la evidencia mínima antes de generar un informe.
           </p>
           <button
-            onClick={() => router.push('/simulator')}
+            onClick={() => router.push('/v')}
             className="bg-[#3B6D11] text-white px-6 py-2 rounded hover:bg-green-800 transition-colors"
           >
-            ← Ir al simulador
+            Ir al paquete consultivo
           </button>
         </div>
       </div>
@@ -161,10 +185,10 @@ export default function InformePage() {
       <div className="print:hidden sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-4xl mx-auto flex items-center justify-between px-4 py-3">
           <button
-            onClick={() => router.push('/simulator')}
+            onClick={() => router.push('/v')}
             className="text-sm text-gray-600 hover:text-[#3B6D11] flex items-center gap-1"
           >
-            ← Regresar al simulador
+            Regresar al paquete consultivo
           </button>
           <button
             onClick={() => window.print()}
