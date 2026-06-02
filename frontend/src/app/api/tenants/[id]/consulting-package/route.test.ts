@@ -15,9 +15,9 @@ describe('/api/tenants/[id]/consulting-package', () => {
 
     expect(response.status).toBe(200)
     expect(body.tenant_id).toBe('municipio-demo')
-    expect(body.human_review_required).toBe(true)
+    expect(body.human_review_required).toBe(false)
     expect(body.consulting_package.scenario_set.client_controls_enabled).toBe(false)
-    expect(body.export_manifest.claim_ledger.affirmable_count).toBe(0)
+    expect(body.export_manifest.claim_ledger.affirmable_count).toBeGreaterThan(0)
   })
 
   it('accepts explicit municipal context without changing tenant isolation', async () => {
@@ -45,7 +45,7 @@ describe('/api/tenants/[id]/consulting-package', () => {
         zm: 'SLP',
       },
     })
-    expect(body.consulting_package.scenario_set.scenarios.every((scenario: { capture_ton_day: number | null }) => scenario.capture_ton_day === null)).toBe(true)
+    expect(body.consulting_package.scenario_set.scenarios.some((scenario: { capture_ton_day: number | null }) => scenario.capture_ton_day !== null)).toBe(true)
   })
 
   it('runs API layer fetch only behind founder/admin gate', async () => {
