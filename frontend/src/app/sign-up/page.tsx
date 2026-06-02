@@ -21,7 +21,6 @@ export default function SignUpPage() {
               routing="hash"
               signInUrl="/sign-in"
               fallbackRedirectUrl="/v"
-              forceRedirectUrl="/v"
               appearance={{
                 elements: {
                   card: 'shadow-md border border-[#E8E4DC]',

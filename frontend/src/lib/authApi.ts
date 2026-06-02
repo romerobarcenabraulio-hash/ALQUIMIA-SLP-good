@@ -38,6 +38,7 @@ export interface UserProfile {
   client_segment?: string | null
   service_interest?: string | null
   municipio_id?: string | null
+  clave_inegi?: string | null
   municipio_nombre?: string | null
   estado_mx?: string | null
   reglamento_uploaded?: boolean
@@ -106,6 +107,8 @@ export async function authOnboardingProfile(payload: OnboardingProfilePayload) {
     service_interest: string
     requires_reglamento_pdf: boolean
     municipio_id?: string
+    clave_inegi?: string
+    zm?: string
     next_path?: string
     access_token?: string
     refresh_token?: string

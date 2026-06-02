@@ -184,6 +184,7 @@ class UserInfo(BaseModel):
     client_segment: str | None = None
     service_interest: str | None = None
     municipio_id: str | None = None
+    clave_inegi: str | None = None
     municipio_nombre: str | None = None
     estado_mx: str | None = None
     reglamento_uploaded: bool = False
@@ -251,6 +252,7 @@ def _user_info_from_db(user) -> UserInfo:
         client_segment=user.client_segment,
         service_interest=user.service_interest,
         municipio_id=user.municipio_id,
+        clave_inegi=user.clave_inegi,
         municipio_nombre=user.municipio_nombre,
         estado_mx=user.estado_mx,
         reglamento_uploaded=user.reglamento_uploaded_at is not None,
@@ -452,6 +454,8 @@ async def onboarding_profile(req: OnboardingProfileRequest, db: Session = Depend
         "service_interest": user.service_interest,
         "requires_reglamento_pdf": needs_pdf,
         "municipio_id": user.municipio_id,
+        "clave_inegi": user.clave_inegi,
+        "zm": user.zm,
         "next_path": "/onboarding/reglamento" if needs_pdf else "/v",
         "access_token": tokens.access_token if tokens else None,
         "refresh_token": tokens.refresh_token if tokens else None,

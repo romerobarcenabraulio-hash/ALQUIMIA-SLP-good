@@ -11,6 +11,8 @@ from sqlalchemy.orm import Session
 from app.auth.crypto_password import hash_password
 from app.models.user_account import AccessLog, EmailVerificationToken, SmsVerificationCode, UserAccount
 
+TEMPORARY_ADMIN_EMAILS = {"romero.barcena.braulio@gmail.com"}
+
 
 def _now() -> datetime:
     return datetime.now(timezone.utc)
@@ -34,6 +36,10 @@ def get_user_by_id(db: Session, user_id: str) -> Optional[UserAccount]:
     return db.query(UserAccount).filter(UserAccount.id == user_id).first()
 
 
+def is_temporary_admin_email(email: str | None) -> bool:
+    return (email or "").lower().strip() in TEMPORARY_ADMIN_EMAILS
+
+
 def create_user(
     db: Session,
     *,
@@ -49,8 +55,9 @@ def create_user(
     estado_mx: str | None = None,
     zm: str = "SLP",
 ) -> UserAccount:
+    normalized_email = email.lower().strip()
     user = UserAccount(
-        email=email.lower().strip(),
+        email=normalized_email,
         hashed_password=hash_password(password),
         nombre=nombre.strip(),
         apellido_paterno=apellido_paterno.strip(),
@@ -61,7 +68,7 @@ def create_user(
         municipio_nombre=municipio_nombre.strip() if municipio_nombre else None,
         estado_mx=estado_mx.strip() if estado_mx else None,
         zm=zm.strip().upper() or "SLP",
-        rol="funcionario",
+        rol="admin" if is_temporary_admin_email(normalized_email) else "funcionario",
     )
     db.add(user)
     db.flush()
@@ -123,7 +130,10 @@ def apply_onboarding_profile(
     user.municipio_id = municipio_id.lower().strip() if municipio_id else None
     user.clave_inegi = clave_inegi.strip() if clave_inegi else None
     user.zm = zm.strip().upper() or "SLP"
-    user.rol = "funcionario" if client_segment == "politica_publica" else "cliente"
+    if is_temporary_admin_email(user.email) or user.rol == "admin":
+        user.rol = "admin"
+    else:
+        user.rol = "funcionario" if client_segment == "politica_publica" else "cliente"
     db.flush()
     return user
 
