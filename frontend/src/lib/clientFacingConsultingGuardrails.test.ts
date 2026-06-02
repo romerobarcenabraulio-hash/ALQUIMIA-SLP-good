@@ -40,7 +40,7 @@ describe('client-facing consulting guardrails', () => {
     expect(platformPage).toContain('PlatformModuleNav')
     expect(platformPage).toContain('PlatformModuleWorkspace')
     expect(platformPage).toContain('ConsultingModuleShell')
-    expect(platformPage).toContain('Módulos de decisión')
+    expect(platformPage).toContain('Índice consultivo')
     expect(platformPage).toContain('chapterGroups.map')
     expect(platformPage).not.toContain('chapter.rubros.map')
     expect(platformPage).not.toContain('<details')
@@ -82,6 +82,8 @@ describe('client-facing consulting guardrails', () => {
     expect(specs).toContain('Captura, costos y sensibilidad · M13')
     expect(specs).toContain('Flujo 100% RSU + Sankey')
     expect(specs).not.toContain('TIR · VPN · Monte Carlo')
+    expect(readFrontend('src/lib/chapterConfig.ts')).toContain("roadmap_implementacion: '05'")
+    expect(platformPage).toContain('mismos módulos')
   })
 
   it('shows planning and execution as human-gated stages instead of automatic decisions', () => {

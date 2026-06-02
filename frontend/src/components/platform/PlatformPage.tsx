@@ -328,11 +328,11 @@ function PlatformModuleNav({
     <nav aria-label="Módulos de consultoría" className="text-[#8AAD78]">
       <div className="border-b border-[#2D4020] px-3 py-3">
         <p className="px-1 text-[9px] font-semibold uppercase tracking-[0.1em] text-[#6A9A50]">
-          Módulos de decisión
+          Índice consultivo
         </p>
         <div className="mt-2 rounded-[6px] bg-[#243320] px-2 py-1.5 text-[9px] leading-snug text-[#8AAD78]">
-          <span className="font-semibold uppercase tracking-wide">Plataforma {platformLabel}</span>
-          <span className="block text-[#6A9A50]">evidencia, brechas y revisión humana</span>
+          <span className="font-semibold uppercase tracking-wide">{platformLabel}</span>
+          <span className="block text-[#6A9A50]">mismos módulos, evidencia local y brechas visibles</span>
         </div>
       </div>
 
