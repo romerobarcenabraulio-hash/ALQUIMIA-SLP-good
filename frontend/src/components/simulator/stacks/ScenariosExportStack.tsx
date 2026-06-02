@@ -41,7 +41,7 @@ import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePan
 type ScenarioId = 'acelerado' | 'base' | 'conservador' | 'sinintervencion'
 
 // ─── Scenario multipliers — legitimate consulting sensitivity definitions ──────
-// Represent ±changes in TIR/VPN from variability in captura efectiva, precios,
+// Represent ±changes in financial outputs from variability in captura efectiva, precios,
 // WACC. No hardcoded absolute numbers — all derived from store resultados.
 
 const SCENARIO_DEF = [

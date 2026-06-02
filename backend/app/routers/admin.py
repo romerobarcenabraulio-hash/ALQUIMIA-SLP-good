@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 import uuid
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, field_validator
 from typing import List
 import logging
@@ -104,8 +105,8 @@ NOUS_GOVERNANCE_PATTERN_STATES = {
 
 
 def require_admin(user: UserInfo = Depends(get_current_user)) -> UserInfo:
-    if user.rol != "admin":
-        raise HTTPException(status_code=403, detail="Solo admins")
+    if user.rol not in {"admin", "analista", "founder"}:
+        raise HTTPException(status_code=403, detail="Solo admins o analistas internos")
     return user
 
 
@@ -2535,6 +2536,197 @@ def _db_create_tenant(db, data: TenantCreateRequest, actor: str) -> dict[str, An
     db.flush()
     db.refresh(tenant)
     return _tenant_to_dict(tenant)
+
+
+def _norm_key(value: str | None) -> str:
+    return (value or "").strip().lower()
+
+
+def _search_text(value: str | None) -> str:
+    normalized = unicodedata.normalize("NFKD", value or "")
+    without_marks = "".join(char for char in normalized if not unicodedata.combining(char))
+    return " ".join(without_marks.lower().split())
+
+
+def _tenant_link_key(tenant: dict[str, Any]) -> str:
+    return _norm_key(tenant.get("inegi_clave")) or _norm_key(tenant.get("municipio_id"))
+
+
+def _user_link_key(user: Any) -> str:
+    return _norm_key(getattr(user, "clave_inegi", None)) or _norm_key(getattr(user, "municipio_id", None))
+
+
+def _text_matches(row: dict[str, Any], q: str | None) -> bool:
+    if not q:
+        return True
+    needle = _search_text(q)
+    haystack = _search_text(" ".join(str(value or "") for value in row.values()))
+    return needle in haystack
+
+
+def _erp_status(tenant: dict[str, Any] | None, users: list[Any]) -> str:
+    if tenant and users:
+        return "vinculado"
+    if tenant and not users:
+        return "tenant_sin_usuario"
+    if users and not tenant:
+        return "usuario_sin_tenant"
+    return "sin_tenant"
+
+
+@router.get("/inegi/states")
+async def admin_inegi_states(_: UserInfo = Depends(require_admin)):
+    from app.city.inegi_catalog import list_estados_completos
+
+    return {
+        "states": [
+            {"estado_id": estado_id, "estado_nombre": estado_nombre}
+            for estado_id, estado_nombre in list_estados_completos()
+        ],
+        "source": "INEGI catalog",
+    }
+
+
+@router.get("/inegi/municipalities")
+async def admin_inegi_municipalities(
+    estado_id: str = Query(..., min_length=1, max_length=2),
+    q: str | None = Query(None, max_length=120),
+    limit: int = Query(80, ge=1, le=500),
+    _: UserInfo = Depends(require_admin),
+):
+    from app.city.inegi_catalog import fetch_municipios_inegi
+    from app.city.municipios_mx import list_municipios_mx
+
+    rows = []
+    catalog_by_clave = {
+        row.clave_inegi: row
+        for row in [*fetch_municipios_inegi(estado_id), *list_municipios_mx(estado_id)]
+    }
+    for row in sorted(catalog_by_clave.values(), key=lambda item: item.nombre):
+        payload = {
+            "clave_inegi": row.clave_inegi,
+            "nombre": row.nombre,
+            "estado_id": row.estado_id,
+            "estado_nombre": row.estado_nombre,
+            "municipio_id": row.municipio_simulator_id,
+            "zm": row.zm_simulator_id,
+            "datos_estimados": row.datos_estimados,
+            "source": "inegi_gaia_or_seed_fallback",
+        }
+        if _text_matches(payload, q):
+            rows.append(payload)
+        if len(rows) >= limit:
+            break
+
+    return {
+        "municipalities": rows,
+        "source": "INEGI Gaia con fallback semilla etiquetado",
+        "territorial_rule": "municipio y ZM se exponen como campos separados; ZM no soporta claim municipal.",
+    }
+
+
+@router.get("/erp/municipalities")
+async def admin_erp_municipalities(
+    estado_id: str | None = Query(None, max_length=2),
+    q: str | None = Query(None, max_length=120),
+    stage: str | None = Query(None, max_length=40),
+    tier: str | None = Query(None, max_length=60),
+    status: str | None = Query(None, max_length=40),
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    tenants = [_serialize_mem(t) for t in _tenants_mem.values()] if db is None else _db_all_tenants(db)
+    if stage:
+        tenants = [t for t in tenants if (t.get("state") or {}).get("current_stage") == stage]
+    if tier:
+        tenants = [t for t in tenants if t.get("tier_comercial") == tier]
+
+    users: list[Any] = []
+    if db is not None:
+        from app.models.user_account import UserAccount
+
+        users = db.query(UserAccount).all()
+
+    users_by_key: dict[str, list[Any]] = {}
+    for user in users:
+        key = _user_link_key(user)
+        if key:
+            users_by_key.setdefault(key, []).append(user)
+
+    tenants_by_key: dict[str, list[dict[str, Any]]] = {}
+    for tenant in tenants:
+        key = _tenant_link_key(tenant)
+        if key:
+            tenants_by_key.setdefault(key, []).append(tenant)
+
+    catalog_rows: list[dict[str, Any]] = []
+    if estado_id:
+        from app.city.inegi_catalog import fetch_municipios_inegi
+
+        for row in fetch_municipios_inegi(estado_id):
+            catalog_rows.append(
+                {
+                    "clave_inegi": row.clave_inegi,
+                    "municipio": row.nombre,
+                    "estado": row.estado_nombre,
+                    "estado_id": row.estado_id,
+                    "municipio_id": row.municipio_simulator_id,
+                    "zm": row.zm_simulator_id,
+                    "catalog_source": "inegi_gaia_or_seed_fallback",
+                }
+            )
+
+    keys = set(tenants_by_key) | set(users_by_key)
+    if catalog_rows:
+        keys |= {row["clave_inegi"].lower() for row in catalog_rows}
+
+    rows: list[dict[str, Any]] = []
+    catalog_by_key = {row["clave_inegi"].lower(): row for row in catalog_rows}
+    for key in sorted(keys):
+        catalog = catalog_by_key.get(key)
+        linked_tenants = tenants_by_key.get(key, [])
+        tenant = linked_tenants[0] if linked_tenants else None
+        linked_users = users_by_key.get(key, [])
+        primary_user = linked_users[0] if linked_users else None
+        link_status = "duplicado" if len(linked_tenants) > 1 else _erp_status(tenant, linked_users)
+        row = {
+            "clave_inegi": (tenant or {}).get("inegi_clave") or (catalog or {}).get("clave_inegi") or key,
+            "municipio": (tenant or {}).get("nombre") or getattr(primary_user, "municipio_nombre", None) or (catalog or {}).get("municipio") or "Municipio sin nombre",
+            "estado": (tenant or {}).get("estado_mx") or getattr(primary_user, "estado_mx", None) or (catalog or {}).get("estado") or "",
+            "estado_id": (catalog or {}).get("estado_id"),
+            "municipio_id": (tenant or {}).get("municipio_id") or getattr(primary_user, "municipio_id", None) or (catalog or {}).get("municipio_id") or "",
+            "zm": (catalog or {}).get("zm") or getattr(primary_user, "zm", None) or "",
+            "tenant_id": (tenant or {}).get("id"),
+            "tenant_nombre": (tenant or {}).get("nombre"),
+            "stage": ((tenant or {}).get("state") or {}).get("current_stage"),
+            "tier": (tenant or {}).get("tier_comercial"),
+            "regulation_status": "available"
+            if not any(g.get("gate_id") == "G1" and g.get("status") == "fallido" for g in (tenant or {}).get("gates", []))
+            else "review",
+            "users_count": len(linked_users),
+            "client_users_count": len([u for u in linked_users if getattr(u, "rol", "") in {"cliente", "funcionario"}]),
+            "admin_users_count": len([u for u in linked_users if getattr(u, "rol", "") in {"admin", "analista"}]),
+            "primary_contact": {
+                "email": getattr(primary_user, "email", None),
+                "nombre": " ".join(filter(None, [getattr(primary_user, "nombre", None), getattr(primary_user, "apellido_paterno", None)])) or None,
+                "organizacion": getattr(primary_user, "organizacion", None),
+                "rol": getattr(primary_user, "rol", None),
+            } if primary_user else None,
+            "link_status": link_status,
+            "duplicate_tenants_count": len(linked_tenants),
+        }
+        if status and row["link_status"] != status:
+            continue
+        if _text_matches(row, q):
+            rows.append(row)
+
+    return {
+        "rows": rows[:500],
+        "count": len(rows[:500]),
+        "source": "admin_tenants + user_accounts + INEGI catalog when estado_id is provided",
+        "linking_method": "clave_inegi primero; municipio_id como respaldo; sin mezclar ZM con municipio.",
+        "cross_tenant_private_data_exposed": False,
+    }
 
 
 @router.get("/users", response_model=List[UserInfo])

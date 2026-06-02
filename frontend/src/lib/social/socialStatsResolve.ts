@@ -15,7 +15,7 @@ function firstMatch(
 export type StatResolutionContext = {
   /** CVE municipio INEGI (5 dígitos) o null si no aplica. */
   municipioCve: string | null
-  /** Id ZM simulador (p. ej. MTY). */
+  /** Id ZM estadística (p. ej. MTY). */
   zmSimulatorId: string | null
 }
 

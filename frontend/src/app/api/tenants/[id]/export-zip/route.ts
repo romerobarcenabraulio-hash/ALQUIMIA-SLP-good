@@ -8,6 +8,7 @@ import {
   buildTenantConsultingPackageResponseWithApiLayers,
 } from '@/lib/tenantConsultingPackageResponse'
 import { tenantMunicipalContextFromHeaders } from '@/lib/tenantMunicipalContextHeaders'
+import { modulesForStage, OPERATIONAL_MODULE_SPECS } from '@/lib/validationModuleSpecs'
 
 const exportState = globalThis as typeof globalThis & {
   __alquimiaPreliminaryExportCounts?: Record<string, number>
@@ -122,17 +123,16 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   }
 
   function compatibleBibliographySection() {
-    const recommendations = consultingManifest.bibliography_recommendations ?? []
+    const recommendations = consultingManifest.compatible_bibliography_chicago ?? []
     return [
       '## Bibliografía compatible y límites de uso',
       '',
       recommendations.length
         ? recommendations.slice(0, 10).map((item, index) => [
-            `${index + 1}. ${item.record.title} · ${item.tag} · score ${item.score.total}`,
+            `${index + 1}. ${item.citation}`,
+            `   - Tipo: ${item.tag} · score ${item.score}`,
             `   - Sí soporta: ${item.supported_claim}`,
             `   - No soporta: ${item.unsupported_claim}`,
-            `   - Método: ${item.record.method}`,
-            `   - Alcance: ${item.record.territorial_scope} · Confianza: ${item.confidence}`,
           ].join('\n')).join('\n')
         : '- Sin recomendaciones bibliográficas compatibles; conservar brechas y no elevar benchmarks a estudio local.',
       '',
@@ -140,10 +140,59 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     ].join('\n')
   }
 
+  function operationalSpecsSection() {
+    const stageLabels = {
+      validation: 'Validación',
+      planning: 'Planeación',
+      execution: 'Ejecución',
+      expansion: 'Ejecución',
+    } as const
+    const stages = ['validation', 'planning', 'execution'] as const
+    return [
+      '## Especificación operativa de módulos',
+      '',
+      'Estos módulos gobiernan /v, /p y /e. Validación, Planeación y Ejecución comparten shell consultivo, evidencia trazable, claims bloqueables y revisión humana.',
+      '',
+      ...stages.flatMap(stage => [
+        `### ${stageLabels[stage]}`,
+        '',
+        ...modulesForStage(stage).map(moduleId => {
+          const spec = OPERATIONAL_MODULE_SPECS[moduleId]
+          return [
+            `#### ${spec.legacy_number} · ${spec.title}`,
+            `- Subtítulo: ${spec.subtitle}`,
+            `- Visualización: ${spec.visualization}`,
+            `- Criterio: ${spec.completionCriterion}`,
+            `- Claims bloqueados: ${spec.blockedClaims.join('; ')}`,
+          ].join('\n')
+        }),
+        '',
+      ]),
+    ].join('\n')
+  }
+
+  function claimEvidenceMatrixSection() {
+    return [
+      '## Matriz claim-evidencia',
+      '',
+      ...(['validation', 'planning', 'execution'] as const).flatMap(stage => modulesForStage(stage)).flatMap(moduleId => {
+        const spec = OPERATIONAL_MODULE_SPECS[moduleId]
+        return spec.blockedClaims.map(claim => (
+          `- ${spec.legacy_number} · ${claim} · Estado: bloqueado salvo fuente, método, alcance, confianza y revisión humana.`
+        ))
+      }),
+    ].join('\n')
+  }
+
   zip.file('00_INDICE.md', `${watermark}# Índice documental\n\n${methodologicalMarker}\n\n${data.document_index.map((doc, idx) => `${idx + 1}. ${doc.title} — ${doc.status} · ${doc.documentary_status ?? 'complete'}`).join('\n')}\n\n${standardsSection}\n\n${bibliographySection()}\n`)
   zip.file('consulting_manifest.json', JSON.stringify(consultingManifest, null, 2))
   zip.file('consulting_package.json', JSON.stringify(consultingResponse.consulting_package, null, 2))
+  zip.file('bibliography_chicago.json', JSON.stringify(consultingManifest.bibliography_chicago ?? [], null, 2))
+  zip.file('compatible_bibliography_chicago.json', JSON.stringify(consultingManifest.compatible_bibliography_chicago ?? [], null, 2))
   zip.file('bibliography_recommendations.json', JSON.stringify(consultingManifest.bibliography_recommendations ?? [], null, 2))
+  zip.file('module_validation_specs.json', JSON.stringify(OPERATIONAL_MODULE_SPECS, null, 2))
+  zip.file('module_operational_specs.json', JSON.stringify(OPERATIONAL_MODULE_SPECS, null, 2))
+  zip.file('claim_evidence_matrix.md', claimEvidenceMatrixSection())
   zip.file('export_notice.json', JSON.stringify(exportNotice, null, 2))
   zip.file('api_layer_fetch_status.json', JSON.stringify(
     'api_layer_fetch_status' in consultingResponse
@@ -191,6 +240,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       .join('\n') || '- Sin bloqueos críticos registrados.',
     '',
     compatibleBibliographySection(),
+    '',
+    operationalSpecsSection(),
+    '',
+    claimEvidenceMatrixSection(),
   ].join('\n'))
   for (const doc of data.document_index) {
     zip.file(`${doc.id}.md`, `${watermark}# ${doc.title}\n\n${methodologicalMarker}\n\nMunicipio: ${data.municipality}\nEstado: ${data.state}\n\n${documentarySection()}\n\n## Fuentes, citas y confianza\n\n${data.metrics.map(metricLine).join('\n')}\n\n${standardsSection}\n\n${bibliographySection()}\n\n${compatibleBibliographySection()}\n`)

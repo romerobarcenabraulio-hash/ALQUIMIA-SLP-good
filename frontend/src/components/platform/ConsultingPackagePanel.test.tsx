@@ -13,7 +13,7 @@ afterEach(() => {
 })
 
 describe('ConsultingPackagePanel', () => {
-  it('renders municipio-demo as blocked consulting package without quantitative scenario figures', () => {
+  it('renders municipio-demo as bibliographic demo with traceable calculated scenarios', () => {
     const { container } = render(
       <ConsultingPackagePanel
         tenantData={TENANT_DIAGNOSTIC_FIXTURES['municipio-demo']}
@@ -22,18 +22,18 @@ describe('ConsultingPackagePanel', () => {
     )
 
     expect(screen.getByText('Paquete de Consultoría RSU Gobierno')).toBeTruthy()
-    expect(screen.getByText('sin claims afirmables')).toBeTruthy()
+    expect(screen.getAllByText(/claims afirmables/i).length).toBeGreaterThan(0)
     expect(screen.getByText('Insumos conectados')).toBeTruthy()
     expect(screen.getByText('Gates de cierre')).toBeTruthy()
     expect(screen.getByText('Compradores/precios')).toBeTruthy()
-    expect(screen.getAllByText(/El plan sólo se bloquea si falta reglamento/i).length).toBeGreaterThan(0)
-    expect(screen.getAllByText('No cuantificado por brecha')).toHaveLength(5)
+    expect(screen.getAllByText(/Sin reglamento municipal vigente integrado/i).length).toBeGreaterThan(0)
+    expect(screen.getAllByText('Escenario preliminar, no oficial')).toHaveLength(5)
     expect(screen.getByText('Bloquea plan')).toBeTruthy()
     expect(screen.getAllByText('Condiciona').length).toBeGreaterThan(1)
-    expect(screen.getAllByText('Bloqueado').length).toBeGreaterThan(5)
     expect(screen.queryByText('Panel técnico interno de calibración')).toBeNull()
-    expect(container.textContent).not.toContain('$')
-    expect(container.textContent).not.toContain(' t/día')
+    expect(container.textContent).toContain('$')
+    expect(container.textContent).toContain('t/día')
+    expect(container.textContent).toContain('Precio ponderado por material')
   })
 
   it('keeps private urban capture broader than condominiums in the client surface', () => {
@@ -86,7 +86,7 @@ describe('ConsultingPackagePanel', () => {
     expect(screen.getByText('Panel técnico interno de calibración')).toBeTruthy()
   })
 
-  it('keeps partial-city scenarios blocked until buyers and prices are integrated', () => {
+  it('calculates partial-city scenarios from bibliographic prices while keeping buyer gate open', () => {
     render(
       <ConsultingPackagePanel
         tenantData={TENANT_DIAGNOSTIC_FIXTURES['partial-city']}
@@ -94,8 +94,9 @@ describe('ConsultingPackagePanel', () => {
       />,
     )
 
-    expect(screen.getAllByText('No cuantificado por brecha')).toHaveLength(5)
-    expect(screen.queryByText('Escenario preliminar, no oficial')).toBeNull()
+    expect(screen.getAllByText('Escenario preliminar, no oficial')).toHaveLength(5)
+    expect(screen.getByText('Compradores/precios')).toBeTruthy()
+    expect(screen.getAllByText('Condiciona').length).toBeGreaterThan(0)
   })
 
   it('labels calculated scenario figures as preliminary and not official', async () => {

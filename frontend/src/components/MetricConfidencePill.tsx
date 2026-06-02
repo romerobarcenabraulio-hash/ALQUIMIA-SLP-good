@@ -1,7 +1,7 @@
 import type { MetricConfidence } from '@/lib/tenantDiagnosticData'
 
 const labels: Record<MetricConfidence, string> = {
-  verified_official: 'Verificado oficial',
+  verified_official: 'Fuente oficial',
   verified_secondary: 'Fuente secundaria',
   inferred_medium: 'Inferido',
   inferred_low: 'Inferido',

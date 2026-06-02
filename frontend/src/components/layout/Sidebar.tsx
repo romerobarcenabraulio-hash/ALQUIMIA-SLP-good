@@ -3,7 +3,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
 import {
   BookOpen,
@@ -31,19 +30,12 @@ const TOP_NAV = [
 export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
   const pathname = usePathname()
   const isPlatformPath = pathname === '/v' || pathname === '/p' || pathname === '/e'
-  const zmActiva = useSimulatorStore(s => s.zmActiva)
-  const seleccion = useSimulatorStore(s => s.seleccionMunicipioCatalog)
-  const audience = useSimulatorStore(s => s.audience)
 
-  const cityLabel = seleccion?.nombre
-    ? `${seleccion.nombre}, ${seleccion.estadoNombre}`
-    : isPlatformPath
-      ? 'Municipio seleccionado'
-    : `ZM ${zmActiva}`
+  const cityLabel = isPlatformPath ? 'Municipio seleccionado' : 'Territorio por seleccionar'
 
   return (
     <aside
-      className="hidden xl:flex flex-col w-[220px] shrink-0 bg-[#1C2B15] sticky top-0 h-screen overflow-y-auto"
+      className="hidden xl:flex flex-col w-[268px] shrink-0 bg-[#1C2B15] sticky top-0 h-screen overflow-y-auto"
       aria-label="Navegación principal"
     >
       {/* Logo */}
@@ -72,7 +64,7 @@ export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
               key={href}
               href={href}
               className={cn(
-                'flex items-center gap-2.5 px-3 py-2 rounded-[8px] mb-0.5 text-[12px] font-medium transition-colors',
+                'flex items-center gap-2.5 px-3 py-2 rounded-[6px] mb-0.5 text-[12px] font-semibold transition-colors',
                 active
                   ? 'bg-[#2D4020] text-white'
                   : 'text-[#8AAD78] hover:text-white hover:bg-[#243320]',
@@ -109,7 +101,7 @@ export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] mb-0.5 text-[11px] text-[#4A7A35] hover:text-[#8AAD78] hover:bg-[#243320] transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[6px] mb-0.5 text-[11px] font-semibold text-[#6A9A50] hover:text-[#CFE5C0] hover:bg-[#243320] transition-colors"
           >
             <Icon className="w-3.5 h-3.5 shrink-0" strokeWidth={1.75} />
             {label}
@@ -117,21 +109,17 @@ export function Sidebar({ moduleSection }: { moduleSection?: ReactNode } = {}) {
         ))}
 
         {/* City / user badge */}
-        {(zmActiva || audience) && (
-          <div className="mt-2 mx-1 rounded-[8px] bg-[#243320] border border-[#2D4020] px-3 py-2.5">
-            <div className="flex items-center gap-1.5 mb-1">
-              <MapPin className="w-3 h-3 text-[#5A9438] shrink-0" strokeWidth={2} />
-              <p className="text-[10px] font-medium text-[#A8C898] truncate">{cityLabel}</p>
-            </div>
-            {audience && (
-              <p className="text-[9px] text-[#4A7A35] capitalize">
-                {audience === 'functionary' ? 'Funcionario público' : audience === 'citizen' ? 'Ciudadano' : 'Empresario'}
-                {' · '}
-                <span className="text-[#3B8A25]">Activo</span>
-              </p>
-            )}
+        <div className="mt-2 mx-1 rounded-[6px] bg-[#243320] border border-[#2D4020] px-3 py-2.5">
+          <div className="flex items-center gap-1.5">
+            <MapPin className="w-3 h-3 text-[#5A9438] shrink-0" strokeWidth={2} />
+            <p className="text-[10px] font-medium text-[#A8C898] truncate">{cityLabel}</p>
           </div>
-        )}
+          {isPlatformPath && (
+            <p className="mt-1 text-[9px] text-[#4A7A35]">
+              Evidencia y módulos activos
+            </p>
+          )}
+        </div>
       </div>
     </aside>
   )

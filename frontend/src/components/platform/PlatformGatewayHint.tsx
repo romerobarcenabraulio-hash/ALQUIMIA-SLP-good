@@ -1,8 +1,7 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
-/** Aviso reutilizable: el simulador exige elegir audiencia (Fase 22). */
-export function SimulatorGatewayHint({
+export function PlatformGatewayHint({
   className,
   variant = 'default',
 }: {
@@ -16,11 +15,11 @@ export function SimulatorGatewayHint({
         className,
       )}
     >
-      <Link href="/simulator" className="font-medium text-[#3B6D11] hover:underline">
-        Simulador
+      <Link href="/v" className="font-medium text-[#3B6D11] hover:underline">
+        Paquete consultivo
       </Link>
       {' '}
-      — primero elige audiencia (ciudadanía, institución municipal o empresario); sin eso no carga el recorrido modular.
+      — primero define municipio, documentos disponibles y evidencia mínima; sin eso la plataforma muestra brechas críticas.
     </p>
   )
 }

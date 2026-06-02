@@ -7,6 +7,7 @@ import type { DocumentGap, TenantDiagnosticData, TenantMetric } from '@/lib/tena
 import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
 import { buildConsultingPackage, renderableClaims } from '@/lib/consultingPackageEngine'
 import { CONSULTING_API_LAYER_CONTRACTS } from '@/lib/consultingApiLayerContracts'
+import { buildChicagoBibliography, formatChicagoCitationSource } from '@/lib/citations'
 import JSZip from 'jszip'
 
 export const DOCUMENT_MENTION_PATTERNS: Array<{ document_type: string; pattern: RegExp }> = [
@@ -379,6 +380,15 @@ export function buildConsultingExportManifest(data: TenantDiagnosticData) {
   })
   const affirmableClaims = renderableClaims(consultingPackage.claim_ledger)
   const blockedClaims = consultingPackage.claim_ledger.filter(claim => claim.confidence === 'blocked')
+  const bibliographyChicago = buildChicagoBibliography(data.metrics)
+  const compatibleBibliographyChicago = consultingPackage.evidence_recommendations.map(recommendation => ({
+    id: recommendation.id,
+    tag: recommendation.tag,
+    score: recommendation.score.total,
+    supported_claim: recommendation.supported_claim,
+    unsupported_claim: recommendation.unsupported_claim,
+    citation: formatChicagoCitationSource(recommendation.record),
+  }))
 
   return {
     package_type: 'consulting_package_rsu_gobierno',
@@ -417,9 +427,12 @@ export function buildConsultingExportManifest(data: TenantDiagnosticData) {
       affirmable: affirmableClaims,
       blocked: blockedClaims,
     },
+    bibliography_chicago: bibliographyChicago,
+    compatible_bibliography_chicago: compatibleBibliographyChicago,
     private_generator_mix: consultingPackage.private_generator_mix,
     material_price_mix: consultingPackage.material_price_mix,
     readiness_gates: consultingPackage.readiness_gates,
+    plan_emission: consultingPackage.plan_emission,
     bibliography_recommendations: consultingPackage.evidence_recommendations,
     stage_evidence_map: consultingPackage.stage_evidence_map,
     roadmap: consultingPackage.roadmap,

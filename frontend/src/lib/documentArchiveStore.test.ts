@@ -33,18 +33,20 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     }
     expect(demo.document_gaps.length).toBeGreaterThan(partial.document_gaps.length)
     expect(partial.document_gaps.some(item => item.status === 'pending')).toBe(true)
-    expect(demo.document_index.every(item => item.documentary_status === 'pending_document')).toBe(true)
+    expect(demo.document_index.some(item => item.documentary_status === 'received_pending_validation')).toBe(true)
+    expect(demo.document_gaps.some(item => item.status === 'pending')).toBe(true)
     expect(gap.document_index.every(item => item.documentary_status === 'pending_document')).toBe(true)
   })
 
-  it('mantiene Municipio Demo como sandbox vacio sin cifras', () => {
+  it('mantiene municipio-demo como demo bibliografico con calculos trazables', () => {
     const demo = getTenantArchiveData('municipio-demo')
 
-    expect(demo.municipality).toBe('Municipio Demo')
-    expect(demo.state).toContain('INEGI DEMO-001')
-    expect(demo.metrics.every(metric => metric.value === null)).toBe(true)
-    expect(demo.metrics.every(metric => metric.status === 'brecha_critica')).toBe(true)
-    expect(demo.tenant_documents).toHaveLength(0)
+    expect(demo.municipality).toBe('San Luis Potosí')
+    expect(demo.state).toBe('San Luis Potosí')
+    expect(demo.metrics.some(metric => metric.id === 'population_total' && metric.status === 'verificado')).toBe(true)
+    expect(demo.metrics.some(metric => metric.id === 'rsu_generation' && metric.formula)).toBe(true)
+    expect(demo.metrics.some(metric => metric.status === 'brecha_critica')).toBe(true)
+    expect(demo.tenant_documents.some(document => document.document_type === 'catalogo_compradores')).toBe(true)
   })
 
   it('clasifica filename sin usar nombres internos cliente-facing', () => {
@@ -97,6 +99,18 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
       document.document_type === 'catalogo_compradores'
       && document.upload_status === 'received'
     ))).toBe(true)
+  })
+
+  it('respeta la clasificación sugerida por el módulo aunque el filename sea genérico', async () => {
+    const file = new File(['contenido'], 'documento-general.pdf', { type: 'application/pdf' })
+    const result = await registerTenantDocument('module-directed-upload-city', file, 'user-module', {
+      module_id: 'M03B',
+      document_type: 'reglamento_limpia',
+    })
+
+    expect(result.document.module_id).toBe('M03B')
+    expect(result.document.document_type).toBe('reglamento_limpia')
+    expect(result.document.classification_confidence).toBe('manual')
   })
 
   it('rechaza tipo no permitido y archivo demasiado grande', () => {

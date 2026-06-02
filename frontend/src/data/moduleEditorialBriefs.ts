@@ -678,8 +678,8 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             chart_id: 'resumen-ejecutivo',
             chart_label: 'Resumen ejecutivo de escenarios',
             metodologia: {
-              como_se_calcula: 'Tabla comparativa de los tres escenarios activos: TIR, VPN, payback, empleos y CO₂e. TIR calculada con método estándar sobre flujos anuales del horizonte seleccionado.',
-              origen_datos: 'Todos los inputs vienen de los módulos anteriores. TIR/VPN: cálculo propio del motor financiero ALQUIMIA.',
+              como_se_calcula: 'Tabla comparativa de los escenarios activos: valor presente, retorno, recuperación, empleos y CO₂e. Los indicadores financieros se calculan con método explícito sobre flujos anuales del horizonte seleccionado.',
+              origen_datos: 'Todos los inputs vienen de los módulos anteriores. Valor presente y retorno: cálculo propio del motor financiero ALQUIMIA.',
               por_que_este_enfoque: 'Presentar tres escenarios —no uno— obliga al equipo municipal a decidir con información de sensibilidad, no solo con el escenario optimista.',
               supuesto_critico: 'El WACC utilizado como tasa de descuento. La referencia pre-cargada es 12% (SHCP proyectos públicos México). Un alcalde puede considerar una tasa diferente según el costo de financiamiento municipal.',
             },
