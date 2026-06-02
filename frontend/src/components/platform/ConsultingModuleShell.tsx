@@ -377,7 +377,7 @@ export function ModuleDocumentUploadSection({
       setError(typeof body.detail === 'string' ? body.detail : 'No se pudo recibir el documento')
       return
     }
-    setMessage('Documento recibido · pendiente de validación humana')
+    setMessage('Documento integrado automáticamente · disponible como fuente trazable del módulo')
     setFile(null)
     setSelectedGap(null)
     onChanged?.()
@@ -435,7 +435,7 @@ export function ModuleDocumentUploadSection({
           </div>
         )) : (
           <div className="py-3 text-[12px] leading-5 text-[#5C574F]">
-            No hay documentos pendientes críticos para este módulo. Los documentos recibidos siguen sujetos a validación humana.
+            No hay documentos pendientes críticos para este módulo. Los documentos recibidos se integran como fuente con alcance, confianza y límites de uso.
           </div>
         )}
         {documents.map(document => (
@@ -476,7 +476,7 @@ export function ModuleDocumentUploadSection({
                 className="w-full border border-[#D8D2C5] px-3 py-2"
               />
               <p className="bg-[#F7F3EA] p-3 text-[12px] leading-5">
-                Subir un documento no lo convierte automáticamente en dato validado. La información extraída requiere revisión humana y cita verificable.
+                La plataforma integrará el documento como fuente del módulo y usará lo extraíble con cita verificable, alcance, confianza y límites de uso.
               </p>
             </div>
             <div className="mt-5 flex justify-end gap-2">
