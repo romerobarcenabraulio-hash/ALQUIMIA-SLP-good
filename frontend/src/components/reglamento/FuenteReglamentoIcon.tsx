@@ -21,7 +21,7 @@ export interface FuenteReglamentoIconProps {
 export function FuenteReglamentoIcon({
   municipioId: municipioProp,
   className,
-  label = 'Abrir reglamento de referencia en el que se basa la simulación',
+  label = 'Abrir reglamento de referencia para cotejo jurídico',
   articulosEtapa,
 }: FuenteReglamentoIconProps) {
   const { openReglamento } = useReglamentoFuente()

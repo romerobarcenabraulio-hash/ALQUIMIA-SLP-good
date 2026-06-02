@@ -85,13 +85,16 @@ function PerfilWizard() {
         municipality: selectedMunicipio?.nombre,
         state: estadoNombre,
       })
+      if (res.tenant_id) {
+        localStorage.setItem('alquimia.tenantId', res.tenant_id)
+      }
       if (res.access_token) {
         persistSession(res.access_token)
         clearSetupToken()
-        router.push('/v')
+        router.push(res.tenant_id ? `/v?tenant_id=${encodeURIComponent(res.tenant_id)}` : '/v')
         return
       }
-      router.push(res.next_path || '/v')
+      router.push(res.next_path || (res.tenant_id ? `/v?tenant_id=${encodeURIComponent(res.tenant_id)}` : '/v'))
     }
     catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar')

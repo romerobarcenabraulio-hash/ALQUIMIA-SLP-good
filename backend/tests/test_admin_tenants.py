@@ -58,6 +58,49 @@ def test_create_tenant_seeds_validation_state_gates_and_capabilities():
     assert body["municipal_profile"]["mode"] == "carga_inicial"
 
 
+def test_admin_inegi_states_and_municipality_filter_are_available():
+    client = _client()
+
+    states = client.get("/admin/inegi/states")
+    assert states.status_code == 200
+    assert len(states.json()["states"]) == 32
+    assert {"estado_id": "24", "estado_nombre": "San Luis Potosí"} in states.json()["states"]
+
+    municipalities = client.get("/admin/inegi/municipalities?estado_id=24&q=San%20Luis&limit=20")
+    assert municipalities.status_code == 200
+    body = municipalities.json()
+    assert body["territorial_rule"].startswith("municipio y ZM")
+    assert any(row["clave_inegi"] == "24028" for row in body["municipalities"])
+    assert all("zm" in row and "municipio_id" in row for row in body["municipalities"])
+
+
+def test_admin_erp_lists_tenants_by_inegi_without_cross_tenant_private_claims():
+    client = _client()
+    tenant = client.post(
+        "/admin/tenants",
+        json={
+            "nombre": "San Luis Potosi",
+            "estado_mx": "San Luis Potosi",
+            "municipio_id": "slp-capital-test",
+            "inegi_clave": "24028",
+            "tier_comercial": "diagnostico",
+            "current_stage": "validation",
+        },
+    ).json()
+
+    res = client.get("/admin/erp/municipalities?q=San%20Luis")
+    assert res.status_code == 200
+    body = res.json()
+    assert body["cross_tenant_private_data_exposed"] is False
+    assert body["linking_method"].startswith("clave_inegi primero")
+    rows = body["rows"]
+    assert any(row["tenant_id"] == tenant["id"] for row in rows)
+    row = next(row for row in rows if row["tenant_id"] == tenant["id"])
+    assert row["clave_inegi"] == "24028"
+    assert row["link_status"] == "tenant_sin_usuario"
+    assert row["users_count"] == 0
+
+
 def test_gate_cannot_close_without_evidence_and_does_not_transition_stage():
     client = _client()
     created = client.post(

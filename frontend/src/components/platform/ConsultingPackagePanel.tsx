@@ -39,6 +39,12 @@ function readinessStatus(gate: ConsultingPackage['readiness_gates'][number]) {
   return { label: 'Condiciona', className: 'text-[#8C6A13]' }
 }
 
+function planEmissionTone(mode: ConsultingPackage['plan_emission']['mode']) {
+  if (mode === 'blocked_missing_regulation') return 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]'
+  if (mode === 'conditioned_with_gaps') return 'border-[#D7B56D] bg-[#FFF9EA] text-[#765814]'
+  return 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'
+}
+
 function PackageDiagram({ pkg }: { pkg: ConsultingPackage }) {
   const hasScenario = pkg.scenario_set.scenarios.some(scenario => scenario.capture_ton_day !== null)
   const affirmableClaims = renderableClaims(pkg.claim_ledger).length
@@ -72,7 +78,7 @@ export function ConsultingPackagePanel({
   tenantData: TenantDiagnosticData
   showTechnicalPanel: boolean
 }) {
-  const [apiPackage, setApiPackage] = useState<ConsultingPackage | null>(null)
+  const [apiResponse, setApiResponse] = useState<TenantConsultingPackageResponse | null>(null)
   const fallbackPackage = useMemo(() => {
     const inputRegistry = buildConsultingInputRegistry(tenantData)
     return buildConsultingPackage({ tenantData, inputRegistry })
@@ -87,16 +93,18 @@ export function ConsultingPackagePanel({
         })
         if (!response.ok) throw new Error(`consulting-package ${response.status}`)
         const payload = await response.json() as TenantConsultingPackageResponse
-        if (!cancelled) setApiPackage(payload.consulting_package)
+        if (!cancelled) setApiResponse(payload)
       } catch {
-        if (!cancelled) setApiPackage(null)
+        if (!cancelled) setApiResponse(null)
       }
     }
     void loadConsultingPackage()
     return () => { cancelled = true }
   }, [showTechnicalPanel, tenantData.tenant_id])
 
-  const pkg = apiPackage ?? fallbackPackage
+  const pkg = apiResponse?.consulting_package ?? fallbackPackage
+  const bibliographyChicago = apiResponse?.bibliography_chicago ?? []
+  const compatibleBibliographyChicago = apiResponse?.compatible_bibliography_chicago ?? []
   const visibleClaims = renderableClaims(pkg.claim_ledger)
   const blockedScenario = pkg.scenario_set.scenarios.every(scenario => scenario.capture_ton_day === null)
   const criticalInputs = pkg.input_registry.sources.filter(source => source.status === 'blocked').slice(0, 6)
@@ -114,11 +122,11 @@ export function ConsultingPackagePanel({
           <p className="mt-3 max-w-3xl text-[14px] leading-7 text-[#4A4740]">
             {pkg.executive_diagnosis}
           </p>
-          {blockedScenario && (
-            <div className="mt-4 flex items-start gap-2 rounded-[8px] border border-[#D7B56D] bg-[#FFF9EA] p-3">
-              <Lock size={15} className="mt-0.5 shrink-0 text-[#765814]" />
-              <p className="text-[12px] leading-5 text-[#765814]">
-                El plan sólo se bloquea si falta reglamento. Las cifras que no tengan línea base, evidencia privada o compradores/precios trazables quedan como capítulos no cuantificados.
+          {(blockedScenario || !pkg.plan_emission.can_emit_plan) && (
+            <div className={`mt-4 flex items-start gap-2 rounded-[8px] border p-3 ${planEmissionTone(pkg.plan_emission.mode)}`}>
+              <Lock size={15} className="mt-0.5 shrink-0" />
+              <p className="text-[12px] leading-5">
+                {pkg.plan_emission.explanation}
               </p>
             </div>
           )}
@@ -269,6 +277,14 @@ export function ConsultingPackagePanel({
             Sólo el reglamento bloquea emisión del plan. Los demás pendientes condicionan alcance, confianza o cifras específicas.
           </p>
           <div className="mt-3 divide-y divide-[#F0EDE5]">
+            <div className="pb-3">
+              <p className={`inline-flex border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] ${planEmissionTone(pkg.plan_emission.mode)}`}>
+                {pkg.plan_emission.label}
+              </p>
+              <p className="mt-2 text-[11px] leading-5 text-[#6B6760]">
+                {pkg.plan_emission.required_human_action}
+              </p>
+            </div>
             {pkg.readiness_gates.map(gate => {
               const status = readinessStatus(gate)
               return (
@@ -320,6 +336,48 @@ export function ConsultingPackagePanel({
               </p>
             </div>
           )}
+        </div>
+      </div>
+
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+            Bibliografía Chicago
+          </p>
+          <p className="mt-2 text-[11px] leading-5 text-[#6B6760]">
+            Las citas se consolidan en formato institucional inspirado en Chicago. Si una cifra no tiene cita, queda como brecha o pendiente.
+          </p>
+          <ol className="mt-3 space-y-2 text-[11px] leading-5 text-[#4A4740]">
+            {bibliographyChicago.slice(0, 4).map((entry, index) => (
+              <li key={entry}>{index + 1}. {entry}</li>
+            ))}
+            {!bibliographyChicago.length && (
+              <li>Sin bibliografía suficiente; no publicar cifras como afirmación.</li>
+            )}
+          </ol>
+        </div>
+
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+            Bibliografía comparable
+          </p>
+          <p className="mt-2 text-[11px] leading-5 text-[#6B6760]">
+            Útil para contexto, hipótesis y planeación preliminar. No sustituye reglamento, estudio local ni verdad municipal.
+          </p>
+          <div className="mt-3 space-y-3">
+            {compatibleBibliographyChicago.slice(0, 3).map(item => (
+              <div key={item.id} className="border-t border-[#F0EDE5] pt-3 first:border-t-0 first:pt-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8C6A13]">
+                  {item.tag} · score {item.score}
+                </p>
+                <p className="mt-1 text-[11px] leading-5 text-[#4A4740]">{item.citation}</p>
+                <p className="mt-1 text-[11px] leading-5 text-[#8C6A13]">{item.unsupported_claim}</p>
+              </div>
+            ))}
+            {!compatibleBibliographyChicago.length && (
+              <p className="text-[11px] leading-5 text-[#6B6760]">Sin recomendaciones compatibles; conservar brechas.</p>
+            )}
+          </div>
         </div>
       </div>
 

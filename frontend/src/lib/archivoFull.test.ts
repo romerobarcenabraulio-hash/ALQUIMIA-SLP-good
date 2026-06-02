@@ -118,6 +118,14 @@ describe('archivoFull deterministic components', () => {
     expect(manifest.client_controls_enabled).toBe(false)
     expect(manifest.claim_ledger.affirmable_count).toBe(0)
     expect(manifest.claim_ledger.blocked_count).toBeGreaterThan(0)
+    expect(manifest.bibliography_chicago.length).toBeGreaterThan(0)
+    expect(manifest.bibliography_chicago[0]).toContain('Consultado el')
+    expect(manifest.compatible_bibliography_chicago.length).toBeGreaterThan(0)
+    expect(manifest.compatible_bibliography_chicago[0].citation).toContain('Consultado el')
+    expect(manifest.plan_emission).toMatchObject({
+      can_emit_plan: false,
+      blocked_by_regulation: true,
+    })
     expect(manifest.scenarios.every(scenario => scenario.capture_ton_day === null)).toBe(true)
     expect(manifest.input_registry.buyers_available).toBe(false)
     expect(manifest.api_layer_contracts.map(contract => contract.layer).sort()).toEqual([
