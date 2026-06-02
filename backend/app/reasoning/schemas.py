@@ -33,6 +33,9 @@ class EdgeRelation(str, Enum):
     documents = "documents"
     recommends = "recommends"
     depends_on = "depends_on"
+    supports = "supports"
+    contextualizes = "contextualizes"
+    cannot_support = "cannot_support"
 
 
 class CausalNode(BaseModel):
@@ -94,6 +97,7 @@ class ReasoningGraphRequest(BaseModel):
     market_summary: Optional[Dict[str, Any]] = None
     macro_impact_summary: Optional[Dict[str, Any]] = None
     legal_summary: Optional[Dict[str, Any]] = None
+    evidence_recommendations: List[Dict[str, Any]] = Field(default_factory=list)
     warnings: List[str] = Field(default_factory=list)
 
 
@@ -102,4 +106,3 @@ class ExplainRequest(BaseModel):
     graph: Optional[ReasoningGraph] = None
     decision_id: Optional[str] = None
     pregunta: Optional[str] = None
-
