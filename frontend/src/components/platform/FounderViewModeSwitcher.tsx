@@ -55,6 +55,13 @@ export function readFounderViewMode(): FounderViewMode {
   return readStoredMode()
 }
 
+export function authorizedFounderViewMode(
+  canUseInternalView: boolean,
+  storedMode: FounderViewMode,
+): FounderViewMode {
+  return canUseInternalView ? storedMode : 'client'
+}
+
 export function FounderViewModeSwitcher() {
   const pathname = usePathname()
   const { user, isLoaded } = useUser()

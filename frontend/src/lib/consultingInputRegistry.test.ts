@@ -3,13 +3,14 @@ import { buildConsultingInputRegistry } from '@/lib/consultingInputRegistry'
 import { TENANT_DIAGNOSTIC_FIXTURES, type TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
 
 describe('consultingInputRegistry', () => {
-  it('blocks municipio-demo inputs instead of pretending API coverage exists', () => {
+  it('uses municipio-demo as bibliographic demo while keeping formal blockers visible', () => {
     const registry = buildConsultingInputRegistry(TENANT_DIAGNOSTIC_FIXTURES['municipio-demo'])
 
-    expect(registry.buyers_available).toBe(false)
+    expect(registry.buyers_available).toBe(true)
     expect(registry.legal_ready).toBe(false)
     expect(registry.operations_ready).toBe(false)
     expect(registry.has_local_field_study).toBe(false)
+    expect(registry.sources.some(source => source.label === 'Generación RSU calculada' && source.status === 'assumption')).toBe(true)
     expect(registry.sources.some(source => source.status === 'blocked')).toBe(true)
   })
 

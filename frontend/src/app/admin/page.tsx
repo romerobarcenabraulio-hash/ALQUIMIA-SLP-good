@@ -213,10 +213,10 @@ function statusClass(status: string) {
 
 function linkStatusLabel(status: AdminErpMunicipalityRow['link_status']) {
   if (status === 'vinculado') return 'Vinculado'
-  if (status === 'tenant_sin_usuario') return 'Tenant sin usuario'
-  if (status === 'usuario_sin_tenant') return 'Usuario sin tenant'
+  if (status === 'tenant_sin_usuario') return 'Expediente sin usuario'
+  if (status === 'usuario_sin_tenant') return 'Usuario sin expediente'
   if (status === 'duplicado') return 'Duplicado'
-  return 'Sin tenant'
+  return 'Sin expediente'
 }
 
 function linkStatusClass(status: AdminErpMunicipalityRow['link_status']) {
@@ -351,7 +351,7 @@ export default function AdminPage() {
       if (nextSelectedId) setSelectedId(nextSelectedId)
       else if (!selectedId && next[0]) setSelectedId(next[0].id)
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : 'No se pudo cargar tenants')
+      setError(exc instanceof Error ? exc.message : 'No se pudo cargar expedientes municipales')
     } finally {
       setLoading(false)
     }
@@ -475,10 +475,10 @@ export default function AdminPage() {
       const data = await res.json().catch(() => ({}))
       if (!res.ok) throw new Error(data.detail ?? `HTTP ${res.status}`)
       setForm(emptyForm)
-      setMessage(`Tenant creado: ${data.nombre}`)
+      setMessage(`Expediente municipal creado: ${data.nombre}`)
       await loadTenants(data.id)
     } catch (exc) {
-      setError(exc instanceof Error ? exc.message : 'No se pudo crear tenant')
+      setError(exc instanceof Error ? exc.message : 'No se pudo crear el expediente municipal')
     }
   }
 
@@ -638,7 +638,7 @@ export default function AdminPage() {
         <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="mb-1 text-[10px] uppercase tracking-[0.08em] text-[#8E8980]">/admin · Plataforma 0</p>
-            <h1 className="font-serif text-[26px] text-[#1C1B18]">Gestor municipal</h1>
+            <h1 className="font-serif text-[26px] text-[#1C1B18]">Gestor municipal INEGI</h1>
           </div>
           <button
             type="button"
@@ -716,9 +716,9 @@ export default function AdminPage() {
               >
                 <option value="">Todos los vínculos</option>
                 <option value="vinculado">Vinculado</option>
-                <option value="tenant_sin_usuario">Tenant sin usuario</option>
-                <option value="usuario_sin_tenant">Usuario sin tenant</option>
-                <option value="sin_tenant">Sin tenant</option>
+                <option value="tenant_sin_usuario">Expediente sin usuario</option>
+                <option value="usuario_sin_tenant">Usuario sin expediente</option>
+                <option value="sin_tenant">Sin expediente</option>
                 <option value="duplicado">Duplicado</option>
               </select>
               <button
@@ -738,7 +738,7 @@ export default function AdminPage() {
               <thead>
                 <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
                   <th className="px-4 py-2 font-medium">Municipio</th>
-                  <th className="px-3 py-2 font-medium">Tenant</th>
+                  <th className="px-3 py-2 font-medium">Expediente / cliente</th>
                   <th className="px-3 py-2 font-medium">Cliente / usuario</th>
                   <th className="px-3 py-2 font-medium">Etapa</th>
                   <th className="px-3 py-2 font-medium">Vínculo</th>
@@ -754,7 +754,7 @@ export default function AdminPage() {
                       <strong className="block text-[#1C1B18]">{row.municipio}</strong>
                       <span className="text-[11px] text-[#8E8980]">{row.estado} · INEGI {row.clave_inegi} · municipio {row.municipio_id || '-'}</span>
                     </td>
-                    <td className="px-3 py-3 text-[#6B6760]">{row.tenant_nombre ?? 'Pendiente de crear'}</td>
+                    <td className="px-3 py-3 text-[#6B6760]">{row.tenant_nombre ?? 'Sin expediente activo'}</td>
                     <td className="px-3 py-3">
                       <span className="block text-[#1C1B18]">{row.primary_contact?.email ?? 'Sin usuario vinculado'}</span>
                       <span className="text-[11px] text-[#8E8980]">{row.users_count} usuario(s) · {row.primary_contact?.organizacion ?? 'organización pendiente'}</span>
@@ -767,8 +767,8 @@ export default function AdminPage() {
                       <div className="flex flex-wrap gap-2">
                         {row.tenant_id ? (
                           <>
-                            <button type="button" onClick={() => setSelectedId(row.tenant_id ?? null)} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Abrir</button>
-                            <a href={`/v?tenant_id=${encodeURIComponent(row.tenant_id)}`} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Ver cliente</a>
+                            <button type="button" onClick={() => setSelectedId(row.tenant_id ?? null)} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Abrir municipio</button>
+                            <a href={`/v?tenant_id=${encodeURIComponent(row.tenant_id)}`} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Ver como cliente</a>
                           </>
                         ) : (
                           <button
@@ -782,7 +782,7 @@ export default function AdminPage() {
                             }))}
                             className="border border-[#3B6D11] bg-white px-2 py-1 text-[11px] font-semibold text-[#2F5B0D]"
                           >
-                            Preparar tenant
+                            Preparar expediente
                           </button>
                         )}
                       </div>
@@ -799,13 +799,16 @@ export default function AdminPage() {
             <section className="border border-[#E1DACE] bg-[#FDFCFA] p-4">
               <div className="mb-4 flex items-center gap-2">
                 <Plus size={16} className="text-[#3B6D11]" />
-                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Nuevo tenant</h2>
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Alta desde INEGI</h2>
               </div>
+              <p className="mb-3 text-[11px] leading-5 text-[#6B6760]">
+                Usa el filtro de estado y municipio para seleccionar una clave INEGI; la plataforma crea el expediente interno sin pedirle al admin memorizar identificadores técnicos.
+              </p>
               <div className="space-y-3">
                 {[
                   ['nombre', 'Municipio'],
                   ['estado_mx', 'Estado'],
-                  ['municipio_id', 'Municipio ID'],
+                  ['municipio_id', 'Clave municipal'],
                   ['inegi_clave', 'Clave INEGI'],
                 ].map(([key, label]) => (
                   <label key={key} className="block text-[11px] font-medium text-[#6B6760]">
@@ -850,19 +853,19 @@ export default function AdminPage() {
                   disabled={!form.nombre || !form.estado_mx || !form.municipio_id || !form.inegi_clave}
                   className="h-9 w-full bg-[#3B6D11] text-[12px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#B9C8A7]"
                 >
-                  Crear en validation
+                  Crear expediente de validación
                 </button>
               </div>
             </section>
 
             <section className="border border-[#E1DACE] bg-[#FDFCFA]">
               <div className="flex items-center justify-between border-b border-[#E8E4DC] px-4 py-3">
-                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Tenants</h2>
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Expedientes activos</h2>
                 <span className="text-[11px] text-[#8E8980]">{loading ? '...' : tenants.length}</span>
               </div>
               <div className="max-h-[420px] overflow-auto">
                 {tenants.length === 0 ? (
-                  <p className="px-4 py-6 text-[12px] text-[#8E8980]">Sin tenants registrados.</p>
+                  <p className="px-4 py-6 text-[12px] text-[#8E8980]">Sin expedientes registrados.</p>
                 ) : tenants.map(tenant => (
                   <button
                     key={tenant.id}
@@ -881,7 +884,7 @@ export default function AdminPage() {
           <main className="space-y-5">
             {!selected ? (
               <section className="border border-dashed border-[#D8D1C4] bg-[#FDFCFA] p-8 text-[13px] text-[#6B6760]">
-                Crea o selecciona un tenant.
+                Selecciona un municipio o prepara un expediente desde INEGI.
               </section>
             ) : (
               <>
@@ -892,7 +895,7 @@ export default function AdminPage() {
                         <Landmark size={18} className="text-[#3B6D11]" />
                         <h2 className="text-[18px] font-semibold text-[#1C1B18]">{selected.nombre}</h2>
                       </div>
-                      <p className="text-[12px] text-[#6B6760]">{selected.estado_mx} · {selected.municipio_id} · INEGI {selected.inegi_clave}</p>
+                      <p className="text-[12px] text-[#6B6760]">{selected.estado_mx} · clave municipal {selected.municipio_id} · INEGI {selected.inegi_clave}</p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-[12px] md:min-w-[360px]">
                       <div className="border border-[#E8E4DC] bg-white px-3 py-2">
@@ -1078,7 +1081,7 @@ export default function AdminPage() {
                       <tbody>
                         {documents.length === 0 ? (
                           <tr>
-                            <td colSpan={6} className="py-6 text-[#8E8980]">Sin borradores generados para este tenant.</td>
+                            <td colSpan={6} className="py-6 text-[#8E8980]">Sin borradores generados para este municipio.</td>
                           </tr>
                         ) : documents.map(document => (
                           <tr key={document.id} className="border-b border-[#EEE8DE]">
@@ -1290,9 +1293,9 @@ export default function AdminPage() {
                   </div>
                   <div className="grid gap-4 xl:grid-cols-3">
                     {[
-                      ['antecedentes', 'tenant.antecedentes'],
-                      ['mapa_social', 'tenant.mapa_social'],
-                      ['organigrama_servicio', 'tenant.organigrama_servicio'],
+                      ['antecedentes', 'municipio.antecedentes'],
+                      ['mapa_social', 'municipio.mapa_social'],
+                      ['organigrama_servicio', 'municipio.organigrama_servicio'],
                     ].map(([key, label]) => (
                       <label key={key} className="block text-[11px] font-medium text-[#6B6760]">
                         {label}

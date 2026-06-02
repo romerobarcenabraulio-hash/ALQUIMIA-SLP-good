@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import { AlertTriangle, Lock } from 'lucide-react'
 import { Citation } from '@/components/Citation'
 import { InstitutionalHeader } from '@/components/layout/InstitutionalHeader'
@@ -20,7 +21,9 @@ import {
 import { ConsultingPackagePanel } from '@/components/platform/ConsultingPackagePanel'
 import { ConsultingModuleShell } from '@/components/platform/ConsultingModuleShell'
 import {
+  authorizedFounderViewMode,
   FounderViewModeSwitcher,
+  isFounderOrAdmin,
   readFounderViewMode,
   type FounderViewMode,
 } from '@/components/platform/FounderViewModeSwitcher'
@@ -84,11 +87,11 @@ async function fetchTenantOptions(): Promise<TenantOption[]> {
   try {
     const backendRes = await fetch(`${getApiUrl()}/admin/tenants`, { headers: authHeaders() })
     data = await backendRes.json().catch(() => ({}))
-    if (!backendRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Tenants HTTP ${backendRes.status}`)
+    if (!backendRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Expedientes HTTP ${backendRes.status}`)
   } catch {
     const localRes = await fetch('/api/admin/tenants')
     data = await localRes.json().catch(() => ({}))
-    if (!localRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Tenants HTTP ${localRes.status}`)
+    if (!localRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Expedientes HTTP ${localRes.status}`)
   }
   const tenants = Array.isArray(data.tenants) ? data.tenants : []
   const baseOptions = tenants.map((tenant: Record<string, unknown>) => {
@@ -100,7 +103,7 @@ async function fetchTenantOptions(): Promise<TenantOption[]> {
     )).length
     return {
       id: String(tenant.id ?? ''),
-      nombre: String(tenant.nombre ?? tenant.id ?? 'Tenant sin nombre'),
+      nombre: String(tenant.nombre ?? tenant.id ?? 'Municipio sin nombre'),
       estado_mx: typeof tenant.estado_mx === 'string' ? tenant.estado_mx : undefined,
       municipio_id: typeof tenant.municipio_id === 'string' ? tenant.municipio_id : undefined,
       inegi_clave: typeof tenant.inegi_clave === 'string' ? tenant.inegi_clave : undefined,
@@ -465,7 +468,7 @@ export function TenantSelectionPanel({
         Elige el municipio que quieres analizar.
       </h1>
       <p className="mt-3 max-w-3xl text-[14px] leading-7 text-[#4A4740]">
-        La plataforma necesita un tenant activo para separar municipio, zona metropolitana, documentos, gates y evidencia. Como admin, esta pantalla debe servir como filtro de trabajo, no como error técnico.
+        La plataforma necesita un expediente municipal activo para separar municipio, zona metropolitana, documentos, gates y evidencia. Como admin, esta pantalla debe servir como filtro de trabajo, no como error técnico.
       </p>
       <p className="mt-2 max-w-3xl text-[12px] leading-6 text-[#6B6760]">
         Usa la vista Interna para revisar requests, gates y cargas pendientes; cambia a Cliente para confirmar qué verá el municipio sin herramientas de calibración.
@@ -473,11 +476,11 @@ export function TenantSelectionPanel({
 
       <div className="mt-5 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto]">
         <label className="block">
-          <span className="sr-only">Filtrar ciudad o tenant</span>
+          <span className="sr-only">Filtrar ciudad o expediente</span>
           <input
             value={filter}
             onChange={event => setFilter(event.target.value)}
-            placeholder="Filtrar por ciudad, estado, INEGI o tenant_id"
+            placeholder="Filtrar por ciudad, estado, clave INEGI o expediente"
             className="h-11 w-full border border-[#D8D2C5] bg-white px-3 text-[13px] text-[#1C1B18] outline-none focus:border-[#8AA66F]"
           />
         </label>
@@ -485,13 +488,13 @@ export function TenantSelectionPanel({
           href="/admin"
           className="inline-flex h-11 items-center justify-center border border-[#D8D2C5] px-4 text-[13px] font-semibold text-[#3B3326]"
         >
-          Gestionar tenants
+          Gestionar municipios
         </a>
       </div>
 
       {error && (
         <div className="mt-4 border-l-4 border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 text-[12px] leading-5 text-[#765814]">
-          No se pudo cargar el índice admin de tenants: {error}. Puedes entrar manualmente si conoces el tenant_id o gestionarlo desde backoffice.
+          No se pudo cargar el índice admin de municipios: {error}. Puedes entrar manualmente con el identificador interno si ya lo tienes o gestionarlo desde backoffice.
         </div>
       )}
 
@@ -532,17 +535,17 @@ export function TenantSelectionPanel({
             ))}
           </div>
         ) : (
-          <p className="text-[13px] text-[#6B6760]">No hay tenants visibles para este filtro.</p>
+          <p className="text-[13px] text-[#6B6760]">No hay municipios visibles para este filtro.</p>
         )}
       </div>
 
       <div className="mt-6 border-t border-[#E8E4DC] pt-4">
-        <p className="text-[12px] font-semibold text-[#1C1B18]">Entrar con tenant_id manual</p>
+        <p className="text-[12px] font-semibold text-[#1C1B18]">Entrar con identificador interno</p>
         <div className="mt-2 flex flex-col gap-2 sm:flex-row">
           <input
             value={manualTenantId}
             onChange={event => setManualTenantId(event.target.value)}
-            placeholder="tenant_id"
+            placeholder="expediente interno"
             className="h-10 flex-1 border border-[#D8D2C5] bg-white px-3 text-[13px] text-[#1C1B18] outline-none focus:border-[#8AA66F]"
           />
           <button
@@ -570,7 +573,7 @@ function SandboxModulePlaceholder({ module, tenantData }: { module: PlatformModu
         {module?.label ?? 'Modulo pendiente'}
       </h2>
       <p className="mt-2 max-w-3xl text-[13px] leading-6 text-[#5C574F]">
-        En Municipio Demo no se renderizan graficas, diagnósticos ni textos normativos precargados. La pantalla conserva el índice y muestra los documentos necesarios para activar análisis real.
+        Este módulo conserva estructura, brechas y fuentes trazables. Si no hay dato municipal, muestra la brecha; si hay bibliografía o cálculo, declara alcance, método y confianza.
       </p>
       <div className="mt-4 grid gap-3 md:grid-cols-2">
         {(gaps.length ? gaps : tenantData?.document_gaps.slice(0, 4) ?? []).map(gap => (
@@ -745,6 +748,15 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
+  const { user, isLoaded: userLoaded } = useUser()
+  const userEmails = useMemo(
+    () => user?.emailAddresses.map(item => item.emailAddress) ?? [],
+    [user?.emailAddresses],
+  )
+  const canUseInternalView = useMemo(
+    () => isFounderOrAdmin(user?.publicMetadata as Record<string, unknown> | undefined, user?.primaryEmailAddress?.emailAddress, userEmails),
+    [user?.primaryEmailAddress?.emailAddress, user?.publicMetadata, userEmails],
+  )
 
   const [tenantState, setTenantState] = useState<TenantStatePayload | null>(null)
   const [registry, setRegistry] = useState<CapabilityRegistry | null>(null)
@@ -756,18 +768,23 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
   const [tenantOptions, setTenantOptions] = useState<TenantOption[]>([])
   const [tenantOptionsLoading, setTenantOptionsLoading] = useState(false)
   const [tenantOptionsError, setTenantOptionsError] = useState<string | null>(null)
-  const [viewMode, setViewMode] = useState<FounderViewMode>('admin')
+  const [viewMode, setViewMode] = useState<FounderViewMode>('client')
   const tenantData = useTenantData(tenantId)
 
   useEffect(() => {
-    setViewMode(readFounderViewMode())
+    if (!userLoaded) return
+    setViewMode(authorizedFounderViewMode(canUseInternalView, readFounderViewMode()))
     const onChange = (event: Event) => {
+      if (!canUseInternalView) {
+        setViewMode('client')
+        return
+      }
       const detail = (event as CustomEvent<{ mode?: FounderViewMode }>).detail
       setViewMode(detail?.mode === 'client' ? 'client' : 'admin')
     }
     window.addEventListener('alquimia:view-mode-change', onChange)
     return () => window.removeEventListener('alquimia:view-mode-change', onChange)
-  }, [])
+  }, [canUseInternalView, userLoaded])
 
   useEffect(() => {
     let cancelled = false
@@ -813,7 +830,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
 
         if (stateData.status === 'rejected' && !fallbackState) throw stateData.reason
         const resolvedState = fallbackState ?? (stateData.status === 'fulfilled' ? stateData.value : null)
-        if (!resolvedState) throw new Error('No se pudo resolver tenant_state')
+        if (!resolvedState) throw new Error('No se pudo resolver el expediente municipal')
         if (resolvedState.municipal_context) {
           persistTenantMunicipalContext(resolvedState.municipal_context)
         }
@@ -866,7 +883,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
       } catch (exc) {
         if (!cancelled) {
           setTenantOptions([])
-          setTenantOptionsError(exc instanceof Error ? exc.message : 'No se pudo cargar tenants')
+          setTenantOptionsError(exc instanceof Error ? exc.message : 'No se pudo cargar municipios')
         }
       } finally {
         if (!cancelled) setTenantOptionsLoading(false)
@@ -942,7 +959,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     )
   }, [platformModules, tenantData.data])
   const clientPreview = viewMode === 'client'
-  const sandboxDemo = tenantId === 'municipio-demo'
+  const sandboxDemo = false
   const activeModuleIsPillar = isPillarModule(activeModule?.module_id)
   const activeModuleHasOperationalSpec = Boolean(validationModuleSpecFor(activeModule?.module_id))
 
@@ -974,7 +991,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             <div className="flex flex-wrap items-center gap-3">
               <PlatformStageBadge stage={badgeStage} />
               <p className="min-w-0 max-w-[30ch] break-words text-[12px] leading-5 text-[#6B6760] sm:max-w-full">
-                {tenantData.data?.municipality ?? `Tenant ${tenantState?.tenant_id ?? 'sin seleccionar'}`} · diagnóstico inicial con fuente, método y confianza
+                {tenantData.data?.municipality ?? `Municipio ${tenantState?.municipal_context?.municipality ?? 'sin seleccionar'}`} · diagnóstico inicial con fuente, método y confianza
               </p>
               {clientPreview && (
                 <span className="rounded-[6px] border border-[#D8D2C5] px-2 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
@@ -985,10 +1002,10 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             <FounderViewModeSwitcher />
           </div>
         </div>
-        {sandboxDemo && (
+        {tenantId === 'municipio-demo' && (
           <div className="border-b border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 sm:px-6">
             <p className="text-[12px] font-semibold leading-5 text-[#765814]">
-              Sandbox founder · estructura vacia para demostrar navegacion. No contiene datos reales ni estimados.
+              Demo bibliográfico · San Luis Potosí usa fuentes públicas y cálculos trazables. No sustituye revisión humana ni estudios locales faltantes.
             </p>
           </div>
         )}

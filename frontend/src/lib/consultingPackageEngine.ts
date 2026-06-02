@@ -158,6 +158,35 @@ export interface ConsultingPackageInput {
   apiLayerPayloads?: ConsultingApiLayerPayload[]
   documentedPrivateMix?: Partial<Record<string, number>>
   bibliographyTenants?: TenantDiagnosticData[]
+  evidenceRegistryRecommendations?: EvidenceRegistryRecommendation[]
+}
+
+export interface EvidenceRegistryRecord {
+  id: string
+  institution: string
+  title: string
+  url?: string | null
+  published_at?: string | null
+  consulted_at: string
+  municipio_id?: string | null
+  module_id: string
+  stage: 'validation' | 'planning' | 'execution'
+  category: string
+  evidence_scope: 'municipal' | 'zm' | 'state' | 'national' | 'comparable' | 'benchmark'
+  evidence_use: 'supports' | 'contextualizes' | 'feeds_calculation' | 'cannot_support'
+  confidence: number
+  method: string
+  claim_can_support: string
+  claim_cannot_support: string
+  limitations: string[]
+  chicago_citation: string
+}
+
+export interface EvidenceRegistryRecommendation {
+  record: EvidenceRegistryRecord
+  score: number
+  tag: EvidenceRecommendation['tag']
+  explanation: string
 }
 
 const PRIVATE_CATEGORIES: Array<Omit<PrivateGeneratorMix, 'share_pct' | 'evidence_status' | 'rationale'>> = [
@@ -280,6 +309,86 @@ function claimFromMetric(metric: TenantMetric): ClaimLedgerEntry | null {
   }
 }
 
+function registryScopeToMetricScope(scope: EvidenceRegistryRecord['evidence_scope']): TenantMetric['territorial_scope'] {
+  if (scope === 'municipal') return 'municipio'
+  if (scope === 'zm') return 'zm'
+  if (scope === 'state' || scope === 'comparable') return 'estado'
+  return 'nacional'
+}
+
+function registryEvidenceType(record: EvidenceRegistryRecord): EvidenceRecommendation['record']['evidence_type'] {
+  if (record.evidence_scope === 'benchmark') return 'benchmark'
+  if (record.evidence_use === 'feeds_calculation') return 'model'
+  if (record.evidence_use === 'cannot_support') return 'gap'
+  return 'api'
+}
+
+function registryRecommendationConfidence(
+  tag: EvidenceRecommendation['tag'],
+  score: number,
+): EvidenceRecommendation['confidence'] {
+  if (tag === 'no_usable') return 'blocked'
+  if (tag === 'local' && score >= 70) return 'high'
+  if (score >= 50) return 'medium'
+  return 'low'
+}
+
+function registryRecommendationsToEvidenceRecommendations(
+  tenantData: TenantDiagnosticData,
+  recommendations: EvidenceRegistryRecommendation[] = [],
+): EvidenceRecommendation[] {
+  return recommendations.map(item => {
+    const scoreTotal = Math.max(0, Math.min(100, item.score))
+    return {
+      id: `${tenantData.tenant_id}:registry:${item.record.id}`,
+      tag: item.tag,
+      record: {
+        id: item.record.id,
+        tenant_id: tenantData.tenant_id,
+        municipality: tenantData.municipality,
+        state: tenantData.state,
+        municipio_id: item.record.municipio_id ?? tenantData.municipio_id,
+        zm: tenantData.zm,
+        citation_id: item.record.id,
+        institution: item.record.institution,
+        title: item.record.title,
+        url: item.record.url ?? undefined,
+        source_date: item.record.published_at ?? item.record.consulted_at,
+        consulted_at: item.record.consulted_at,
+        territorial_scope: registryScopeToMetricScope(item.record.evidence_scope),
+        module_id: item.record.module_id,
+        claim_id: item.record.category,
+        claim_label: item.record.title,
+        evidence_type: registryEvidenceType(item.record),
+        method: item.record.method,
+        confidence: item.tag === 'no_usable'
+          ? 'critical_gap'
+          : item.record.confidence >= 0.75
+            ? 'verified_secondary'
+            : item.record.confidence >= 0.5
+              ? 'inferred_medium'
+              : 'inferred_low',
+        restrictions: item.record.limitations,
+      },
+      score: {
+        territorial: 0,
+        profile: 0,
+        module: 0,
+        recency: 0,
+        evidence: 0,
+        penalties: 0,
+        total: scoreTotal,
+      },
+      confidence: registryRecommendationConfidence(item.tag, scoreTotal),
+      supported_claim: item.record.claim_can_support,
+      unsupported_claim: item.record.claim_cannot_support,
+      explanation: item.explanation,
+      stage: item.record.stage,
+      module_id: item.record.module_id,
+    }
+  })
+}
+
 export function renderableClaims(entries: ClaimLedgerEntry[]): ClaimLedgerEntry[] {
   return entries.filter(entry =>
     Boolean(entry.claim && entry.source && entry.source_date && entry.method && entry.confidence !== 'blocked'),
@@ -318,9 +427,11 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
     ?? (input.apiLayerPayloads
       ? buildConsultingInputRegistryWithApiLayers(input.tenantData, input.apiLayerPayloads)
       : buildConsultingInputRegistry(input.tenantData))
-  const buyersAvailable = input.buyersAvailable ?? registry.buyers_available
+  const localBuyersAvailable = input.buyersAvailable ?? registry.buyers_available
   return MATERIALS.map(material => {
-    if (!buyersAvailable) {
+    const researchKey = MATERIAL_RESEARCH_KEY[material]
+    const research = researchKey ? MATERIAL_PRICE_RESEARCH[researchKey] : null
+    if (!localBuyersAvailable && !research) {
       return {
         material,
         weighted_price_mxn_per_kg: null,
@@ -332,24 +443,25 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
         derived_from_field_ids: [],
         confidence: 'blocked',
         source: 'Compradores y precios no cargados',
-        note: 'Sin comprador, cotización o catálogo vigente, el material no genera ingreso en el paquete cliente.',
+        note: 'Sin comprador, cotización o referencia documental suficiente, el material no genera ingreso en el paquete cliente.',
       }
     }
 
-    const researchKey = MATERIAL_RESEARCH_KEY[material]
-    const research = researchKey ? MATERIAL_PRICE_RESEARCH[researchKey] : null
     const basePrice = research?.recommended ?? 1
     const source = research
       ? `${research.sourceSummary}. ${research.explanation}`
       : 'Sin referencia documental especifica; usar sólo como supuesto interno de escenario.'
+    const scenarioSource = localBuyersAvailable
+      ? source
+      : `${source} Sin comprador local integrado: se usa como aproximacion bibliografica de escenario, no como precio contratado.`
     const channels: MaterialPriceChannel[] = QUALITY_DISTRIBUTIONS[material].map(channel => ({
       label: channel.label,
       share_pct: channel.share_pct,
       price_mxn_per_kg: Number((basePrice * channel.factor).toFixed(2)),
       rationale: channel.rationale,
       data_category: 'calculated',
-      source,
-      confidence: research ? (research.status === 'validado' ? 'medium' : 'low') : 'low',
+      source: scenarioSource,
+      confidence: localBuyersAvailable && research?.status === 'validado' ? 'medium' : 'low',
     }))
     const rejection_pct = channels.find(channel => /rechaz|sin salida|no aprovechable/i.test(channel.label))?.share_pct ?? 0
     const logistics = material === 'vidrio' ? 0.75 : material === 'orgánico' ? 0.3 : 0.45
@@ -367,11 +479,15 @@ export function buildMaterialPriceMix(input: ConsultingPackageInput): MaterialPr
       derived_from_field_ids: [
         `material_research_${researchKey ?? material}`,
         `quality_distribution_${material}`,
-        `buyers_available_${input.tenantData.tenant_id}`,
+        localBuyersAvailable
+          ? `buyers_available_${input.tenantData.tenant_id}`
+          : `bibliographic_price_basis_${input.tenantData.tenant_id}`,
       ],
-      confidence: research?.status === 'validado' ? 'medium' : 'low',
-      source,
-      note: 'Precio ponderado de escenario por distribución de calidad; no precio oficial, cotización ni garantía contractual. La confianza sube con cotización local o datos del cliente.',
+      confidence: localBuyersAvailable && research?.status === 'validado' ? 'medium' : 'low',
+      source: scenarioSource,
+      note: localBuyersAvailable
+        ? 'Precio ponderado de escenario por distribución de calidad; no precio oficial, cotización ni garantía contractual. La confianza sube con cotización local o datos del cliente.'
+        : 'Precio ponderado bibliográfico de escenario. Permite aproximar derrama y sensibilidad, pero no acredita comprador local, precio oficial, cotización ni garantía contractual.',
     }
   })
 }
@@ -407,6 +523,10 @@ function buildScenarios(data: TenantDiagnosticData, materialMix: MaterialPriceMi
   const usablePrice = materialMix.find(item => item.weighted_price_mxn_per_kg !== null)?.weighted_price_mxn_per_kg ?? null
   const blockedBy = gaps.slice(0, 4).map(gap => gap.label)
   const canCalculate = rsuTonDay !== null && usablePrice !== null
+  const bibliographyOnlyPrice = materialMix.some(item =>
+    item.weighted_price_mxn_per_kg !== null
+    && item.derived_from_field_ids.some(fieldId => fieldId.startsWith('bibliographic_price_basis_')),
+  )
   const ids: ConsultingScenario['id'][] = ['minimum_viable', 'conservative', 'base_realistic', 'optimized', 'stress']
 
   return {
@@ -441,7 +561,9 @@ function buildScenarios(data: TenantDiagnosticData, materialMix: MaterialPriceMi
         confidence: 'low',
         assumptions: [
           'Mix privado urbano distribuido por categorías; requiere censo local para elevar confianza.',
-          'Precio ponderado de escenario; requiere cotización vigente antes de decisión comercial.',
+          bibliographyOnlyPrice
+            ? 'Precio ponderado bibliográfico; requiere comprador/cotización local antes de decisión comercial.'
+            : 'Precio ponderado de escenario; requiere cotización vigente antes de decisión comercial.',
         ],
         blocked_by: blockedBy,
       }
@@ -576,7 +698,14 @@ export function buildConsultingPackage(input: ConsultingPackageInput): Consultin
   const planEmission = buildPlanEmissionStatus(inputRegistry, scenarioSet)
   const hasScenarios = scenarioSet.scenarios.some(scenario => scenario.capture_ton_day !== null)
   const bibliographyTenants = input.bibliographyTenants ?? [tenantData]
-  const evidenceRecommendations = buildEvidenceRecommendations(tenantData, bibliographyTenants).slice(0, 12)
+  const registryRecommendations = registryRecommendationsToEvidenceRecommendations(
+    tenantData,
+    input.evidenceRegistryRecommendations,
+  )
+  const evidenceRecommendations = [
+    ...registryRecommendations,
+    ...buildEvidenceRecommendations(tenantData, bibliographyTenants),
+  ].slice(0, 12)
   const stageEvidenceMap = buildStageEvidenceMap(tenantData, bibliographyTenants)
 
   return {

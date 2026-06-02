@@ -26,7 +26,7 @@ describe('tenantMunicipalContextHeaders', () => {
     })
   })
 
-  it('enriches tenant diagnostic data without changing evidence status', () => {
+  it('enriches tenant diagnostic data without upgrading evidence status', () => {
     const data = withTenantMunicipalContext(TENANT_DIAGNOSTIC_FIXTURES['municipio-demo'], {
       municipio_id: 'slp',
       clave_inegi: '24028',
@@ -37,6 +37,9 @@ describe('tenantMunicipalContextHeaders', () => {
 
     expect(data.municipio_id).toBe('slp')
     expect(data.clave_inegi).toBe('24028')
-    expect(data.metrics.every(metric => metric.status === 'brecha_critica')).toBe(true)
+    expect(data.metrics.some(metric => metric.status === 'verificado')).toBe(true)
+    expect(data.metrics.some(metric => metric.status === 'inferido')).toBe(true)
+    expect(data.metrics.some(metric => metric.status === 'brecha_critica')).toBe(true)
+    expect(data.metrics.find(metric => metric.id === 'field_characterization')?.status).toBe('brecha_critica')
   })
 })

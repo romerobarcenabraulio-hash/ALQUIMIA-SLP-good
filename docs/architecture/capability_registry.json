@@ -306,16 +306,15 @@
       "legacy_number": "M11",
       "name": "Esquema de concesion",
       "platforms": [
-        "validation",
         "planning",
         "execution"
       ],
-      "editable_in": "validation",
-      "readonly_after_stage": "validation",
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
       "default_active": true,
-      "min_tier": "diagnostico",
+      "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 8,
+      "order": 17,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -330,16 +329,15 @@
       "legacy_number": "M12",
       "name": "Arbol de financiamiento",
       "platforms": [
-        "validation",
         "planning",
         "execution"
       ],
-      "editable_in": "validation",
-      "readonly_after_stage": "validation",
+      "editable_in": "planning",
+      "readonly_after_stage": "planning",
       "default_active": true,
-      "min_tier": "diagnostico",
+      "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 9,
+      "order": 18,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -360,7 +358,7 @@
       "default_active": true,
       "min_tier": "diagnostico",
       "monthly_price_addon": 0,
-      "order": 10,
+      "order": 8,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -382,7 +380,7 @@
       "default_active": true,
       "min_tier": "diagnostico",
       "monthly_price_addon": 0,
-      "order": 11,
+      "order": 9,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -404,7 +402,7 @@
       "default_active": true,
       "min_tier": "diagnostico",
       "monthly_price_addon": 0,
-      "order": 12,
+      "order": 10,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -413,7 +411,7 @@
     },
     {
       "module_id": "roadmap_implementacion",
-      "legacy_number": "M05D",
+      "legacy_number": "M05",
       "name": "Roadmap, cronograma y oleadas",
       "platforms": [
         "planning",
@@ -424,7 +422,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 13,
+      "order": 11,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
       "produces_data_for": [
@@ -460,7 +458,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 14,
+      "order": 12,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -496,7 +494,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 15,
+      "order": 13,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -518,7 +516,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 16,
+      "order": 14,
       "consolidation_status": "phase5_consolidated",
       "depends_on": [],
       "produces_data_for": [
@@ -560,7 +558,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 17,
+      "order": 15,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
@@ -582,7 +580,7 @@
       "default_active": true,
       "min_tier": "implementacion",
       "monthly_price_addon": 0,
-      "order": 18,
+      "order": 16,
       "consolidation_status": "preserve_current_until_phase_5",
       "depends_on": [],
       "produces_data_for": [
