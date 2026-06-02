@@ -74,6 +74,7 @@ describe('client-facing consulting guardrails', () => {
     const faq = readFrontend('src/components/aprende/FAQSection.tsx')
     const walkthrough = readFrontend('src/components/landing/WalkthroughArticle.tsx')
     const catalog = readFrontend('src/lib/onboardingCatalog.ts')
+    const landfill = readFrontend('src/components/aprende/ContadorRelleno.tsx')
 
     expect(hub).toContain('Paquete de consultoría RSU')
     expect(hub).toContain('ZIP índice de referencia')
@@ -92,6 +93,10 @@ describe('client-facing consulting guardrails', () => {
     expect(walkthrough).not.toContain('PRECIO')
     expect(catalog).toContain('Escenarios financieros')
     expect(catalog).not.toContain('Simulador económico')
+    expect(landfill).toContain('No se debe convertir una cifra nacional en verdad municipal')
+    expect(landfill).not.toContain('RSU_DIA_MX')
+    expect(landfill).not.toContain('precio promedio de commodities')
+    expect(landfill).not.toContain('SLP')
   })
 
   it('does not show another municipality template as a usable regulation draft', () => {
