@@ -6,13 +6,12 @@ function readFrontend(relativePath: string) {
   return readFileSync(join(process.cwd(), relativePath), 'utf8')
 }
 
-describe('stage workspace legacy quarantine', () => {
+describe('platform legacy quarantine', () => {
   it('keeps public platform routes away from simulator imports', () => {
     const files = [
       'src/app/v/page.tsx',
       'src/app/p/page.tsx',
       'src/app/e/page.tsx',
-      'src/components/platform/StageWorkspace.tsx',
     ]
 
     for (const file of files) {
