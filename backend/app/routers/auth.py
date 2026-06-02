@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 import logging
-from datetime import datetime, timedelta
-from typing import Literal
+from datetime import datetime, timedelta, timezone
+from pathlib import Path
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.security import OAuth2PasswordBearer
@@ -41,6 +43,7 @@ from app.auth.user_service import (
     log_access,
     record_failed_login_db,
 )
+from app.automation.inference import TenantSeed, run_initial_inference
 from app.config import settings
 from app.db.session import get_db, get_sync_db
 
@@ -69,6 +72,40 @@ DEMO_USERS = {
 }
 
 login_attempts: dict[str, list[float]] = {}
+
+TIER_ORDER = {
+    "diagnostico": 1,
+    "implementacion": 2,
+    "operacion_completa": 3,
+}
+GATE_IDS = ("G1", "G2", "G3", "G4", "G5")
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _load_capability_registry() -> dict[str, Any]:
+    path = _repo_root() / "docs" / "architecture" / "capability_registry.json"
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        logger.warning("auth_capability_registry_load_failed: %s", exc)
+        return {"version": "unavailable", "modules": []}
+
+
+def _default_capabilities(tier: str = "diagnostico", stage: str = "validation") -> list[str]:
+    tier_rank = TIER_ORDER[tier]
+    result: list[str] = []
+    for module in _load_capability_registry().get("modules", []):
+        if not module.get("default_active", False):
+            continue
+        if TIER_ORDER.get(module.get("min_tier", "diagnostico"), 99) > tier_rank:
+            continue
+        if stage not in module.get("platforms", []):
+            continue
+        result.append(str(module["module_id"]))
+    return result
 
 
 class LoginRequest(BaseModel):
@@ -260,6 +297,86 @@ def _user_info_from_db(user) -> UserInfo:
     )
 
 
+def _ensure_consulting_tenant_for_user(db: Session, user) -> str | None:
+    """Crea o recupera el tenant real que permite navegar /v sin municipio-demo."""
+    if not user.municipio_id or not user.clave_inegi or not user.municipio_nombre or not user.estado_mx:
+        return None
+
+    from app.models.admin_tenant import (
+        AdminTenant,
+        TenantAuditLog,
+        TenantCapability,
+        TenantGate,
+        TenantMunicipalProfile,
+        TenantState,
+    )
+
+    existing = (
+        db.query(AdminTenant)
+        .filter(AdminTenant.inegi_clave == user.clave_inegi)
+        .order_by(AdminTenant.created_at.asc())
+        .first()
+    )
+    if existing:
+        return existing.id
+
+    tenant = AdminTenant(
+        nombre=user.municipio_nombre,
+        estado_mx=user.estado_mx,
+        municipio_id=user.municipio_id,
+        inegi_clave=user.clave_inegi,
+        tier_comercial="diagnostico",
+    )
+    db.add(tenant)
+    db.flush()
+
+    now = datetime.now(timezone.utc)
+    registry = _load_capability_registry()
+    profile = run_initial_inference(
+        TenantSeed(
+            tenant_id=tenant.id,
+            nombre=user.municipio_nombre,
+            estado_mx=user.estado_mx,
+            municipio_id=user.municipio_id,
+            inegi_clave=user.clave_inegi,
+        ),
+        registry,
+    )
+    db.add(TenantState(tenant_id=tenant.id, current_stage="validation"))
+    for gate_id in GATE_IDS:
+        db.add(TenantGate(tenant_id=tenant.id, gate_id=gate_id))
+    for module_id in _default_capabilities("diagnostico", "validation"):
+        db.add(TenantCapability(tenant_id=tenant.id, module_id=module_id, active=True, source="tier_default"))
+    db.add(
+        TenantMunicipalProfile(
+            tenant_id=tenant.id,
+            mode=profile["mode"],
+            antecedentes=profile["antecedentes"],
+            mapa_social=profile["mapa_social"],
+            organigrama_servicio=profile["organigrama_servicio"],
+            provenance_status=profile["provenance_status"],
+            updated_by="onboarding_initial_inference",
+            updated_at=now,
+        )
+    )
+    db.add(
+        TenantAuditLog(
+            tenant_id=tenant.id,
+            actor=user.email,
+            action="tenant_created_from_onboarding",
+            payload={
+                "source": "client_onboarding",
+                "current_stage": "validation",
+                "automatic_stage_transition": False,
+                "official_documents_auto_sent": False,
+            },
+            created_at=now,
+        )
+    )
+    db.flush()
+    return tenant.id
+
+
 def _check_rate_limit(email: str) -> None:
     now = datetime.utcnow().timestamp()
     attempts = login_attempts.get(email, [])
@@ -446,17 +563,22 @@ async def onboarding_profile(req: OnboardingProfileRequest, db: Session = Depend
         zm=zm,
     )
     log_access(db, event="onboarding_profile", user=user)
+    tenant_id = _ensure_consulting_tenant_for_user(db, user)
     needs_pdf = service_requires_reglamento(req.client_segment, req.service_interest)
     tokens = None if needs_pdf else _complete_setup_without_totp(db, user)
+    if tokens:
+        schedule_kickoff(user)
     return {
         "message": "Perfil guardado. Acceso temporal listo." if tokens else "Perfil guardado. Sube el reglamento para activar tu acceso.",
         "client_segment": user.client_segment,
         "service_interest": user.service_interest,
         "requires_reglamento_pdf": needs_pdf,
         "municipio_id": user.municipio_id,
+        "tenant_id": tenant_id,
         "clave_inegi": user.clave_inegi,
         "zm": user.zm,
         "next_path": "/onboarding/reglamento" if needs_pdf else "/v",
+        "preliminary_research_started": bool(tokens),
         "access_token": tokens.access_token if tokens else None,
         "refresh_token": tokens.refresh_token if tokens else None,
         "token_type": tokens.token_type if tokens else None,
@@ -513,13 +635,17 @@ async def onboarding_upload_reglamento(
 
     diag = build_diagnostic(mid)
     habilitado = bool(diag and pdf_ingested_for_analysis(manifest) and not diag.agora_bloqueado)
-    user.reglamento_uploaded_at = datetime.utcnow()
+    user.reglamento_uploaded_at = datetime.now(timezone.utc)
     log_access(db, event="reglamento_uploaded", user=user)
+    tenant_id = _ensure_consulting_tenant_for_user(db, user)
     tokens = _complete_setup_without_totp(db, user)
+    schedule_kickoff(user)
     return {
         "ok": True,
         "municipio_id": mid,
+        "tenant_id": tenant_id,
         "analysis_ready": habilitado,
+        "preliminary_research_started": True,
         "message": (
             "Reglamento registrado. Acceso temporal activado."
             if habilitado
