@@ -78,7 +78,11 @@ describe('client-facing consulting guardrails', () => {
 
     expect(hub).toContain('Paquete de consultoría RSU')
     expect(hub).toContain('ZIP índice de referencia')
+    expect(hub).toContain('Referencia A')
+    expect(hub).toContain('Referencia B')
+    expect(hub).toContain('Referencia C')
     expect(hub).not.toContain('ZIP demo capítulo')
+    expect(hub).not.toContain('{m}')
     expect(hub).not.toContain('AGORA_EXPORT_COVER_DISCLAIMER')
     expect(gobierno).toContain('Agenda una sesión de diagnóstico')
     expect(gobierno).not.toContain('Agenda una demo')

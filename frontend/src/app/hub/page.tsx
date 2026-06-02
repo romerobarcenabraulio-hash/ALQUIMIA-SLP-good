@@ -30,7 +30,11 @@ import { CONSULTING_EXPORT_COVER_DISCLAIMER, CONSULTING_EXPORT_LIABILITY_WAIVER 
 type DocEstadoHub = 'disponible_web' | 'en_elaboracion'
 type AudienciaHub = 'ciudadano' | 'funcionario' | 'empresa'
 
-const CITY_TABS_HUB = ['QRO', 'MTY', 'SLP'] as const
+const REFERENCE_PACKAGES_HUB = [
+  { id: 'QRO', label: 'Referencia A' },
+  { id: 'MTY', label: 'Referencia B' },
+  { id: 'SLP', label: 'Referencia C' },
+] as const
 const HUB_SECTIONS = ['Documentos', 'Adendos reglamentarios'] as const
 type HubSection = (typeof HUB_SECTIONS)[number]
 
@@ -89,7 +93,7 @@ const JOB_ASSET_CHIP = { bg: 'bg-[#EAF3DE]', text: 'text-[#3B6D11]' } as const
 
 function HubContent() {
   const searchParams   = useSearchParams()
-  const zmParam        = (searchParams.get('zm') ?? CITY_TABS_HUB[0]).toUpperCase()
+  const zmParam        = (searchParams.get('zm') ?? REFERENCE_PACKAGES_HUB[0].id).toUpperCase()
   const jobParam       = searchParams.get('job')
 
   const [zmActiva, setZmActiva]         = useState(zmParam)
@@ -571,18 +575,18 @@ function HubContent() {
           <>
             <div className="flex gap-2 mb-4 flex-wrap items-center justify-between">
               <div className="flex gap-2 flex-wrap">
-              {CITY_TABS_HUB.map(m => (
+              {REFERENCE_PACKAGES_HUB.map(option => (
                 <button
-                  key={m}
-                  onClick={() => { setZmActiva(m); setFiltroTipo('Todos') }}
+                  key={option.id}
+                  onClick={() => { setZmActiva(option.id); setFiltroTipo('Todos') }}
                   className={cn(
                     'px-4 py-2 rounded-[8px] text-[13px] font-medium border transition-colors',
-                    zmActiva === m
+                    zmActiva === option.id
                       ? 'bg-[#3B6D11] text-white border-[#3B6D11]'
                       : 'bg-[#FDFCFA] text-[#6B6760] border-[#E8E4DC] hover:bg-[#F0EDE5]'
                   )}
                 >
-                  {m}
+                  {option.label}
                 </button>
               ))}
               </div>
