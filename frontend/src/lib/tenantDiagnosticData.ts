@@ -30,7 +30,7 @@ export interface TenantDocumentSlot {
   title: string
   required: boolean
   status: 'ready' | 'partial' | 'critical_gap'
-  documentary_status?: 'complete' | 'pending_document' | 'received_pending_validation' | 'not_applicable'
+  documentary_status?: 'complete' | 'pending_document' | 'not_applicable'
 }
 
 export type DocumentGapStatus =

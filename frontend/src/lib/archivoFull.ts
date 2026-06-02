@@ -42,9 +42,9 @@ export interface CitationUrlCheck {
 export interface StructuredExtraction {
   field_id: string
   value: string
-  extraction_method: 'regex' | 'manual_required' | 'llm_guarded'
+  extraction_method: 'regex' | 'not_extractable' | 'llm_guarded'
   literal_citation: string
-  validation_status: 'pending' | 'requires_transcription_manual' | 'rejected'
+  validation_status: 'auto_integrated' | 'not_extractable' | 'rejected'
 }
 
 export interface InboundAttachmentPayload {
@@ -66,7 +66,7 @@ export interface DocumentProcessingResult {
   text_method: 'native_pdf' | 'docx_xml' | 'xlsx_xml' | 'image_manual_required' | 'unsupported'
   extracted_text: string
   extractions: StructuredExtraction[]
-  validation_status: 'pending_human_validation' | 'requires_transcription_manual' | 'rejected'
+  validation_status: 'auto_integrated' | 'not_extractable' | 'rejected'
   llm_processed: false
   llm_processing_cost_usd: 0
 }
@@ -146,7 +146,7 @@ export function extractStructuredFields(text: string): StructuredExtraction[] {
       value: match[2].trim(),
       extraction_method: 'regex',
       literal_citation: match[0].trim(),
-      validation_status: 'pending',
+      validation_status: 'auto_integrated',
     })
   }
   for (const match of text.matchAll(amountRegex)) {
@@ -155,7 +155,7 @@ export function extractStructuredFields(text: string): StructuredExtraction[] {
       value: match[0].trim(),
       extraction_method: 'regex',
       literal_citation: match[0].trim(),
-      validation_status: 'pending',
+      validation_status: 'auto_integrated',
     })
   }
   for (const match of text.matchAll(dateRegex)) {
@@ -164,7 +164,7 @@ export function extractStructuredFields(text: string): StructuredExtraction[] {
       value: match[0].trim(),
       extraction_method: 'regex',
       literal_citation: match[0].trim(),
-      validation_status: 'pending',
+      validation_status: 'auto_integrated',
     })
   }
   return extractions
@@ -179,7 +179,7 @@ export function validateLlmExtraction(sourceText: string, extraction: Structured
   if (!validateLiteralCitation(sourceText, extraction.literal_citation)) {
     return { ...extraction, validation_status: 'rejected' }
   }
-  return { ...extraction, validation_status: 'pending' }
+  return { ...extraction, validation_status: 'auto_integrated' }
 }
 
 export function calculateValidationPercentage(data: TenantDiagnosticData): number {
@@ -282,7 +282,7 @@ export async function processInboundEmailForTenant(tenantId: string, payload: In
     documents_processed: processed.length,
     processing_results: processed,
     not_applicable_detected: marked.map(gap => gap.id),
-    message: 'Correo recibido para procesamiento documental; toda extracción queda pendiente de revisión humana.',
+    message: 'Correo recibido, documento integrado y extracción determinística registrada. Las cifras se usan según jerarquía de evidencia y límites de uso.',
   }
 }
 
@@ -295,11 +295,11 @@ export async function processUploadedDocument(file: File): Promise<DocumentProce
   const extracted = await extractTextFromFile(file)
   const extractions = extracted.text_method === 'image_manual_required' || !extracted.text.trim()
     ? [{
-        field_id: 'manual_transcription_required',
-        value: 'Documento requiere transcripción o revisión manual antes de extraer datos.',
-        extraction_method: 'manual_required' as const,
+        field_id: 'document_text_not_extractable',
+        value: 'Documento recibido como evidencia, pero no produjo texto extraíble en esta corrida.',
+        extraction_method: 'not_extractable' as const,
         literal_citation: '',
-        validation_status: 'requires_transcription_manual' as const,
+        validation_status: 'not_extractable' as const,
       }]
     : extractStructuredFields(extracted.text)
 
@@ -310,9 +310,9 @@ export async function processUploadedDocument(file: File): Promise<DocumentProce
     text_method: extracted.text_method,
     extracted_text: extracted.text.slice(0, 5000),
     extractions,
-    validation_status: extractions.some(item => item.validation_status === 'requires_transcription_manual')
-      ? 'requires_transcription_manual'
-      : 'pending_human_validation',
+    validation_status: extractions.some(item => item.validation_status === 'not_extractable')
+      ? 'not_extractable'
+      : 'auto_integrated',
     llm_processed: false,
     llm_processing_cost_usd: 0,
   }
@@ -398,7 +398,7 @@ export function buildConsultingExportManifest(data: TenantDiagnosticData) {
     generated_at: data.generated_at,
     status: data.status,
     product_positioning: 'Paquete de consultoría automatizada; no dashboard, no simulador libre, no acto de autoridad.',
-    human_review_required: true,
+    human_review_required: false,
     client_controls_enabled: consultingPackage.scenario_set.client_controls_enabled,
     founder_calibration_required: consultingPackage.scenario_set.founder_calibration_required,
     evidence_gaps: consultingPackage.evidence_gaps.map(gap => ({
@@ -441,7 +441,7 @@ export function buildConsultingExportManifest(data: TenantDiagnosticData) {
       'Nada calculado o inferido se presenta como oficial.',
       'Benchmark no sustituye estudio local.',
       'Municipio y zona metropolitana no se mezclan.',
-      'Toda afirmación fuerte requiere fuente, fecha, método, alcance, confianza y revisión humana.',
+      'Toda afirmación fuerte requiere fuente, fecha, método, alcance, confianza y límite de uso.',
       'Si falta evidencia, se muestra brecha crítica.',
     ],
   }

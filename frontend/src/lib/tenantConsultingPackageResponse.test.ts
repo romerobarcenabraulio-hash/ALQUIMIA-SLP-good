@@ -9,7 +9,7 @@ describe('tenantConsultingPackageResponse', () => {
     const response = buildTenantConsultingPackageResponse('municipio-demo')
 
     expect(response.tenant_id).toBe('municipio-demo')
-    expect(response.human_review_required).toBe(true)
+    expect(response.human_review_required).toBe(false)
     expect(response.officiality).toBe('preliminary_not_official')
     expect(response.api_request_context_status).toMatchObject({
       ready: true,

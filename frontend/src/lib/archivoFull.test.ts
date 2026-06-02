@@ -77,16 +77,16 @@ describe('archivoFull deterministic components', () => {
     expect(result.documents_received).toBe(1)
     expect(result.documents_processed).toBe(1)
     expect(getDocumentProcessingLog('gap-city').length).toBeGreaterThan(0)
-    expect(result.message).toContain('revisión humana')
+    expect(result.message).toContain('integrado')
   })
 
-  it('extracts basic text from PDF-like files and marks images for manual transcription', async () => {
+  it('extracts basic text from PDF-like files and keeps non-extractable images non-blocking', async () => {
     const pdf = new File(['%PDF-1.4 (Artículo 12. Separar residuos en origen.)'], 'reglamento.pdf', { type: 'application/pdf' })
     const image = new File(['binary'], 'scan.png', { type: 'image/png' })
 
     await expect(extractTextFromFile(pdf)).resolves.toMatchObject({ text_method: 'native_pdf' })
     const processedImage = await processUploadedDocument(image)
-    expect(processedImage.validation_status).toBe('requires_transcription_manual')
+    expect(processedImage.validation_status).toBe('not_extractable')
     expect(processedImage.llm_processed).toBe(false)
   })
 
@@ -96,7 +96,7 @@ describe('archivoFull deterministic components', () => {
       value: 'Separación obligatoria',
       extraction_method: 'llm_guarded',
       literal_citation: 'Cita inventada',
-      validation_status: 'pending',
+      validation_status: 'auto_integrated',
     })
 
     expect(result.validation_status).toBe('rejected')
@@ -114,9 +114,12 @@ describe('archivoFull deterministic components', () => {
     const manifest = buildConsultingExportManifest(getTenantArchiveData('municipio-demo'))
 
     expect(manifest.package_type).toBe('consulting_package_rsu_gobierno')
-    expect(manifest.human_review_required).toBe(true)
+    expect(manifest.human_review_required).toBe(false)
     expect(manifest.client_controls_enabled).toBe(false)
-    expect(manifest.claim_ledger.affirmable_count).toBe(0)
+    expect(manifest.claim_ledger.affirmable.every(claim => (
+      claim.confidence !== 'blocked'
+      && !claim.claim.toLowerCase().includes('brecha crítica')
+    ))).toBe(true)
     expect(manifest.claim_ledger.blocked_count).toBeGreaterThan(0)
     expect(manifest.bibliography_chicago.length).toBeGreaterThan(0)
     expect(manifest.bibliography_chicago[0]).toContain('Consultado el')
@@ -126,8 +129,13 @@ describe('archivoFull deterministic components', () => {
       can_emit_plan: false,
       blocked_by_regulation: true,
     })
-    expect(manifest.scenarios.every(scenario => scenario.capture_ton_day === null)).toBe(true)
-    expect(manifest.input_registry.buyers_available).toBe(false)
+    expect(manifest.scenarios.some(scenario => scenario.capture_ton_day !== null)).toBe(true)
+    expect(manifest.scenarios.every(scenario => scenario.confidence === 'low')).toBe(true)
+    expect(manifest.material_price_mix.some(item => item.derived_from_field_ids.some(fieldId => (
+      fieldId.startsWith('buyers_available_')
+    )))).toBe(true)
+    expect(manifest.material_price_mix.every(item => item.note.includes('no precio oficial'))).toBe(true)
+    expect(manifest.input_registry.buyers_available).toBe(true)
     expect(manifest.api_layer_contracts.map(contract => contract.layer).sort()).toEqual([
       'centros_acopio',
       'data',

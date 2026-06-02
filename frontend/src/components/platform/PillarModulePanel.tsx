@@ -247,7 +247,7 @@ export function PillarModulePanel({
               </p>
               <p className="mt-2 text-[13px] font-semibold text-[#1C1B18]">{document.original_filename}</p>
               <p className="mt-1 text-[12px] leading-5 text-[#4A6740]">
-                Recibido el {document.uploaded_at}. Queda pendiente de validación humana antes de alimentar claims.
+                Recibido el {document.uploaded_at}. Integrado como fuente trazable para cálculos y claims con límites de uso.
               </p>
             </div>
           ))}

@@ -43,7 +43,7 @@ export function buildTenantConsultingPackageResponse(
     status: tenantData.status,
     version: tenantData.version,
     generated_at: tenantData.generated_at,
-    human_review_required: true,
+    human_review_required: false,
     officiality: tenantData.status === 'official' ? 'official_source_package' : 'preliminary_not_official',
     api_layer_contracts: CONSULTING_API_LAYER_CONTRACTS,
     bibliography_chicago: buildChicagoBibliography(tenantData.metrics),

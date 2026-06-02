@@ -33,7 +33,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const currentCount = exportState.__alquimiaPreliminaryExportCounts[countKey] ?? 0
     if (currentCount >= 3) {
       return NextResponse.json(
-        { detail: 'Límite MVP de 3 exportaciones preliminares por mes alcanzado. Requiere revisión humana.' },
+        { detail: 'Límite MVP de 3 exportaciones preliminares por mes alcanzado. Requiere liberar cuota operativa.' },
         { status: 429 },
       )
     }
@@ -43,7 +43,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const watermark = data.status === 'official'
     ? ''
     : `ALQUIMIA · Diagnóstico inicial · Versión ${data.version} · ${data.generated_at}\n\n`
-  const methodologicalMarker = 'Documento preliminar elaborado con metodología ALQUIMIA · Fuentes y confianza visibles · Revisión humana requerida antes de uso oficial.'
+  const methodologicalMarker = 'Documento preliminar elaborado con metodología ALQUIMIA · Fuentes, confianza y límites visibles · No constituye acto de autoridad.'
   const bibliography = buildBibliography(data.metrics)
   const exportAudit = auditMetricsForExport(data.metrics)
   const apiFetchGate = _request.headers.get('x-consulting-api-fetch-gate')
@@ -62,12 +62,12 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     client_controls_enabled: consultingResponse.consulting_package.scenario_set.client_controls_enabled,
     warning: consultingResponse.officiality === 'official_source_package'
       ? 'Paquete con fuentes oficiales integradas; las decisiones públicas siguen siendo humanas.'
-      : 'Paquete preliminar no oficial; requiere revisión humana antes de uso institucional externo.',
+      : 'Paquete preliminar no oficial; la plataforma automatiza análisis y deja límites de uso visibles para decisión de la autoridad.',
     non_negotiables: [
       'Nada calculado o inferido se presenta como oficial.',
       'Benchmark no sustituye estudio local.',
       'Municipio y zona metropolitana no se mezclan.',
-      'Toda afirmación fuerte requiere fuente, fecha, método, alcance, confianza y revisión humana.',
+      'Toda afirmación fuerte requiere fuente, fecha, método, alcance, confianza y límite de uso.',
       'Si falta evidencia, se muestra brecha crítica.',
     ],
   }
@@ -96,10 +96,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
   function documentarySection() {
     const gaps = data.document_gaps.map(gap => (
-      `- ${gap.label}: ${gap.status} · Fecha: ${gap.updated_at} · Responsable: revisión humana municipal/ALQUIMIA · Efecto en claims: condiciona o bloquea módulo ${gap.module_id} · Razón: ${gap.reason}`
+      `- ${gap.label}: ${gap.status} · Fecha: ${gap.updated_at} · Responsable: plataforma/tenant · Efecto en claims: condiciona o bloquea módulo ${gap.module_id} · Razón: ${gap.reason}`
     ))
     const documents = data.tenant_documents.map(document => (
-      `- ${document.original_filename}: documento recibido · pendiente de validación humana · módulo ${document.module_id} · Fecha: ${document.uploaded_at} · Responsable: ${document.uploaded_by_user_id}`
+      `- ${document.original_filename}: documento integrado como fuente trazable · módulo ${document.module_id} · Fecha: ${document.uploaded_at} · Responsable: ${document.uploaded_by_user_id}`
     ))
     return [
       '## Brechas documentales y documentos pendientes',
@@ -136,7 +136,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
           ].join('\n')).join('\n')
         : '- Sin recomendaciones bibliográficas compatibles; conservar brechas y no elevar benchmarks a estudio local.',
       '',
-      'Nota: la bibliografía comparable no sustituye estudio local, reglamento municipal ni revisión humana.',
+      'Nota: la bibliografía comparable no sustituye estudio local, reglamento municipal ni decisión de autoridad.',
     ].join('\n')
   }
 
@@ -151,7 +151,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     return [
       '## Especificación operativa de módulos',
       '',
-      'Estos módulos gobiernan /v, /p y /e. Validación, Planeación y Ejecución comparten shell consultivo, evidencia trazable, claims bloqueables y revisión humana.',
+      'Estos módulos gobiernan /v, /p y /e. Validación, Planeación y Ejecución comparten shell consultivo, evidencia trazable, claims bloqueables y límites de uso.',
       '',
       ...stages.flatMap(stage => [
         `### ${stageLabels[stage]}`,
@@ -178,7 +178,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       ...(['validation', 'planning', 'execution'] as const).flatMap(stage => modulesForStage(stage)).flatMap(moduleId => {
         const spec = OPERATIONAL_MODULE_SPECS[moduleId]
         return spec.blockedClaims.map(claim => (
-          `- ${spec.legacy_number} · ${claim} · Estado: bloqueado salvo fuente, método, alcance, confianza y revisión humana.`
+          `- ${spec.legacy_number} · ${claim} · Estado: bloqueado salvo fuente, método, alcance, confianza y límite de uso.`
         ))
       }),
     ].join('\n')
@@ -248,7 +248,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   for (const doc of data.document_index) {
     zip.file(`${doc.id}.md`, `${watermark}# ${doc.title}\n\n${methodologicalMarker}\n\nMunicipio: ${data.municipality}\nEstado: ${data.state}\n\n${documentarySection()}\n\n## Fuentes, citas y confianza\n\n${data.metrics.map(metricLine).join('\n')}\n\n${standardsSection}\n\n${bibliographySection()}\n\n${compatibleBibliographySection()}\n`)
   }
-  zip.file('README_SEGURIDAD.md', 'Paquete preliminar. No sustituye revisión humana, estudio local ni decisión pública. Si se comparte externamente, link y contraseña deben enviarse por canales separados.\n')
+  zip.file('README_SEGURIDAD.md', 'Paquete preliminar. No sustituye estudio local ni decisión pública. Si se comparte externamente, link y contraseña deben enviarse por canales separados.\n')
   zip.file('CONTROL_EXPORTACION.md', [
     '# Control de exportación',
     '',

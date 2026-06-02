@@ -24,7 +24,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     })
     return NextResponse.json({
       ...result,
-      warning: 'Subir un documento no lo convierte automáticamente en dato validado. La información extraída requiere revisión humana.',
+      warning: 'Documento integrado como fuente del tenant. La plataforma usará lo extraíble con fuente, alcance, método, confianza y límites de uso.',
     })
   } catch (exc) {
     return NextResponse.json({ detail: exc instanceof Error ? exc.message : 'Archivo rechazado' }, { status: 400 })

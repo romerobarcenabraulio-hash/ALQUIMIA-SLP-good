@@ -33,7 +33,7 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     }
     expect(demo.document_gaps.length).toBeGreaterThan(partial.document_gaps.length)
     expect(partial.document_gaps.some(item => item.status === 'pending')).toBe(true)
-    expect(demo.document_index.some(item => item.documentary_status === 'received_pending_validation')).toBe(true)
+    expect(demo.document_index.some(item => item.documentary_status === 'complete')).toBe(true)
     expect(demo.document_gaps.some(item => item.status === 'pending')).toBe(true)
     expect(gap.document_index.every(item => item.documentary_status === 'pending_document')).toBe(true)
   })
@@ -75,17 +75,17 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     expect(moduleMatches('M13', 'market_readiness')).toBe(true)
   })
 
-  it('acepta PDF válido, registra documento y mantiene pendiente de validación', async () => {
+  it('acepta PDF válido, registra documento y lo integra automáticamente como fuente', async () => {
     const file = new File(['%PDF-1.4'], 'reglamento_limpia.pdf', { type: 'application/pdf' })
     const result = await registerTenantDocument('partial-city', file, 'user-test')
     const data = getTenantArchiveData('partial-city')
 
-    expect(result.document.upload_status).toBe('received')
+    expect(result.document.upload_status).toBe('integrated')
     expect(data.tenant_documents.some(document => document.original_filename === 'reglamento_limpia.pdf')).toBe(true)
-    expect(data.document_gaps.some(gap => gap.status === 'received' && gap.fulfilled_by_document_id)).toBe(true)
+    expect(data.document_gaps.some(gap => gap.status === 'integrated' && gap.fulfilled_by_document_id)).toBe(true)
   })
 
-  it('recibe documentos de mercado sin convertirlos automáticamente en insumo integrado', async () => {
+  it('recibe documentos de mercado y los convierte en insumo integrado trazable', async () => {
     const file = new File(['precio,material'], 'catalogo_compradores_2026.xlsx', {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     })
@@ -97,7 +97,7 @@ describe('documentArchiveStore · ARCHIVO MVP embebido', () => {
     expect(result.suggested_label).toBe('Catálogo de compradores y centros de acopio')
     expect(data.tenant_documents.some(document => (
       document.document_type === 'catalogo_compradores'
-      && document.upload_status === 'received'
+      && document.upload_status === 'integrated'
     ))).toBe(true)
   })
 
