@@ -160,11 +160,27 @@ describe('client-facing consulting guardrails', () => {
     expect(caStudio).toContain('Laboratorio técnico interno')
     expect(caStudio).not.toContain('Módulo SimCity')
     expect(caStudio).not.toContain('Simulador 3D')
-    expect(informe).toContain("router.push('/v')")
+    expect(informe).toContain('router.replace(target)')
+    expect(informe).toContain('/v?tenant_id=')
+    expect(informe).not.toContain('@/store/simulatorStore')
+    expect(informe).not.toContain('@/components/simulator')
     expect(informe).not.toContain("router.push('/simulator')")
-    expect(informe).toContain('isPlatformDeveloper()')
-    expect(informe).toContain("router.replace('/v')")
-    expect(informe).toContain('laboratorio interno')
+    expect(informe).toContain("const target = municipioId ? `/v?tenant_id=${encodeURIComponent(municipioId)}` : '/v'")
+    expect(informe).toContain('expediente consultivo vigente')
+  })
+
+  it('keeps legacy project and report routes redirected into the consulting stages', () => {
+    const informe = readFrontend('src/app/informe/[municipio_id]/page.tsx')
+    const proyecto = readFrontend('src/app/proyecto/[municipio_id]/page.tsx')
+
+    expect(informe).toContain('/v?tenant_id=')
+    expect(informe).not.toContain('@/store/simulatorStore')
+    expect(informe).not.toContain('@/components/simulator')
+    expect(proyecto).toContain('/e?tenant_id=')
+    expect(proyecto).toContain('redirect(target)')
+    expect(proyecto).not.toContain('@/store/simulatorStore')
+    expect(proyecto).not.toContain('@/components/simulator')
+    expect(proyecto).not.toContain('ProyectoVivoPortal')
   })
 
   it('does not expose direct simulator links from non-simulator client surfaces', () => {

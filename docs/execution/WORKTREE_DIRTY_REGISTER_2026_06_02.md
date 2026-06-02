@@ -49,6 +49,28 @@ Este registro separa cambios pendientes para evitar mezclar commits y volver a e
 - `docs/execution/DEAD_CODE_SCAN_2026_06_01.md`
   - Escaneo de dead code, probablemente de otro agente.
 
+## Limpieza frontend aplicada después del commit backend
+
+- `frontend/src/app/informe/[municipio_id]/page.tsx`
+  - Antes: informe heredado de 493 líneas con `useSimulatorStore`, KPIs prospectivos, TIR y fórmulas del simulador.
+  - Ahora: redirección a `/v?tenant_id=<municipio_id>` y copy institucional de paquete consultivo.
+  - Validación: guardrail cliente y type-check.
+- `frontend/src/app/proyecto/[municipio_id]/page.tsx`
+  - Antes: montaba `ProyectoVivoPortal` desde `components/simulator`.
+  - Ahora: redirección a `/e?tenant_id=<municipio_id|tenant_id>` para monitoreo por etapa.
+  - Validación: guardrail cliente y type-check.
+- `frontend/src/lib/clientFacingConsultingGuardrails.test.ts`
+  - Se agregó protección para que esas rutas no vuelvan a importar `simulatorStore`, `components/simulator` ni `ProyectoVivoPortal`.
+- `frontend/src/lib/legacyQuarantineManifest.ts`
+  - Se registraron ambas rutas como dependencias legacy cortadas.
+
+## Validación frontend de la limpieza
+
+- `npm run test -- clientFacingConsultingGuardrails stageWorkspaceLegacyGuard platformRouting`
+  - Resultado: 22 passed.
+- `npm run type-check`
+  - Resultado: passed.
+
 ## Reglas de depuración
 
 - No usar `git add .`.
