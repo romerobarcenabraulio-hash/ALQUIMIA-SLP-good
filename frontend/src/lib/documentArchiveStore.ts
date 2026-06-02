@@ -80,7 +80,10 @@ function withOverrides(gap: DocumentGap, tenantId: string): DocumentGap {
 
 export function getTenantArchiveData(tenantId: string): TenantDiagnosticData {
   const base = tenantDiagnosticDataFor(tenantId)
-  const documents = state().documentsByTenant[tenantId] ?? []
+  const documents = [
+    ...base.tenant_documents,
+    ...(state().documentsByTenant[tenantId] ?? []),
+  ]
   const document_gaps = base.document_gaps.map(gap => withOverrides(gap, tenantId))
   const document_index = base.document_index.map(slot => {
     const hasPendingGap = document_gaps.some(gap => gap.status === 'pending' && !gap.marked_not_applicable)

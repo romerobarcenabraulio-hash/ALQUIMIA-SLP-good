@@ -9,7 +9,7 @@ import {
 } from '@/lib/consultingPackageEngine'
 import { tenantMunicipalContextHeadersFromStorage } from '@/lib/tenantRuntimeMunicipalContext'
 import { buildConsultingInputRegistry } from '@/lib/consultingInputRegistry'
-import type { TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
+import { TENANT_DIAGNOSTIC_FIXTURES, type TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
 import type { TenantConsultingPackageResponse } from '@/lib/tenantConsultingPackageResponse'
 import { ConsultingDiagramSuite } from '@/components/platform/ConsultingDiagrams'
 
@@ -31,6 +31,14 @@ function confidenceLabel(confidence: string) {
   if (confidence === 'medium') return 'Media'
   if (confidence === 'low') return 'Baja'
   return 'Bloqueado'
+}
+
+function evidenceUseLabel(tag: string) {
+  if (tag === 'local') return 'Soporta claim local'
+  if (tag === 'benchmark') return 'Alimenta cálculo'
+  if (tag === 'comparable') return 'Contextualiza'
+  if (tag === 'solo_contexto') return 'Sólo contexto'
+  return 'No usable'
 }
 
 function readinessStatus(gate: ConsultingPackage['readiness_gates'][number]) {
@@ -75,7 +83,11 @@ export function ConsultingPackagePanel({
   const [apiPackage, setApiPackage] = useState<ConsultingPackage | null>(null)
   const fallbackPackage = useMemo(() => {
     const inputRegistry = buildConsultingInputRegistry(tenantData)
-    return buildConsultingPackage({ tenantData, inputRegistry })
+    return buildConsultingPackage({
+      tenantData,
+      inputRegistry,
+      bibliographyTenants: Object.values(TENANT_DIAGNOSTIC_FIXTURES),
+    })
   }, [tenantData])
 
   useEffect(() => {
@@ -214,19 +226,37 @@ export function ConsultingPackagePanel({
 
       <div className="mt-5 grid gap-4 lg:grid-cols-3">
         <div className="rounded-[8px] border border-[#E8E4DC] bg-white p-4">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Evidencia compatible</p>
+          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Matriz de evidencia compatible</p>
           <p className="mt-2 text-[11px] leading-5 text-[#6B6760]">
-            La plataforma recomienda estas fuentes como contexto comparable. No sustituyen estudio local ni dato oficial municipal.
+            La plataforma separa qué puede usarse para afirmar, calcular o sólo contextualizar. Nada comparable sustituye estudio local.
           </p>
-          <div className="mt-3 divide-y divide-[#F0EDE5]">
+          <div className="mt-3 space-y-3">
             {pkg.evidence_recommendations.slice(0, 3).map(item => (
-              <div key={item.id} className="py-3 first:pt-0 last:pb-0">
-                <div className="flex items-center justify-between gap-2">
-                  <p className="text-[12px] font-semibold text-[#1C1B18]">{item.record.title}</p>
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#8C6A13]">{item.tag}</span>
+              <div key={item.id} className="border-t border-[#F0EDE5] pt-3 first:border-t-0 first:pt-0">
+                <div className="flex flex-wrap items-start justify-between gap-2">
+                  <div>
+                    <p className="text-[12px] font-semibold leading-5 text-[#1C1B18]">{item.record.title}</p>
+                    <p className="mt-0.5 text-[10px] uppercase tracking-[0.08em] text-[#8C8880]">
+                      {item.record.institution} · {item.module_id} · {item.record.territorial_scope}
+                    </p>
+                  </div>
+                  <span className="shrink-0 border border-[#D7B56D] bg-[#FFF9EA] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#765814]">
+                    {evidenceUseLabel(item.tag)}
+                  </span>
                 </div>
-                <p className="mt-1 text-[11px] leading-5 text-[#6B6760]">{item.explanation}</p>
-                <p className="mt-1 text-[11px] leading-5 text-[#8C6A13]">{item.unsupported_claim}</p>
+                <dl className="mt-3 grid gap-2 text-[11px] sm:grid-cols-2">
+                  <div>
+                    <dt className="font-semibold text-[#3B6D11]">Uso permitido</dt>
+                    <dd className="mt-1 leading-5 text-[#4A4740]">{item.supported_claim}</dd>
+                  </div>
+                  <div>
+                    <dt className="font-semibold text-[#8C6A13]">Límite</dt>
+                    <dd className="mt-1 leading-5 text-[#4A4740]">{item.unsupported_claim}</dd>
+                  </div>
+                </dl>
+                <p className="mt-2 text-[10px] uppercase tracking-[0.08em] text-[#6B6760]">
+                  Confianza {confidenceLabel(item.confidence)} · Score {item.score.total}
+                </p>
               </div>
             ))}
             {!pkg.evidence_recommendations.length && (

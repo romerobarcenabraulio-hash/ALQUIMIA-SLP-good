@@ -20,6 +20,34 @@ class ResearchCacheSummary(BaseModel):
     mensaje: str
 
 
+class BibliographyRegistryResponse(BaseModel):
+    records: List[dict]
+    record_count: int
+    source: str
+    deterministic: bool
+    llm_used: bool
+
+
+class BibliographyCoverageResponse(BaseModel):
+    coverage: dict
+    source: str
+    deterministic: bool
+    llm_used: bool
+
+
+class BibliographyRecommendationsResponse(BaseModel):
+    recommendations: List[dict]
+    recommendation_count: int
+    deterministic: bool
+    llm_used: bool
+
+
+class ClaimLedgerResponse(BaseModel):
+    claims: List[dict]
+    claim_count: int
+    rule: str
+
+
 @router.get("/findings")
 async def research_findings(
     municipio_id: str = Query(..., min_length=1),
@@ -133,6 +161,153 @@ def research_cache_summary(
         por_categoria=por_cat,
         precios_recientes=precios,
         mensaje=msg,
+    )
+
+
+@router.get("/bibliography", response_model=BibliographyRegistryResponse)
+def bibliography_registry(
+    municipio_id: Optional[str] = Query(None),
+    zm_id: Optional[str] = Query(None),
+    include_fallback: bool = Query(True),
+    module_id: Optional[str] = Query(None),
+    stage: Optional[str] = Query(None),
+):
+    """Registro operativo de bibliografia investigada/calculable.
+
+    No usa LLM y no convierte benchmark en estudio local. Si la BD no tiene
+    entradas, devuelve corpus publico minimo para que el sistema no navegue a
+    ciegas.
+    """
+    from app.research.bibliography_registry import collect_bibliography_records
+
+    try:
+        from app.db.session import get_sync_db
+    except Exception:
+        get_sync_db = None  # type: ignore[assignment]
+
+    records = []
+    source = "fallback_reference"
+    if get_sync_db is not None:
+        with get_sync_db() as db:
+            records = collect_bibliography_records(db, municipio_id=municipio_id, zm_id=zm_id, include_fallback=include_fallback)
+            source = "database+fallback" if db is not None else "fallback_reference"
+    else:
+        records = collect_bibliography_records(None, municipio_id=municipio_id, zm_id=zm_id, include_fallback=include_fallback)
+    if module_id:
+        records = [record for record in records if record.module_id == module_id]
+    if stage:
+        records = [record for record in records if record.stage == stage]
+    return BibliographyRegistryResponse(
+        records=[record.model_dump(mode="json") for record in records],
+        record_count=len(records),
+        source=source,
+        deterministic=True,
+        llm_used=False,
+    )
+
+
+@router.get("/bibliography/coverage", response_model=BibliographyCoverageResponse)
+def bibliography_coverage(
+    municipio_id: Optional[str] = Query(None),
+    zm_id: Optional[str] = Query(None),
+    include_fallback: bool = Query(True),
+):
+    """Cobertura bibliografica por etapa/modulo/alcance."""
+    from app.research.bibliography_registry import build_coverage, collect_bibliography_records
+
+    try:
+        from app.db.session import get_sync_db
+    except Exception:
+        get_sync_db = None  # type: ignore[assignment]
+
+    records = []
+    source = "fallback_reference"
+    if get_sync_db is not None:
+        with get_sync_db() as db:
+            records = collect_bibliography_records(db, municipio_id=municipio_id, zm_id=zm_id, include_fallback=include_fallback)
+            source = "database+fallback" if db is not None else "fallback_reference"
+    else:
+        records = collect_bibliography_records(None, municipio_id=municipio_id, zm_id=zm_id, include_fallback=include_fallback)
+    coverage = build_coverage(records)
+    return BibliographyCoverageResponse(
+        coverage=coverage.model_dump(mode="json"),
+        source=source,
+        deterministic=True,
+        llm_used=False,
+    )
+
+
+@router.get("/bibliography/recommendations", response_model=BibliographyRecommendationsResponse)
+def bibliography_recommendations(
+    municipio_id: Optional[str] = Query(None),
+    zm_id: Optional[str] = Query(None),
+    module_id: Optional[str] = Query(None),
+    limit: int = Query(20, ge=1, le=80),
+):
+    """Recomendador deterministico de evidencia compatible."""
+    from app.research.bibliography_registry import build_recommendations, collect_bibliography_records
+
+    try:
+        from app.db.session import get_sync_db
+    except Exception:
+        get_sync_db = None  # type: ignore[assignment]
+
+    if get_sync_db is not None:
+        with get_sync_db() as db:
+            records = collect_bibliography_records(db, municipio_id=municipio_id, zm_id=zm_id, include_fallback=True)
+    else:
+        records = collect_bibliography_records(None, municipio_id=municipio_id, zm_id=zm_id, include_fallback=True)
+    recommendations = build_recommendations(records, municipio_id=municipio_id, module_id=module_id, limit=limit)
+    return BibliographyRecommendationsResponse(
+        recommendations=[item.model_dump(mode="json") for item in recommendations],
+        recommendation_count=len(recommendations),
+        deterministic=True,
+        llm_used=False,
+    )
+
+
+@router.get("/bibliography/claim-ledger", response_model=ClaimLedgerResponse)
+def bibliography_claim_ledger(
+    municipio_id: Optional[str] = Query(None),
+    zm_id: Optional[str] = Query(None),
+):
+    """Ledger minimo de claims derivados de bibliografia.
+
+    Cada fila declara que puede y que no puede soportar. Si una cifra no puede
+    entrar por esta via, debe quedar como brecha o calculo trazable.
+    """
+    from app.research.bibliography_registry import collect_bibliography_records
+
+    try:
+        from app.db.session import get_sync_db
+    except Exception:
+        get_sync_db = None  # type: ignore[assignment]
+
+    if get_sync_db is not None:
+        with get_sync_db() as db:
+            records = collect_bibliography_records(db, municipio_id=municipio_id, zm_id=zm_id, include_fallback=True)
+    else:
+        records = collect_bibliography_records(None, municipio_id=municipio_id, zm_id=zm_id, include_fallback=True)
+    claims = [
+        {
+            "record_id": record.id,
+            "module_id": record.module_id,
+            "stage": record.stage,
+            "source": record.institution,
+            "claim_can_support": record.claim_can_support,
+            "claim_cannot_support": record.claim_cannot_support,
+            "scope": record.evidence_scope,
+            "method": record.method,
+            "confidence": record.confidence,
+            "citation": record.chicago_citation,
+            "limitations": record.limitations,
+        }
+        for record in records
+    ]
+    return ClaimLedgerResponse(
+        claims=claims,
+        claim_count=len(claims),
+        rule="Cero cifra sin fuente; comparable, ZM o benchmark no sustituyen estudio local.",
     )
 
 

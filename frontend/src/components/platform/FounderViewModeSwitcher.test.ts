@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isFounderOrAdmin } from './FounderViewModeSwitcher'
+import { authorizedFounderViewMode, isFounderOrAdmin } from './FounderViewModeSwitcher'
 
 describe('FounderViewModeSwitcher access', () => {
   it('allows the temporary personal admin email without Clerk metadata', () => {
@@ -16,5 +16,11 @@ describe('FounderViewModeSwitcher access', () => {
   it('still accepts explicit founder/admin metadata', () => {
     expect(isFounderOrAdmin({ role: 'founder' }, 'cliente@example.com')).toBe(true)
     expect(isFounderOrAdmin({ has_admin_access: true }, 'cliente@example.com')).toBe(true)
+  })
+
+  it('forces regular users into client view even if local storage says admin', () => {
+    expect(authorizedFounderViewMode(false, 'admin')).toBe('client')
+    expect(authorizedFounderViewMode(false, 'client')).toBe('client')
+    expect(authorizedFounderViewMode(true, 'admin')).toBe('admin')
   })
 })
