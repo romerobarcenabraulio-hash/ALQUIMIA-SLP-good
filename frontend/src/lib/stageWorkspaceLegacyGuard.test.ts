@@ -7,7 +7,7 @@ function readFrontend(relativePath: string) {
 }
 
 describe('stage workspace legacy quarantine', () => {
-  it('keeps public platform routes away from simulator imports', () => {
+  it('keeps public platform routes and StageWorkspace away from direct simulator imports', () => {
     const files = [
       'src/app/v/page.tsx',
       'src/app/p/page.tsx',
@@ -22,6 +22,16 @@ describe('stage workspace legacy quarantine', () => {
       expect(source, file).not.toContain('@/app/simulator/renderDecisionModule')
       expect(source, file).not.toContain('useSimulatorStore')
     }
+  })
+
+  it('allows PlatformPage to rescue the historical module renderer behind the platform shell', () => {
+    const source = readFrontend('src/components/platform/PlatformPage.tsx')
+
+    expect(source).toContain('@/app/simulator/renderDecisionModule')
+    expect(source).toContain('renderDecisionModule({')
+    expect(source).not.toContain('@/components/platform/ConsultingModuleShell')
+    expect(source).not.toContain('@/components/platform/PillarModulePanel')
+    expect(source).not.toContain('validationModuleSpecFor')
   })
 
   it('documents deletion criteria before removing legacy files', () => {
