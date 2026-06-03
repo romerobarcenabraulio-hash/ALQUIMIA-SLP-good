@@ -7,9 +7,8 @@ import {
   ResponsiveContainer, CartesianGrid, Legend,
 } from 'recharts'
 import {
-  AlertTriangle, CheckCircle, Clock, DollarSign,
-  Shield, TrendingUp, MapPin, Lock, ChevronDown,
-  ChevronRight, Zap, Users, FileText, Target,
+  AlertTriangle, CheckCircle, Clock,
+  Lock, ChevronDown, ChevronRight,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { getHitosForZm } from '@/data/hitosTimeline'
@@ -1020,9 +1019,9 @@ function Page2({
 // ── Page 3 ────────────────────────────────────────────────────────────────────
 
 function Page3({
-  municipio, horizonte, trayectoria, capturaFinal, rsuDia,
-  faseLegal, genPercapita, capexTotal, empleosMeta, co2Meta,
-  derraMeta, serieAnual, mixCentros,
+  horizonte, trayectoria, capturaFinal,
+  faseLegal, genPercapita, empleosMeta, co2Meta,
+  derraMeta, serieAnual,
 }: {
   municipio: string; horizonte: number; trayectoria: string
   capturaFinal: number; rsuDia: number; faseLegal: string
@@ -1416,6 +1415,7 @@ export function FutureGoalsModule({
           Gates <strong>G1–G5</strong> (institucionales) ≠ actividades <strong>G01–G14</strong> (Gantt). Maestra: M05D · seguimiento: M21B.
         </p>
       </div>
+      {notice}
       {/* Page tab navigation — oculto con pageOnly */}
       {!pageOnly && (
       <div className="flex items-center gap-2 mb-6 flex-wrap">

@@ -3,7 +3,7 @@
 import { useMemo, useState } from 'react'
 import {
   Scale, BookOpen, Users, FileCheck, Gavel, Globe, ChevronDown,
-  AlertTriangle, CheckCircle2, ExternalLink,
+  CheckCircle2, ExternalLink,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { ChartPanel } from '@/components/ui/ChartPanel'

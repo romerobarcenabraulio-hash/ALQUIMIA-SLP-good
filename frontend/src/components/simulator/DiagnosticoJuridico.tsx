@@ -20,7 +20,7 @@ import { getApiUrl } from '@/lib/api'
 import { LEGAL_PDF_UPLOADED_EVENT, pdfListoParaAnalisis } from '@/lib/legalPdfGate'
 import { withRequestId } from '@/lib/requestId'
 import type {
-  EstadoArticulo, Criticidad, LegalDiagnostic,
+  EstadoArticulo,
   PaqueteMetropolitano, DiagnosticoMunicipal, ReformEstrategia,
   SeleccionMunicipioCatalog,
 } from '@/types'
@@ -412,9 +412,7 @@ export function DiagnosticoJuridico() {
   }, [])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoading(true)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
     const apiUrl = getApiUrl()
 

@@ -19,7 +19,6 @@ import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePan
 // ── Calculation helpers ───────────────────────────────────────────────────────
 // All values derived from simulator inputs — nothing hardcoded.
 
-const VIDA_UTIL_RELLENO_ANOS = 15 // remaining useful life of existing landfill (typical)
 const MULTA_PROFEPA_MIN = 1_500_000  // MXN — LGPGIR Art.10 minimum fine
 const MULTA_PROFEPA_MAX = 15_000_000 // MXN — maximum cumulative
 const PRECIO_SOCIAL_CARBONO_MXN = MODELO_PARAMS.precioCarbonoSCE[1] * MODELO_PARAMS.tipoCambio

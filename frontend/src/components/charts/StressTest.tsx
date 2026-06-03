@@ -39,7 +39,7 @@ const SCENARIOS = [
 
 // Bug 3 fix: semáforo por TIR ABSOLUTA, no por delta vs base.
 // Un escenario con TIR -99% SIEMPRE es ROJO sin importar el base.
-function semaforo(tir: number, _base: number) {
+function semaforo(tir: number) {
   if (tir >= 15) return { color: 'text-[#3B6D11]', bg: 'bg-[#EAF3DE]', label: 'Verde' }
   if (tir >= 0)  return { color: 'text-[#D4881E]', bg: 'bg-[#FEF7E7]', label: 'Amarillo' }
   return { color: 'text-[#C0392B]', bg: 'bg-[#FBEAEA]', label: 'Rojo' }
@@ -61,7 +61,7 @@ export function StressTest() {
   return (
     <div className="grid grid-cols-2 gap-4">
       {results.map(sc => {
-        const { color, bg, label } = semaforo(sc.tir, base)
+        const { color, bg, label } = semaforo(sc.tir)
         return (
           <div key={sc.id} className={cn('rounded-[12px] p-4 border', bg,
             label === 'Verde' ? 'border-[#3B6D11]/20' : label === 'Amarillo' ? 'border-[#D4881E]/30' : 'border-[#C0392B]/30'

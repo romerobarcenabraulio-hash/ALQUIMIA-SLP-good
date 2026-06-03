@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState, useCallback } from 'react'
-import { AlertTriangle, RefreshCw, CheckCircle2, Clock, Download, Calendar } from 'lucide-react'
+import { AlertTriangle, RefreshCw, Download, Calendar } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { buildPlanningAll, type GanttPlan, type PertPlan, type RACIPlan } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -417,4 +417,3 @@ function RaciChip({ code, label }: { code: string; label: string }) {
     </span>
   )
 }
-

@@ -100,7 +100,6 @@ export function ProgresionPlanMunicipalTiempo() {
 
   useEffect(() => {
     if (totalMeses < 1) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMesVista(prev => Math.min(Math.max(1, prev), totalMeses))
   }, [totalMeses])
 

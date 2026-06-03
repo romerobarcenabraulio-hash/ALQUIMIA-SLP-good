@@ -97,7 +97,6 @@ export function InspeccionForm() {
   const [municipioExpediente, setMunicipioExpediente] = useState('slp')
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMunicipioExpediente(prev => {
       if (prev && opcionesMunicipioPredio.includes(prev)) return prev
       if (opcionesMunicipioPredio.includes('slp')) return 'slp'
@@ -165,7 +164,6 @@ export function InspeccionForm() {
   }, [opcionesTipo, nivelElegido])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setNivelElegido('')
   }, [tipo])
 

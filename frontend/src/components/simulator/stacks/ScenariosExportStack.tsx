@@ -7,8 +7,7 @@ import {
   ReferenceLine,
 } from 'recharts'
 import {
-  TrendingUp, DollarSign, RefreshCcw, Clock, Download,
-  Share2, Zap, ChevronDown,
+  TrendingUp, DollarSign, RefreshCcw, Clock,
 } from 'lucide-react'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import {
@@ -20,19 +19,14 @@ import {
 import { cn } from '@/lib/utils'
 import { fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { CotizacionRecomendada } from '@/components/simulator/CotizacionRecomendada'
 import { ImpactoFinanciero } from '@/components/simulator/ImpactoFinanciero'
-import { ExportarSection } from '@/components/simulator/ExportarSection'
-import { ExportadorReporte } from '@/components/simulator/ExportadorReporte'
-import { GovernancePanel } from '@/components/simulator/GovernancePanel'
-import { LaunchChecklist } from '@/components/simulator/LaunchChecklist'
 import { MonteCarloVpnChart } from '@/components/charts/MonteCarloVpnChart'
 import { TornadoChart } from '@/components/charts/TornadoChart'
 import { FASES_INVERSION } from '@/lib/capexOpexData'
 import { buildLogisticsKpiFromStore } from '@/lib/buildLogisticsKpiFromStore'
 import { scenarioStressMultiplier } from '@/lib/financeLogisticsCalc'
 import { TirMultipleExplainer } from '@/components/simulator/TirMultipleExplainer'
-import { Conclusion, EditorialCallout, KpiAnchorGrid, MarginalNote } from '@/components/editorial'
+import { EditorialCallout } from '@/components/editorial'
 import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
 import { TenantFirstLoginSummary } from '@/components/simulator/TenantProfilePanels'
 
@@ -69,20 +63,6 @@ const RUTA_FASES = FASES_INVERSION.slice(0, 5).map(f => ({
 }))
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function RailSection({ title, children, open = false }: { title: string; children: React.ReactNode; open?: boolean }) {
-  const [isOpen, setIsOpen] = useState(open)
-  return (
-    <div className="border-b border-[#EDE9E3] last:border-b-0">
-      <button type="button" onClick={() => setIsOpen(o => !o)}
-        className="w-full flex items-center justify-between py-3 px-1 text-left">
-        <span className="text-[10px] uppercase tracking-[0.08em] text-[#6B6760] font-bold">{title}</span>
-        <ChevronDown className={cn('w-3.5 h-3.5 text-[#A8A49C] transition-transform', isOpen && 'rotate-180')} />
-      </button>
-      {isOpen && <div className="pb-3 px-1 text-[11px] leading-relaxed text-[#6B6760] space-y-1.5">{children}</div>}
-    </div>
-  )
-}
 
 // ─── FinancialAssumptions ─────────────────────────────────────────────────────
 // Reads or derives WACC and financial params from store; shows as read-only when

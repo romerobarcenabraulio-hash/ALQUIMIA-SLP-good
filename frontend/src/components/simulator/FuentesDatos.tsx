@@ -16,21 +16,10 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import { ProvenanceBadge } from '@/components/ui/ProvenanceBadge'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
-import { fmt } from '@/lib/utils'
-import type { FuenteStatus, FuenteTipo } from '@/types'
+import type { FuenteStatus } from '@/types'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 
 // ─── Helpers de presentación ──────────────────────────────────────────────────
-
-function tipoLabel(tipo: FuenteTipo): string {
-  switch (tipo) {
-    case 'oficial':       return 'En vivo'
-    case 'certificado':   return 'Certificado'
-    case 'estimado':      return 'Estimado'
-    case 'manual':        return 'Manual'
-    case 'no_disponible': return 'Sin dato'
-  }
-}
 
 function disponibleLabel(fuente: FuenteStatus): string {
   if (!fuente.disponible) return 'Requiere clave API'
@@ -62,7 +51,6 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
   const embedded = variant === 'embedded'
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ status: 'loading' })
     fetch(`${getApiUrl()}/data/fuentes`, withRequestId())
       .then(async res => {

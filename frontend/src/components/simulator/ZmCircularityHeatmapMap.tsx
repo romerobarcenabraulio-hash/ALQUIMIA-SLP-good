@@ -21,12 +21,6 @@ const ZM_ZOOM: Record<string, number> = {
   SLP: 9.5, MTY: 9.5, QRO: 9.5, GDL: 9.5,
 }
 
-function escHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
-}
-
 function heatColor(pct: number): string {
   if (pct <= 18) return '#f7fcf0'
   if (pct <= 32) return '#ccebc5'
@@ -37,7 +31,6 @@ function heatColor(pct: number): string {
 
 export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
   const [payload, setPayload] = useState<CircularityHeatmapResponse | null>(null)
-  const [error,   setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [mode,    setMode]    = useState<HeatMode>('actual')
   const token = getGoogleMapsApiKey()
@@ -47,13 +40,12 @@ export default function ZmCircularityHeatmapMap({ zmId }: { zmId: string }) {
     let cancelled = false
     setLoading(true)
     setPayload(null)
-    setError(null)
     ;(async () => {
       try {
         const data = await getCircularityHeatmap(zmId)
         if (!cancelled) setPayload(data)
       } catch {
-        if (!cancelled) setError('Datos en preparación.')
+        // La UI muestra el estado vacío del mapa sin bloquear la página.
       } finally {
         if (!cancelled) setLoading(false)
       }

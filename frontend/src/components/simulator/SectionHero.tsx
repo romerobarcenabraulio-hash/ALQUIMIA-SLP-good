@@ -9,7 +9,6 @@ import { getMadurezMensajeMultiAncla, getMunicipioMadurezVista, getEtiquetaNarra
 import type { FuenteTipo, ResultadosCalculados } from '@/types'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
 import { EditorialMetric } from '@/components/editorial/EditorialMetric'
-import { EditorialCallout } from '@/components/editorial/EditorialCallout'
 
 const GENTILICIO_POR_TERRITORIO: Record<string, string> = {
   SLP: 'potosinos',

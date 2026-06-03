@@ -8,7 +8,7 @@
  */
 
 import { ResponsiveContainer, Sankey, Tooltip } from 'recharts'
-import { MarginalNote, SectionLabel } from '@/components/editorial'
+import { SectionLabel } from '@/components/editorial'
 
 export interface SankeyNode {
   id: string

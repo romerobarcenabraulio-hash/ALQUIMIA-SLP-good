@@ -1,11 +1,11 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Legend,
+  LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
-import { Check, TrendingUp, Leaf, Heart, Users, Truck, ChevronDown } from 'lucide-react'
+import { Check, TrendingUp, Leaf, Heart, Truck, ChevronDown } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { PRESETS_TRAYECTORIA, TRAJECTORY_UI, RSU_SEMARNAT, PRECIOS_RANGO } from '@/lib/constants'
 import { fmt, cn, MATERIAL_LABELS } from '@/lib/utils'

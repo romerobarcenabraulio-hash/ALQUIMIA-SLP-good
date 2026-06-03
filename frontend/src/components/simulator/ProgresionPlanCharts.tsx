@@ -39,7 +39,6 @@ export function ProgresionPlanCharts({
   mesVista,
   mesMadurez,
   xTickStep,
-  zmActiva,
   hitosTraceLabel,
 }: ProgresionPlanChartsProps) {
   return (

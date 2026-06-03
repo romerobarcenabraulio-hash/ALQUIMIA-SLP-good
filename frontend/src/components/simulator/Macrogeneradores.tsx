@@ -76,9 +76,7 @@ export default function Macrogeneradores() {
 
   useEffect(() => {
     let alive = true
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLoadingList(true)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
     getMacroGenerators(zmActiva)
       .then(items => {

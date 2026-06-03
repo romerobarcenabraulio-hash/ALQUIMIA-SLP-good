@@ -3,11 +3,11 @@
 import { useState, useMemo, useEffect } from 'react'
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  AreaChart, Area, ReferenceLine, Cell, Legend,
+  AreaChart, Area, ReferenceLine, Cell,
 } from 'recharts'
 import {
   AlertTriangle, CheckCircle, ChevronDown, ArrowRight,
-  TrendingUp, Shield, Users, DollarSign, Zap, Target,
+  Shield, DollarSign,
   Clock, MapPin, FileText, Activity,
 } from 'lucide-react'
 import { ExpandableChart } from '@/components/ui/ExpandableChart'
@@ -17,7 +17,7 @@ import {
   CHART_TOOLTIP_STYLE,
 } from '@/lib/chartTheme'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { TRAJECTORY_UI, PRECIOS_DEFAULTS, PRECIOS_RANGO, COMPOSICION_RSU } from '@/lib/constants'
+import { TRAJECTORY_UI, PRECIOS_DEFAULTS, COMPOSICION_RSU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
 import { getMarketBuyers } from '@/lib/api'
@@ -385,9 +385,6 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 // Shows all 12 risks as collapsible rows inside the right rail.
 // Expands in-place — no page scroll required.
 
-const PROB_LEVEL_LABEL: Record<string, string> = {
-  muy_bajo: 'Muy baja', bajo: 'Baja', medio: 'Media', alto: 'Alta', muy_alto: 'Muy alta',
-}
 const PROB_LEVEL_COLOR: Record<string, string> = {
   muy_bajo: '#A8A49C', bajo: '#8DB87A', medio: '#D4881E', alto: '#C0392B', muy_alto: '#7A0000',
 }

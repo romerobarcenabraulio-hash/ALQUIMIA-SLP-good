@@ -2,7 +2,6 @@
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
 import { useReglamentoFuente } from '@/components/reglamento/ReglamentoModal'
-import { cn } from '@/lib/utils'
 import { ScopeAnclaKicker } from '@/components/simulator/ScopeAnclaKicker'
 import { EditorialCallout } from '@/components/editorial/EditorialCallout'
 import { SectionLabel } from '@/components/editorial/SectionLabel'

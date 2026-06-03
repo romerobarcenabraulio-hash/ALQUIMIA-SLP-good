@@ -109,7 +109,7 @@ function AlertaBadge({ alerta }: { alerta: ProyectoEstado['alertas'][0] }) {
   )
 }
 
-function ReadinessBar({ label, score, codigo }: { label: string; score: number; codigo: string }) {
+function ReadinessBar({ score, codigo }: { label: string; score: number; codigo: string }) {
   const color = score >= 80 ? '#10b981' : score >= 50 ? '#f59e0b' : '#ef4444'
   return (
     <div className="flex items-center gap-3">

@@ -124,9 +124,7 @@ export function PortalEmpresarial() {
   const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResult(null)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
     const p = payload
     if (!p) return

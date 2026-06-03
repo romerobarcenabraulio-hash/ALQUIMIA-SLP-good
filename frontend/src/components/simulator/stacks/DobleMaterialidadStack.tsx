@@ -33,7 +33,7 @@ function dotColor(impacto: number, financiero: number): string {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function DobleMaterialidadStack() {
-  const { zmActiva, municipiosActivos, resultados, pctCapturaPorAño } = useSimulatorStore()
+  const { zmActiva, municipiosActivos, resultados } = useSimulatorStore()
 
   const [tab, setTab] = useState(1)
 
@@ -49,8 +49,6 @@ export function DobleMaterialidadStack() {
 
   // ── KPI projections ───────────────────────────────────────────────────────
   const co2Anual = resultados?.co2eEvitadasAnualTon ?? 0
-  const empleos = resultados?.empleosTotalesDirectos ?? 0
-  const pctCaptura = pctCapturaPorAño[0] ?? 0
   const rsuHabDia = resultados?.pobActiva && resultados?.rsuTotalTonDia
     ? resultados.rsuTotalTonDia * 1000 / resultados.pobActiva
     : 0

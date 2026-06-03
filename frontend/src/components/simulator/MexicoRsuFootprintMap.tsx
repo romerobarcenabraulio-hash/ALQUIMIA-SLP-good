@@ -29,14 +29,6 @@ const STATIC_FALLBACK: RsuFootprintMapResponse = {
   catalog_simulation_epoch: 'fallback-estático',
 }
 
-function escHtml(s: string): string {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-}
-
 function zmBadgeColor(zm: string): string {
   switch (zm) {
     case 'SLP': return '#3B6D11'
@@ -48,7 +40,6 @@ function zmBadgeColor(zm: string): string {
 
 export default function MexicoRsuFootprintMap() {
   const [payload, setPayload] = useState<RsuFootprintMapResponse | null>(null)
-  const [error,   setError]   = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const token = getGoogleMapsApiKey()
 
@@ -60,7 +51,7 @@ export default function MexicoRsuFootprintMap() {
         const data = await getRsuFootprintMap()
         if (!cancelled) setPayload(data)
       } catch {
-        if (!cancelled) setError('Datos en preparación.')
+        // Fallback estático visible; el error de red no bloquea el mapa.
       } finally {
         if (!cancelled) setLoading(false)
       }

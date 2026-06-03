@@ -30,20 +30,6 @@ type TabId = 'captura' | 'comparacion' | 'semaforo'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function emptyRecord(periodo: string): PeriodRecord {
-  return {
-    periodo,
-    tonSeparadas:        null,
-    tonTotalRecoleccion: null,
-    hogaresParticipando: null,
-    precioPet:           null,
-    precioPapel:         null,
-    precioComposta:      null,
-    empleosVerificados:  null,
-    quejasCiudadanas:    null,
-  }
-}
-
 type SemaforoStatus = 'verde' | 'amarillo' | 'rojo'
 
 function calcSemaforo(proyectado: number, medido: number | null): SemaforoStatus {
@@ -58,19 +44,6 @@ function SemaforoIcon({ status }: { status: SemaforoStatus }) {
   if (status === 'verde')    return <span className="text-[#3B6D11] font-mono text-[13px]">✓</span>
   if (status === 'amarillo') return <span className="text-[#D4881E] font-mono text-[13px]">△</span>
   return <span className="text-red-500 font-mono text-[13px]">✕</span>
-}
-
-function SemaforoDot({ status }: { status: SemaforoStatus }) {
-  return (
-    <span
-      className={cn(
-        'inline-block w-2.5 h-2.5 rounded-full',
-        status === 'verde'    && 'bg-[#3B6D11]',
-        status === 'amarillo' && 'bg-[#D4881E]',
-        status === 'rojo'     && 'bg-red-500',
-      )}
-    />
-  )
 }
 
 function RailSection({ title, children, open: defaultOpen = false }: { title: string; children: React.ReactNode; open?: boolean }) {

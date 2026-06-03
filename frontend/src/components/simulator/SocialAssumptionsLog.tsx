@@ -35,7 +35,6 @@ export function SocialAssumptionsLog({ persistence, _storageOverride }: SocialAs
 
   useEffect(() => {
     if (!storage) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     refresh()
   }, [storage, refresh])
 

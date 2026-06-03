@@ -51,9 +51,7 @@ export function AlertasPanel() {
   const payloadKey = useMemo(() => (payload ? JSON.stringify(payload) : ''), [payload])
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setResult(null)
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     setError(null)
     if (!payload) return
     let active = true
