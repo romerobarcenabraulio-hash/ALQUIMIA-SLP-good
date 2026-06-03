@@ -845,7 +845,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           }
           const currentPath = platformPathForStage(effectiveState.state.current_stage)
           if (currentPath !== pathname) {
-            router.replace(`${currentPath}?tenant_id=${tenantId}`)
+            router.replace(`${currentPath}?tenant_id=${encodeURIComponent(tenantId)}`)
             return
           }
           throw accessResult.reason
@@ -853,7 +853,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
 
         const canonicalPath = platformPathForStage(effectiveState.state.current_stage)
         if (canonicalPath !== pathname) {
-          router.replace(`${canonicalPath}?tenant_id=${tenantId}`)
+          router.replace(`${canonicalPath}?tenant_id=${encodeURIComponent(tenantId)}`)
           return
         }
 
@@ -1042,10 +1042,10 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             <FounderViewModeSwitcher />
           </div>
         </div>
-        {tenantId === 'municipio-demo' && (
+        {tenantId === 'municipio-demo' && !clientPreview && (
           <div className="border-b border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 sm:px-6">
             <p className="text-[12px] font-semibold leading-5 text-[#765814]">
-              Demo bibliográfico · San Luis Potosí usa fuentes públicas y cálculos trazables. No sustituye revisión humana ni estudios locales faltantes.
+              Expediente de referencia interno · San Luis Potosí usa fuentes públicas y cálculos trazables. No sustituye revisión humana ni estudios locales faltantes.
             </p>
           </div>
         )}
