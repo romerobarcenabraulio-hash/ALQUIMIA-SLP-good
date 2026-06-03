@@ -95,6 +95,7 @@ describe('client-facing consulting guardrails', () => {
   it('keeps admin preview explicit instead of turning /v into an admin selector', () => {
     const admin = readFrontend('src/app/admin/page.tsx')
     const preparation = readFrontend('src/lib/municipalityPreparation.ts')
+    const switcher = readFrontend('src/components/platform/FounderViewModeSwitcher.tsx')
 
     expect(admin).toContain('preview=client')
     expect(admin).toContain('preparation_status')
@@ -120,6 +121,10 @@ describe('client-facing consulting guardrails', () => {
     expect(preparation).toContain('MunicipalityPreparationStatus')
     expect(preparation).toContain('listo_para_cliente')
     expect(preparation).toContain('en_cliente')
+    expect(switcher).toContain('buildFounderPreviewHref')
+    expect(switcher).toContain('Previsualizar cliente')
+    expect(switcher).not.toContain('tenant_id=municipio-demo')
+    expect(switcher).not.toContain('Sandbox interno')
   })
 
   it('shows planning and execution as human-gated stages instead of automatic decisions', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isFounderOrAdmin } from './FounderViewModeSwitcher'
+import { buildFounderPreviewHref, isFounderOrAdmin } from './FounderViewModeSwitcher'
 
 describe('FounderViewModeSwitcher access', () => {
   it('allows the temporary personal admin email without Clerk metadata', () => {
@@ -16,5 +16,11 @@ describe('FounderViewModeSwitcher access', () => {
   it('still accepts explicit founder/admin metadata', () => {
     expect(isFounderOrAdmin({ role: 'founder' }, 'cliente@example.com')).toBe(true)
     expect(isFounderOrAdmin({ has_admin_access: true }, 'cliente@example.com')).toBe(true)
+  })
+
+  it('builds client preview links from the current tenant instead of a demo tenant', () => {
+    expect(buildFounderPreviewHref('/v', 'slp-capital', 'module=M01')).toBe('/v?module=M01&tenant_id=slp-capital&preview=client')
+    expect(buildFounderPreviewHref('/p', null, 'tenant_id=rioverde&preview=admin')).toBe('/p?tenant_id=rioverde&preview=client')
+    expect(buildFounderPreviewHref('/e', null)).toBe('/e?preview=client')
   })
 })

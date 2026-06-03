@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Eye, ShieldCheck } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 
 export type FounderViewMode = 'admin' | 'client'
 
@@ -55,20 +55,38 @@ export function readFounderViewMode(): FounderViewMode {
   return readStoredMode()
 }
 
+export function buildFounderPreviewHref(pathname: string, tenantId: string | null, rawSearch = '') {
+  const params = new URLSearchParams(rawSearch)
+  if (tenantId) params.set('tenant_id', tenantId)
+  params.set('preview', 'client')
+  const query = params.toString()
+  return query ? `${pathname}?${query}` : pathname
+}
+
 export function FounderViewModeSwitcher() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { user, isLoaded } = useUser()
   const email = user?.primaryEmailAddress?.emailAddress
-  const emails = user?.emailAddresses.map(item => item.emailAddress) ?? []
   const canSwitch = useMemo(
-    () => isFounderOrAdmin(user?.publicMetadata as Record<string, unknown> | undefined, email, emails),
-    [email, emails, user?.publicMetadata],
+    () => {
+      const emails = user?.emailAddresses.map(item => item.emailAddress) ?? []
+      return isFounderOrAdmin(user?.publicMetadata as Record<string, unknown> | undefined, email, emails)
+    },
+    [email, user?.emailAddresses, user?.publicMetadata],
   )
   const [mode, setMode] = useState<FounderViewMode>('admin')
+  const [tenantId, setTenantId] = useState<string | null>(null)
 
   useEffect(() => {
     setMode(readStoredMode())
   }, [])
+
+  useEffect(() => {
+    const fromSearch = searchParams.get('tenant_id')
+    const fromStorage = typeof window !== 'undefined' ? window.localStorage.getItem('alquimia.tenantId') : null
+    setTenantId(fromSearch ?? fromStorage)
+  }, [searchParams])
 
   if (!isLoaded || !canSwitch) return null
 
@@ -113,10 +131,10 @@ export function FounderViewModeSwitcher() {
         </button>
       </div>
       <Link
-        href={`${pathname}?tenant_id=municipio-demo`}
+        href={buildFounderPreviewHref(pathname, tenantId, searchParams.toString())}
         className="rounded-[8px] border border-[#D8D2C5] px-2.5 py-1.5 text-[12px] font-semibold text-[#5C574F] hover:text-[#1C1B18]"
       >
-        Sandbox interno
+        Previsualizar cliente
       </Link>
     </div>
   )
