@@ -53,6 +53,8 @@ describe('client-facing consulting guardrails', () => {
     expect(platformPage).toContain('tenantId === \'municipio-demo\' && !clientPreview')
     expect(platformPage).toContain('router.replace(`${currentPath}?tenant_id=${encodeURIComponent(tenantId)}`)')
     expect(platformPage).toContain('router.replace(`${canonicalPath}?tenant_id=${encodeURIComponent(tenantId)}`)')
+    expect(platformPage).toContain('Cargando expediente municipal')
+    expect(platformPage).toContain('loadingTenant ?')
     expect(platformPage).not.toContain('Demo bibliográfico')
     expect(platformPage).not.toContain('/admin/tenants/${tenantId}/transition')
     expect(platformPage).not.toContain('manual_confirmation')

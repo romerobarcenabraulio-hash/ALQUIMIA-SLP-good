@@ -1065,6 +1065,13 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
               </p>
               <p className="mt-2 text-[12px] leading-relaxed">{accessError}</p>
             </div>
+          ) : loadingTenant ? (
+            <div className="m-6 border border-[#E1DACE] bg-[#FDFCFA] px-5 py-4">
+              <p className="text-[13px] font-semibold text-[#1C1B18]">Cargando expediente municipal...</p>
+              <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
+                Validando tenant, etapa activa y permisos antes de abrir el paquete consultivo.
+              </p>
+            </div>
           ) : needsTenantSelection && canUseInternalView ? (
             <TenantSelectionPanel
               tenants={tenantOptions}
