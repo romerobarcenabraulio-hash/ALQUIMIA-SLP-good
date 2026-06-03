@@ -11,7 +11,6 @@ import { PlatformStageBadge } from '@/components/platform/PlatformStageBadge'
 import { assertTenantPlatformAccess, fetchTenantState } from '@/lib/tenantStateClient'
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
 import { Watermark } from '@/components/Watermark'
-import { DocumentGapBanner } from '@/components/DocumentGapBanner'
 import { ConsultingPackagePanel } from '@/components/platform/ConsultingPackagePanel'
 import {
   FounderViewModeSwitcher,
@@ -234,9 +233,9 @@ const MODULE_DECISION_COPY: Record<string, Pick<DecisionModule, 'decision' | 'ev
     next_action: 'Validar con tesorería y jurídico.',
   },
   escenarios_financieros: {
-    decision: 'Mostrar escenarios cerrados, no sliders libres para cliente.',
+    decision: 'Mostrar escenarios cerrados con supuestos trazables para cliente.',
     evidence: 'Motor de precios, mix de materiales, captura estimada y sensibilidad.',
-    next_action: 'Revisar supuestos como admin/founder y exportar límites.',
+    next_action: 'Revisar supuestos con equipo ALQUIMIA y exportar límites.',
   },
   riesgos_modelo: {
     decision: 'Identificar riesgos técnicos, sociales, legales, financieros y de impugnación.',
@@ -427,7 +426,7 @@ function PlatformModuleNavItem({
   statusLabel?: string
   indent?: boolean
 }) {
-  const blocked = statusLabel === 'Brecha documental'
+  const blocked = statusLabel === 'Evidencia condicionada'
   return (
     <button
       type="button"
@@ -985,7 +984,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                 && PLATFORM_MODULE_GROUPS[module.module_id].child_module_ids.includes(gap.module_id ?? ''))
             )
           )
-          return [module.module_id, hasGap ? 'Brecha documental' : moduleSubtitle(module.module_id, module.nav_subtitle)]
+          return [module.module_id, hasGap ? 'Evidencia condicionada' : moduleSubtitle(module.module_id, module.nav_subtitle)]
         }),
     )
   }, [clientPreview, visiblePlatformModules, tenantData.data?.document_gaps])
@@ -1134,15 +1133,6 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                     ))}
                   </div>
                 </section>
-              )}
-              {tenantData.data && !clientPreview && (
-                <DocumentGapBanner
-                  tenantId={tenantData.data.tenant_id}
-                  moduleId={isPlatformModuleGroup(activeModule?.module_id) ? null : activeModule?.module_id ?? null}
-                  gaps={tenantData.data.document_gaps}
-                  documents={tenantData.data.tenant_documents}
-                  onChanged={tenantData.reload}
-                />
               )}
               {!clientPreview && <StageReadinessNotice stage={platformStage} clientPreview={clientPreview} />}
               {tenantData.data && !clientPreview && (
