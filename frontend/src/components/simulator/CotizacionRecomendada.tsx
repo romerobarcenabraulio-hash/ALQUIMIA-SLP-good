@@ -16,11 +16,10 @@
 import { useEffect, useState } from 'react'
 import {
   CheckCircle2, AlertTriangle, XCircle, RefreshCw, Save,
-  Building2, Factory, TrendingUp, Users, Leaf, Clock,
+  Building2, TrendingUp, Users, Leaf, Clock,
   ChevronDown, ChevronUp, Info,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { fmt } from '@/lib/utils'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import {
   colorScoreViabilidad,

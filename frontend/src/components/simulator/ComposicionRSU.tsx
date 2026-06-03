@@ -1,7 +1,5 @@
 'use client'
-import { COMPOSICION_RSU_DETALLE } from '@/lib/constants'
 import { MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
-import { Badge } from '@/components/ui/Badge'
 import { ContextoModulo } from '@/components/ui/ContextoModulo'
 import { AnchorFigure } from '@/components/editorial/AnchorFigure'
 

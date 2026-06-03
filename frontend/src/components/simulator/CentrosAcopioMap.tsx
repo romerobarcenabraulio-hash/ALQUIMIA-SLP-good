@@ -10,7 +10,7 @@ import {
   buildRecyclersKpiContract,
   getRecicladorasForZm,
 } from '@/lib/recicladorasCatalog'
-import { RefreshCw, MapPin, Building2, Recycle, Filter, Truck } from 'lucide-react'
+import { RefreshCw, MapPin, Recycle, Filter, Truck } from 'lucide-react'
 import { EditorialCallout, MarginalNote } from '@/components/editorial'
 
 const MATERIAL_LABELS: Record<string, string> = {
@@ -46,10 +46,6 @@ const TIPO_LABELS: Record<string, string> = {
   bodega_concesionario: 'Bodega concesionario',
   patio_concesionario: 'Patio concesionario',
   transferencia_rs: 'Transferencia RS',
-}
-
-function escHtml(s: string) {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 }
 
 export function CentrosAcopioMap({ showRecicladoras = true }: { showRecicladoras?: boolean } = {}) {

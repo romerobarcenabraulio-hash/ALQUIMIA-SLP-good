@@ -21,10 +21,6 @@ function fmtMXN(n: number, compact = false): string {
   return `$${n.toLocaleString('es-MX', { maximumFractionDigits: 0 })}`
 }
 
-function fmtPct(n: number): string {
-  return `${n >= 0 ? '+' : ''}${n.toFixed(1)}%`
-}
-
 // ─── Sub-componente: badge de fuente ──────────────────────────────────────
 
 function FuenteBadge({ text }: { text: string }) {

@@ -53,25 +53,6 @@ function faseDesdeCaptura(pct: number): number {
   return 5
 }
 
-/** Genera el color de relleno para la expresión Mapbox según el año del slider. */
-function buildFillExpr(zmFeatures: CircularityHeatmapResponse['geojson']['features'], añoIdx: number, pctCaptura: number) {
-  // En una rejilla proxy, asignamos fases de manera determinística por zona
-  // La zona "piloto" (índice 0-3) avanza más rápido según el año.
-  return ['match',
-    ['get', 'cve_geoestadistica_proxy'],
-    ...zmFeatures.flatMap((f, i) => {
-      const props = f.properties ?? {}
-      const cve = props['cve_geoestadistica_proxy'] ?? `Z${i}`
-      // Zonas más centrales (índice menor) arrancan antes
-      const adelanto = Math.max(0, 3 - Math.floor(i / 3))
-      const pctLocal = Math.max(0, Math.min(100, pctCaptura * (1 + adelanto * 0.15) - i * 2))
-      const fase = faseDesdeCaptura(pctLocal)
-      return [cve, FASE_COLORS[fase]]
-    }),
-    '#F5F5F5',
-  ]
-}
-
 // ─── MapSourceBadge (disclaimer proxy) ───────────────────────────────────────
 
 function MapSourceBadge({ geometrySource }: { geometrySource?: string }) {

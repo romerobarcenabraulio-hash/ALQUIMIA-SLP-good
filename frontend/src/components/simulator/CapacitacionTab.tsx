@@ -214,7 +214,6 @@ export function CapacitacionTab() {
         </div>
         <div className="space-y-2">
           {pctCapturaPorAño.slice(0, horizonte).map((pct, idx) => {
-            const faseDef = FASES_CONTENIDO[Math.min(idx, FASES_CONTENIDO.length - 1)]
             const metaMin = idx === 0 ? 25 : idx === 1 ? 50 : idx === 2 ? 70 : 80
             const enMeta = pct >= metaMin * 0.9
             return (
