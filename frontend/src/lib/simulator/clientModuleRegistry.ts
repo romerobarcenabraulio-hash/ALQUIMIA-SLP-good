@@ -20,7 +20,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
   guia_circularidad: base({
     module_id: 'guia_circularidad',
     label: 'Pasos hacia la circularidad — Guía de lectura',
-    decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega el simulador.',
+    decision: 'Entender qué es ALQUIMIA, cuál es el problema de RSU y cómo se navega la plataforma.',
     evidence: `${CHAPTERS.length} capítulos · modos validar propuesta / implementar · fuentes documentadas.`,
     next_action: 'Abrir M00B — Antecedentes municipales RSU',
   }),
@@ -112,7 +112,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     module_id: 'teoria_cambio',
     label: 'Teoría de cambio — cómo se conecta todo',
     decision: 'Ver el hilo causal completo: inputs → actividades → outputs → outcomes → impacto.',
-    evidence: 'Teoría de cambio dinámica con datos del simulador en cada columna.',
+    evidence: 'Teoría de cambio dinámica con datos trazables de la plataforma en cada columna.',
     next_action: 'Cerrar Cap 1 y pasar a planificación estratégica.',
   }),
   plan_maestro: base({
@@ -273,7 +273,7 @@ export const CLIENT_FUNCTIONARY_MODULES: Record<string, DecisionModule> = {
     module_id: 'gate_status',
     label: 'Estado de gates G1–G5',
     decision: 'Confirmar si el proyecto puede avanzar al siguiente gate o si hay prerequisitos bloqueantes.',
-    evidence: 'Prerequisitos de cada gate verificados contra el estado real de módulos del simulador.',
+    evidence: 'Prerequisitos de cada gate verificados contra el estado real de los módulos de ejecución.',
     next_action: 'Revisar los prerequisitos del gate actual y cerrar los abiertos antes de la fecha límite.',
   }),
 }

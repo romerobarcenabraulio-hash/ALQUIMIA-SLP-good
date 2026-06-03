@@ -16,31 +16,31 @@ export interface LegacyQuarantineManifest {
 export function buildLegacyQuarantineManifest(): LegacyQuarantineManifest {
   return {
     generated_at: new Date().toISOString(),
-    policy: 'No borrar legacy mientras exista import activo desde /v, /p, /e, /admin o export. Primero cortar dependencias cliente-facing, luego eliminar por grafo de imports y pruebas.',
+    policy: 'No borrar legacy mientras exista import activo desde /v, /p, /e, /admin o export. El rescate actual reutiliza el renderer histórico; primero separar laboratorio, controles libres y copy de simulador, luego eliminar sólo lo que quede sin imports activos.',
     items: [
       {
         file: 'frontend/src/store/simulatorStore.ts',
         usage: 'Store histórico del simulador; contiene defaults SLP, sliders y estado de laboratorio.',
         client_facing: false,
-        replacement: 'CityConsultingContext + StageWorkspace + motores determinísticos de consultoría.',
+        replacement: 'Motores determinísticos y estado por tenant; los datos cliente-facing deben entrar por Evidence Kernel y grupos de plataforma, no por sliders libres.',
         deletion_risk: 'high',
-        deletion_criteria: 'rg confirma cero imports fuera de /simulator y tests legacy explícitos; /v /p /e /admin pasan sin dependencia.',
+        deletion_criteria: 'rg confirma cero imports desde superficies cliente y los módulos rescatados ya no leen defaults, sliders ni SLP hardcoded para afirmar datos.',
       },
       {
         file: 'frontend/src/components/simulator/**',
-        usage: 'Componentes antiguos de simulación y módulos visuales heredados.',
-        client_facing: false,
-        replacement: 'Componentes platform/* conectados a Evidence Kernel y StageWorkspace.',
+        usage: 'Componentes heredados con mapas, encuesta, PDF/adendos, gráficas y módulos visuales rescatables.',
+        client_facing: true,
+        replacement: 'Renderer histórico detrás de PlatformPage, agrupado por /v /p /e y purificado con Evidence Kernel, citas y límites de uso.',
         deletion_risk: 'high',
-        deletion_criteria: 'Ningún componente cliente importa /components/simulator; piezas útiles extraídas a lib pura.',
+        deletion_criteria: 'Eliminar sólo piezas sin import activo; conservar mapas, encuesta, PDF/adendos, gráficas y stacks usados por renderDecisionModule hasta que existan equivalentes puros validados.',
       },
       {
         file: 'frontend/src/app/simulator/**',
         usage: 'Ruta de laboratorio interno/founder para pruebas de motores y visualizaciones.',
         client_facing: false,
-        replacement: 'Laboratorio founder aislado o motores puros sin UI cliente.',
+        replacement: 'Laboratorio founder aislado; /v /p /e consumen renderDecisionModule sin exponer la ruta /simulator a cliente.',
         deletion_risk: 'medium',
-        deletion_criteria: 'Existe reemplazo admin/founder y no hay journeys comerciales activos que dependan de la ruta.',
+        deletion_criteria: 'Existe vista admin/founder equivalente y /v /p /e ya no necesitan importar la página /simulator completa.',
       },
       {
         file: 'frontend/src/app/informe/[municipio_id]/page.tsx',

@@ -58,7 +58,7 @@ export function ImpactoAmbiental() {
           audience="citizen"
           kicker="Lectura ambiental"
           title="Qué implican los números para tu ciudad"
-          summary={`Con los supuestos actuales del simulador, se evitarían ${fmt.co2(r.co2eEvitadasAnualTon)} de emisiones CO₂e al año (como quitar unos ${fmt.num0(r.co2eEvitadasAnualTon / 2.3)} autos típicos de circulación). En el horizonte suman ${fmt.co2(r.co2eEvitadasHorizonteTon)}. El biogás útil estimado es ${fmt.kwh(r.kwhBiogas)} y se gana alrededor de ${r.extensionRelleno.toFixed(1)} años adicionales de vida útil del relleno.`}
+          summary={`Con los supuestos actuales del modelo, se evitarían ${fmt.co2(r.co2eEvitadasAnualTon)} de emisiones CO₂e al año (como quitar unos ${fmt.num0(r.co2eEvitadasAnualTon / 2.3)} autos típicos de circulación). En el horizonte suman ${fmt.co2(r.co2eEvitadasHorizonteTon)}. El biogás útil estimado es ${fmt.kwh(r.kwhBiogas)} y se gana alrededor de ${r.extensionRelleno.toFixed(1)} años adicionales de vida útil del relleno.`}
           evidence={[
             { label: 'CO₂e / año', value: fmt.co2(r.co2eEvitadasAnualTon), traceKey: 'co2e_anual' },
             { label: 'CO₂e acumulado', value: fmt.co2(r.co2eEvitadasHorizonteTon) },

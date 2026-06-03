@@ -277,7 +277,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
           )) : (
             <div className="col-span-6">
               <EditorialCallout tone="caution" label="Métricas pendientes">
-                Completa el simulador en Módulo 1 para ver métricas financieras del escenario.
+                Completa la línea base del Módulo 1 para ver métricas financieras del escenario.
               </EditorialCallout>
             </div>
           )}
@@ -293,7 +293,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-4">
             {[
               { title: '¿Qué valor genera?', body: 'Sustentabilidad económica, ambiental y social con trazabilidad para el municipio.' },
-              { title: '¿Qué cuesta implementar?', body: r ? `Inversión inicial CAPEX de ${fmt.mxnM(metrics?.capex ?? 0)} MXN y operación anual OPEX de ${fmt.mxnM(metrics?.opexAnual ?? 0)} MXN.` : 'Configura el simulador para ver el desglose de costos.' },
+              { title: '¿Qué cuesta implementar?', body: r ? `Inversión inicial CAPEX de ${fmt.mxnM(metrics?.capex ?? 0)} MXN y operación anual OPEX de ${fmt.mxnM(metrics?.opexAnual ?? 0)} MXN.` : 'Completa los insumos trazables para ver el desglose de costos.' },
               { title: '¿Qué depende de supuestos?', body: 'WACC, precios de materiales, captura efectiva, tipo de cambio y mercado de carbono.' },
               { title: 'Fuente y evidencia', body: 'Datos: INEGI, SEMARNAT, Banco Mundial y literatura especializada de economía circular.' },
             ].map(({ title, body }) => (
@@ -359,7 +359,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
                   </p>
                 </div>
               ) : (
-                <p className="text-[11px] text-[#A8A49C] py-8 text-center">Configura el simulador para ver el flujo de valor.</p>
+                <p className="text-[11px] text-[#A8A49C] py-8 text-center">Completa los insumos trazables para ver el flujo de valor.</p>
               )}
             </ChartPanel>
           </div>
@@ -418,7 +418,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
                     </div>
                   </>
                 ) : (
-                  <div className="col-span-2 text-[11px] text-[#A8A49C] py-4 text-center">Configura el simulador para ver el comparativo.</div>
+                  <div className="col-span-2 text-[11px] text-[#A8A49C] py-4 text-center">Completa los insumos trazables para ver el comparativo.</div>
                 )}
               </div>
             </div>
@@ -466,9 +466,9 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
           {/* Key verdict cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             {[
-              { title: '¿Qué tan robusto?', body: r ? `TIR base ${r.tir.toFixed(1)}% — escenario conservador genera TIR ${(r.tir * 0.72).toFixed(1)}%. Viable en los tres escenarios analíticos.` : 'Configura el simulador para ver análisis de robustez.' },
+              { title: '¿Qué tan robusto?', body: r ? `TIR base ${r.tir.toFixed(1)}% — escenario conservador genera TIR ${(r.tir * 0.72).toFixed(1)}%. Viable en los tres escenarios analíticos.` : 'Completa los insumos trazables para ver análisis de robustez.' },
               { title: 'Principal riesgo', body: 'Variación en precios de materiales frena captura efectiva. Monitorear índice ANIPAC mensual.' },
-              { title: 'Decisión sugerida', body: r && r.tir > 0 ? 'Proceder con implementación condicionada. El proyecto genera valor incluso en escenario conservador.' : 'Configura el simulador para ver la recomendación.' },
+              { title: 'Decisión sugerida', body: r && r.tir > 0 ? 'Proceder con implementación condicionada. El proyecto genera valor incluso en escenario conservador.' : 'Completa los insumos trazables para ver la recomendación.' },
             ].map(c => (
               <EditorialCallout key={c.title} label={c.title}>
                 {c.body}
@@ -538,7 +538,7 @@ export function ScenariosExportStack({ pageOnly }: { pageOnly?: 1 | 2 } = {}) {
                 </table>
               </div>
             ) : (
-              <p className="text-[11px] text-[#A8A49C] py-4 text-center">Configura el simulador para ver el comparativo de escenarios.</p>
+              <p className="text-[11px] text-[#A8A49C] py-4 text-center">Completa los insumos trazables para ver el comparativo de escenarios.</p>
             )}
           </div>
 

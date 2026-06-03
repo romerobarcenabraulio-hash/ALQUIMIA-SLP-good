@@ -21,6 +21,21 @@ def test_bibliography_registry_returns_fallback_corpus_without_database():
     assert body["record_count"] >= 3
     assert any(record["institution"] == "INEGI" for record in body["records"])
     assert any(record["evidence_scope"] == "benchmark" for record in body["records"])
+    assert any(record["source_table"] == "local_pdf_corpus" for record in body["records"])
+
+
+def test_bibliography_registry_indexes_local_pdf_corpus_with_limits():
+    client = _client()
+    response = client.get("/research/bibliography", params={"municipio_id": "24028"})
+
+    assert response.status_code == 200
+    records = response.json()["records"]
+    local_pdf_records = [record for record in records if record["source_table"] == "local_pdf_corpus"]
+    assert len(local_pdf_records) >= 10
+    assert any(record["module_id"] == "M03B" for record in local_pdf_records)
+    assert any(record["module_id"] == "M18" for record in local_pdf_records)
+    assert any(record["method"] == "local_pdf_inventory_pending_extraction" for record in local_pdf_records)
+    assert any("No soporta afirmacion municipal directa" in " ".join(record["limitations"]) for record in local_pdf_records)
 
 
 def test_bibliography_coverage_maps_modules_and_calculation_readiness():

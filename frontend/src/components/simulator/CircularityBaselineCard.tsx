@@ -108,7 +108,7 @@ export function CircularityBaselineCard() {
           {popShare < 1 - 1e-6 && (
             <MarginalNote>
               Vista <strong>sub-zona</strong>: los toneladas/día del baseline se muestran al {(popShare * 100).toFixed(1)}% del total ZM
-              (población municipios activos / población ZM en simulador). El porcentaje de circularidad del API sigue siendo referencia regional.
+              (población municipios activos / población ZM en plataforma). El porcentaje de circularidad del API sigue siendo referencia regional.
             </MarginalNote>
           )}
           <div className="flex flex-wrap items-start justify-between gap-6">

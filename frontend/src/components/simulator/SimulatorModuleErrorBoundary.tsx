@@ -40,7 +40,7 @@ export class SimulatorModuleErrorBoundary extends Component<Props, State> {
             No se pudo mostrar {this.props.moduleLabel}
           </p>
           <p className="mt-2 leading-relaxed text-red-800">
-            Ocurrió un error al renderizar esta sección. El resto del simulador sigue disponible; puedes recargar solo este
+            Ocurrió un error al renderizar esta sección. El resto de la plataforma sigue disponible; puedes recargar solo este
             bloque o volver a otro módulo.
           </p>
           <button

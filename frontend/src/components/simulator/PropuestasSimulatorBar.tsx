@@ -39,7 +39,7 @@ export function PropuestasSimulatorBar() {
         <h2 id="propuestas-simulator-title" className="text-[13px] font-semibold text-[#1C1B18]">
           Propuestas de escenario
         </h2>
-        <MarginalNote className="mt-0 text-[10px]">Guarda hasta 3 · Activar restaura los sliders</MarginalNote>
+        <MarginalNote className="mt-0 text-[10px]">Guarda hasta 3 · Activar restaura la configuración técnica</MarginalNote>
       </div>
       <div className="mt-2 grid gap-2 md:grid-cols-3">
         {SLOT_LABELS.map((label, slot) => {

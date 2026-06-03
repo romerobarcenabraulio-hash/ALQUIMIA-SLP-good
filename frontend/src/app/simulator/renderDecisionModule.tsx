@@ -311,7 +311,7 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
       return (
         <div className="space-y-8">
           <ReferenciasCalculos />
-          <CierreSimulador onNavigate={onNavigate} />
+          <ConsultingCompletion onNavigate={onNavigate} />
         </div>
       )
     case 'evm_dashboard':
@@ -368,8 +368,8 @@ function M03Notice() {
       </p>
       <p className="text-[12px] leading-relaxed text-[#6B6760]">
         Despliegue secuenciado de centros de acopio, oleadas territoriales y responsables
-        institucionales. Los plazos y costos se generan a partir del escenario activo
-        en el simulador.
+        institucionales. Los plazos y costos se generan a partir del escenario técnico
+        activo de la plataforma.
       </p>
     </div>
   )
@@ -546,14 +546,14 @@ function ModuleEmpty({ module }: { module: DecisionModule }) {
       <p className="text-[13px] font-semibold text-[#1C1B18]">Módulo pendiente de conexión</p>
       <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
         Este paso del recorrido (<span className="font-mono text-[11px]">{module.module_id}</span>) aún no tiene
-        herramienta activa en el simulador. Puede deberse a una audiencia distinta o a un módulo en despliegue.
+        herramienta activa en esta vista. Puede deberse a una audiencia distinta o a un módulo en despliegue.
       </p>
       <p className="mt-3 text-[11px] text-[#A8A49C]">Siguiente acción sugerida: {module.next_action}</p>
     </div>
   )
 }
 
-function CierreSimulador({ onNavigate }: { onNavigate?: (id: string) => void }) {
+function ConsultingCompletion({ onNavigate }: { onNavigate?: (id: string) => void }) {
   return (
     <section
       className="rounded-[14px] border border-[#C9DDB1] bg-gradient-to-br from-[#1C2B15] to-[#2D4A1A] text-white p-8 text-center relative overflow-hidden"

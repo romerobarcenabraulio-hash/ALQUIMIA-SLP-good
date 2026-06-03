@@ -6,6 +6,7 @@ with an LLM and it does not turn comparable evidence into a local study.
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+from pathlib import Path
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
@@ -80,6 +81,67 @@ CATEGORY_MODULE: dict[str, str] = {
     "benchmarks_latam": "M01",
     "papers_academicos": "M01",
 }
+
+LOCAL_PDF_DIRS = [
+    ("frontend/public/reglamentos", "reglamentos", "M03B", "municipal"),
+    ("REGLAMENTOS DE ASEO PUBBLICO", "reglamentos", "M03B", "municipal"),
+    ("ADENDOS: LEGAL/pdfs/reglamentos", "reglamentos", "M03B", "municipal"),
+    ("ESTANDARES INTERNACIONALES", "estandares", "M18", "benchmark"),
+    ("ADENDOS: LEGAL/pdfs/contexto_slp_entrega", "paquete_consultivo_slp", "M15", "comparable"),
+]
+
+LOCAL_MUNICIPIO_BY_PREFIX = {
+    "SLP_slp": "24028",
+    "SLP_sol": "24035",
+    "MTY_mty": "19039",
+    "MTY_spg": "19019",
+    "MTY_gua": "19026",
+    "MTY_gar": "19018",
+    "MTY_apo": "19006",
+    "GDL_gdl": "14039",
+    "GDL_zap": "14120",
+    "QRO_qro": "22014",
+}
+
+
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[3]
+
+
+def _title_from_filename(path: Path) -> str:
+    return path.stem.replace("_", " ").replace("-", " ").strip()
+
+
+def _institution_for_local_path(path: Path, category: str) -> str:
+    text = path.name.lower()
+    if category == "estandares":
+        if "gri" in text:
+            return "Global Reporting Initiative"
+        if "iso" in text or "14044" in text or "2150" in text or "55000" in text:
+            return "International Organization for Standardization"
+        if "esrs" in text:
+            return "European Financial Reporting Advisory Group"
+        if "tcfd" in text:
+            return "Task Force on Climate-related Financial Disclosures"
+        return "Estandar internacional"
+    if category == "paquete_consultivo_slp":
+        return "ALQUIMIA"
+    return "Municipio o gaceta oficial"
+
+
+def _municipio_for_local_pdf(path: Path) -> str | None:
+    name = path.name
+    for prefix, municipio_id in LOCAL_MUNICIPIO_BY_PREFIX.items():
+        if name.startswith(prefix):
+            return municipio_id
+    return None
+
+
+def _local_pdf_scope(path: Path, default_scope: EvidenceScope, target_municipio_id: str | None) -> EvidenceScope:
+    municipio_id = _municipio_for_local_pdf(path)
+    if default_scope == "municipal" and municipio_id:
+        return "municipal" if not target_municipio_id or municipio_id == target_municipio_id else "comparable"
+    return default_scope
 
 
 def _today() -> str:
@@ -261,6 +323,48 @@ def fallback_bibliography_records(target_municipio_id: str | None = None) -> lis
     ]
 
 
+def local_pdf_bibliography_records(target_municipio_id: str | None = None) -> list[BibliographyRegistryRecord]:
+    """Register local PDF corpus as structured bibliography when present.
+
+    This does not parse the PDFs or claim their content. It makes the corpus
+    visible to coverage/recommendation flows with scope, method and limits.
+    """
+    root = _repo_root()
+    records: list[BibliographyRegistryRecord] = []
+    seen: set[str] = set()
+    for relative_dir, category, module_id, default_scope in LOCAL_PDF_DIRS:
+        directory = root / relative_dir
+        if not directory.exists():
+            continue
+        for path in sorted(directory.rglob("*.pdf")):
+            key = str(path.relative_to(root))
+            if key in seen:
+                continue
+            seen.add(key)
+            scope = _local_pdf_scope(path, default_scope, target_municipio_id)  # type: ignore[arg-type]
+            municipio_id = _municipio_for_local_pdf(path)
+            if target_municipio_id and scope == "municipal" and municipio_id and municipio_id != target_municipio_id:
+                scope = "comparable"
+            records.append(_record(
+                id=f"local_pdf:{key}",
+                origin="fallback_reference",
+                source_table="local_pdf_corpus",
+                institution=_institution_for_local_path(path, category),
+                title=_title_from_filename(path),
+                url=key,
+                published_at=None,
+                consulted_at=_today(),
+                municipio_id=municipio_id,
+                zm_id=None,
+                module_id=module_id,
+                category=category,
+                scope=scope,
+                confidence=0.62 if category != "paquete_consultivo_slp" else 0.48,
+                method="local_pdf_inventory_pending_extraction",
+            ))
+    return records
+
+
 def records_from_database(db: Any, target_municipio_id: str | None = None, zm_id: str | None = None) -> list[BibliographyRegistryRecord]:
     if db is None:
         return []
@@ -365,6 +469,8 @@ def collect_bibliography_records(
     if include_fallback:
         existing = {record.id for record in records}
         records.extend(record for record in fallback_bibliography_records(municipio_id) if record.id not in existing)
+        existing = {record.id for record in records}
+        records.extend(record for record in local_pdf_bibliography_records(municipio_id) if record.id not in existing)
     return records
 
 

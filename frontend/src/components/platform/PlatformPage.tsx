@@ -12,14 +12,7 @@ import { assertTenantPlatformAccess, fetchTenantState } from '@/lib/tenantStateC
 import { MetricConfidencePill } from '@/components/MetricConfidencePill'
 import { Watermark } from '@/components/Watermark'
 import { DocumentGapBanner } from '@/components/DocumentGapBanner'
-import {
-  PillarModulePanel,
-  isPillarModule,
-  moduleDocumentStatus,
-  moduleDocumentStatusLabel,
-} from '@/components/platform/PillarModulePanel'
 import { ConsultingPackagePanel } from '@/components/platform/ConsultingPackagePanel'
-import { ConsultingModuleShell } from '@/components/platform/ConsultingModuleShell'
 import {
   authorizedFounderViewMode,
   FounderViewModeSwitcher,
@@ -30,12 +23,18 @@ import {
 import { useTenantData } from '@/hooks/useTenantData'
 import { getApiUrl } from '@/lib/api'
 import { buildConsultingInputRegistry } from '@/lib/consultingInputRegistry'
-import { moduleMatches } from '@/lib/documentArchiveStore'
-import { metricsForConsultingModule } from '@/lib/moduleMetricMapping'
-import { CHAPTERS, MODULE_CHAPTER, moduleNumber } from '@/lib/chapterConfig'
+import { CHAPTERS, moduleNumber } from '@/lib/chapterConfig'
 import { moduleSubtitle, moduleTitle } from '@/lib/moduleTitles'
-import { validationModuleSpecFor } from '@/lib/validationModuleSpecs'
 import { persistTenantMunicipalContext } from '@/lib/tenantRuntimeMunicipalContext'
+import { buildSociodemographicScaffoldBlock } from '@/lib/socialDemographicScaffold'
+import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
+import {
+  PLATFORM_MODULE_GROUPS,
+  childModulesForGroup,
+  groupedModulesForClientStage,
+  isPlatformModuleGroup,
+  visibleModuleNumber,
+} from '@/lib/platformModuleGroups'
 import type { TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
 import {
   filterModulesForPlatform,
@@ -80,6 +79,11 @@ function authHeaders(): HeadersInit {
   if (typeof window === 'undefined') return {}
   const token = localStorage.getItem('alquimia_token')
   return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
+function proposalValidationAllowsPlanning(tenantId: string, stage: ClientPlatformStage): boolean {
+  if (typeof window === 'undefined' || stage !== 'planning') return false
+  return Boolean(localStorage.getItem(`alquimia.proposalValidated.${tenantId}`))
 }
 
 async function fetchTenantOptions(): Promise<TenantOption[]> {
@@ -319,6 +323,7 @@ function PlatformModuleNav({
     () => Object.fromEntries(modules.map(module => [module.module_id, module])),
     [modules],
   )
+  const groupedModules = modules.filter(module => isPlatformModuleGroup(module.module_id))
   const guide = modulesById.guia_circularidad
   const chapterGroups = CHAPTERS.map(chapter => {
     const chapterModules = chapter.modulos
@@ -340,7 +345,18 @@ function PlatformModuleNav({
       </div>
 
       <div className="py-1.5">
-        {guide && (
+        {groupedModules.length > 0 ? (
+          groupedModules.map(module => (
+            <PlatformModuleNavItem
+              key={module.module_id}
+              module={module}
+              active={activeId === module.module_id}
+              onChange={onChange}
+              readOnly={readOnlyModuleIds?.has(module.module_id) ?? false}
+              statusLabel={moduleStatusById?.[module.module_id]}
+            />
+          ))
+        ) : guide && (
           <PlatformModuleNavItem
             module={guide}
             active={activeId === guide.module_id}
@@ -349,7 +365,7 @@ function PlatformModuleNav({
             statusLabel={moduleStatusById?.[guide.module_id]}
           />
         )}
-        {chapterGroups.map(({ chapter, modules }) => {
+        {groupedModules.length === 0 && chapterGroups.map(({ chapter, modules }) => {
           const activeChapter = modules.some(module => module.module_id === activeId)
           return (
             <div key={chapter.num} className="border-t border-[#2D4020]">
@@ -423,7 +439,7 @@ function PlatformModuleNavItem({
       <span className={`mt-0.5 flex h-5 w-7 shrink-0 items-center justify-center border text-[9px] font-semibold ${
         active ? 'border-[#D8D2C5] text-[#3B6D11]' : 'border-[#2D4020] text-[#6A9A50]'
       }`}>
-        {moduleNumber(module.module_id)}
+        {visibleModuleNumber(module.module_id, moduleNumber(module.module_id))}
       </span>
       <span className="min-w-0 flex-1">
         <span className="block text-[11px] font-semibold leading-tight">
@@ -562,154 +578,86 @@ export function TenantSelectionPanel({
   )
 }
 
-function SandboxModulePlaceholder({ module, tenantData }: { module: PlatformModule | null; tenantData: TenantDiagnosticData | null }) {
-  const gaps = tenantData?.document_gaps.filter(gap => moduleMatches(gap.module_id, module?.module_id ?? '')) ?? []
-  return (
-    <section className="mx-4 mt-5 sm:mx-6">
-      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
-        Estructura de modulo
-      </p>
-      <h2 className="mt-2 font-serif text-[26px] leading-tight text-[#1C1B18]">
-        {module?.label ?? 'Modulo pendiente'}
-      </h2>
-      <p className="mt-2 max-w-3xl text-[13px] leading-6 text-[#5C574F]">
-        Este módulo conserva estructura, brechas y fuentes trazables. Si no hay dato municipal, muestra la brecha; si hay bibliografía o cálculo, declara alcance, método y confianza.
-      </p>
-      <div className="mt-4 grid gap-3 md:grid-cols-2">
-        {(gaps.length ? gaps : tenantData?.document_gaps.slice(0, 4) ?? []).map(gap => (
-          <div key={gap.id} className="rounded-[8px] border border-[#D7B56D] bg-[#FFF9EA] p-3">
-            <p className="text-[12px] font-semibold text-[#1C1B18]">{gap.label}</p>
-            <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">{gap.reason}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  )
-}
-
 function PlatformModuleWorkspace({
   module,
   tenantData,
-  clientPreview,
-  onChanged,
+  moduleCatalog,
   onNavigateModule,
+  onValidateProposal,
 }: {
   module: PlatformModule | null
   tenantData: TenantDiagnosticData | null
-  clientPreview: boolean
-  onChanged?: () => void
+  moduleCatalog: PlatformModule[]
   onNavigateModule?: (moduleId: string) => void
+  onValidateProposal?: () => void
 }) {
   if (!module) return null
-  const moduleGaps = tenantData?.document_gaps.filter(gap =>
-    moduleMatches(gap.module_id, module.module_id)
-    && gap.status === 'pending'
-    && !gap.marked_not_applicable
-  ) ?? []
-  const moduleDocuments = tenantData?.tenant_documents.filter(document => moduleMatches(document.module_id, module.module_id)) ?? []
-  const spec = validationModuleSpecFor(module.module_id)
-  if (spec) {
-    const moduleMetrics = metricsForConsultingModule(module.module_id, tenantData?.metrics ?? [])
-    return (
-      <ConsultingModuleShell
-        module={module}
-        spec={spec}
-        metrics={moduleMetrics}
-        gaps={moduleGaps}
-        documents={moduleDocuments}
-        clientPreview={clientPreview}
-        tenantId={tenantData?.tenant_id ?? null}
-        onChanged={onChanged}
-        onNavigateModule={onNavigateModule}
-      />
-    )
-  }
-  const stage = MODULE_CHAPTER[module.module_id] ? `Capítulo ${MODULE_CHAPTER[module.module_id]}` : 'Inicio'
-  const evidenceRows = moduleGaps.length
-    ? moduleGaps.slice(0, 5).map(gap => ({
-        id: gap.id,
-        label: gap.label,
-        status: 'Brecha',
-        detail: gap.reason,
-        tone: 'text-[#A8322A]',
-      }))
-    : moduleDocuments.length
-      ? moduleDocuments.slice(0, 5).map(document => ({
-          id: document.id,
-          label: document.original_filename,
-          status: 'Recibido',
-          detail: 'Pendiente de validación humana antes de alimentar claims.',
-          tone: 'text-[#2F5B0D]',
-        }))
-      : [{
-          id: `${module.module_id}-no-critical-gap`,
-          label: 'Sin brecha crítica activa para el módulo',
-          status: 'Avanza',
-          detail: 'Avanza con límites visibles; ningún cálculo se convierte en oficial sin fuente, fecha, método y confianza.',
-          tone: 'text-[#2F5B0D]',
-        }]
-  const fallbackMetrics = tenantData?.metrics.slice(0, 3) ?? []
+  const sociodemographicBlock = buildSociodemographicScaffoldBlock(
+    tenantData?.municipio_id ? [tenantData.municipio_id] : [],
+  )
+  const group = isPlatformModuleGroup(module.module_id) ? PLATFORM_MODULE_GROUPS[module.module_id] : null
+  const childModules = group ? childModulesForGroup(group.module_id, moduleCatalog) : [module]
 
   return (
     <section className="mx-4 mt-5 max-w-full overflow-hidden border-t border-[#D8D2C5] pt-5 sm:mx-6">
-      <div className="grid gap-8 xl:grid-cols-[minmax(0,0.95fr)_minmax(360px,1.05fr)]">
-        <div className="min-w-0">
+      {group && (
+        <div className="mb-6 border-b border-[#D8D2C5] pb-5">
           <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
-            {stage} · {moduleSubtitle(module.module_id, module.nav_subtitle)}
+            M{group.visible_number} · {group.nav_subtitle}
           </p>
-          <h2 className="mt-2 max-w-3xl font-serif text-[32px] leading-tight text-[#1C1B18]">
-            {moduleTitle(module.module_id, module.label)}
+          <h2 className="mt-2 font-serif text-[34px] leading-tight text-[#1C1B18]">
+            {group.label}
           </h2>
-          <p className="mt-3 max-w-3xl text-[15px] leading-7 text-[#4A4740]">
-            {module.decision}
+          <p className="mt-3 max-w-4xl text-[14px] leading-7 text-[#4A4740]">
+            {group.decision}
           </p>
-          <dl className="mt-6 divide-y divide-[#E8E4DC] border-y border-[#E8E4DC]">
-            <div className="grid gap-2 py-4 md:grid-cols-[140px_minmax(0,1fr)]">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#3B6D11]">Evidencia</dt>
-              <dd className="text-[13px] leading-6 text-[#4A4740]">{module.evidence}</dd>
-            </div>
-            <div className="grid gap-2 py-4 md:grid-cols-[140px_minmax(0,1fr)]">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#765814]">Siguiente acción</dt>
-              <dd className="text-[13px] leading-6 text-[#4A4740]">{module.next_action}</dd>
-            </div>
-            <div className="grid gap-2 py-4 md:grid-cols-[140px_minmax(0,1fr)]">
-              <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Regla</dt>
-              <dd className="text-[13px] leading-6 text-[#4A4740]">
-                Sin controles libres de calibración para cliente. La plataforma calcula con datos investigados, datos del cliente o fórmulas trazables; si falta soporte, conserva brecha visible.
-              </dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="min-w-0">
-          <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Mesa de evidencia</p>
-          <div className="mt-3 divide-y divide-[#E8E4DC] border-y border-[#E8E4DC]">
-            {evidenceRows.map(row => (
-              <div key={row.id} className="grid gap-3 py-3 md:grid-cols-[minmax(0,1fr)_92px]">
-                <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-[#1C1B18]">{row.label}</p>
-                  <p className="mt-1 text-[12px] leading-5 text-[#5C574F]">{row.detail}</p>
-                </div>
-                <p className={`text-[11px] font-semibold uppercase tracking-[0.08em] md:text-right ${row.tone}`}>
-                  {row.status}
-                </p>
-              </div>
-            ))}
+          <p className="mt-2 max-w-4xl text-[12px] leading-6 text-[#6B6760]">
+            Evidencia: {group.evidence}
+          </p>
+          <div className="mt-4 border-l-4 border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 text-[12px] leading-6 text-[#765814]">
+            La plataforma puede calcular con bibliografía y fuentes comparables, pero cada cifra debe mostrar fuente, método, alcance y confianza. Benchmark, ZM y bibliografía comparable no sustituyen estudio local.
           </div>
-          {!clientPreview && fallbackMetrics.length > 0 && (
-            <div className="mt-4 border-t border-[#D8D2C5] pt-4">
-              <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Trazabilidad base</p>
-              <div className="mt-2 space-y-2">
-                {fallbackMetrics.map(metric => (
-                  <p key={metric.id} className="text-[12px] leading-5 text-[#5C574F]">
-                    <span className="font-semibold text-[#1C1B18]">{metric.label}</span>: {metric.source} · {metric.method}
-                    <Citation metric={metric} metrics={fallbackMetrics} />
-                  </p>
-                ))}
-              </div>
+          {group.module_id === 'validation_propuesta' && onValidateProposal && (
+            <div className="mt-4 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={onValidateProposal}
+                className="w-fit bg-[#1C2B15] px-4 py-2 text-[13px] font-semibold text-white"
+              >
+                Validar propuesta y continuar a planeación
+              </button>
+              <p className="max-w-3xl text-[11px] leading-5 text-[#6B6760]">
+                Esta validación habilita la planeación contractual de trabajo. No aprueba política pública, no cierra gates humanos y no sustituye revisión competente.
+              </p>
             </div>
           )}
         </div>
+      )}
+      <div className="space-y-8">
+        {childModules.map(childModule => (
+          <div key={childModule.module_id} className="border-b border-[#E8E4DC] pb-8 last:border-b-0">
+            {group && (
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="border border-[#D8D2C5] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#3B6D11]">
+                  M{visibleModuleNumber(childModule.module_id, moduleNumber(childModule.module_id))}
+                </span>
+                <span className="text-[12px] font-semibold text-[#1C1B18]">
+                  {moduleTitle(childModule.module_id, childModule.label)}
+                </span>
+                <span className="text-[11px] text-[#6B6760]">
+                  {moduleSubtitle(childModule.module_id, childModule.nav_subtitle)}
+                </span>
+              </div>
+            )}
+            {renderDecisionModule({
+              module: childModule,
+              audience: 'functionary',
+              isOrganizationJourney: false,
+              sociodemographicBlock,
+              onNavigate: onNavigateModule,
+            })}
+          </div>
+        ))}
       </div>
     </section>
   )
@@ -733,7 +681,7 @@ export function StageReadinessNotice({
         Esta etapa no se abre como decisión automática.
       </h2>
       <p className="mt-2 max-w-3xl text-[13px] leading-6 text-[#5C574F]">
-        La plataforma puede preparar estructura, brechas y ruta de trabajo, pero el avance a {label.toLowerCase()} requiere revisión humana, evidencia mínima y gates institucionales. Los módulos heredados quedan fuera de la vista cliente.
+        La plataforma puede preparar estructura, brechas y ruta de trabajo, pero el avance a {label.toLowerCase()} requiere revisión humana, evidencia mínima y gates institucionales. Las herramientas se muestran con límites y sin controles libres en vista cliente.
       </p>
       {clientPreview && (
         <p className="mt-3 text-[12px] font-semibold text-[#765814]">
@@ -831,11 +779,30 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
         if (stateData.status === 'rejected' && !fallbackState) throw stateData.reason
         const resolvedState = fallbackState ?? (stateData.status === 'fulfilled' ? stateData.value : null)
         if (!resolvedState) throw new Error('No se pudo resolver el expediente municipal')
+        const localProposalValidated = proposalValidationAllowsPlanning(tenantId, platformStage)
+        const effectiveState: TenantStatePayload =
+          localProposalValidated && resolvedState.state.current_stage === 'validation'
+            ? {
+                ...resolvedState,
+                state: {
+                  ...resolvedState.state,
+                  current_stage: 'planning',
+                  transition_mode: 'client_proposal_validated',
+                },
+              }
+            : resolvedState
         if (resolvedState.municipal_context) {
           persistTenantMunicipalContext(resolvedState.municipal_context)
         }
 
         if (accessResult.status === 'rejected') {
+          if (localProposalValidated) {
+            if (!cancelled) {
+              setTenantState(effectiveState)
+              setRegistry(registryData as CapabilityRegistry)
+            }
+            return
+          }
           if (fallbackState) {
             if (!cancelled) {
               setTenantState(fallbackState)
@@ -843,7 +810,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             }
             return
           }
-          const currentPath = platformPathForStage(resolvedState.state.current_stage)
+          const currentPath = platformPathForStage(effectiveState.state.current_stage)
           if (currentPath !== pathname) {
             router.replace(`${currentPath}?tenant_id=${tenantId}`)
             return
@@ -851,14 +818,14 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           throw accessResult.reason
         }
 
-        const canonicalPath = platformPathForStage(resolvedState.state.current_stage)
+        const canonicalPath = platformPathForStage(effectiveState.state.current_stage)
         if (canonicalPath !== pathname) {
           router.replace(`${canonicalPath}?tenant_id=${tenantId}`)
           return
         }
 
         if (!cancelled) {
-          setTenantState(resolvedState)
+          setTenantState(effectiveState)
           setRegistry(registryData as CapabilityRegistry)
         }
       } catch (exc) {
@@ -897,13 +864,22 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     () => registry ? buildPlatformModuleCatalog(registry) : [],
     [registry],
   )
+  const platformModuleCatalog: PlatformModule[] = useMemo(
+    () => allModules.map(module => ({ ...module, platform_readonly: false })),
+    [allModules],
+  )
 
   const platformModules: PlatformModule[] = useMemo(() => {
     if (!registry || !tenantState) return []
     return filterModulesForPlatform(allModules, registry, tenantState, platformStage)
   }, [allModules, platformStage, registry, tenantState])
 
-  const readOnlyIds = useMemo(() => readOnlyModuleIds(platformModules), [platformModules])
+  const clientPreview = viewMode === 'client'
+  const visiblePlatformModules = useMemo(
+    () => clientPreview ? groupedModulesForClientStage(platformStage) : platformModules,
+    [clientPreview, platformModules, platformStage],
+  )
+  const readOnlyIds = useMemo(() => readOnlyModuleIds(visiblePlatformModules), [visiblePlatformModules])
   const badgeStage: ClientPlatformStage =
     !tenantState
       ? platformStage
@@ -914,18 +890,18 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
         : 'validation'
 
   useEffect(() => {
-    if (!platformModules.length) { setActiveModuleId(null); return }
+    if (!visiblePlatformModules.length) { setActiveModuleId(null); return }
     setActiveModuleId(prev => {
       const requestedModule = searchParams.get('module')
-      if (requestedModule && platformModules.some(module => module.module_id === requestedModule)) return requestedModule
-      if (prev && platformModules.some(module => module.module_id === prev)) return prev
-      return platformModules[0]?.module_id ?? null
+      if (requestedModule && visiblePlatformModules.some(module => module.module_id === requestedModule)) return requestedModule
+      if (prev && visiblePlatformModules.some(module => module.module_id === prev)) return prev
+      return visiblePlatformModules[0]?.module_id ?? null
     })
-  }, [platformModules, searchParams])
+  }, [visiblePlatformModules, searchParams])
 
   const activeModule = useMemo(
-    () => platformModules.find(module => module.module_id === activeModuleId) ?? platformModules[0] ?? null,
-    [activeModuleId, platformModules],
+    () => visiblePlatformModules.find(module => module.module_id === activeModuleId) ?? visiblePlatformModules[0] ?? null,
+    [activeModuleId, visiblePlatformModules],
   )
   const validationPct = useMemo(() => {
     const metrics = tenantData.data?.metrics ?? []
@@ -947,21 +923,25 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     }
   }, [tenantData.data])
   const moduleStatusById = useMemo(() => {
-    const data = tenantData.data
-    if (!data) return undefined
+    const gaps = tenantData.data?.document_gaps ?? []
     return Object.fromEntries(
-      platformModules
+      visiblePlatformModules
         .filter(module => module.module_id !== 'guia_circularidad')
-        .map(module => [
-          module.module_id,
-          moduleDocumentStatusLabel(moduleDocumentStatus(module.module_id, data)),
-        ]),
+        .map(module => {
+          const hasGap = gaps.some(gap =>
+            gap.status === 'pending'
+            && !gap.marked_not_applicable
+            && (
+              gap.module_id === module.module_id
+              || gap.module_id === null
+              || (isPlatformModuleGroup(module.module_id)
+                && PLATFORM_MODULE_GROUPS[module.module_id].child_module_ids.includes(gap.module_id ?? ''))
+            )
+          )
+          return [module.module_id, hasGap ? 'Brecha documental' : moduleSubtitle(module.module_id, module.nav_subtitle)]
+        }),
     )
-  }, [platformModules, tenantData.data])
-  const clientPreview = viewMode === 'client'
-  const sandboxDemo = false
-  const activeModuleIsPillar = isPillarModule(activeModule?.module_id)
-  const activeModuleHasOperationalSpec = Boolean(validationModuleSpecFor(activeModule?.module_id))
+  }, [visiblePlatformModules, tenantData.data?.document_gaps])
 
   function openTenant(nextTenantId: string) {
     const cleanTenantId = nextTenantId.trim()
@@ -970,9 +950,22 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     router.replace(`${pathname}?tenant_id=${encodeURIComponent(cleanTenantId)}`)
   }
 
-  const moduleNav = platformModules.length > 0 ? (
+  function validateProposalAndOpenPlanning() {
+    if (!tenantId) return
+    try {
+      localStorage.setItem(`alquimia.proposalValidated.${tenantId}`, new Date().toISOString())
+      window.dispatchEvent(new CustomEvent('alquimia:proposal-validated', {
+        detail: { tenant_id: tenantId, from_stage: 'validation', to_stage: 'planning' },
+      }))
+    } catch {
+      /* local audit is best-effort; backend transition remains human-controlled */
+    }
+    router.push(`/p?tenant_id=${encodeURIComponent(tenantId)}`)
+  }
+
+  const moduleNav = visiblePlatformModules.length > 0 ? (
     <PlatformModuleNav
-      modules={platformModules}
+      modules={visiblePlatformModules}
       activeId={activeModuleId ?? ''}
       onChange={setActiveModuleId}
       readOnlyModuleIds={readOnlyIds}
@@ -1027,7 +1020,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             />
           ) : (
             <>
-              {tenantData.data && !sandboxDemo && (
+              {tenantData.data && (
                 <section className="mx-4 mt-6 max-w-full overflow-hidden sm:mx-6">
                   <div className="flex flex-wrap items-start justify-between gap-4">
                     <div className="min-w-0">
@@ -1079,17 +1072,17 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   </div>
                 </section>
               )}
-              {tenantData.data && !activeModuleHasOperationalSpec && !sandboxDemo && (
+              {tenantData.data && (
                 <DocumentGapBanner
                   tenantId={tenantData.data.tenant_id}
-                  moduleId={activeModule?.module_id ?? null}
+                  moduleId={isPlatformModuleGroup(activeModule?.module_id) ? null : activeModule?.module_id ?? null}
                   gaps={tenantData.data.document_gaps}
                   documents={tenantData.data.tenant_documents}
                   onChanged={tenantData.reload}
                 />
               )}
-              {!sandboxDemo && <StageReadinessNotice stage={platformStage} clientPreview={clientPreview} />}
-              {tenantData.data && !clientPreview && !sandboxDemo && (
+              <StageReadinessNotice stage={platformStage} clientPreview={clientPreview} />
+              {tenantData.data && !clientPreview && (
                 <section className="mx-4 mt-5 max-w-full border-y border-[#D8D2C5] py-4 sm:mx-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                     <div className="max-w-3xl">
@@ -1123,25 +1116,20 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   </div>
                 </section>
               )}
-              {!activeModuleHasOperationalSpec && !sandboxDemo && <PillarModulePanel module={activeModule} tenantData={tenantData.data ?? null} />}
-              {sandboxDemo ? (
-                <SandboxModulePlaceholder module={activeModule} tenantData={tenantData.data ?? null} />
-              ) : activeModuleHasOperationalSpec || !activeModuleIsPillar ? (
-                <PlatformModuleWorkspace
-                  module={activeModule}
-                  tenantData={tenantData.data ?? null}
-                  clientPreview={clientPreview}
-                  onChanged={tenantData.reload}
-                  onNavigateModule={setActiveModuleId}
-                />
-              ) : null}
-              {tenantData.data && !sandboxDemo && (
+              <PlatformModuleWorkspace
+                module={activeModule}
+                tenantData={tenantData.data ?? null}
+                moduleCatalog={platformModuleCatalog}
+                onNavigateModule={setActiveModuleId}
+                onValidateProposal={clientPreview && platformStage === 'validation' ? validateProposalAndOpenPlanning : undefined}
+              />
+              {tenantData.data && (
                 <ConsultingPackagePanel
                   tenantData={tenantData.data}
                   showTechnicalPanel={!clientPreview}
                 />
               )}
-              {tenantData.data && !sandboxDemo && (
+              {tenantData.data && (
                 <Watermark
                   version={tenantData.data.version}
                   date={tenantData.data.generated_at}

@@ -156,7 +156,7 @@ function PrecolocacionNarrative({
       audience="entrepreneur"
       kicker="Mercado · ventana de oportunidad"
       title="Lectura de la colocación causal"
-      summary={`${marketSummary.zm}: ${marketSummary.pct_colocado_global.toFixed(1)}% colocado global con ${fmtMXN(marketSummary.ingresos_ajustados_mxn)} de ingreso ajustado (Año 1) frente a ${fmtMXN(marketSummary.ingresos_potenciales_mxn)} potencial; el descuento por riesgo acumula ${fmtMXN(marketSummary.descuento_por_riesgo_mxn)}. Hay ${faltanteTotal.toFixed(1)} t/año sin colocar y ${enRiesgo} material(es) en riesgo alto o crítico.${gapVsSim !== null ? ` La brecha vs. ingreso bruto del simulador (promedio anual del horizonte ${horizonte}a) es ${fmtMXN(gapVsSim)}.` : ''}`}
+      summary={`${marketSummary.zm}: ${marketSummary.pct_colocado_global.toFixed(1)}% colocado global con ${fmtMXN(marketSummary.ingresos_ajustados_mxn)} de ingreso ajustado (Año 1) frente a ${fmtMXN(marketSummary.ingresos_potenciales_mxn)} potencial; el descuento por riesgo acumula ${fmtMXN(marketSummary.descuento_por_riesgo_mxn)}. Hay ${faltanteTotal.toFixed(1)} t/año sin colocar y ${enRiesgo} material(es) en riesgo alto o crítico.${gapVsSim !== null ? ` La brecha vs. ingreso bruto modelado (promedio anual del horizonte ${horizonte}a) es ${fmtMXN(gapVsSim)}.` : ''}`}
       evidence={[
         { label: '% colocado', value: `${marketSummary.pct_colocado_global.toFixed(1)}%` },
         { label: 'Ingreso ajustado', value: `${fmtMXN(marketSummary.ingresos_ajustados_mxn)}/año` },
@@ -202,7 +202,7 @@ export default function Precolocacion() {
     }
   }
 
-  // Sin resultados de simulación → no hay qué colocar
+  // Sin resultados modelados → no hay qué colocar
   if (!resultados || !hasVolumes) {
     return (
       <div className="space-y-3">
@@ -210,7 +210,7 @@ export default function Precolocacion() {
           Precolocación de Materiales
         </h3>
         <p className="text-sm text-[#6B6760]">
-          Ejecuta la simulación primero para obtener los volúmenes capturables por material.
+          Completa el cálculo base primero para obtener los volúmenes capturables por material.
         </p>
       </div>
     )
@@ -334,12 +334,12 @@ export default function Precolocacion() {
             </div>
           )}
 
-          {/* Delta vs ingreso del simulador */}
+          {/* Delta vs ingreso modelado */}
           {resultados?.ingresosBrutos !== undefined &&
             marketSummary.ingresos_ajustados_mxn > 0 && (
             <div className="rounded-lg bg-[#F8F6F1] border border-[#DAD3C7] p-4 text-sm text-[#1C1B18]">
-              <span className="font-semibold">Diferencia vs. simulador: </span>
-              El ingreso bruto del simulador es{' '}
+              <span className="font-semibold">Diferencia vs. modelo base: </span>
+              El ingreso bruto modelado es{' '}
               {fmtMXN(resultados.ingresosBrutos / Math.max(1, horizonte))}/año
               {' '}(sin comprador específico) vs. {fmtMXN(marketSummary.ingresos_ajustados_mxn)}/año
               {' '}ajustado por mercado real (Año 1). Esta diferencia refleja capacidad de

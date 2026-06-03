@@ -143,7 +143,7 @@ export function DashboardKPIs() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Los KPIs aparecerán cuando el simulador principal tenga resultados y línea base.
+          Los KPIs aparecerán cuando la plataforma tenga resultados y línea base.
         </div>
       )}
 

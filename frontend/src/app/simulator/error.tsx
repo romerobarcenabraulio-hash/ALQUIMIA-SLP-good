@@ -18,7 +18,7 @@ export default function SimulatorError({
   return (
     <main className="mx-auto flex min-h-[60vh] max-w-lg flex-col items-center justify-center px-6 py-16 text-center">
       <AlertTriangle className="h-10 w-10 text-amber-700" aria-hidden />
-      <h1 className="mt-4 font-serif text-[24px] text-[#1C1B18]">El simulador no pudo cargar</h1>
+      <h1 className="mt-4 font-serif text-[24px] text-[#1C1B18]">La herramienta no pudo cargar</h1>
       <p className="mt-3 text-[14px] leading-relaxed text-[#6B6760]">
         Ocurrió un error al renderizar esta vista. Puedes reintentar o volver al inicio; si abrías Metas futuras / Gantt-PERT, prueba
         primero la pestaña «PERT y oleadas».

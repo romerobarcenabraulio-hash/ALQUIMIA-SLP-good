@@ -79,7 +79,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
           </h1>
           <InstitutionalBadge variant="onDark" className="mb-4" />
           <p className="text-[14px] leading-[1.7] text-white/90 max-w-2xl">
-            Guía de lectura del simulador — elige el recorrido según tu objetivo.
+            Guía de lectura de la plataforma — elige el recorrido según tu objetivo.
             Pregunta central: ¿puede{' '}
             {municipiosActivos.length === 1 ? municipioNarrativa : 'un municipio mexicano'}{' '}
             convertir RSU en valor económico, empleos y calidad de vida?
@@ -152,7 +152,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         {journeyMode === 'implementar' && !resultados && (
           <p className="mt-3 rounded-[8px] border border-[#D4881E]/30 bg-[#FEF7E7] px-3 py-2 text-[11px] text-[#8B5A00]">
             Recomendado: complete al menos M00B y M01 (antecedentes y línea base) en modo validar antes de planificar
-            infraestructura — los KPIs del simulador alimentan Cap. 2 y el paquete consultoría.
+            infraestructura — los KPIs trazables alimentan Cap. 2 y el paquete consultivo.
           </p>
         )}
       </section>
@@ -161,7 +161,7 @@ export function GuiaCircularidadStack({ onNavigate }: GuiaCircularidadProps = {}
         <SectionLabel>Capítulos visibles — {JOURNEY_MODE_META[journeyMode].title}</SectionLabel>
         <MarginalNote className="mb-5">
           Vista de conjunto del modo seleccionado. Puede cambiar el recorrido aquí en cualquier
-          momento sin perder datos del simulador.
+          momento sin perder datos de trabajo.
         </MarginalNote>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-2">

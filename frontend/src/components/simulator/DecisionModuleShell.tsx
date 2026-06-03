@@ -1060,7 +1060,7 @@ function BottomBar({
       <div className="flex flex-col items-end gap-1">
         <div className="flex items-center gap-2">
           <ConsultingExportButton
-            moduleLabel={active?.label ?? 'Módulo simulador'}
+            moduleLabel={active?.label ?? 'Módulo de análisis'}
             disabled={!resultados}
           />
           {next && (

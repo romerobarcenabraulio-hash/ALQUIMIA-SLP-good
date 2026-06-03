@@ -91,7 +91,7 @@ export default function ReasoningGraphPanel() {
           )}
           {!state.resultados && !loading && (
             <p className="max-w-[280px] text-right text-[13px] text-[#6B6760]">
-              Primero necesitas resultados del simulador (línea base y cálculo completos); después podrás construir el grafo.
+              Primero necesitas resultados de línea base y cálculo completos; después podrás construir el grafo.
             </p>
           )}
         </div>

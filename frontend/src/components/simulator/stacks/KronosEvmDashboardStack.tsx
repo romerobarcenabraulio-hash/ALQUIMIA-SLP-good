@@ -23,7 +23,7 @@ export function KronosEvmDashboardStack() {
 
   async function handleCalcular() {
     if (!bac || !pv || !ev || !ac) {
-      setError('Completa todos los campos. BAC se toma del CAPEX del simulador.')
+      setError('Completa todos los campos. BAC se toma del CAPEX modelado.')
       return
     }
     setLoading(true)
@@ -56,7 +56,7 @@ export function KronosEvmDashboardStack() {
     <div className="space-y-4 rounded-[8px] border border-[#D8C4E8] bg-[#F5EFF9] p-4">
       {capexTotal != null ? (
         <p className="text-[11px] text-[#4A1C7A]">
-          BAC (CAPEX simulador): <strong>${bac.toLocaleString('es-MX')} MXN</strong>
+          BAC (CAPEX modelado): <strong>${bac.toLocaleString('es-MX')} MXN</strong>
         </p>
       ) : (
         <p className="text-[11px] text-amber-700">

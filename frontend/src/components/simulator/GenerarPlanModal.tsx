@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { AlertTriangle } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { cn } from '@/lib/utils'
-import { AGORA_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
+import { TECHNICAL_EXPORT_COVER_DISCLAIMER, EXPORT_LIABILITY_WAIVER } from '@/lib/simulationDisclaimer'
 import { getApiUrl, getJobStatus, getPackageManifest, downloadPackageZip, downloadConsultingPortfolioZip, buildRenderResultadosPayload } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import type { PackageStatus, PackageManifest } from '@/types'
@@ -15,7 +15,7 @@ const AGENT_STEPS = [
   { pct: 30, label: 'Comparador — Buscando benchmarks LATAM relevantes...' },
   { pct: 45, label: 'Mapeador — Identificando actores locales...' },
   { pct: 60, label: 'Ghostwriter — Redactando documentos...' },
-  { pct: 75, label: 'Validador — Verificando consistencia con simulador...' },
+  { pct: 75, label: 'Validador — Verificando consistencia del modelo...' },
   { pct: 88, label: 'Humanizador — Eliminando patrones de IA...' },
   { pct: 92, label: 'Portfolio — Armando analisis/ e implementacion/...' },
 ]
@@ -263,7 +263,7 @@ export function GenerarPlanModal() {
                 <AlertTriangle className="h-4 w-4 shrink-0 text-[#D4881E]" aria-hidden />
                 Documentos de simulación — no oficiales
               </p>
-              <p className="mt-2 whitespace-pre-line">{AGORA_EXPORT_COVER_DISCLAIMER}</p>
+              <p className="mt-2 whitespace-pre-line">{TECHNICAL_EXPORT_COVER_DISCLAIMER}</p>
               <p className="mt-3 border-t border-[#E8E4DC] pt-3 text-[10px] leading-snug">{EXPORT_LIABILITY_WAIVER}</p>
             </div>
 

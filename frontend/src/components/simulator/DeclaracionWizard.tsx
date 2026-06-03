@@ -265,7 +265,7 @@ export function DeclaracionWizard() {
             />
           </label>
           <div>
-            <span className="text-[13px] text-[#6B6760]">Municipio activo (simulador)</span>
+            <span className="text-[13px] text-[#6B6760]">Municipio activo</span>
             <div className="mt-1 rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] px-3 py-2 text-sm text-[#1C1B18]">
               {municipioNombre} <span className="text-[#A8A49C]">({municipioId || '—'})</span>
             </div>
@@ -336,7 +336,7 @@ export function DeclaracionWizard() {
             Continuar <ChevronRight className="h-4 w-4" />
           </button>
           {!municipioId && (
-            <p className="text-xs text-amber-800">Selecciona un municipio en el simulador para continuar.</p>
+            <p className="text-xs text-amber-800">Selecciona un municipio para continuar.</p>
           )}
         </div>
       )}

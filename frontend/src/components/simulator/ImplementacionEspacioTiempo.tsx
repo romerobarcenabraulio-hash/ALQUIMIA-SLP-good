@@ -174,7 +174,7 @@ export function ImplementacionEspacioTiempo() {
         </summary>
         <p className="mt-2 text-[11px] leading-relaxed text-[#8A857C]">
           Para talleres institucionales: ilustra la respuesta del planificador cuando la solicitud al modelo territorial no incluye municipios del conjunto activo en pantalla,
-          sin alterar la selección ni las fuentes ya cargadas en el simulador.
+          sin alterar la selección ni las fuentes ya cargadas en la plataforma.
         </p>
         <label className="mt-3 flex items-start gap-2 text-[12px] text-[#6B6760]">
           <input
@@ -431,7 +431,7 @@ function TimelineHitosEspacioTiempo({
 
       <MarginalNote className="mt-4">
         <Info className="mr-1 inline h-3.5 w-3.5 shrink-0 align-text-bottom text-[#7B7366]" aria-hidden />
-        Esta línea de tiempo es una ilustración orientativa del simulador: fechas PERT y KPI acumulados son proyecciones del modelo,
+        Esta línea de tiempo es una ilustración orientativa del modelo: fechas PERT y KPI acumulados son proyecciones,
         no calendario oficial, programa de cabildo ni acto de autoridad. Los entregables municipales requieren validación local.
         Etiqueta «Modelo» en cada hito: el día del deslizador alcanzó o superó la esperanza PERT; «Pte.»: aún no entra en ese acumulado.
       </MarginalNote>

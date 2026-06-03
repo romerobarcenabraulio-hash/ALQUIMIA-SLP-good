@@ -17,7 +17,7 @@ export function SimulatorGatewayHint({
       )}
     >
       <Link href="/simulator" className="font-medium text-[#3B6D11] hover:underline">
-        Simulador
+        Plataforma
       </Link>
       {' '}
       — primero elige audiencia (ciudadanía, institución municipal o empresario); sin eso no carga el recorrido modular.

@@ -382,7 +382,7 @@ function TabComparacion({ records, pctCapturaPorAño }: Tab2Props) {
         {nConDatos === 0 ? (
           <>
             <span>🟠</span>
-            <span>Proyectado — Solo datos del simulador disponibles</span>
+            <span>Proyectado — Solo datos del modelo disponibles</span>
           </>
         ) : (
           <>
@@ -559,7 +559,7 @@ export function MonitoreoRealStack() {
           <p>Registros manuales por periodo — toneladas separadas, hogares, precios de mercado y quejas ciudadanas.</p>
         </RailSection>
         <RailSection title="Comparación">
-          <p>Brecha proyectado vs. medido usando pctCapturaPorAño del simulador y datos capturados en campo.</p>
+          <p>Brecha proyectado vs. medido usando pctCapturaPorAño del modelo y datos capturados en campo.</p>
         </RailSection>
         <RailSection title="Semáforo">
           <p>Verde ≤10% brecha · Amarillo 10-25% · Rojo &gt;25% o sin dato registrado.</p>

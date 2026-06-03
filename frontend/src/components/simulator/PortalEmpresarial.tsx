@@ -210,7 +210,7 @@ export function PortalEmpresarial() {
         columns={3}
         items={[
           {
-            label: 'Último año del horizonte en el simulador',
+            label: 'Último año del horizonte analítico',
             value: kpis.pctSeparacion != null ? `${Math.round(kpis.pctSeparacion)}%` : '—',
           },
           {
@@ -225,9 +225,9 @@ export function PortalEmpresarial() {
       />
 
       <TraceRibbon
-        hecho="El plan empresarial se ancla al municipio activo y al escenario RSU municipal vigente en el simulador."
+        hecho="El plan empresarial se ancla al municipio activo y al escenario RSU municipal vigente en la plataforma."
         supuesto="La organización adopta el mismo horizonte y metas del plan municipal, ajustadas por giro y generación declarada."
-        fuente="ALQUIMIA · simulador municipal, baseline RSU y evaluación organizacional conectada."
+        fuente="ALQUIMIA · análisis municipal, línea base RSU y evaluación organizacional conectada."
         formula="KPIs empresariales = escenario municipal + variables por giro + checklist de acciones 30/60/90."
         corte={CORTE_UI}
         confianza="medio"
@@ -259,7 +259,7 @@ export function PortalEmpresarial() {
       <section className="border-t border-[#E8E4DC] pt-4">
         <SectionLabel>Siguiente paso</SectionLabel>
         <MarginalNote className="mb-3">
-          El borrador descargable incluye anexos del simulador municipal. Avance al módulo de exportación o use el vínculo directo.
+          El borrador descargable incluye anexos del análisis municipal. Avance al módulo de exportación o use el vínculo directo.
         </MarginalNote>
         <a
           href="#sim-export-empresa-plan"
@@ -295,7 +295,7 @@ function LoadingState() {
 function EmptyState() {
   return (
     <div className="rounded-[10px] border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-      Completa el simulador principal (municipio y resultados RSU) para enlazar este plan por giro.
+      Completa el análisis municipal de RSU para enlazar este plan por giro.
     </div>
   )
 }

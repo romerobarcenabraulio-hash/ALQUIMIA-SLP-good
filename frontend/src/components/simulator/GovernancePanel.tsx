@@ -84,12 +84,12 @@ export function GovernancePanel() {
       </div>
 
       <div className="rounded-lg border border-[#E8E4DC] bg-[#FAF8F4] p-4 text-[12px] text-[#1C1B18]">
-        <p className="font-semibold">Alcance jurídico del simulador —estado en vivo</p>
+        <p className="font-semibold">Alcance jurídico del análisis —estado en vivo</p>
         <p className="mt-1 text-[#6B6760]">
           M03B · Marco legal marca, por cada municipio activo, el nivel de fuente y revisión aplicable a propuestas, sanciones y documentos oficiales.
         </p>
         <p className="mt-2">
-          Hoy el simulador está{' '}
+          Hoy el análisis está{' '}
           {agoraLegalBloqueado ? (
             <span className="font-medium text-[#C0392B]">con restricciones de oficialidad para sanciones y documentos con sello</span>
           ) : (

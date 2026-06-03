@@ -283,7 +283,7 @@ function TarjetaMunicipio({
 
           {/* Matriz artículos compacta */}
           <div className="mb-1 flex items-center justify-between gap-2">
-            <span className="text-[10px] text-[#A8A49C]">Matriz compacta por artículo (insumo simulador)</span>
+            <span className="text-[10px] text-[#A8A49C]">Matriz compacta por artículo (insumo técnico)</span>
             <FuenteReglamentoIcon
               municipioId={dm.municipio_id}
               label={`Reglamento de referencia — ${dm.municipio_nombre}`}
@@ -468,7 +468,7 @@ export function DiagnosticoJuridico() {
           {error ?? 'Selecciona una ciudad/ZM con municipios registrados para consultar diagnósticos por municipio.'}
         </p>
         <p className="mt-2 text-[11px] text-[#8A857C]">
-          Acción siguiente: revisar disponibilidad del paquete jurídico municipal y volver a cargar el simulador.
+          Acción siguiente: revisar disponibilidad del paquete jurídico municipal y volver a cargar el análisis.
         </p>
       </div>
       </div>

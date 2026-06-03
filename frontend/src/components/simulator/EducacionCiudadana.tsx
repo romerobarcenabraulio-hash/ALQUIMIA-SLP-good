@@ -104,7 +104,7 @@ function LoadingState() {
 function EmptyState() {
   return (
     <div className="rounded-[8px] border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-      Esperando parámetros del simulador principal.
+      Esperando parámetros del análisis principal.
     </div>
   )
 }

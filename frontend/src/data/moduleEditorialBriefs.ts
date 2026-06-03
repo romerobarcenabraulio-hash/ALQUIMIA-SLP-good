@@ -15,7 +15,7 @@ import {
 import { fmt } from '@/lib/utils'
 
 /**
- * Guía de estilo editorial (simulador funcionario):
+ * Guía de estilo editorial (modelo funcionario):
  * - Cabildo = órgano colegiado; cabildo = sesión donde se presenta el expediente.
  * - Español institucional (usted); inglés solo en siglas normativas con glosa.
  * - Máx. 2 oraciones por párrafo en rail; evitar punto y coma encadenado.
@@ -151,7 +151,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
       return {
         moduleId: resolvedId,
         title: 'Pasos hacia la circularidad — Guía de lectura',
-        pregunta_guia: '¿Sabe leer el simulador antes de usar sus cifras?',
+        pregunta_guia: '¿Sabe leer la plataforma antes de usar sus cifras?',
         subtitulo_catchy: `Mapa de los ${MODULE_COUNT} módulos antes de entrar al diagnóstico técnico.`,
         situacion_actual: `ALQUIMIA aplica a cualquier municipio de México. Esta guía presenta los ${MODULE_COUNT} módulos del recorrido funcionario en cuatro capítulos, antes de elegir territorio en M01.`,
         observacion_alquimia: 'No hay gráficas ni cálculos aquí. Los ejemplos numéricos del cuerpo usan el escenario activo solo como ilustración. Cada módulo posterior trae su metodología en el panel lateral.',
@@ -160,7 +160,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         siguiente_accion: M00B_NEXT_ACTION,
         fuente_o_evidencia: 'Estructura modular ALQUIMIA (chapterConfig), estándares GRI 306 y ESRS E5.',
         metodologia_editorial: {
-          como_se_calcula: 'Sin cálculos. Los números del hero (RSU, ingresos, CO₂e) se leen del estado actual del simulador.',
+          como_se_calcula: 'Sin cálculos. Los números del hero (RSU, ingresos, CO₂e) se leen del estado actual de la plataforma.',
           origen_datos: `Datos en tiempo real de los módulos ${moduleRangeLabel()} una vez definido el territorio en M00B/M01.`,
           por_que_este_enfoque: 'Sin esta guía, las cifras del diagnóstico carecen de marco para Cabildo y financiadores.',
           supuesto_critico: 'Ninguno en este módulo. Los supuestos viven en cada módulo de cálculo.',
@@ -194,13 +194,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Cuánto RSU genera el municipio, cuánto valor se pierde y qué externalidades evita el programa?',
         subtitulo_catchy: '',
         situacion_actual: `${territorio} paga relleno sobre el 100% del RSU mientras pierde material valorizable y externalidades sanitarias. Ajuste generación, captura y precios; al pie verá CO₂e, PM2.5 y salud al horizonte.`,
-        observacion_alquimia: `${scope} El simulador cruza vivienda INEGI, generación SEMARNAT, composición, precios spot, costo de disposición e impacto INECC/OPS. Cada supuesto es editable y visible.`,
+        observacion_alquimia: `${scope} El modelo cruza vivienda INEGI, generación SEMARNAT, composición, precios spot, costo de disposición e impacto INECC/OPS. Cada supuesto es editable y visible.`,
         criterio_decision: 'Fije supuestos defendibles y separe beneficio ambiental de ingreso directo antes de Cabildo o financiadores verdes.',
         que_no_significa: 'No es estadística municipal cerrada, inventario GEI oficial ni medición de campo. Es lectura inicial con fuentes visibles.',
         siguiente_accion: 'Revise la matriz de fuentes y el bloque de impacto ambiental al pie antes de abrir M02 social.',
-        fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del simulador.',
+        fuente_o_evidencia: 'INEGI, matriz de bibliografía y cálculos, precios documentales y motor del modelo.',
         metodologia_editorial: {
-          como_se_calcula: 'La generación total = población × tasa per cápita (kg/hab/día). El ingreso potencial = toneladas desviadas × precio spot × (1 − merma). Ambas fórmulas son visibles y editables en los sliders del panel superior.',
+          como_se_calcula: 'La generación total = población × tasa per cápita (kg/hab/día). El ingreso potencial = toneladas desviadas × precio spot × (1 − merma). Ambas fórmulas son visibles y sus supuestos quedan trazados en el panel técnico.',
           origen_datos: 'La tasa per cápita viene del Diagnóstico Básico SEMARNAT 2020. La población viene del Censo INEGI 2020. Los precios provienen de cotizaciones del mercado secundario mexicano verificadas con compradores industriales activos.',
           por_que_este_enfoque: 'ALQUIMIA usa la tasa nacional ajustada por estrato urbano —no el pesaje municipal— porque los registros locales de báscula son escasos, no auditados y raramente comparables entre municipios.',
           supuesto_critico: 'La tasa de captura es el supuesto que más mueve todos los números en cascada. Modificarla un punto porcentual cambia toneladas, ingresos, costo evitado de disposición y emisiones evitadas al mismo tiempo.',
@@ -297,7 +297,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Matriz poder/interés + rutas de influencia documentadas por el equipo consultor.',
           origen_datos: 'Entrevistas de campo, actas públicas, contratos de limpia visibles.',
-          por_que_este_enfoque: 'El riesgo político pondera 40% en el score de riesgo del simulador por evidencia histórica municipal.',
+          por_que_este_enfoque: 'El riesgo político pondera 40% en el score de riesgo de la plataforma por evidencia histórica municipal.',
           supuesto_critico: 'Honestidad del equipo al marcar resistencia interna — omitir al concesionario invalida el mapa.',
         },
         chart_briefs: [],
@@ -310,14 +310,14 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿Quién decide hoy desde la queja ciudadana hasta Cabildo?',
         subtitulo_catchy: '',
         situacion_actual: `Antes de diseñar el organigrama objetivo (M07), ${territorio} debe documentar titularidades reales de limpia, ecología, tesorería y operador.`,
-        observacion_alquimia: `${scope} Las verificaciones y checklist se guardan en el simulador. Hasta validar en campo, la plantilla es referencia metodológica, no organigrama oficial.`,
+        observacion_alquimia: `${scope} Las verificaciones y checklist se guardan en la plataforma. Hasta validar en campo, la plantilla es referencia metodológica, no organigrama oficial.`,
         criterio_decision: 'Cierre vacíos de titular e interfaz municipio–operador antes de comprometer CAPEX o reforma reglamentaria.',
         que_no_significa: 'No es el organigrama aprobado por RH ni la estructura objetivo del programa.',
         siguiente_accion: 'Completar checklist de campo y marcar eslabones confirmados. Luego abrir M07 Planificación.',
         fuente_o_evidencia: 'Plantilla ALQUIMIA M02D, organigramas PDF municipio/concesionario, contrato de limpia.',
         metodologia_editorial: {
           como_se_calcula: 'KPI % confirmados = eslabones con estatus confirmado / total de puestos mapeados. Checklist = ítems marcados por el equipo.',
-          origen_datos: 'Validación en campo. Persistencia local del simulador.',
+          origen_datos: 'Validación en campo. Persistencia local de la plataforma.',
           por_que_este_enfoque: 'Sin dueño operativo identificado, el programa no tiene quién firme bitácora PER ni reportes GRI.',
           supuesto_critico: 'Actualización del contrato de concesión — define si el operador puede o no ejecutar separación.',
         },
@@ -403,7 +403,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         metodologia_editorial: {
           como_se_calcula: 'Superposición de polígonos municipales y capas de cobertura de servicio documentadas.',
           origen_datos: 'INEGI MGN, selección municipio catálogo ALQUIMIA.',
-          por_que_este_enfoque: 'El simulador marca incoherencia cuando se mezclan decisiones de Municipio y ZM sin etiquetar alcance.',
+          por_que_este_enfoque: 'La plataforma marca incoherencia cuando se mezclan decisiones de Municipio y ZM sin etiquetar alcance.',
           supuesto_critico: 'Municipio activo en el selector — sin ancla, los supuestos son proxy ZM.',
         },
         chart_briefs: [],
@@ -433,7 +433,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             chart_label: 'Valor de captura: 5 vs. 3 fracciones',
             metodologia: {
               como_se_calcula: 'Compara ingreso anual por material valorizable aplicando tasa de contaminación del 12% (5 fracciones) vs. 25% (3 fracciones) sobre volCapturablePorMat × precio/kg × 365.',
-              origen_datos: 'materialPriceResearch.ts + resultados del simulador activo.',
+              origen_datos: 'materialPriceResearch.ts + resultados de la plataforma activo.',
               por_que_este_enfoque: 'Traduce la decisión normativa en pesos — el lenguaje que entiende el tesorero y el regidor de hacienda.',
               supuesto_critico: 'Precios de mercado documentales, no cotizaciones en vivo. Requieren validación local antes de presupuesto.',
             },
@@ -560,7 +560,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'Validar que compradores, precios y volúmenes sean coherentes con el baseline. Reconstruir el grafo tras cambiar supuestos sensibles.',
         que_no_significa: 'No constituye valoración vinculante de mercado, contrato con offtakers ni garantía de demanda.',
         siguiente_accion: 'Construir o reconstruir el grafo causal y cerrar warnings de mercado antes del módulo de escenarios y exportación.',
-        fuente_o_evidencia: 'Motor del simulador, resúmenes de mercado, DataProvenance y nodos del razonamiento trazado.',
+        fuente_o_evidencia: 'Motor del modelo, resúmenes de mercado, DataProvenance y nodos del razonamiento trazado.',
         metodologia_editorial: {
           como_se_calcula: 'Ingreso directo = Σ(toneladas_material × precio_spot × (1 − merma_material)) para cada fracción separada. El grafo causal muestra cada nodo intermedio con su fórmula y fuente.',
           origen_datos: 'Precios: cotizaciones del mercado secundario mexicano con compradores industriales activos en PET, HDPE, cartón y vidrio. Coeficientes de merma: INECC sector reciclador nacional.',
@@ -572,7 +572,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
             chart_id: 'precio-materiales',
             chart_label: 'Precios por material',
             metodologia: {
-              como_se_calcula: 'Los rangos de precio (min/max) por material provienen de `PRECIOS_RANGO` en constants.ts. El slider permite editar el precio dentro del rango documentado. Precio × toneladas = ingreso bruto antes de merma.',
+              como_se_calcula: 'Los rangos de precio (min/max) por material provienen de `PRECIOS_RANGO` en constants.ts. El escenario usa un precio dentro del rango documentado. Precio × toneladas = ingreso bruto antes de merma.',
               origen_datos: 'Investigación de precios RSU México 2025 documentada en fuentes de calculo/Investigacion_Precios_RSU_SLP.xlsx. Actualización trimestral recomendada.',
               por_que_este_enfoque: 'Los precios del mercado secundario fluctúan ±20–35% anualmente. Usar un precio fijo sin rango subestima el riesgo financiero del programa.',
               supuesto_critico: 'El precio del PET y HDPE. Juntos representan el 65–70% del ingreso por materiales. Una caída de 20% en PET reduce el ingreso total ~15%.',
@@ -758,7 +758,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         title: 'Quién opera y cuánto recibe el municipio: el núcleo del modelo de negocio',
         pregunta_guia: '¿Quién debe operar el servicio: el municipio, un concesionario privado o una APP?',
         subtitulo_catchy: '¿Cuánto entra al municipio y quién carga con el riesgo operativo?',
-        situacion_actual: `La pregunta que el Cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, el simulador no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
+        situacion_actual: `La pregunta que el Cabildo de ${territorio} realmente vota no es la tasa de captura. Es cuánto dinero entra al municipio, cuántos empleos se crean y cuál industria local se beneficia. Sin modelar el esquema de concesión, la plataforma no puede responder ninguna de estas tres preguntas de forma diferenciada.`,
         observacion_alquimia: `${scope} El Artículo 78 LOM-SLP (Art. 23 en NL, Art. 91 en QRO) permite al ayuntamiento concesionar servicios públicos por acuerdo de Cabildo. El adendo que crea la obligación de separar en origen es el instrumento que hace viable la inversión privada en el CA. Sin adendo, no hay certeza jurídica. Sin certeza, ningún privado invierte.`,
         criterio_decision: 'Seleccionar el esquema que maximice el valor al municipio según su capacidad presupuestal. Si no hay presupuesto, el esquema B (concesionado) permite arrancar sin capital municipal.',
         que_no_significa: 'El esquema de concesión no define automáticamente los términos del contrato. El instrumento legal específico (concesión, contrato de servicios, APP) requiere revisión por el síndico municipal y asesor legal externo.',
@@ -781,9 +781,9 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         subtitulo_catchy: '¿Cómo le digo a un banco verde o al BID cuánto vale el programa?',
         situacion_actual: `Los resultados del programa en ${territorio} — toneladas desviadas, CO₂e evitadas, empleos creados — deben reportarse en formato GRI 306 y ESRS E5 para fondos verdes (BANOBRAS, BID, FVC).`,
         observacion_alquimia: `${scope} La "doble materialidad" es el estándar europeo CSRD/ESRS E5 y está siendo adoptado en México por BANOBRAS y la CNBV como requisito de reporte para deuda verde. Un municipio que reporta GRI 306 con datos reales tiene acceso a tasas preferenciales que pueden reducir el costo de deuda en 200-400 pb.`,
-        criterio_decision: 'Generar el informe GRI 306 con datos reales cuando el M17 tenga datos de campo. Hasta entonces, usar proyecciones del simulador como referencia.',
+        criterio_decision: 'Generar el informe GRI 306 con datos reales cuando el M17 tenga datos de campo. Hasta entonces, usar proyecciones de la plataforma como referencia.',
         que_no_significa: 'Este módulo no reemplaza una auditoría de sostenibilidad externa. Para solicitudes de crédito verde formales, los datos del GRI 306 deben ser verificados por un tercero acreditado (ej. Bureau Veritas, KPMG Sustentabilidad).',
-        siguiente_accion: 'Enviar el reporte GRI 306 proyectado a BANOBRAS como primer contacto para el Programa CCA. Mientras se acumula data real, el simulador sirve como pre-evaluación de elegibilidad.',
+        siguiente_accion: 'Enviar el reporte GRI 306 proyectado a BANOBRAS como primer contacto para el Programa CCA. Mientras se acumula data real, la plataforma sirve como pre-evaluación de elegibilidad.',
         fuente_o_evidencia: 'GRI 306: Residuos 2020. ESRS E5 — Uso de Recursos y Economía Circular (EFRAG 2023). PNPGIR 2022-2024 — meta 30% desvío de relleno. BANOBRAS Programa CCA 2024. CNBV Taxonomía Verde México 2022.',
         metodologia_editorial: {
           como_se_calcula: 'GRI 306-3 = rsuTotalTonDia × 300 días. GRI 306-4a = (vol_plastico + vol_papel + vol_vidrio + vol_aluminio) × 300. GRI 306-4b = vol_organico × 300 × 0.35 (factor compostaje SEMARNAT 2020). GRI 306-5 = 306-3 - 306-4a - 306-4b.',
@@ -832,15 +832,15 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         title: 'Monitoreo — proyectado vs. real',
         pregunta_guia: '¿El programa está cumpliendo las metas proyectadas o requiere ajuste?',
         subtitulo_catchy: 'Proyección vs. real — semáforo de desempeño operativo',
-        situacion_actual: `Una vez en operación, ${territorio} necesita comparar las proyecciones del simulador con los datos reales de campo para detectar desviaciones y corregir el rumbo antes de que se conviertan en pérdidas.`,
+        situacion_actual: `Una vez en operación, ${territorio} necesita comparar las proyecciones de la plataforma con los datos reales de campo para detectar desviaciones y corregir el rumbo antes de que se conviertan en pérdidas.`,
         observacion_alquimia: 'Este módulo está diseñado para recibir datos de campo una vez que el programa esté operando. Hasta entonces, muestra las métricas proyectadas como línea base de referencia para el equipo de campo.',
         criterio_decision: 'El director de servicios públicos necesita un semáforo claro: verde si la operación está dentro de las proyecciones, amarillo si hay desviaciones moderadas, rojo (alerta crítica) si se requiere intervención directiva.',
         que_no_significa: 'No sustituye un sistema de monitoreo en tiempo real. Es una herramienta de comparación periódica (mensual/trimestral) entre lo proyectado y lo medido.',
         siguiente_accion: 'Definir el protocolo de captura de datos de campo (frecuencia, responsable, formato) antes del arranque del piloto.',
-        fuente_o_evidencia: `Proyecciones: motor del simulador ALQUIMIA (módulos ${moduleRangeLabel()}). Datos reales: captura manual o integración con sistema de pesaje en CAs.`,
+        fuente_o_evidencia: `Proyecciones: motor del modelo ALQUIMIA (módulos ${moduleRangeLabel()}). Datos reales: captura manual o integración con sistema de pesaje en CAs.`,
         metodologia_editorial: {
           como_se_calcula: 'Desviación = (valor_real − valor_proyectado) / valor_proyectado × 100. Semáforo: verde ≤10%, amarillo 10–25%, rojo >25%.',
-          origen_datos: 'Proyecciones: motor del simulador. Datos reales: captura de campo (pendiente de implementación en campo).',
+          origen_datos: 'Proyecciones: motor del modelo. Datos reales: captura de campo (pendiente de implementación en campo).',
           por_que_este_enfoque: 'La Teoría de Cambio (Theory of Change) requiere verificación empírica. Sin monitoreo, el programa pierde credibilidad ante financiadores y Cabildo en la evaluación de medio término.',
           supuesto_critico: 'Los datos de campo deben capturarse con la misma metodología y frecuencia que las proyecciones para que la comparación sea válida y auditable.',
         },
@@ -982,7 +982,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         situacion_actual: `Sin programa de separación, ${territorio} seguirá pagando la tarifa de disposición sobre el 100% del RSU generado, con inflación compuesta y sin recuperar valor de los materiales.`,
         observacion_alquimia: `${scope} La pérdida acumulada suma disposición en relleno, daño sanitario, multas LGPGIR y pérdida de elegibilidad para financiamiento verde.`,
         criterio_decision: 'Reencuadre la conversación presupuestal: el programa evita un costo mayor y creciente — no es solo un gasto nuevo.',
-        que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, calculado con las mismas fuentes del simulador.',
+        que_no_significa: 'No es una amenaza política. Es un análisis financiero del escenario de omisión, calculado con las mismas fuentes de la plataforma.',
         siguiente_accion: 'Presente este costo acumulado antes de discutir el CAPEX del programa en Cabildo.',
         fuente_o_evidencia: 'Tarifa media relleno sanitario nacional (SEMARNAT). Costo salud OPS/INSP México. INPC BANXICO. LGPGIR sanciones Art. 10.',
         metodologia_editorial: {
@@ -1047,10 +1047,10 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'Confirme que el expediente responde las seis preguntas del regidor: costo, quién paga, quién opera, riesgo, beneficio y fecha de arranque.',
         que_no_significa: 'No es el dictamen técnico oficial. Es el pre-expediente de análisis que respalda la solicitud formal al área jurídica.',
         siguiente_accion: 'Exportar el paquete ZIP y presentarlo en la sesión previa al Cabildo para validar supuestos con el tesorero municipal.',
-        fuente_o_evidencia: `Todos los módulos del simulador ${moduleRangeLabel()}. Documentos generados por el flujo asistido de la plataforma.`,
+        fuente_o_evidencia: `Todos los módulos de la plataforma ${moduleRangeLabel()}. Documentos generados por el flujo asistido de la plataforma.`,
         metodologia_editorial: {
           como_se_calcula: 'No aplica. Este módulo consolida y exporta, no calcula.',
-          origen_datos: 'Store del simulador (Zustand) y flujo asistido para generación de documentos.',
+          origen_datos: 'Store de la plataforma (Zustand) y flujo asistido para generación de documentos.',
           por_que_este_enfoque: 'Sin un expediente ordenado, el análisis pierde frente a resúmenes simplificados en sesión de Cabildo.',
           supuesto_critico: 'La completitud depende de que los módulos anteriores estén configurados con datos del municipio.',
         },
@@ -1068,10 +1068,10 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         criterio_decision: 'No avanzar de gate con prerequisitos abiertos que afecten la validez del expediente.',
         que_no_significa: 'No sustituye la resolución de Cabildo ni la autorización presupuestal.',
         siguiente_accion: 'Revisar prerequisitos del gate actual y cerrar los pendientes antes de la fecha límite.',
-        fuente_o_evidencia: 'Estado de módulos en el simulador y checklist de gates operativos.',
+        fuente_o_evidencia: 'Estado de módulos en la plataforma y checklist de gates operativos.',
         metodologia_editorial: {
           como_se_calcula: 'Cada gate evalúa booleanos de completitud por módulo prerequisito.',
-          origen_datos: 'Store del simulador y reglas de gate definidas en chapterConfig.',
+          origen_datos: 'Store de la plataforma y reglas de gate definidas en chapterConfig.',
           por_que_este_enfoque: 'Evita presentar un expediente incompleto ante Cabildo o financiadores.',
           supuesto_critico: 'Los prerequisitos deben coincidir con la normativa interna del municipio.',
         },
@@ -1083,13 +1083,13 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         moduleId: resolvedId,
         title: 'Valor ganado (EVM) — control presupuestal',
         pregunta_guia: '¿El avance físico corresponde al presupuesto ejercido?',
-        subtitulo_catchy: 'CPI, SPI y proyección de costo al cierre desde el CAPEX del simulador.',
+        subtitulo_catchy: 'CPI, SPI y proyección de costo al cierre desde el CAPEX de la plataforma.',
         situacion_actual: `${territorio} necesita comparar planificado vs. real en el CAPEX del programa de RSU.`,
         observacion_alquimia: `${scope} El tablero calcula índices de valor ganado (EVM) a partir del CAPEX configurado y los costos reales ingresados.`,
         criterio_decision: 'Corregir desviaciones antes de solicitar ampliaciones presupuestales.',
         que_no_significa: 'No reemplaza la contabilidad municipal ni la conciliación con tesorería.',
         siguiente_accion: 'Ingresar porcentaje de avance real y costos acumulados para actualizar el semáforo.',
-        fuente_o_evidencia: 'CAPEX del simulador, PMBOK 6.ª ed. (EVM), partidas presupuestales municipales.',
+        fuente_o_evidencia: 'CAPEX de la plataforma, PMBOK 6.ª ed. (EVM), partidas presupuestales municipales.',
         metodologia_editorial: {
           como_se_calcula: 'CPI = EV/AC. SPI = EV/PV. EAC proyectado según desempeño actual.',
           origen_datos: 'CAPEX del M09 y avance reportado por el PMO.',
@@ -1106,7 +1106,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
         pregunta_guia: '¿El ejercicio del mes coincide con el avance físico?',
         subtitulo_catchy: 'Partidas presupuestales vs. costos reales del PMO.',
         situacion_actual: `${territorio} debe conciliar mensualmente el presupuesto ejercido con el avance del programa.`,
-        observacion_alquimia: `${scope} La tabla compara partidas del presupuesto autorizado contra costos capturados en el simulador.`,
+        observacion_alquimia: `${scope} La tabla compara partidas del presupuesto autorizado contra costos capturados en la plataforma.`,
         criterio_decision: 'Documentar desviaciones antes del cierre contable mensual.',
         que_no_significa: 'No es dictamen de la Contraloría ni acta de tesorería.',
         siguiente_accion: 'Cargar costos del mes en curso y comparar contra el PV del cronograma PERT.',
@@ -1115,7 +1115,7 @@ export function getModuleEditorialBrief(moduleId: string, ctx: ModuleEditorialCo
           como_se_calcula: 'Variación = costo real − presupuesto devengado del periodo.',
           origen_datos: 'Captura mensual del PMO y PV del plan maestro.',
           por_que_este_enfoque: 'La conciliación mensual detecta desvíos antes de que afecten el gate de cierre.',
-          supuesto_critico: 'Las partidas deben mapearse 1:1 con categorías del CAPEX del simulador.',
+          supuesto_critico: 'Las partidas deben mapearse 1:1 con categorías del CAPEX de la plataforma.',
         },
         chart_briefs: [],
       }

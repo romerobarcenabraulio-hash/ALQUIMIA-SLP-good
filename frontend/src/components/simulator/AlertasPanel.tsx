@@ -146,7 +146,7 @@ export function AlertasPanel() {
 
       {isEmpty && (
         <div className="rounded-lg border border-dashed border-[#E8E4DC] bg-white p-4 text-[13px] text-[#6B6760]">
-          Las alertas se generarán cuando el simulador principal tenga resultados.
+          Las alertas se generarán cuando la plataforma tenga resultados trazables.
         </div>
       )}
 

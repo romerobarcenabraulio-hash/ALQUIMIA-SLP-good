@@ -80,7 +80,7 @@ equivalente a una tasa de desvío del ${tasaDesvio.toFixed(1)}%, evitando ${fmt.
 - E5-4: Tasa de circularidad de residuos = ${tasaDesvio.toFixed(1)}%
 - E5-5: Intensidad residuos/unidad económica = ${fmt.num(rsuHabDia)} kg/hab/día
 
-_Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan mediciones reales._`
+_Fuente: Plataforma ALQUIMIA — datos proyectados del modelo. No representan mediciones reales._`
     navigator.clipboard.writeText(md).catch(() => {})
   }
 
@@ -208,7 +208,7 @@ _Fuente: Plataforma ALQUIMIA — datos proyectados del simulador. No representan
         <div className="space-y-5">
           <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden shadow-[0_2px_12px_rgba(28,27,24,0.06)]">
             <div className="px-5 py-3 border-b border-[#F0EDE5] flex items-center justify-between gap-2">
-              <p className="text-[10px] text-[#A8A49C]">{municipio} · Año 1 · {rsuAnual > 0 ? 'Simulador' : 'Sin cálculo'}</p>
+              <p className="text-[10px] text-[#A8A49C]">{municipio} · Año 1 · {rsuAnual > 0 ? 'Modelo' : 'Sin cálculo'}</p>
               <span className="text-[9px] font-bold px-2 py-0.5 rounded bg-[#FEF3C7] text-[#92400E]">Proyectado</span>
             </div>
             <table className="w-full text-[10px]">

@@ -41,7 +41,7 @@ describe('ModuleEditorialBrief', () => {
 
       expect(screen.getByTestId(`module-editorial-brief-${moduleId}`)).toBeTruthy()
       expect(screen.getByText(/Contexto del módulo/)).toBeTruthy()
-      expect(screen.getByText(/Qué muestra el simulador/)).toBeTruthy()
+      expect(screen.getByText(/Qué muestra el análisis/)).toBeTruthy()
       expect(screen.getByText(/Qué decide el funcionario aquí/)).toBeTruthy()
       expect(screen.getByText(getRailActionLabel(moduleId))).toBeTruthy()
 

@@ -115,7 +115,7 @@ export function FuentesDatos({ variant = 'full' }: { variant?: 'full' | 'embedde
           </p>
           <p className="text-[12px] text-red-600">{state.mensaje}</p>
           <p className="text-[11px] text-red-500 mt-2">
-            Los cálculos del simulador no se detienen por esto, pero no es posible
+            Los cálculos de la plataforma no se detienen por esto, pero no es posible
             verificar de qué fuentes provienen los datos en este momento.
           </p>
         </div>

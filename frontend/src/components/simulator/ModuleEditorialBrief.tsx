@@ -44,7 +44,7 @@ export function ModuleEditorialBrief({
       <div className="pt-3 mt-3 border-t border-[#F0EDE5]">
         <div className="border-l-2 border-[#3B6D11] pl-2.5">
           <p className="text-[10px] font-medium uppercase tracking-[0.06em] text-[#5A8A3A] mb-1">
-          Qué muestra el simulador
+          Qué muestra el análisis
           </p>
           <p className="text-[12px] leading-[1.55] text-[#2C302A]">
             {brief.observacion_alquimia}

@@ -80,7 +80,7 @@ export function ReferenciasCalculos() {
               Bibliografía y cálculos
             </h2>
             <Conclusion className="text-[16px] md:text-[17px] mb-0 mt-2">
-              Esta matriz conecta cada afirmación del simulador con su fuente, estado de
+              Esta matriz conecta cada afirmación del análisis con su fuente, estado de
               verificación, fórmula, acción correctiva y responsable de cierre.
             </Conclusion>
           </div>

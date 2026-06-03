@@ -275,7 +275,7 @@ export function RiskTrendsPanel() {
         </EditorialCallout>
 
         <MarginalNote>
-          No sustituye dictamen jurídico ni estudio de campo; vincula el simulador a conversación de consultoría con riesgos explícitos.
+          No sustituye dictamen jurídico ni estudio de campo; vincula el análisis técnico a la conversación de consultoría con riesgos explícitos.
         </MarginalNote>
       </section>
 
@@ -407,7 +407,7 @@ export function RiskTrendsPanel() {
           <MarginalNote>
             500 simulaciones · distribución triangular · parámetros: precios ±30%, captura (−40%/+20%), merma ±25%
           </MarginalNote>
-          {!mc && <p className="text-[11px] text-[#A8A49C] italic">Esperando resultados del simulador…</p>}
+          {!mc && <p className="text-[11px] text-[#A8A49C] italic">Esperando resultados trazables…</p>}
           {mc && (
             <>
               <ResponsiveContainer width="100%" height={120}>

@@ -187,7 +187,7 @@ export function SocialContextExportPreviewSection({
       <div className="mt-4" role="region" aria-label="Vista previa del resumen en Markdown">
         <p className="sr-only">
           Vista previa de expediente en Markdown con HTML sanitizado. Los encabezados dentro del panel son solo referencia
-          visual; no sustituyen el orden de secciones del simulador ni constituyen acto administrativo.
+          visual; no sustituyen el orden de secciones de la plataforma ni constituyen acto administrativo.
         </p>
         <SocialContextMarkdownPreview markdown={markdown} />
       </div>
