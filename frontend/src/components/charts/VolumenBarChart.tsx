@@ -1,7 +1,7 @@
 'use client'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { useSimulatorStore } from '@/store/simulatorStore'
-import { MATERIAL_COLORS, MATERIAL_LABELS } from '@/lib/utils'
+import { MATERIAL_COLORS } from '@/lib/utils'
 
 export function VolumenBarChart() {
   const { resultados } = useSimulatorStore()

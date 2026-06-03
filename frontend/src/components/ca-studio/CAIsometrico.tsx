@@ -1,12 +1,8 @@
 'use client'
-import { useEffect, useRef } from 'react'
 
 interface Props { escala: 'P' | 'M' | 'G'; contexto: string }
 
 export function CAIsometrico({ escala, contexto }: Props) {
-  const animRef = useRef<number>()
-  const t = useRef(0)
-
   const colors = {
     organico:  '#639922',
     papel:     '#D4881E',
