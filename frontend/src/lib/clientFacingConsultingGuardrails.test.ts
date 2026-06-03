@@ -331,7 +331,8 @@ describe('client-facing consulting guardrails', () => {
   it('keeps the legacy simulator quarantined away from client users', () => {
     const source = readFrontend('src/app/simulator/page.tsx')
 
-    expect(source).toContain("router.replace(`/v?tenant_id=${encodeURIComponent(tenantId)}`)")
+    expect(source).toContain("router.replace(tenantId ? `/v?tenant_id=${encodeURIComponent(tenantId)}` : '/v')")
+    expect(source).not.toContain("?? 'municipio-demo'")
     expect(source).toContain('Redirigiendo al paquete consultivo.')
     expect(source).toContain('isPlatformDeveloper()')
   })

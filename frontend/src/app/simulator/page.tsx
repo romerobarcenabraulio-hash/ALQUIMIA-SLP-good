@@ -83,15 +83,14 @@ export default function SimulatorPage() {
   }, [])
   useEffect(() => {
     if (!sessionReady || isPlatformDeveloper()) return
-    const tenantId = localStorage.getItem('alquimia.tenantId') ?? 'municipio-demo'
-    router.replace(`/v?tenant_id=${encodeURIComponent(tenantId)}`)
+    const tenantId = localStorage.getItem('alquimia.tenantId')
+    router.replace(tenantId ? `/v?tenant_id=${encodeURIComponent(tenantId)}` : '/v')
   }, [router, sessionReady])
   const portalEntry = useSimulatorStore(s => s.portalEntry)
   const fetchCityPortalData = useSimulatorStore(s => s.fetchCityPortalData)
   const portalJourney = useSimulatorStore(s => s.portalJourney)
   const portalJourneyLoading = useSimulatorStore(s => s.portalJourneyLoading)
   const portalError = useSimulatorStore(s => s.portalError)
-  const activeDecisionModuleId = useSimulatorStore(s => s.activeDecisionModuleId)
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const refreshAntecedentesReportaje = useSimulatorStore(s => s.refreshAntecedentesReportaje)
   const antecedentesForMunicipioId = useSimulatorStore(s => s.antecedentesForMunicipioId)
