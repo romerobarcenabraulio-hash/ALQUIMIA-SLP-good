@@ -21,8 +21,11 @@ export function InstitutionalHeader({
             {label}
           </span>
         </div>
-        <div className="text-right text-[11px] leading-5 text-[#6B6760]">
-          {detail}
+        <div className="flex items-center gap-3 text-right text-[11px] leading-5 text-[#6B6760]">
+          <Link href="/perfil" className="font-semibold text-[#3B3326] hover:text-[#3B6D11]">
+            Perfil
+          </Link>
+          <span className="hidden sm:inline">{detail}</span>
         </div>
       </div>
     </header>

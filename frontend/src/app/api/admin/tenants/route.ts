@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { getTenantArchiveData } from '@/lib/documentArchiveStore'
+import { buildMunicipalityPreparationSummary } from '@/lib/municipalityPreparation'
 import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
 import { localAdminAuthContext } from '../_shared'
 
@@ -25,22 +26,31 @@ export async function GET() {
     )
   }
 
-  const tenants = Object.values(TENANT_DIAGNOSTIC_FIXTURES).map(tenant => ({
-    id: tenant.tenant_id,
-    nombre: tenant.municipality,
-    estado_mx: tenant.state,
-    municipio_id: tenant.municipio_id ?? tenant.tenant_id,
-    inegi_clave: tenant.clave_inegi ?? '',
-    tier_comercial: 'diagnostico',
-    state: {
-      current_stage: 'validation',
-      transition_mode: 'human_gate',
-      fecha_ingreso: tenant.generated_at,
-      fecha_cambio_stage: tenant.generated_at,
-    },
-    regulation_status: regulationStatusForTenant(tenant.tenant_id),
-    source: 'next_city_consulting_index',
-  }))
+  const tenants = Object.values(TENANT_DIAGNOSTIC_FIXTURES).map(tenant => {
+    const preparation = buildMunicipalityPreparationSummary(getTenantArchiveData(tenant.tenant_id), {
+      tenantLinked: true,
+      userLinked: false,
+    })
+    return {
+      id: tenant.tenant_id,
+      nombre: tenant.municipality,
+      estado_mx: tenant.state,
+      municipio_id: tenant.municipio_id ?? tenant.tenant_id,
+      inegi_clave: tenant.clave_inegi ?? '',
+      tier_comercial: 'diagnostico',
+      state: {
+        current_stage: 'validation',
+        transition_mode: 'human_gate',
+        fecha_ingreso: tenant.generated_at,
+        fecha_cambio_stage: tenant.generated_at,
+      },
+      regulation_status: regulationStatusForTenant(tenant.tenant_id),
+      preparation_status: preparation.status,
+      preparation_label: preparation.label,
+      next_founder_action: preparation.nextAction,
+      source: 'next_city_consulting_index',
+    }
+  })
 
   return NextResponse.json({
     tenants,

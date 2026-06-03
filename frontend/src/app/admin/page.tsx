@@ -3,10 +3,24 @@
 import { useEffect, useMemo, useState } from 'react'
 import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, Search, ShieldCheck, Users } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
+import { ALQUIMIA_TEMPLATE_REGISTRY } from '@/lib/alquimiaTemplates'
+import type { TemplateReadiness } from '@/lib/alquimiaTemplates'
 import { getApiUrl } from '@/lib/api'
+import type { MunicipalityPreparationStatus } from '@/lib/municipalityPreparation'
 
 type TenantStage = 'validation' | 'planning' | 'execution' | 'expansion'
 type TierComercial = 'diagnostico' | 'implementacion' | 'operacion_completa'
+type AdminTenantTab = 'resumen' | 'documentos' | 'usuarios' | 'gates' | 'bibliografia' | 'exports' | 'auditoria'
+
+const ADMIN_TENANT_TABS: Array<{ id: AdminTenantTab; label: string }> = [
+  { id: 'resumen', label: 'Resumen' },
+  { id: 'documentos', label: 'Documentos' },
+  { id: 'usuarios', label: 'Usuarios' },
+  { id: 'gates', label: 'Gates' },
+  { id: 'bibliografia', label: 'Bibliografía' },
+  { id: 'exports', label: 'Exports' },
+  { id: 'auditoria', label: 'Auditoría' },
+]
 
 interface TenantGate {
   gate_id: string
@@ -54,6 +68,10 @@ interface AdminTenant {
     organigrama_servicio: Record<string, unknown>
     provenance_status: string
   }
+  regulation_status?: string
+  preparation_status?: MunicipalityPreparationStatus
+  preparation_label?: string
+  next_founder_action?: string
 }
 
 interface InegiState {
@@ -95,6 +113,9 @@ interface AdminErpMunicipalityRow {
   } | null
   link_status: 'sin_tenant' | 'tenant_sin_usuario' | 'usuario_sin_tenant' | 'vinculado' | 'duplicado'
   duplicate_tenants_count: number
+  preparation_status?: MunicipalityPreparationStatus
+  preparation_label?: string
+  next_founder_action?: string
 }
 
 interface TenantDocumentDraft {
@@ -167,6 +188,12 @@ interface StageEvidenceCoverage {
   recommendations: EvidenceRecommendation[]
 }
 
+interface TenantConsultingPackageApiResponse {
+  export_manifest?: {
+    template_readiness?: TemplateReadiness[]
+  }
+}
+
 const documentTypes = [
   ['expediente_cabildo', 'Expediente Cabildo'],
   ['reforma_reglamentaria_3_articulos', 'Reforma reglamentaria'],
@@ -226,6 +253,13 @@ function linkStatusClass(status: AdminErpMunicipalityRow['link_status']) {
   return 'border-[#E8E4DC] bg-white text-[#6B6760]'
 }
 
+function preparationStatusClass(status?: MunicipalityPreparationStatus) {
+  if (status === 'en_cliente' || status === 'listo_para_cliente') return 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'
+  if (status === 'bibliografia_minima' || status === 'reglamento_cargado') return 'border-[#F5DCA0] bg-[#FEF7E7] text-[#8A5C05]'
+  if (status === 'reglamento_identificado') return 'border-[#D8D2C5] bg-white text-[#5C574F]'
+  return 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]'
+}
+
 async function fetchAdminJson<T>(backendPath: string, localPath: string, headers: HeadersInit): Promise<T> {
   const backendUrl = `${getApiUrl()}${backendPath}`
   try {
@@ -277,6 +311,8 @@ export default function AdminPage() {
   const [bibliographyModule, setBibliographyModule] = useState('')
   const [evidenceRecommendations, setEvidenceRecommendations] = useState<EvidenceRecommendation[]>([])
   const [evidenceCoverage, setEvidenceCoverage] = useState<StageEvidenceCoverage[]>([])
+  const [activeTenantTab, setActiveTenantTab] = useState<AdminTenantTab>('resumen')
+  const [templateReadiness, setTemplateReadiness] = useState<TemplateReadiness[]>([])
 
   const selected = useMemo(
     () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
@@ -300,6 +336,9 @@ export default function AdminPage() {
     primary_contact: null,
     link_status: 'tenant_sin_usuario' as const,
     duplicate_tenants_count: 1,
+    preparation_status: tenant.preparation_status,
+    preparation_label: tenant.preparation_label,
+    next_founder_action: tenant.next_founder_action,
   })).filter(row => {
     const q = erpFilters.q.trim().toLowerCase()
     const matchesQ = !q || `${row.municipio} ${row.estado} ${row.clave_inegi} ${row.tenant_nombre}`.toLowerCase().includes(q)
@@ -310,6 +349,11 @@ export default function AdminPage() {
   }), [erpFilters.q, erpFilters.stage, erpFilters.status, erpFilters.tier, tenants])
 
   const visibleErpRows = erpRows.length ? erpRows : fallbackErpRows
+
+  const selectedErpRow = useMemo(() => {
+    if (!selected) return null
+    return visibleErpRows.find(row => row.tenant_id === selected.id || row.clave_inegi === selected.inegi_clave) ?? null
+  }, [selected, visibleErpRows])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -330,11 +374,17 @@ export default function AdminPage() {
   }, [selected?.id, selected?.municipal_profile])
 
   useEffect(() => {
+    setActiveTenantTab('resumen')
+  }, [selected?.id])
+
+  useEffect(() => {
     if (!selected?.id) {
       setDocuments([])
+      setTemplateReadiness([])
       return
     }
     void loadDocuments(selected.id)
+    void loadTemplateReadiness(selected.id)
     void loadBibliographyPanel(selected.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id])
@@ -410,6 +460,17 @@ export default function AdminPage() {
       setDocuments(data.a6_documentacion_generada ?? [])
     } catch (exc) {
       setError(exc instanceof Error ? exc.message : 'No se pudo cargar A6 Documentación generada')
+    }
+  }
+
+  async function loadTemplateReadiness(tenantId: string) {
+    try {
+      const res = await fetch(`/api/tenants/${encodeURIComponent(tenantId)}/consulting-package`)
+      const data = await res.json().catch(() => ({})) as TenantConsultingPackageApiResponse
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      setTemplateReadiness(data.export_manifest?.template_readiness ?? [])
+    } catch {
+      setTemplateReadiness([])
     }
   }
 
@@ -659,7 +720,30 @@ export default function AdminPage() {
           </div>
         )}
 
-        <section className="mb-5 border border-[#E1DACE] bg-[#FDFCFA]">
+        <section className="mb-5 border border-[#E1DACE] bg-[#FDFCFA] px-4 py-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Admin Operativo</p>
+              <p className="mt-1 max-w-3xl text-[12px] leading-5 text-[#5C574F]">
+                El founder prepara municipios, opera tenants y previsualiza la Vista Cliente sin mover documentos, gates ni IDs internos a `/v`.
+              </p>
+            </div>
+            <nav className="flex flex-wrap gap-2" aria-label="Zonas de administración">
+              {[
+                ['#admin-tabla-maestra', 'Tabla maestra'],
+                ['#admin-preparacion', 'Preparación municipal'],
+                ['#admin-operacion', 'Operación tenant'],
+                ['#admin-previsualizacion', 'Previsualización'],
+              ].map(([href, label]) => (
+                <a key={href} href={href} className="border border-[#D8D1C4] bg-white px-3 py-2 text-[11px] font-semibold text-[#1C1B18]">
+                  {label}
+                </a>
+              ))}
+            </nav>
+          </div>
+        </section>
+
+        <section id="admin-tabla-maestra" className="mb-5 scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA]">
           <div className="border-b border-[#E8E4DC] px-4 py-4">
             <div className="mb-3 flex items-center gap-2">
               <Users size={16} className="text-[#3B6D11]" />
@@ -734,20 +818,22 @@ export default function AdminPage() {
             </div>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[1080px] text-[12px]">
+            <table className="w-full min-w-[1260px] text-[12px]">
               <thead>
                 <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
                   <th className="px-4 py-2 font-medium">Municipio</th>
                   <th className="px-3 py-2 font-medium">Tenant</th>
                   <th className="px-3 py-2 font-medium">Cliente / usuario</th>
                   <th className="px-3 py-2 font-medium">Etapa</th>
+                  <th className="px-3 py-2 font-medium">Preparación</th>
+                  <th className="px-3 py-2 font-medium">Próxima acción</th>
                   <th className="px-3 py-2 font-medium">Vínculo</th>
                   <th className="px-3 py-2 font-medium">Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {visibleErpRows.length === 0 ? (
-                  <tr><td colSpan={6} className="px-4 py-6 text-[#8E8980]">Sin filas para los filtros actuales.</td></tr>
+                  <tr><td colSpan={8} className="px-4 py-6 text-[#8E8980]">Sin filas para los filtros actuales.</td></tr>
                 ) : visibleErpRows.slice(0, 80).map(row => (
                   <tr key={`${row.clave_inegi}-${row.tenant_id ?? 'catalog'}`} className="border-b border-[#EEE8DE]">
                     <td className="px-4 py-3">
@@ -761,6 +847,15 @@ export default function AdminPage() {
                     </td>
                     <td className="px-3 py-3 text-[#6B6760]">{row.stage ?? 'Sin etapa'} · {row.tier ?? 'sin tier'}</td>
                     <td className="px-3 py-3">
+                      <span className={`border px-2 py-1 text-[11px] ${preparationStatusClass(row.preparation_status)}`}>
+                        {row.preparation_label ?? 'Sin preparar'}
+                      </span>
+                      <span className="mt-1 block text-[10px] text-[#8E8980]">Reglamento: {row.regulation_status}</span>
+                    </td>
+                    <td className="max-w-[220px] px-3 py-3 text-[11px] leading-5 text-[#6B6760]">
+                      {row.next_founder_action ?? 'Crear expediente preliminar o vincular tenant.'}
+                    </td>
+                    <td className="px-3 py-3">
                       <span className={`border px-2 py-1 text-[11px] ${linkStatusClass(row.link_status)}`}>{linkStatusLabel(row.link_status)}</span>
                     </td>
                     <td className="px-3 py-3">
@@ -768,7 +863,7 @@ export default function AdminPage() {
                         {row.tenant_id ? (
                           <>
                             <button type="button" onClick={() => setSelectedId(row.tenant_id ?? null)} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Abrir</button>
-                            <a href={`/v?tenant_id=${encodeURIComponent(row.tenant_id)}`} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Ver cliente</a>
+                            <a href={`/v?tenant_id=${encodeURIComponent(row.tenant_id)}&preview=client`} className="border border-[#D8D1C4] bg-white px-2 py-1 text-[11px] font-semibold text-[#1C1B18]">Previsualizar</a>
                           </>
                         ) : (
                           <button
@@ -796,11 +891,14 @@ export default function AdminPage() {
 
         <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
           <aside className="space-y-5">
-            <section className="border border-[#E1DACE] bg-[#FDFCFA] p-4">
+            <section id="admin-preparacion" className="scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA] p-4">
               <div className="mb-4 flex items-center gap-2">
                 <Plus size={16} className="text-[#3B6D11]" />
-                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Nuevo tenant</h2>
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Preparación municipal</h2>
               </div>
+              <p className="mb-4 text-[11px] leading-5 text-[#6B6760]">
+                Busca municipio por INEGI, crea expediente preliminar y prepara reglamento/bibliografía antes de vincular usuario real.
+              </p>
               <div className="space-y-3">
                 {[
                   ['nombre', 'Municipio'],
@@ -850,8 +948,12 @@ export default function AdminPage() {
                   disabled={!form.nombre || !form.estado_mx || !form.municipio_id || !form.inegi_clave}
                   className="h-9 w-full bg-[#3B6D11] text-[12px] font-semibold text-white disabled:cursor-not-allowed disabled:bg-[#B9C8A7]"
                 >
-                  Crear en validation
+                  Crear expediente preliminar
                 </button>
+                <div className="border border-[#E8E4DC] bg-white p-3 text-[11px] leading-5 text-[#6B6760]">
+                  <p className="font-semibold text-[#1C1B18]">Criterio de municipio preparado</p>
+                  <p>Reglamento identificado o cargado, bibliografía mínima y diagnóstico preliminar sin invención.</p>
+                </div>
               </div>
             </section>
 
@@ -885,7 +987,7 @@ export default function AdminPage() {
               </section>
             ) : (
               <>
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                <section id="admin-operacion" className="scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="mb-2 flex items-center gap-2">
@@ -893,6 +995,17 @@ export default function AdminPage() {
                         <h2 className="text-[18px] font-semibold text-[#1C1B18]">{selected.nombre}</h2>
                       </div>
                       <p className="text-[12px] text-[#6B6760]">{selected.estado_mx} · {selected.municipio_id} · INEGI {selected.inegi_clave}</p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <span className={`border px-2 py-1 text-[11px] font-semibold ${preparationStatusClass(selected.preparation_status)}`}>
+                          {selected.preparation_label ?? 'Sin preparar'}
+                        </span>
+                        <span className="border border-[#E8E4DC] bg-white px-2 py-1 text-[11px] text-[#6B6760]">
+                          Reglamento: {selected.regulation_status ?? 'unknown'}
+                        </span>
+                      </div>
+                      <p className="mt-2 max-w-2xl text-[12px] leading-5 text-[#6B6760]">
+                        Próxima acción founder: {selected.next_founder_action ?? 'Preparar expediente municipal antes de abrir cliente.'}
+                      </p>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-[12px] md:min-w-[360px]">
                       <div className="border border-[#E8E4DC] bg-white px-3 py-2">
@@ -905,18 +1018,18 @@ export default function AdminPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="mt-4 flex flex-wrap gap-2">
+	                  <div className="mt-4 flex flex-wrap gap-2">
                     {([
-                      ['/v', 'Validación'],
+                      ['/v', 'Previsualización cliente'],
                       ['/p', 'Planeación'],
                       ['/e', 'Ejecución'],
                     ] as const).map(([href, label]) => (
                       <a
                         key={href}
-                        href={`${href}?tenant_id=${encodeURIComponent(selected.id)}`}
+                        href={`${href}?tenant_id=${encodeURIComponent(selected.id)}${href === '/v' ? '&preview=client' : ''}`}
                         className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
                       >
-                        Ver {label}
+                        {label}
                       </a>
                     ))}
                     <a
@@ -930,11 +1043,118 @@ export default function AdminPage() {
                       className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
                     >
                       Manifest legacy
-                    </a>
-                  </div>
-                </section>
+	                    </a>
+	                  </div>
+	                </section>
 
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                <nav className="flex flex-wrap gap-2 border border-[#E1DACE] bg-[#FDFCFA] p-3" aria-label="Pestañas del tenant">
+	                  {ADMIN_TENANT_TABS.map(tab => (
+	                    <button
+	                      key={tab.id}
+	                      type="button"
+	                      onClick={() => setActiveTenantTab(tab.id)}
+	                      aria-pressed={activeTenantTab === tab.id}
+	                      className={
+	                        activeTenantTab === tab.id
+	                          ? 'bg-[#1C1B18] px-3 py-2 text-[12px] font-semibold text-white'
+	                          : 'border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]'
+	                      }
+	                    >
+	                      {tab.label}
+	                    </button>
+	                  ))}
+	                </nav>
+
+	                {activeTenantTab === 'resumen' && (
+	                <section id="admin-previsualizacion" className="scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+	                    <div>
+                      <div className="mb-1 flex items-center gap-2">
+                        <FileCheck2 size={16} className="text-[#3B6D11]" />
+                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">Previsualización Cliente</h2>
+                      </div>
+                      <p className="max-w-3xl text-[12px] leading-5 text-[#6B6760]">
+                        Abre la Vista Cliente limpia del municipio seleccionado. La ruta se fuerza con `preview=client`; no permite edición documental, gates ni calibración founder.
+                      </p>
+                    </div>
+                    <a
+                      href={`/v?tenant_id=${encodeURIComponent(selected.id)}&preview=client`}
+                      className="inline-flex h-9 items-center justify-center bg-[#1C1B18] px-4 text-[12px] font-semibold text-white"
+                    >
+                      Ver como cliente
+	                    </a>
+	                  </div>
+	                </section>
+	                )}
+
+	                {activeTenantTab === 'documentos' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+	                    <div>
+	                      <div className="mb-1 flex items-center gap-2">
+	                        <FileCheck2 size={16} className="text-[#3B6D11]" />
+	                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">Documentos solicitados</h2>
+	                      </div>
+	                      <p className="max-w-3xl text-[12px] leading-5 text-[#6B6760]">
+	                        La carga operativa vive en admin y `/perfil`; no se muestra como navegación cliente. Este tenant reporta reglamento {selected.regulation_status ?? 'unknown'} y preparación {selected.preparation_label ?? 'sin preparar'}.
+	                      </p>
+	                    </div>
+	                    <a href="/perfil" className="inline-flex h-9 items-center justify-center border border-[#D8D1C4] bg-white px-3 text-[12px] font-semibold text-[#1C1B18]">
+	                      Ver perfil cliente
+	                    </a>
+	                  </div>
+	                  <div className="mt-4 border border-[#E8E4DC] bg-white p-3 text-[12px] leading-5 text-[#6B6760]">
+	                    Próxima acción documental: {selected.next_founder_action ?? 'Revisar reglamento, documentos pendientes y bibliografía mínima.'}
+	                  </div>
+	                </section>
+	                )}
+
+	                {activeTenantTab === 'usuarios' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                  <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+	                    <div>
+	                      <div className="flex items-center gap-2">
+	                        <Users size={16} className="text-[#3B6D11]" />
+	                        <h2 className="text-[13px] font-semibold text-[#1C1B18]">Usuarios del tenant</h2>
+	                      </div>
+	                      <p className="mt-2 max-w-3xl text-[12px] leading-5 text-[#6B6760]">
+	                        Lectura operativa desde la tabla maestra. No expone datos privados cross-tenant; si la API solo ofrece fallback local, el vínculo queda marcado como pendiente.
+	                      </p>
+	                    </div>
+	                    <span className={`border px-2 py-1 text-[11px] font-semibold ${linkStatusClass(selectedErpRow?.link_status ?? 'tenant_sin_usuario')}`}>
+	                      {linkStatusLabel(selectedErpRow?.link_status ?? 'tenant_sin_usuario')}
+	                    </span>
+	                  </div>
+	                  <div className="mt-4 grid gap-3 md:grid-cols-4">
+	                    <div className="border border-[#E8E4DC] bg-white p-3">
+	                      <p className="text-[11px] font-semibold uppercase text-[#8E8980]">Tenant</p>
+	                      <p className="mt-1 break-all text-[13px] font-semibold text-[#1C1B18]">{selected.id}</p>
+	                    </div>
+	                    <div className="border border-[#E8E4DC] bg-white p-3">
+	                      <p className="text-[11px] font-semibold uppercase text-[#8E8980]">Primary user</p>
+	                      <p className="mt-1 break-all text-[13px] font-semibold text-[#1C1B18]">{selectedErpRow?.primary_contact?.email ?? 'Sin usuario vinculado'}</p>
+	                      <p className="mt-1 text-[11px] text-[#8E8980]">{selectedErpRow?.primary_contact?.organizacion ?? 'organización pendiente'}</p>
+	                    </div>
+	                    <div className="border border-[#E8E4DC] bg-white p-3">
+	                      <p className="text-[11px] font-semibold uppercase text-[#8E8980]">Usuarios</p>
+	                      <p className="mt-1 text-[13px] font-semibold text-[#1C1B18]">{selectedErpRow?.users_count ?? 0} total</p>
+	                      <p className="mt-1 text-[11px] text-[#8E8980]">{selectedErpRow?.client_users_count ?? 0} cliente · {selectedErpRow?.admin_users_count ?? 0} interno</p>
+	                    </div>
+	                    <div className="border border-[#E8E4DC] bg-white p-3">
+	                      <p className="text-[11px] font-semibold uppercase text-[#8E8980]">Acción founder</p>
+	                      <p className="mt-1 text-[13px] font-semibold text-[#1C1B18]">
+	                        {(selectedErpRow?.users_count ?? 0) > 0 ? 'Revisar permisos y actividad' : 'Vincular primary user'}
+	                      </p>
+	                      {selectedErpRow?.duplicate_tenants_count && selectedErpRow.duplicate_tenants_count > 1 ? (
+	                        <p className="mt-1 text-[11px] font-semibold text-[#A8322A]">Duplicado: {selectedErpRow.duplicate_tenants_count} tenants</p>
+	                      ) : null}
+	                    </div>
+	                  </div>
+	                </section>
+	                )}
+
+	                {activeTenantTab === 'gates' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex items-center gap-2">
                     <ShieldCheck size={16} className="text-[#3B6D11]" />
                     <h2 className="text-[13px] font-semibold text-[#1C1B18]">Gates G1-G5</h2>
@@ -994,16 +1214,18 @@ export default function AdminPage() {
                     <button type="button" onClick={() => void registerEvidence()} className="h-9 border border-[#3B6D11] px-3 text-[12px] font-semibold text-[#2F5B0D]">
                       Registrar
                     </button>
-                    <button type="button" onClick={() => void closeGate()} className="h-9 bg-[#1C1B18] px-3 text-[12px] font-semibold text-white">
-                      Cerrar
-                    </button>
-                  </div>
-                </section>
+	                    <button type="button" onClick={() => void closeGate()} className="h-9 bg-[#1C1B18] px-3 text-[12px] font-semibold text-white">
+	                      Cerrar
+	                    </button>
+	                  </div>
+	                </section>
+	                )}
 
-                <section className="grid gap-5 xl:grid-cols-2">
-                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <CheckCircle2 size={16} className="text-[#3B6D11]" />
+	                {activeTenantTab === 'resumen' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                    <div className="mb-4 flex items-center gap-2">
+	                      <CheckCircle2 size={16} className="text-[#3B6D11]" />
                       <h2 className="text-[13px] font-semibold text-[#1C1B18]">Capabilities activas</h2>
                     </div>
                     <div className="grid max-h-[320px] gap-2 overflow-auto sm:grid-cols-2">
@@ -1012,13 +1234,17 @@ export default function AdminPage() {
                           <span className="font-mono">{cap.module_id}</span>
                           <span className="ml-2 text-[#8E8980]">{cap.source}</span>
                         </div>
-                      ))}
-                    </div>
-                  </div>
+	                      ))}
+	                    </div>
+	                  </div>
+	                </section>
+	                )}
 
-                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-                    <div className="mb-4 flex items-center gap-2">
-                      <FileCheck2 size={16} className="text-[#3B6D11]" />
+	                {activeTenantTab === 'auditoria' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                    <div className="mb-4 flex items-center gap-2">
+	                      <FileCheck2 size={16} className="text-[#3B6D11]" />
                       <h2 className="text-[13px] font-semibold text-[#1C1B18]">Auditoria minima</h2>
                     </div>
                     <div className="max-h-[320px] space-y-2 overflow-auto">
@@ -1030,12 +1256,14 @@ export default function AdminPage() {
                           </div>
                           <p className="mt-1 text-[11px] text-[#6B6760]">{log.actor}</p>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                </section>
+	                      ))}
+	                    </div>
+	                  </div>
+	                </section>
+	                )}
 
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                {activeTenantTab === 'exports' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="mb-1 flex items-center gap-2">
@@ -1045,6 +1273,34 @@ export default function AdminPage() {
                       <p className="text-[11px] text-[#6B6760]">
                         Borradores para revisión humana. Nunca se marcan como oficiales ni se exportan como ok con bloqueos.
                       </p>
+                      <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        {ALQUIMIA_TEMPLATE_REGISTRY.map(template => {
+                          const readiness = templateReadiness.find(item => item.template.id === template.id)
+                          const readyCount = readiness?.readyCount ?? 0
+                          const totalCount = readiness?.totalCount ?? template.variables.length
+                          const pendingCount = readiness?.pendingCount ?? totalCount
+                          const readyPct = totalCount ? Math.round((readyCount / totalCount) * 100) : 0
+                          return (
+                            <div key={template.id} className="border border-[#E8E4DC] bg-white p-2">
+                              <div className="flex items-start justify-between gap-2">
+                                <div>
+                                  <p className="text-[10px] font-semibold text-[#1C1B18]">{template.filename}</p>
+                                  <p className="mt-1 text-[10px] uppercase tracking-[0.06em] text-[#8E8980]">{template.stage}</p>
+                                </div>
+                                <span className={`border px-2 py-1 text-[10px] font-semibold ${pendingCount === 0 ? 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]' : 'border-[#F5DCA0] bg-[#FEF7E7] text-[#8A5C05]'}`}>
+                                  {readyPct}%
+                                </span>
+                              </div>
+                              <div className="mt-2 h-1.5 bg-[#EEE8DE]" aria-hidden="true">
+                                <div className="h-full bg-[#3B6D11]" style={{ width: `${readyPct}%` }} />
+                              </div>
+                              <p className="mt-2 text-[10px] text-[#6B6760]">
+                                {readyCount}/{totalCount} variables listas · {pendingCount} pendientes
+                              </p>
+                            </div>
+                          )
+                        })}
+                      </div>
                     </div>
                     <div className="flex flex-col gap-2 sm:flex-row">
                       <select
@@ -1104,11 +1360,13 @@ export default function AdminPage() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
-                  </div>
-                </section>
+	                    </table>
+	                  </div>
+	                </section>
+	                )}
 
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                {activeTenantTab === 'bibliografia' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="mb-1 flex items-center gap-2">
@@ -1186,11 +1444,13 @@ export default function AdminPage() {
                           </tr>
                         ))}
                       </tbody>
-                    </table>
-                  </div>
-                </section>
+	                    </table>
+	                  </div>
+	                </section>
+	                )}
 
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                {activeTenantTab === 'auditoria' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
                     <div>
                       <div className="mb-1 flex items-center gap-2">
@@ -1277,11 +1537,13 @@ export default function AdminPage() {
                     </table>
                   </div>
                   <p className="mt-3 text-[11px] text-[#6B6760]">
-                    Cliente: apagado hasta patrón aprobado, bias check, revisión fundadora y trazabilidad. No se muestra patrón estadístico crudo.
-                  </p>
-                </section>
+	                    Cliente: apagado hasta patrón aprobado, bias check, revisión fundadora y trazabilidad. No se muestra patrón estadístico crudo.
+	                  </p>
+	                </section>
+	                )}
 
-                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+	                {activeTenantTab === 'resumen' && (
+	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                   <div className="mb-4 flex flex-col gap-1">
                     <h2 className="text-[13px] font-semibold text-[#1C1B18]">Personalización municipal Fase 6</h2>
                     <p className="text-[11px] text-[#6B6760]">
@@ -1324,9 +1586,10 @@ export default function AdminPage() {
                       className="h-9 bg-[#1C1B18] px-4 text-[12px] font-semibold text-white"
                     >
                       Guardar perfil municipal
-                    </button>
-                  </div>
-                </section>
+	                    </button>
+	                  </div>
+	                </section>
+	                )}
               </>
             )}
           </main>

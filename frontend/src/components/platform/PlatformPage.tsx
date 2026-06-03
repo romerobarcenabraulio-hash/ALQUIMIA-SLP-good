@@ -581,6 +581,36 @@ export function TenantSelectionPanel({
   )
 }
 
+function ClientTenantMissingPanel() {
+  return (
+    <section className="mx-4 mt-6 max-w-4xl border-t border-[#D8D2C5] pt-6 sm:mx-6">
+      <p className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+        Expediente municipal
+      </p>
+      <h1 className="mt-2 max-w-3xl font-serif text-[32px] leading-tight text-[#1C1B18]">
+        Necesitamos vincular tu municipio para abrir la consultoría.
+      </h1>
+      <p className="mt-3 max-w-3xl text-[14px] leading-7 text-[#4A4740]">
+        Entra desde tu perfil o completa el onboarding para asociar tu municipio, reglamento y equipo responsable. La experiencia consultiva se abre cuando existe un expediente municipal activo.
+      </p>
+      <div className="mt-5 flex flex-wrap gap-2">
+        <a
+          href="/perfil"
+          className="inline-flex h-10 items-center justify-center bg-[#1C2B15] px-4 text-[13px] font-semibold text-white"
+        >
+          Ir a perfil
+        </a>
+        <a
+          href="/onboarding/reglamento"
+          className="inline-flex h-10 items-center justify-center border border-[#D8D2C5] px-4 text-[13px] font-semibold text-[#3B3326]"
+        >
+          Completar onboarding
+        </a>
+      </div>
+    </section>
+  )
+}
+
 function PlatformModuleWorkspace({
   module,
   tenantData,
@@ -843,6 +873,12 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
 
   useEffect(() => {
     if (!needsTenantSelection) return
+    if (!canUseInternalView) {
+      setTenantOptions([])
+      setTenantOptionsError(null)
+      setTenantOptionsLoading(false)
+      return
+    }
     let cancelled = false
     async function loadTenantOptions() {
       setTenantOptionsLoading(true)
@@ -861,7 +897,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     }
     void loadTenantOptions()
     return () => { cancelled = true }
-  }, [needsTenantSelection])
+  }, [canUseInternalView, needsTenantSelection])
 
   const allModules = useMemo(
     () => registry ? buildPlatformModuleCatalog(registry) : [],
@@ -877,7 +913,8 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     return filterModulesForPlatform(allModules, registry, tenantState, platformStage)
   }, [allModules, platformStage, registry, tenantState])
 
-  const clientPreview = viewMode === 'client'
+  const adminClientPreview = canUseInternalView && searchParams.get('preview') === 'client'
+  const clientPreview = viewMode === 'client' || adminClientPreview
   const visiblePlatformModules = useMemo(
     () => clientPreview ? groupedModulesForClientStage(platformStage) : platformModules,
     [clientPreview, platformModules, platformStage],
@@ -926,6 +963,13 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
     }
   }, [tenantData.data])
   const moduleStatusById = useMemo(() => {
+    if (clientPreview) {
+      return Object.fromEntries(
+        visiblePlatformModules
+          .filter(module => module.module_id !== 'guia_circularidad')
+          .map(module => [module.module_id, moduleSubtitle(module.module_id, module.nav_subtitle)]),
+      )
+    }
     const gaps = tenantData.data?.document_gaps ?? []
     return Object.fromEntries(
       visiblePlatformModules
@@ -944,7 +988,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
           return [module.module_id, hasGap ? 'Brecha documental' : moduleSubtitle(module.module_id, module.nav_subtitle)]
         }),
     )
-  }, [visiblePlatformModules, tenantData.data?.document_gaps])
+  }, [clientPreview, visiblePlatformModules, tenantData.data?.document_gaps])
 
   function openTenant(nextTenantId: string) {
     const cleanTenantId = nextTenantId.trim()
@@ -1005,6 +1049,13 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
             </p>
           </div>
         )}
+        {adminClientPreview && (
+          <div className="border-b border-[#D7B56D] bg-[#FFF9EA] px-4 py-3 sm:px-6">
+            <p className="text-[12px] font-semibold leading-5 text-[#765814]">
+              Previsualización cliente · modo interno de solo lectura. Los uploads, gates, tenant IDs y readiness admin permanecen fuera de esta vista.
+            </p>
+          </div>
+        )}
 
         <div className="flex-1 overflow-x-hidden overflow-y-auto">
           {accessError ? (
@@ -1014,13 +1065,15 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
               </p>
               <p className="mt-2 text-[12px] leading-relaxed">{accessError}</p>
             </div>
-          ) : needsTenantSelection ? (
+          ) : needsTenantSelection && canUseInternalView ? (
             <TenantSelectionPanel
               tenants={tenantOptions}
               loading={tenantOptionsLoading}
               error={tenantOptionsError}
               onSelect={openTenant}
             />
+          ) : needsTenantSelection ? (
+            <ClientTenantMissingPanel />
           ) : (
             <>
               {tenantData.data && (
@@ -1075,7 +1128,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   </div>
                 </section>
               )}
-              {tenantData.data && (
+              {tenantData.data && !clientPreview && (
                 <DocumentGapBanner
                   tenantId={tenantData.data.tenant_id}
                   moduleId={isPlatformModuleGroup(activeModule?.module_id) ? null : activeModule?.module_id ?? null}
@@ -1084,7 +1137,7 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                   onChanged={tenantData.reload}
                 />
               )}
-              <StageReadinessNotice stage={platformStage} clientPreview={clientPreview} />
+              {!clientPreview && <StageReadinessNotice stage={platformStage} clientPreview={clientPreview} />}
               {tenantData.data && !clientPreview && (
                 <section className="mx-4 mt-5 max-w-full border-y border-[#D8D2C5] py-4 sm:mx-6">
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

@@ -190,6 +190,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   zip.file('bibliography_chicago.json', JSON.stringify(consultingManifest.bibliography_chicago ?? [], null, 2))
   zip.file('compatible_bibliography_chicago.json', JSON.stringify(consultingManifest.compatible_bibliography_chicago ?? [], null, 2))
   zip.file('bibliography_recommendations.json', JSON.stringify(consultingManifest.bibliography_recommendations ?? [], null, 2))
+  zip.file('template_readiness.json', JSON.stringify(consultingManifest.template_readiness ?? [], null, 2))
   zip.file('module_validation_specs.json', JSON.stringify(OPERATIONAL_MODULE_SPECS, null, 2))
   zip.file('module_operational_specs.json', JSON.stringify(OPERATIONAL_MODULE_SPECS, null, 2))
   zip.file('claim_evidence_matrix.md', claimEvidenceMatrixSection())

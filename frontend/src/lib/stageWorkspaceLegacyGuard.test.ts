@@ -38,6 +38,8 @@ describe('stage workspace legacy quarantine', () => {
     const manifest = readFrontend('src/lib/legacyQuarantineManifest.ts')
 
     expect(manifest).toContain('simulatorStore.ts')
+    expect(manifest).toContain('StageWorkspace.tsx')
+    expect(manifest).toContain('PlatformPage con renderDecisionModule')
     expect(manifest).toContain('components/simulator/**')
     expect(manifest).toContain('No borrar legacy mientras exista import activo')
     expect(manifest).toContain('/v, /p, /e, /admin o export')

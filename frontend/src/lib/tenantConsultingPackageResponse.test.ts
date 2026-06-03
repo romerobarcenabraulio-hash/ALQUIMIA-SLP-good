@@ -31,6 +31,7 @@ describe('tenantConsultingPackageResponse', () => {
     expect(response.export_manifest.claim_ledger.affirmable_count).toBeGreaterThan(0)
     expect(response.export_manifest.bibliography_chicago).toEqual(response.bibliography_chicago)
     expect(response.export_manifest.input_registry.buyers_available).toBe(true)
+    expect(response.export_manifest.template_readiness.some(template => template.template.id === 'expediente_diagnostico_cabildo')).toBe(true)
   })
 
   it('keeps package and export manifest aligned on claim counts', () => {

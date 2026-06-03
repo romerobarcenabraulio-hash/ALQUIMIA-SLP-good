@@ -21,7 +21,7 @@ describe('StageReadinessNotice', () => {
     expect(screen.getByText('Planeación condicionada')).toBeTruthy()
     expect(screen.getByText('Esta etapa no se abre como decisión automática.')).toBeTruthy()
     expect(screen.getByText(/requiere revisión humana, evidencia mínima y gates institucionales/i)).toBeTruthy()
-    expect(screen.getByText(/Los módulos heredados quedan fuera de la vista cliente/i)).toBeTruthy()
+    expect(screen.getByText(/sin controles libres en vista cliente/i)).toBeTruthy()
     expect(root?.className).toContain('border-l-4')
     expect(root?.className).not.toContain('rounded')
   })
@@ -78,7 +78,7 @@ describe('TenantSelectionPanel', () => {
     )
 
     expect(screen.getByText('Elige el municipio que quieres analizar.')).toBeTruthy()
-    fireEvent.change(screen.getByPlaceholderText('Filtrar por ciudad, estado, INEGI o tenant_id'), {
+    fireEvent.change(screen.getByPlaceholderText('Filtrar por ciudad, estado, clave INEGI o expediente'), {
       target: { value: '24028' },
     })
     expect(screen.getByText('San Luis Potosi')).toBeTruthy()
@@ -100,8 +100,8 @@ describe('TenantSelectionPanel', () => {
       />,
     )
 
-    expect(screen.getByText(/No se pudo cargar el índice admin de tenants/i)).toBeTruthy()
-    fireEvent.change(screen.getByPlaceholderText('tenant_id'), { target: { value: 'manual-city' } })
+    expect(screen.getByText(/No se pudo cargar el índice admin de municipios/i)).toBeTruthy()
+    fireEvent.change(screen.getByPlaceholderText('expediente interno'), { target: { value: 'manual-city' } })
     fireEvent.click(screen.getByText('Abrir análisis'))
     expect(selected).toEqual(['manual-city'])
   })

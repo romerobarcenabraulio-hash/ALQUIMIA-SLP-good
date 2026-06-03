@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getTenantArchiveData } from '@/lib/documentArchiveStore'
+import { buildMunicipalityPreparationSummary } from '@/lib/municipalityPreparation'
 import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
 import { canUseLocalAdminFallback, stateIdFromName } from '../../_shared'
 
@@ -22,7 +23,12 @@ export async function GET(request: NextRequest) {
   const estadoId = params.get('estado_id') ?? ''
   const status = params.get('status') ?? ''
   const rows = Object.values(TENANT_DIAGNOSTIC_FIXTURES)
-    .map(tenant => ({
+    .map(tenant => {
+      const preparation = buildMunicipalityPreparationSummary(getTenantArchiveData(tenant.tenant_id), {
+        tenantLinked: true,
+        userLinked: false,
+      })
+      return {
       clave_inegi: tenant.clave_inegi ?? '',
       municipio: tenant.municipality,
       estado: tenant.state,
@@ -40,7 +46,11 @@ export async function GET(request: NextRequest) {
       primary_contact: null,
       link_status: 'tenant_sin_usuario',
       duplicate_tenants_count: 1,
-    }))
+      preparation_status: preparation.status,
+      preparation_label: preparation.label,
+      next_founder_action: preparation.nextAction,
+    }
+    })
     .filter(row => !estadoId || row.estado_id === estadoId)
     .filter(row => !status || row.link_status === status)
     .filter(row => !q || `${row.municipio} ${row.estado} ${row.clave_inegi}`.toLowerCase().includes(q))

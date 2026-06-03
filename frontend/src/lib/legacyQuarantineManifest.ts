@@ -19,6 +19,14 @@ export function buildLegacyQuarantineManifest(): LegacyQuarantineManifest {
     policy: 'No borrar legacy mientras exista import activo desde /v, /p, /e, /admin o export. El rescate actual reutiliza el renderer histórico; primero separar laboratorio, controles libres y copy de simulador, luego eliminar sólo lo que quede sin imports activos.',
     items: [
       {
+        file: 'frontend/src/components/platform/StageWorkspace.tsx',
+        usage: 'Renderer paralelo creado durante el rescate; conserva contrato de stage-workspace y guardrails, pero no debe montar /v, /p ni /e.',
+        client_facing: false,
+        replacement: 'PlatformPage con renderDecisionModule, platformModuleGroups y /perfil para pendientes documentales.',
+        deletion_risk: 'medium',
+        deletion_criteria: 'Eliminar o mover a carpeta de contratos cuando /admin tenga drawer operativo equivalente y los tests de stage-workspace ya no necesiten montar el renderer.',
+      },
+      {
         file: 'frontend/src/store/simulatorStore.ts',
         usage: 'Store histórico del simulador; contiene defaults SLP, sliders y estado de laboratorio.',
         client_facing: false,

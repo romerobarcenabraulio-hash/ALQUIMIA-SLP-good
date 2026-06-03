@@ -7,6 +7,7 @@ import type { DocumentGap, TenantDiagnosticData, TenantMetric } from '@/lib/tena
 import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
 import { buildConsultingPackage, renderableClaims } from '@/lib/consultingPackageEngine'
 import { CONSULTING_API_LAYER_CONTRACTS } from '@/lib/consultingApiLayerContracts'
+import { buildTemplateReadiness } from '@/lib/alquimiaTemplates'
 import { buildChicagoBibliography, formatChicagoCitationSource } from '@/lib/citations'
 import JSZip from 'jszip'
 
@@ -433,6 +434,7 @@ export function buildConsultingExportManifest(data: TenantDiagnosticData) {
     material_price_mix: consultingPackage.material_price_mix,
     readiness_gates: consultingPackage.readiness_gates,
     plan_emission: consultingPackage.plan_emission,
+    template_readiness: buildTemplateReadiness(data),
     bibliography_recommendations: consultingPackage.evidence_recommendations,
     stage_evidence_map: consultingPackage.stage_evidence_map,
     roadmap: consultingPackage.roadmap,
