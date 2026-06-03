@@ -16,6 +16,11 @@ export default function GlobalError({
             Si ves esto tras abrir Metas futuras / Gantt-PERT, el navegador cerró la pestaña por memoria o por un bloque
             gráfico. Tras actualizar el sitio, entra al módulo y usa «Cargar Metas futuras» antes de abrir las gráficas.
           </p>
+          {error.digest ? (
+            <p style={{ marginTop: '0.75rem', fontSize: '0.75rem', color: '#8E8980' }}>
+              Referencia: {error.digest}
+            </p>
+          ) : null}
           <button
             type="button"
             onClick={() => reset()}

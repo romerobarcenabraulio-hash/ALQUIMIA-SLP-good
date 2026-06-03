@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { AlertTriangle, CheckCircle2, FileText, Gauge, GitBranch, RefreshCw, Search, ShieldCheck } from 'lucide-react'
+import { AlertTriangle, FileText, Gauge, GitBranch, RefreshCw, Search, ShieldCheck } from 'lucide-react'
 import { InstitutionalHeader } from '@/components/layout/InstitutionalHeader'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { DocumentGapBanner } from '@/components/DocumentGapBanner'

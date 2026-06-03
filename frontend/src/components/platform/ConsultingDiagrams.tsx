@@ -10,12 +10,6 @@ function shortMoney(value: number | null) {
   return `$${value.toLocaleString('es-MX')}`
 }
 
-function toneForConfidence(confidence: string) {
-  if (confidence === 'blocked') return 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]'
-  if (confidence === 'low') return 'border-[#D7B56D] bg-[#FFF9EA] text-[#765814]'
-  return 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'
-}
-
 function DiagramFrame({
   eyebrow,
   title,

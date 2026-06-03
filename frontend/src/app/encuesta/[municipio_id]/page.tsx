@@ -37,12 +37,10 @@ const TIPO_LABELS: Record<TipoVivienda, string> = {
 
 function LikertScale({
   pregunta,
-  campo,
   valor,
   onChange,
 }: {
   pregunta: string
-  campo: string
   valor: number
   onChange: (v: number) => void
 }) {
@@ -211,19 +209,16 @@ export default function EncuestaPage() {
             </p>
             <LikertScale
               pregunta="El aire limpio y las calles ordenadas son importantes para la calidad de vida en mi ciudad."
-              campo="sec_a_q1"
               valor={respuestas.sec_a_q1}
               onChange={v => set('sec_a_q1', v)}
             />
             <LikertScale
               pregunta="La basura mezclada en las calles afecta mi salud y la de mi familia."
-              campo="sec_a_q2"
               valor={respuestas.sec_a_q2}
               onChange={v => set('sec_a_q2', v)}
             />
             <LikertScale
               pregunta="Los ciudadanos tenemos responsabilidad en cómo se maneja la basura de nuestra ciudad."
-              campo="sec_a_q3"
               valor={respuestas.sec_a_q3}
               onChange={v => set('sec_a_q3', v)}
             />
@@ -248,19 +243,16 @@ export default function EncuestaPage() {
             </p>
             <LikertScale
               pregunta="En mi hogar separamos la basura orgánica de la inorgánica antes de sacarla."
-              campo="sec_b_q1"
               valor={respuestas.sec_b_q1}
               onChange={v => set('sec_b_q1', v)}
             />
             <LikertScale
               pregunta="Hago esto de forma frecuente (más de 3 veces por semana)."
-              campo="sec_b_q2"
               valor={respuestas.sec_b_q2}
               onChange={v => set('sec_b_q2', v)}
             />
             <LikertScale
               pregunta="Conozco el reglamento municipal sobre separación de residuos."
-              campo="sec_b_q3"
               valor={respuestas.sec_b_q3}
               onChange={v => set('sec_b_q3', v)}
             />
@@ -294,19 +286,16 @@ export default function EncuestaPage() {
             </p>
             <LikertScale
               pregunta="Participaría activamente en un programa de separación de residuos en mi colonia."
-              campo="sec_c_q1"
               valor={respuestas.sec_c_q1}
               onChange={v => set('sec_c_q1', v)}
             />
             <LikertScale
               pregunta="Invitaría a mis vecinos a unirse al programa."
-              campo="sec_c_q2"
               valor={respuestas.sec_c_q2}
               onChange={v => set('sec_c_q2', v)}
             />
             <LikertScale
               pregunta="Aceptaría recibir una capacitación de 30 minutos sobre cómo separar correctamente."
-              campo="sec_c_q3"
               valor={respuestas.sec_c_q3}
               onChange={v => set('sec_c_q3', v)}
             />
