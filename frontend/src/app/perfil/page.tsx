@@ -31,6 +31,92 @@ function ProfileMetric({ label, value }: { label: string; value: string }) {
   )
 }
 
+const PROFILE_PREFS_KEY = 'alquimia.profile.preferences'
+
+interface ProfilePreferencesState {
+  digest: 'weekly' | 'critical_only' | 'off'
+  exportFormat: 'zip' | 'json'
+  privacy: 'tenant_team' | 'founder_only'
+}
+
+const defaultProfilePreferences: ProfilePreferencesState = {
+  digest: 'critical_only',
+  exportFormat: 'zip',
+  privacy: 'tenant_team',
+}
+
+function readProfilePreferences(): ProfilePreferencesState {
+  if (typeof window === 'undefined') return defaultProfilePreferences
+  try {
+    const raw = localStorage.getItem(PROFILE_PREFS_KEY)
+    if (!raw) return defaultProfilePreferences
+    return { ...defaultProfilePreferences, ...JSON.parse(raw) } as ProfilePreferencesState
+  } catch {
+    return defaultProfilePreferences
+  }
+}
+
+function ProfilePreferencesPanel() {
+  const [preferences, setPreferences] = useState<ProfilePreferencesState>(defaultProfilePreferences)
+
+  useEffect(() => {
+    setPreferences(readProfilePreferences())
+  }, [])
+
+  function updatePreference<K extends keyof ProfilePreferencesState>(key: K, value: ProfilePreferencesState[K]) {
+    const next = { ...preferences, [key]: value }
+    setPreferences(next)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem(PROFILE_PREFS_KEY, JSON.stringify(next))
+    }
+  }
+
+  return (
+    <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+      <div className="flex items-center gap-2">
+        <Settings size={16} className="text-[#3B6D11]" />
+        <h2 className="text-[14px] font-semibold text-[#1C1B18]">Mis preferencias</h2>
+      </div>
+      <div className="mt-4 space-y-3">
+        <label className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+          Digest
+          <select
+            value={preferences.digest}
+            onChange={event => updatePreference('digest', event.target.value as ProfilePreferencesState['digest'])}
+            className="mt-1 h-9 w-full border border-[#D8D2C5] bg-white px-3 text-[12px] normal-case tracking-normal text-[#1C1B18]"
+          >
+            <option value="critical_only">Solo críticos</option>
+            <option value="weekly">Semanal</option>
+            <option value="off">Apagado</option>
+          </select>
+        </label>
+        <label className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+          Exportación preferida
+          <select
+            value={preferences.exportFormat}
+            onChange={event => updatePreference('exportFormat', event.target.value as ProfilePreferencesState['exportFormat'])}
+            className="mt-1 h-9 w-full border border-[#D8D2C5] bg-white px-3 text-[12px] normal-case tracking-normal text-[#1C1B18]"
+          >
+            <option value="zip">ZIP preliminar</option>
+            <option value="json">JSON técnico</option>
+          </select>
+        </label>
+        <label className="block text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">
+          Visibilidad
+          <select
+            value={preferences.privacy}
+            onChange={event => updatePreference('privacy', event.target.value as ProfilePreferencesState['privacy'])}
+            className="mt-1 h-9 w-full border border-[#D8D2C5] bg-white px-3 text-[12px] normal-case tracking-normal text-[#1C1B18]"
+          >
+            <option value="tenant_team">Equipo del tenant</option>
+            <option value="founder_only">Founder only</option>
+          </select>
+        </label>
+      </div>
+    </div>
+  )
+}
+
 function PendingDocumentQueue({
   tenantId,
   gaps,
@@ -215,6 +301,9 @@ export default function ProfilePage() {
   const validationPct = data?.metrics.length ? Math.round((verifiedMetrics / data.metrics.length) * 100) : 0
   const readyModules = data?.document_index.filter(slot => slot.status === 'ready').length ?? 0
   const userName = user?.fullName ?? user?.primaryEmailAddress?.emailAddress ?? 'Funcionario municipal'
+  const userEmail = user?.primaryEmailAddress?.emailAddress ?? 'correo pendiente'
+  const emailVerification = user?.primaryEmailAddress?.verification?.status ?? 'unverified'
+  const pendingDocuments = data?.document_gaps.filter(gap => gap.status === 'pending' && !gap.marked_not_applicable).length ?? 0
 
   return (
     <AppShell>
@@ -342,28 +431,43 @@ export default function ProfilePage() {
                   <Users size={16} className="text-[#3B6D11]" />
                   <h2 className="text-[14px] font-semibold text-[#1C1B18]">Mi equipo municipal</h2>
                 </div>
-                <p className="mt-2 text-[12px] leading-5 text-[#6B6760]">
-                  Pendiente de API `/api/profile/equipo`. Por ahora el tenant queda vinculado al usuario actual.
-                </p>
+                <dl className="mt-4 space-y-3 text-[12px]">
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">Cuenta principal</dt>
+                    <dd className="mt-1 break-all font-semibold text-[#1C1B18]">{userEmail}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">Tenant vinculado</dt>
+                    <dd className="mt-1 break-all font-semibold text-[#1C1B18]">{data.tenant_id}</dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">Responsabilidad activa</dt>
+                    <dd className="mt-1 font-semibold text-[#1C1B18]">{pendingDocuments} pendiente(s) documental(es)</dd>
+                  </div>
+                </dl>
               </div>
               <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
                 <div className="flex items-center gap-2">
                   <ShieldCheck size={16} className="text-[#3B6D11]" />
                   <h2 className="text-[14px] font-semibold text-[#1C1B18]">Seguridad</h2>
                 </div>
-                <p className="mt-2 text-[12px] leading-5 text-[#6B6760]">
-                  TOTP y backup codes se gestionan con Clerk. No se muestran códigos sensibles en esta vista.
-                </p>
+                <dl className="mt-4 space-y-3 text-[12px]">
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">Correo</dt>
+                    <dd className={`mt-1 font-semibold ${emailVerification === 'verified' ? 'text-[#2F5B0D]' : 'text-[#8A5C05]'}`}>
+                      {emailVerification === 'verified' ? 'Verificado' : 'Requiere verificación'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#8E8980]">Sesión</dt>
+                    <dd className="mt-1 font-semibold text-[#1C1B18]">{isLoaded ? 'Activa' : 'Validando'}</dd>
+                  </div>
+                  <p className="border border-[#E8E4DC] bg-white p-3 text-[11px] leading-5 text-[#6B6760]">
+                    Códigos, TOTP y recuperación se mantienen fuera de esta pantalla y se administran desde el proveedor de identidad.
+                  </p>
+                </dl>
               </div>
-              <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-                <div className="flex items-center gap-2">
-                  <Settings size={16} className="text-[#3B6D11]" />
-                  <h2 className="text-[14px] font-semibold text-[#1C1B18]">Mis preferencias</h2>
-                </div>
-                <p className="mt-2 text-[12px] leading-5 text-[#6B6760]">
-                  Digest, alertas y privacidad se integrarán cuando exista `/api/profile/preferencias`.
-                </p>
-              </div>
+              <ProfilePreferencesPanel />
             </section>
           </div>
         ) : null}

@@ -255,6 +255,20 @@ describe('client-facing consulting guardrails', () => {
     expect(reglamentoOnboarding).not.toContain('<Link href="/v"')
   })
 
+  it('keeps profile operations concrete instead of placeholder API promises', () => {
+    const profile = readFrontend('src/app/perfil/page.tsx')
+
+    expect(profile).toContain('PROFILE_PREFS_KEY')
+    expect(profile).toContain('ProfilePreferencesPanel')
+    expect(profile).toContain('Responsabilidad activa')
+    expect(profile).toContain('pendingDocuments')
+    expect(profile).toContain('emailVerification')
+    expect(profile).not.toContain('Pendiente de API')
+    expect(profile).not.toContain('/api/profile/equipo')
+    expect(profile).not.toContain('/api/profile/preferencias')
+    expect(profile).not.toContain('se integrarán cuando exista')
+  })
+
   it('keeps client-facing copy aligned to the consulting system rather than simulator promises', () => {
     const acceso = readFrontend('src/app/acceso/AccesoForm.tsx')
     const gobierno = readFrontend('src/app/gobierno/page.tsx')
