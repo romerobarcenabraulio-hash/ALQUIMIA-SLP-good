@@ -31,7 +31,7 @@ describe('platform module groups', () => {
     expect(PLATFORM_MODULE_GROUPS.validation_propuesta.visible_number).toBe('03')
   })
 
-  it('keeps planning and execution as stage workspaces without changing legacy module ids', () => {
+  it('keeps planning and execution as client stage groups without changing legacy module ids', () => {
     expect(groupedModulesForClientStage('planning').map(module => module.module_id)).toEqual(['planning_workspace'])
     expect(groupedModulesForClientStage('execution').map(module => module.module_id)).toEqual(['execution_control_workspace'])
 

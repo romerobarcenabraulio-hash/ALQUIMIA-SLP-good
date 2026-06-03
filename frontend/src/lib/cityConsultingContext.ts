@@ -20,7 +20,7 @@ import {
 
 export type EvidenceKernelSourceType = 'document' | 'api' | 'assumption' | 'model' | 'bibliography' | 'gap'
 export type EvidenceKernelHumanStatus = 'validated_human' | 'pending_human_validation' | 'blocked_by_gap'
-export type StageWorkspaceAction = 'upload_regulation' | 'upload_document' | 'review_claims' | 'export_package' | 'open_admin'
+export type ClientStageAction = 'upload_regulation' | 'upload_document' | 'review_claims' | 'export_package' | 'open_admin'
 
 export interface EvidenceKernelRecord {
   id: string
@@ -36,7 +36,7 @@ export interface EvidenceKernelRecord {
   can_render_as_claim: boolean
 }
 
-export interface StageWorkspaceModule {
+export interface ClientStageModule {
   module_id: string
   label: string
   stage: ClientPlatformStage
@@ -44,14 +44,14 @@ export interface StageWorkspaceModule {
   conclusion: string
   evidence_gap_ids: string[]
   claim_ids: string[]
-  actions: StageWorkspaceAction[]
+  actions: ClientStageAction[]
 }
 
-export interface StageWorkspaceConfig {
+export interface ClientStageConfig {
   stage: ClientPlatformStage
   label: string
-  visible_modules: StageWorkspaceModule[]
-  blocked_modules: StageWorkspaceModule[]
+  visible_modules: ClientStageModule[]
+  blocked_modules: ClientStageModule[]
   required_documents: TenantDocumentSlot[]
   recommended_documents: TenantDocumentSlot[]
   claims_allowed: string[]
@@ -92,7 +92,7 @@ export interface CityConsultingContext {
     private_category_count: number
     affirmable_claim_count: number
   }
-  stage_workspace: StageWorkspaceConfig
+  client_stage: ClientStageConfig
   operational_events: OperationalEvent[]
   permissions: {
     admin_can_view_all: boolean
@@ -148,7 +148,7 @@ const MODULES_BY_STAGE: Record<ClientPlatformStage, Array<{ module_id: string; l
   ],
 }
 
-function stageAction(stage: ClientPlatformStage): StageWorkspaceAction[] {
+function stageAction(stage: ClientPlatformStage): ClientStageAction[] {
   if (stage === 'validation') return ['upload_regulation', 'upload_document', 'review_claims', 'export_package']
   if (stage === 'planning') return ['upload_document', 'review_claims', 'export_package']
   return ['upload_document', 'review_claims', 'export_package']
@@ -162,13 +162,13 @@ function gapBlocksModule(gap: DocumentGap, moduleId: string) {
   )
 }
 
-function moduleStatus(moduleId: string, gaps: DocumentGap[], regulationMissing: boolean): StageWorkspaceModule['status'] {
+function moduleStatus(moduleId: string, gaps: DocumentGap[], regulationMissing: boolean): ClientStageModule['status'] {
   if (moduleId === 'M03B' && regulationMissing) return 'blocked'
   if (moduleId === 'M15' && regulationMissing) return 'blocked'
   return gaps.some(gap => gapBlocksModule(gap, moduleId)) ? 'conditioned' : 'ready'
 }
 
-function moduleConclusion(status: StageWorkspaceModule['status'], label: string) {
+function moduleConclusion(status: ClientStageModule['status'], label: string) {
   if (status === 'blocked') return `${label} queda bloqueado para emitir plan mientras falte reglamento vigente.`
   if (status === 'conditioned') return `${label} puede trabajarse con brechas explícitas; no habilita claims oficiales sin evidencia suficiente.`
   return `${label} está listo para lectura preliminar con fuente, método, alcance y revisión humana.`
@@ -208,12 +208,12 @@ function evidenceKernelFromPackage(pkg: ConsultingPackage): EvidenceKernelRecord
   return [...claimEntries, ...gapEntries]
 }
 
-function buildStageWorkspaceConfig(
+function buildClientStageConfig(
   stage: ClientPlatformStage,
   tenantData: TenantDiagnosticData,
   pkg: ConsultingPackage,
   evidenceKernel: EvidenceKernelRecord[],
-): StageWorkspaceConfig {
+): ClientStageConfig {
   const openGaps = tenantData.document_gaps.filter(gap => gap.status === 'pending' && !gap.marked_not_applicable)
   const regulationMissing = openGaps.some(gap => gap.document_type === 'reglamento_limpia')
   const modules = MODULES_BY_STAGE[stage].map(module => {
@@ -244,7 +244,7 @@ function buildStageWorkspaceConfig(
 function operationalEventsForContext(
   tenantData: TenantDiagnosticData,
   stage: ClientPlatformStage,
-  workspace: StageWorkspaceConfig,
+  clientStage: ClientStageConfig,
   pkg: ConsultingPackage,
 ): OperationalEvent[] {
   const now = new Date().toISOString()
@@ -253,8 +253,8 @@ function operationalEventsForContext(
       tenant_id: tenantData.tenant_id,
       stage,
       action: 'stage_visited',
-      result: workspace.blocked_modules.length ? 'blocked' : 'ready',
-      evidence_ids: workspace.claims_allowed.slice(0, 3),
+      result: clientStage.blocked_modules.length ? 'blocked' : 'ready',
+      evidence_ids: clientStage.claims_allowed.slice(0, 3),
       created_at: now,
     },
     {
@@ -281,7 +281,7 @@ export function buildCityConsultingContext(
     gap.status === 'pending' && !gap.marked_not_applicable && gap.document_type === 'reglamento_limpia',
   )
   const evidenceKernel = evidenceKernelFromPackage(pkg)
-  const stageWorkspace = buildStageWorkspaceConfig(stage, tenantData, pkg, evidenceKernel)
+  const clientStage = buildClientStageConfig(stage, tenantData, pkg, evidenceKernel)
   const scenarioCount = pkg.scenario_set.scenarios.length
   const quantifiedScenarioCount = pkg.scenario_set.scenarios.filter(scenario => scenario.capture_ton_day !== null).length
 
@@ -310,8 +310,8 @@ export function buildCityConsultingContext(
       private_category_count: pkg.private_generator_mix.length,
       affirmable_claim_count: evidenceKernel.filter(record => record.can_render_as_claim).length,
     },
-    stage_workspace: stageWorkspace,
-    operational_events: operationalEventsForContext(tenantData, stage, stageWorkspace, pkg),
+    client_stage: clientStage,
+    operational_events: operationalEventsForContext(tenantData, stage, clientStage, pkg),
     permissions: {
       admin_can_view_all: true,
       client_tenant_only: true,

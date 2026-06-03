@@ -11,7 +11,7 @@ describe('cityConsultingContext', () => {
     const context = buildCityConsultingContext(TENANT_DIAGNOSTIC_FIXTURES['partial-city'], 'validation')
 
     expect(context.document_index.map(slot => slot.id)).toEqual(STANDARD_CITY_DOCUMENT_INDEX.map(slot => slot.id))
-    expect(context.stage_workspace.visible_modules.map(module => module.module_id)).toEqual([
+    expect(context.client_stage.visible_modules.map(module => module.module_id)).toEqual([
       'M00',
       'M00B',
       'M01',
@@ -33,7 +33,7 @@ describe('cityConsultingContext', () => {
     expect(legalGate?.required).toBe(true)
     expect(nonLegalRequired).toHaveLength(0)
     expect(context.regulation.blocks_plan).toBe(false)
-    expect(context.stage_workspace.export_allowed).toBe(true)
+    expect(context.client_stage.export_allowed).toBe(true)
   })
 
   it('blocks plan export when regulation is missing but keeps the workspace usable', () => {
@@ -42,8 +42,8 @@ describe('cityConsultingContext', () => {
 
     expect(context.regulation.status).toBe('missing')
     expect(context.regulation.blocks_plan).toBe(true)
-    expect(context.stage_workspace.export_allowed).toBe(false)
-    expect(context.stage_workspace.visible_modules.length).toBeGreaterThan(0)
+    expect(context.client_stage.export_allowed).toBe(false)
+    expect(context.client_stage.visible_modules.length).toBeGreaterThan(0)
   })
 
   it('does not render blocked or gap records as claims', () => {

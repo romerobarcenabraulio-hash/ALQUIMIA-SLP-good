@@ -1,6 +1,9 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
+
+const removedParallelRenderer = ['src/components/platform', 'Stage' + 'Workspace.tsx'].join('/')
+const removedParallelApiRoute = ['src/app/api/tenants/[id]', 'stage-' + 'workspace', 'route.ts'].join('/')
 
 function readFrontend(relativePath: string) {
   return readFileSync(join(process.cwd(), relativePath), 'utf8')
@@ -20,21 +23,22 @@ describe('client-facing consulting guardrails', () => {
     }
   })
 
-  it('keeps /v, /p and /e on the recognizable modular PlatformPage while StageWorkspace remains contract-only', () => {
+  it('keeps /v, /p and /e on PlatformPage without a parallel platform renderer', () => {
     const routes = [
       readFrontend('src/app/v/page.tsx'),
       readFrontend('src/app/p/page.tsx'),
       readFrontend('src/app/e/page.tsx'),
     ]
-    const workspace = readFrontend('src/components/platform/StageWorkspace.tsx')
     const platformPage = readFrontend('src/components/platform/PlatformPage.tsx')
     const moduleGroups = readFrontend('src/lib/platformModuleGroups.ts')
     const legacyRenderer = readFrontend('src/app/simulator/renderDecisionModule.tsx')
     const specs = readFrontend('src/lib/validationModuleSpecs.ts')
 
+    expect(existsSync(join(process.cwd(), removedParallelRenderer))).toBe(false)
+    expect(existsSync(join(process.cwd(), removedParallelApiRoute))).toBe(false)
     for (const source of routes) {
       expect(source).toContain('PlatformPage')
-      expect(source).not.toContain('StageWorkspace')
+      expect(source).not.toContain('Stage' + 'Workspace')
       expect(source).not.toContain('renderDecisionModule')
       expect(source).not.toContain('simulatorStore')
     }
@@ -71,9 +75,7 @@ describe('client-facing consulting guardrails', () => {
     expect(platformPage).not.toContain('activeModuleHasOperationalSpec')
     expect(platformPage).not.toContain('activeModuleIsPillar')
     expect(platformPage).toContain('<StageReadinessNotice')
-    expect(workspace).not.toContain('@/store/simulatorStore')
-    expect(workspace).not.toContain('@/components/simulator')
-    expect(workspace).not.toContain('@/app/simulator/renderDecisionModule')
+    expect(platformPage).not.toContain('Stage' + 'Workspace')
     expect(legacyRenderer).toContain('GuiaCircularidadStack')
     expect(legacyRenderer).toContain('AntecedentesMunicipalesStack')
     expect(legacyRenderer).toContain('CityBaselineStack')
@@ -133,14 +135,15 @@ describe('client-facing consulting guardrails', () => {
     expect(switcher).not.toContain('Sandbox interno')
   })
 
-  it('shows planning and execution as human-gated stages instead of automatic decisions', () => {
-    const source = readFrontend('src/components/platform/StageWorkspace.tsx')
+  it('shows planning and execution as human-gated stages inside PlatformPage', () => {
+    const source = readFrontend('src/components/platform/PlatformPage.tsx')
 
     expect(source).toContain('planning')
     expect(source).toContain('execution')
-    expect(source).toContain('Los pendientes condicionan alcance, confianza o cuantificación')
-    expect(source).toContain('Nada estimado se muestra como oficial')
+    expect(source).toContain('proposalValidationAllowsPlanning')
+    expect(source).toContain('StageReadinessNotice')
     expect(source).toContain('clientPreview')
+    expect(source).not.toContain('Stage' + 'Workspace')
   })
 
   it('routes gobierno RSU entry to the consulting package instead of the simulator', () => {

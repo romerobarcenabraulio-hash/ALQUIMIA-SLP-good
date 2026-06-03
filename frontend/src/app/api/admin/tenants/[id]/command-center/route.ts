@@ -22,7 +22,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       document_gaps: context.evidence_gaps,
       api_coverage: context.api_sources,
       readiness: context.readiness,
-      stage_workspace: context.stage_workspace,
+      client_stage: context.client_stage,
       package_summary: context.package_summary,
       operational_events: context.operational_events,
     },
