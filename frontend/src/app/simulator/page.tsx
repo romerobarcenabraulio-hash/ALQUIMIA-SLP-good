@@ -25,6 +25,7 @@ import {
 } from '@/lib/journeyMode'
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 import { useAccountOnboardingBootstrap } from '@/hooks/useAccountOnboardingBootstrap'
+import { ModuleProgressionBar } from '@/components/simulator/ModuleProgressionBar'
 
 function SimulatorSimulationRibbon() {
   const [open, setOpen] = useState(false)
@@ -233,6 +234,11 @@ export default function SimulatorPage() {
                 <PlanGlobalControlsBar />
               </div>
             )}
+
+            {/* Module progression bar — shows completion progress for M00B-M15 */}
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <ModuleProgressionBar />
+            </div>
 
             <DecisionModuleShell
               modules={journeyFilteredModules}
