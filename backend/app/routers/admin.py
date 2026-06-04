@@ -4350,6 +4350,68 @@ async def bulk_export_tenants(
     )
 
 
+@router.get("/api/admin/stats")
+async def get_admin_stats(
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get platform statistics and KPIs."""
+    from app.models.admin_tenant import AdminTenant, TenantState, TenantDocumentDraft
+
+    if db is None:
+        return {
+            "total_tenants": 0,
+            "by_stage": {},
+            "avg_usuarios": 0,
+            "total_documents": 0,
+            "ready_for_expansion": 0,
+        }
+
+    # Total tenants
+    total_tenants = db.query(func.count(AdminTenant.id)).scalar() or 0
+
+    # Tenants by stage
+    stage_counts = db.query(
+        TenantState.current_stage,
+        func.count(AdminTenant.id)
+    ).join(AdminTenant).group_by(TenantState.current_stage).all()
+
+    by_stage = {
+        "validation": 0,
+        "planning": 0,
+        "execution": 0,
+        "expansion": 0,
+    }
+    for stage, count in stage_counts:
+        if stage in by_stage:
+            by_stage[stage] = count
+
+    # Average users per tenant
+    avg_query = db.query(func.avg(func.count(UserAccount.id))).group_by(
+        UserAccount.municipio_id
+    ).subquery()
+    avg_usuarios = db.query(func.avg(avg_query.c.count_1)).scalar() or 0
+
+    # Total documents
+    total_documents = db.query(func.count(TenantDocumentDraft.id)).scalar() or 0
+
+    # Count tenants ready for expansion (in execution for 30+ days)
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    ready_for_expansion = db.query(func.count(AdminTenant.id)).join(TenantState).filter(
+        TenantState.current_stage == "execution",
+        TenantState.fecha_cambio_stage <= cutoff
+    ).scalar() or 0
+
+    return {
+        "total_tenants": total_tenants,
+        "by_stage": by_stage,
+        "avg_usuarios": round(float(avg_usuarios), 1) if avg_usuarios else 0,
+        "total_documents": total_documents,
+        "ready_for_expansion": ready_for_expansion,
+    }
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [
