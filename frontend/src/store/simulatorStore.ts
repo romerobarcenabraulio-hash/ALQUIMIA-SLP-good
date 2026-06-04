@@ -1122,6 +1122,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
           zmActiva: s.zmActiva,
           municipiosActivos: s.municipiosActivos,
           seleccionMunicipioCatalog: s.seleccionMunicipioCatalog,
+          moduleProgression: s.moduleProgression,
         }),
         onRehydrateStorage: () => (partial, error) => {
           if (error || typeof window === 'undefined') return
