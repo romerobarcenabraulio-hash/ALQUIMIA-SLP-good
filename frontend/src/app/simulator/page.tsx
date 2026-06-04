@@ -26,6 +26,7 @@ import {
 import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 import { useAccountOnboardingBootstrap } from '@/hooks/useAccountOnboardingBootstrap'
 import { ModuleProgressionBar } from '@/components/simulator/ModuleProgressionBar'
+import { SimulationControlPanel } from '@/components/simulator/SimulationControlPanel'
 
 function SimulatorSimulationRibbon() {
   const [open, setOpen] = useState(false)
@@ -238,6 +239,11 @@ export default function SimulatorPage() {
             {/* Module progression bar — shows completion progress for M00B-M15 */}
             <div className="px-4 sm:px-6 py-4 border-b border-gray-200 bg-gray-50">
               <ModuleProgressionBar />
+            </div>
+
+            {/* Simulation control panel — save, load, export, import, offline sync */}
+            <div className="px-4 sm:px-6 py-4">
+              <SimulationControlPanel />
             </div>
 
             <DecisionModuleShell
