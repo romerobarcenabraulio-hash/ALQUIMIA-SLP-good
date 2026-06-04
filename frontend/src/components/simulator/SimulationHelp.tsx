@@ -10,6 +10,20 @@ interface HelpTopic {
   steps?: string[]
 }
 
+interface KeyboardShortcut {
+  keys: string[]
+  description: string
+}
+
+const KEYBOARD_SHORTCUTS: KeyboardShortcut[] = [
+  { keys: ['Ctrl/Cmd', 'S'], description: 'Save current simulation' },
+  { keys: ['Ctrl/Cmd', 'O'], description: 'Open/Load simulation' },
+  { keys: ['Ctrl/Cmd', 'E'], description: 'Export simulation' },
+  { keys: ['Ctrl/Cmd', 'D'], description: 'Duplicate simulation' },
+  { keys: ['Ctrl/Cmd', '?'], description: 'Show help' },
+  { keys: ['Escape'], description: 'Close dialogs' },
+]
+
 const HELP_TOPICS: HelpTopic[] = [
   {
     title: 'Save Your Simulation',
@@ -80,6 +94,7 @@ interface SimulationHelpProps {
 export function SimulationHelp({ className }: SimulationHelpProps) {
   const [open, setOpen] = useState(false)
   const [expandedTopic, setExpandedTopic] = useState<number | null>(null)
+  const [activeTab, setActiveTab] = useState<'guides' | 'shortcuts'>('guides')
 
   return (
     <div className={cn('', className)}>
@@ -105,9 +120,35 @@ export function SimulationHelp({ className }: SimulationHelpProps) {
               </button>
             </div>
 
+            <div className="flex border-b border-[#E8E4DC]">
+              <button
+                onClick={() => setActiveTab('guides')}
+                className={cn(
+                  'flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                  activeTab === 'guides'
+                    ? 'text-[#3B6D11] border-[#3B6D11]'
+                    : 'text-[#6B6760] border-transparent hover:text-[#1C1B18]'
+                )}
+              >
+                Guides
+              </button>
+              <button
+                onClick={() => setActiveTab('shortcuts')}
+                className={cn(
+                  'flex-1 px-4 py-3 text-sm font-medium border-b-2 transition-colors',
+                  activeTab === 'shortcuts'
+                    ? 'text-[#3B6D11] border-[#3B6D11]'
+                    : 'text-[#6B6760] border-transparent hover:text-[#1C1B18]'
+                )}
+              >
+                Keyboard Shortcuts
+              </button>
+            </div>
+
             <div className="flex-1 overflow-y-auto">
-              <div className="space-y-0">
-                {HELP_TOPICS.map((topic, index) => (
+              {activeTab === 'guides' ? (
+                <div className="space-y-0">
+                  {HELP_TOPICS.map((topic, index) => (
                   <div key={index} className="border-b border-[#E8E4DC]">
                     <button
                       onClick={() => setExpandedTopic(expandedTopic === index ? null : index)}
@@ -140,7 +181,26 @@ export function SimulationHelp({ className }: SimulationHelpProps) {
                     )}
                   </div>
                 ))}
-              </div>
+                </div>
+              ) : (
+                <div className="p-5 space-y-3">
+                  {KEYBOARD_SHORTCUTS.map((shortcut, index) => (
+                    <div key={index} className="flex items-center justify-between py-2 border-b border-[#E8E4DC] last:border-b-0">
+                      <p className="text-sm text-[#6B6760]">{shortcut.description}</p>
+                      <div className="flex gap-1">
+                        {shortcut.keys.map((key, i) => (
+                          <span key={i} className="inline-flex items-center">
+                            <kbd className="px-2 py-1 bg-[#F4F2ED] border border-[#E8E4DC] rounded text-xs font-medium text-[#1C1B18]">
+                              {key}
+                            </kbd>
+                            {i < shortcut.keys.length - 1 && <span className="mx-1 text-[#8E8980]">+</span>}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="px-5 py-4 border-t border-[#E8E4DC] bg-[#FDFCFA]">
