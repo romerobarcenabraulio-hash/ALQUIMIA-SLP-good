@@ -14,6 +14,7 @@ import {
   CheckCircle2,
   AlertTriangle,
   Download,
+  Trash2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
@@ -51,12 +52,18 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
     quickFilter,
     sortBy,
     sortOrder,
+    selectedIds,
+    selectedCount,
+    isAllSelected,
     fetchData,
     handleSearch,
     handleFilterByEtapa,
     handleQuickFilter,
     toggleSort,
     goToPage,
+    toggleRowSelection,
+    toggleSelectAll,
+    clearSelection,
   } = useAdminMasterTable()
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
@@ -174,6 +181,23 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
         </div>
       </div>
 
+      {/* Bulk Actions Bar */}
+      {selectedCount > 0 && (
+        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-center justify-between">
+          <p className="text-sm font-medium text-blue-900">
+            {selectedCount} municipio{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
+          </p>
+          <div className="flex gap-2">
+            <button
+              onClick={clearSelection}
+              className="px-3 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 transition-colors"
+            >
+              Deseleccionar
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Table */}
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex items-start gap-2">
@@ -194,6 +218,14 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E8E4DC]">
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-12">
+                  <input
+                    type="checkbox"
+                    checked={isAllSelected}
+                    onChange={toggleSelectAll}
+                    className="rounded border-[#E8E4DC] text-[#3B6D11]"
+                  />
+                </th>
                 <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-40">
                   <button
                     onClick={() => toggleSort('municipio')}
@@ -238,13 +270,26 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               {rows.map(row => (
                 <tr
                   key={row.id}
-                  className="border-b border-[#E8E4DC] hover:bg-[#FDFCFA] transition-colors cursor-pointer"
-                  onClick={() => {
-                    setExpandedRow(expandedRow === row.id ? null : row.id)
-                    onRowClick?.(row.id)
-                  }}
+                  className={cn(
+                    'border-b border-[#E8E4DC] transition-colors',
+                    selectedIds.has(row.id) ? 'bg-blue-50' : 'hover:bg-[#FDFCFA]'
+                  )}
                 >
-                  <td className="px-3 py-3">
+                  <td className="px-3 py-3 text-center" onClick={e => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(row.id)}
+                      onChange={() => toggleRowSelection(row.id)}
+                      className="rounded border-[#E8E4DC] text-[#3B6D11]"
+                    />
+                  </td>
+                  <td
+                    className="px-3 py-3 cursor-pointer"
+                    onClick={() => {
+                      setExpandedRow(expandedRow === row.id ? null : row.id)
+                      onRowClick?.(row.id)
+                    }}
+                  >
                     <div>
                       <p className="font-medium text-[#1C1B18]">{row.municipio}</p>
                       <p className="text-xs text-[#8E8980]">{row.estado} · {row.inegi_clave}</p>

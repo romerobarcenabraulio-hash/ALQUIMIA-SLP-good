@@ -42,6 +42,7 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
   const [sortBy, setSortBy] = useState<'municipio' | 'etapa' | 'dias_en_etapa' | 'avance' | 'updated_at'>('updated_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(0)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   const pageSize = 25
 
@@ -119,6 +120,30 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     setCurrentPage(Math.min(Math.max(0, page), maxPages - 1))
   }, [total, pageSize])
 
+  const toggleRowSelection = useCallback((id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }, [])
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === rows.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(rows.map(r => r.id)))
+    }
+  }, [rows, selectedIds.size])
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set())
+  }, [])
+
   // Apply client-side quick filters
   const filteredRows = rows.filter(row => {
     if (quickFilter === 'urgentes') {
@@ -154,6 +179,11 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     sortBy,
     sortOrder,
 
+    // Selection
+    selectedIds,
+    selectedCount: selectedIds.size,
+    isAllSelected: selectedIds.size === rows.length && rows.length > 0,
+
     // Actions
     fetchData,
     handleSearch,
@@ -161,5 +191,8 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     handleQuickFilter,
     toggleSort,
     goToPage,
+    toggleRowSelection,
+    toggleSelectAll,
+    clearSelection,
   }
 }
