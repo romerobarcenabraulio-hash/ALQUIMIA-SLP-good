@@ -211,6 +211,95 @@ async def list_simulations(
         raise HTTPException(status_code=500, detail=f"Failed to list simulations: {str(exc)}")
 
 
+@router.get("/stats/overview")
+async def get_simulations_stats(
+    user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+    request: Request = None,
+):
+    """
+    Get statistics about user's simulations.
+    Returns summary data for dashboard display.
+    """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+
+    try:
+        # Count simulations
+        total_simulations = (
+            db.query(Simulation)
+            .filter(
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .count()
+        )
+
+        # Get newest simulation
+        newest = (
+            db.query(Simulation)
+            .filter(
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .order_by(Simulation.created_at.desc())
+            .first()
+        )
+
+        # Get most recently modified
+        most_recent = (
+            db.query(Simulation)
+            .filter(
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .order_by(Simulation.updated_at.desc())
+            .first()
+        )
+
+        # Count total versions
+        total_versions = (
+            db.query(SimulationVersion)
+            .join(Simulation, SimulationVersion.simulation_id == Simulation.id)
+            .filter(
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .count()
+        )
+
+        # Count total audit log entries
+        total_operations = (
+            db.query(SimulationAuditLog)
+            .join(Simulation, SimulationAuditLog.simulation_id == Simulation.id)
+            .filter(
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .count()
+        )
+
+        return {
+            "totalSimulations": total_simulations,
+            "totalVersions": total_versions,
+            "totalOperations": total_operations,
+            "newestSimulation": {
+                "id": newest.id,
+                "name": newest.name,
+                "createdAt": newest.created_at.isoformat(),
+            } if newest else None,
+            "mostRecentlyModified": {
+                "id": most_recent.id,
+                "name": most_recent.name,
+                "updatedAt": most_recent.updated_at.isoformat(),
+            } if most_recent else None,
+        }
+
+    except Exception as exc:
+        logger.error(f"Failed to get simulation stats: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to get simulation stats: {str(exc)}")
+
+
 @router.get("/{simulation_id}")
 async def load_simulation(
     simulation_id: str,

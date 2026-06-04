@@ -33,6 +33,7 @@ import { ReportGenerator } from '@/components/simulator/ReportGenerator'
 import { SimulationVersionTimeline } from '@/components/simulator/SimulationVersionTimeline'
 import { SimulationHelp } from '@/components/simulator/SimulationHelp'
 import { SimulationActivityLog } from '@/components/simulator/SimulationActivityLog'
+import { SimulationStats } from '@/components/simulator/SimulationStats'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -72,6 +73,8 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [searchQuery, setSearchQuery] = useState('')
   const [duplicating, setDuplicating] = useState<string | null>(null)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [selectedForExport, setSelectedForExport] = useState<Set<string>>(new Set())
+  const [showBulkExport, setShowBulkExport] = useState(false)
 
   // Save handlers
   const handleSaveClick = async () => {
@@ -166,6 +169,47 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
     } finally {
       setDeleting(null)
     }
+  }
+
+  const handleBulkExport = () => {
+    if (selectedForExport.size === 0) return
+
+    const selectedSims = simulations.filter(s => selectedForExport.has(s.id))
+    const bulkData = {
+      exportDate: new Date().toISOString(),
+      simulations: selectedSims.map(sim => ({
+        id: sim.id,
+        name: sim.name,
+        description: sim.description,
+        createdAt: sim.createdAt,
+        updatedAt: sim.updatedAt,
+      })),
+      count: selectedSims.length,
+    }
+
+    const dataStr = JSON.stringify(bulkData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `simulations-export-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    setSelectedForExport(new Set())
+    setShowBulkExport(false)
+  }
+
+  const toggleSimulationSelection = (simId: string) => {
+    const newSelected = new Set(selectedForExport)
+    if (newSelected.has(simId)) {
+      newSelected.delete(simId)
+    } else {
+      newSelected.add(simId)
+    }
+    setSelectedForExport(newSelected)
   }
 
   // Export handlers
@@ -269,6 +313,9 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
           )}
         </div>
       </div>
+
+      {/* Statistics */}
+      <SimulationStats tenantId={tenantId} />
 
       {/* Last save time */}
       {lastSaveTime && (
@@ -451,13 +498,23 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
       {/* Load dialog */}
       {showLoadDialog && (
         <div className="space-y-3 rounded-lg bg-[#FDFCFA] p-4 border border-[#E8E4DC]">
-          <input
-            type="text"
-            placeholder="Search simulations..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
-          />
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              placeholder="Search simulations..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="flex-1 rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+            />
+            {selectedForExport.size > 0 && (
+              <button
+                onClick={() => setShowBulkExport(!showBulkExport)}
+                className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs font-medium text-blue-700 hover:bg-blue-100"
+              >
+                Export {selectedForExport.size}
+              </button>
+            )}
+          </div>
 
           <div className="max-h-60 overflow-y-auto">
             {loadingSimulations ? (
@@ -483,26 +540,36 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                       key={sim.id}
                       className={cn(
                         'rounded-lg border p-3 transition-colors',
-                        currentSimulationId === sim.id
+                        selectedForExport.has(sim.id)
+                          ? 'bg-blue-50 border-blue-200'
+                          : currentSimulationId === sim.id
                           ? 'bg-green-50 border-green-200'
                           : 'bg-white border-[#E8E4DC]'
                       )}
                     >
-                      <button
-                        onClick={() => {
-                          handleLoadClick(sim.id)
-                          setSearchQuery('')
-                        }}
-                        className="w-full text-left hover:opacity-80"
-                      >
-                        <p className="font-medium text-[#1C1B18] text-sm">{sim.name}</p>
-                        {sim.description && (
-                          <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
-                        )}
-                        <p className="text-xs text-[#8E8980] mt-1">
-                          {new Date(sim.updatedAt).toLocaleString()}
-                        </p>
-                      </button>
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedForExport.has(sim.id)}
+                          onChange={() => toggleSimulationSelection(sim.id)}
+                          className="mt-1"
+                        />
+                        <button
+                          onClick={() => {
+                            handleLoadClick(sim.id)
+                            setSearchQuery('')
+                          }}
+                          className="flex-1 text-left hover:opacity-80"
+                        >
+                          <p className="font-medium text-[#1C1B18] text-sm">{sim.name}</p>
+                          {sim.description && (
+                            <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
+                          )}
+                          <p className="text-xs text-[#8E8980] mt-1">
+                            {new Date(sim.updatedAt).toLocaleString()}
+                          </p>
+                        </button>
+                      </div>
                       <div className="flex gap-2 mt-2">
                         <button
                           onClick={() => handleDuplicateSimulation(sim.id)}
@@ -543,10 +610,34 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
             )}
           </div>
 
+          {showBulkExport && selectedForExport.size > 0 && (
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 space-y-2">
+              <p className="text-xs font-medium text-blue-900">
+                Export {selectedForExport.size} simulation{selectedForExport.size !== 1 ? 's' : ''}?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBulkExport}
+                  className="flex-1 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-medium hover:bg-blue-700"
+                >
+                  Export
+                </button>
+                <button
+                  onClick={() => setShowBulkExport(false)}
+                  className="flex-1 rounded-lg bg-white border border-blue-200 text-blue-700 px-3 py-1.5 text-xs font-medium hover:bg-blue-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => {
               setShowLoadDialog(false)
               setSearchQuery('')
+              setSelectedForExport(new Set())
+              setShowBulkExport(false)
             }}
             className="w-full rounded-lg border border-[#E8E4DC] bg-white px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F4F2ED]"
           >
