@@ -203,6 +203,14 @@ export function AntecedentesMunicipalesStack() {
           No se pudo cargar el reportaje. Cambie de municipio o recargue la página.
         </p>
       )}
+
+      <p className="mt-6 text-[12px] text-[#A8A49C]">
+        ¿Tiene documentos municipales relevantes?{' '}
+        <a href="/perfil" className="underline hover:text-[#6B6760]">
+          Súbalos desde su perfil
+        </a>
+        .
+      </p>
     </div>
   )
 }
