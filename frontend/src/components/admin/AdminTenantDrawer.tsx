@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, AlertCircle, FileUp, Loader2 } from 'lucide-react'
+import { X, AlertCircle, FileUp, Loader2, CheckCircle2, AlertTriangle, Clock } from 'lucide-react'
 import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { AdminDocumentUploadModal } from './AdminDocumentUploadModal'
@@ -50,15 +50,24 @@ interface TenantUser {
   last_login_at: string | null
 }
 
+interface ActionItem {
+  id: string
+  title: string
+  priority: 'high' | 'medium' | 'low'
+  daysOverdue: number
+}
+
 export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: TenantDrawerProps) {
   const [data, setData] = useState<TenantResumen | null>(null)
   const [documents, setDocuments] = useState<TenantDocument[]>([])
   const [users, setUsers] = useState<TenantUser[]>([])
+  const [actionItems, setActionItems] = useState<ActionItem[]>([])
   const [loading, setLoading] = useState(false)
   const [documentsLoading, setDocumentsLoading] = useState(false)
   const [usersLoading, setUsersLoading] = useState(false)
+  const [actionsLoading, setActionsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios'>('resumen')
+  const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios' | 'acciones'>('resumen')
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteCargo, setInviteCargo] = useState('Miembro del equipo')
@@ -77,6 +86,9 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
     }
     if (activeTab === 'usuarios' && tenantId) {
       loadUsers()
+    }
+    if (activeTab === 'acciones' && tenantId) {
+      loadActionItems()
     }
   }, [activeTab, tenantId])
 
@@ -205,6 +217,35 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
     }
   }
 
+  const loadActionItems = async () => {
+    if (!tenantId) return
+
+    setActionsLoading(true)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/tenants/${encodeURIComponent(tenantId)}/action-items`, {
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to load action items: HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      setActionItems(data.items || [])
+    } catch (e) {
+      console.error('Failed to load action items:', e)
+    } finally {
+      setActionsLoading(false)
+    }
+  }
+
   if (!isOpen) return null
 
   return (
@@ -223,7 +264,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-[#E8E4DC] px-6">
-          {(['resumen', 'documentos', 'usuarios'] as const).map(tab => (
+          {(['resumen', 'documentos', 'usuarios', 'acciones'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -237,6 +278,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
               {tab === 'resumen' && 'Resumen'}
               {tab === 'documentos' && 'Documentos'}
               {tab === 'usuarios' && 'Usuarios'}
+              {tab === 'acciones' && 'Acciones'}
             </button>
           ))}
         </div>
@@ -334,6 +376,67 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                           <p className="text-xs text-[#8E8980]">
                             Actualizado: {new Date(doc.updated_at).toLocaleDateString()}
                           </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {activeTab === 'acciones' && (
+                <div className="space-y-4">
+                  {actionsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#6B6760] mr-2" />
+                      <span className="text-sm text-[#6B6760]">Cargando acciones...</span>
+                    </div>
+                  ) : actionItems.length === 0 ? (
+                    <p className="text-sm text-[#6B6760]">No hay acciones pendientes.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {actionItems.map(item => (
+                        <div
+                          key={item.id}
+                          className={cn(
+                            'rounded-lg border p-3 space-y-1',
+                            item.priority === 'high'
+                              ? 'border-red-200 bg-red-50'
+                              : item.priority === 'medium'
+                                ? 'border-amber-200 bg-amber-50'
+                                : 'border-blue-200 bg-blue-50'
+                          )}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-start gap-2 flex-1">
+                              {item.priority === 'high' && (
+                                <AlertTriangle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              )}
+                              {item.priority === 'medium' && (
+                                <Clock className="h-4 w-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                              )}
+                              {item.priority === 'low' && (
+                                <CheckCircle2 className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                              )}
+                              <p className="text-sm font-medium text-[#1C1B18]">{item.title}</p>
+                            </div>
+                            <span
+                              className={cn(
+                                'px-2 py-1 rounded text-xs font-medium flex-shrink-0',
+                                item.priority === 'high'
+                                  ? 'bg-red-200 text-red-700'
+                                  : item.priority === 'medium'
+                                    ? 'bg-amber-200 text-amber-700'
+                                    : 'bg-blue-200 text-blue-700'
+                              )}
+                            >
+                              {item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Media' : 'Baja'}
+                            </span>
+                          </div>
+                          {item.daysOverdue > 0 && (
+                            <p className="text-xs text-red-600">
+                              {item.daysOverdue} día{item.daysOverdue !== 1 ? 's' : ''} de retraso
+                            </p>
+                          )}
                         </div>
                       ))}
                     </div>

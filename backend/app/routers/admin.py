@@ -4412,6 +4412,99 @@ async def get_admin_stats(
     }
 
 
+@router.get("/tenants/{tenant_id}/action-items")
+async def get_tenant_action_items(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get action items/tasks for a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        return {"items": []}
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # For MVP, we'll return suggested actions based on tenant state
+    items = []
+
+    dias_en_etapa = 0
+    if tenant.state and tenant.state.fecha_cambio_stage:
+        dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+    # Generate suggested actions based on stage
+    stage = tenant.state.current_stage if tenant.state else "unknown"
+
+    if stage == "validation":
+        if dias_en_etapa < 14:
+            items.append({
+                "id": "val_docs_01",
+                "title": "Solicitar documentos pendientes",
+                "priority": "high",
+                "daysOverdue": 0,
+            })
+            items.append({
+                "id": "val_review_01",
+                "title": "Revisar documentos enviados",
+                "priority": "high",
+                "daysOverdue": 0,
+            })
+        elif dias_en_etapa < 30:
+            items.append({
+                "id": "val_followup_01",
+                "title": "Seguimiento de validación",
+                "priority": "medium",
+                "daysOverdue": dias_en_etapa - 14,
+            })
+
+    elif stage == "planning":
+        items.append({
+            "id": "plan_schedule_01",
+            "title": "Programar reunión de planeación",
+            "priority": "high",
+            "daysOverdue": 0,
+        })
+        if dias_en_etapa > 21:
+            items.append({
+                "id": "plan_review_01",
+                "title": "Revisar avance del plan",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 21,
+            })
+
+    elif stage == "execution":
+        items.append({
+            "id": "exec_monitor_01",
+            "title": "Monitorear ejecución",
+            "priority": "medium",
+            "daysOverdue": 0,
+        })
+        if dias_en_etapa > 30:
+            items.append({
+                "id": "exec_report_01",
+                "title": "Solicitar reporte de avance",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 30,
+            })
+        if dias_en_etapa > 60:
+            items.append({
+                "id": "exec_expansion_01",
+                "title": "Evaluar readiness para expansión",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 60,
+            })
+
+    return {
+        "tenant_id": tenant_id,
+        "stage": stage,
+        "dias_en_etapa": dias_en_etapa,
+        "items": items,
+    }
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [
