@@ -37,14 +37,33 @@ interface TenantDocument {
   updated_at: string
 }
 
+interface TenantUser {
+  id: string
+  email: string
+  nombre: string
+  apellido_paterno: string
+  cargo: string
+  dependencia: string
+  email_verified: boolean
+  rol: string
+  created_at: string
+  last_login_at: string | null
+}
+
 export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: TenantDrawerProps) {
   const [data, setData] = useState<TenantResumen | null>(null)
   const [documents, setDocuments] = useState<TenantDocument[]>([])
+  const [users, setUsers] = useState<TenantUser[]>([])
   const [loading, setLoading] = useState(false)
   const [documentsLoading, setDocumentsLoading] = useState(false)
+  const [usersLoading, setUsersLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios'>('resumen')
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteCargo, setInviteCargo] = useState('Miembro del equipo')
+  const [inviting, setInviting] = useState(false)
+  const [inviteError, setInviteError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen || !tenantId) return
@@ -55,6 +74,9 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
   useEffect(() => {
     if (activeTab === 'documentos' && tenantId) {
       loadDocuments()
+    }
+    if (activeTab === 'usuarios' && tenantId) {
+      loadUsers()
     }
   }, [activeTab, tenantId])
 
@@ -114,6 +136,72 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
       console.error('Failed to load documents:', e)
     } finally {
       setDocumentsLoading(false)
+    }
+  }
+
+  const loadUsers = async () => {
+    if (!tenantId) return
+
+    setUsersLoading(true)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/tenants/${encodeURIComponent(tenantId)}/users`, {
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to load users: HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      setUsers(data.users || [])
+    } catch (e) {
+      console.error('Failed to load users:', e)
+    } finally {
+      setUsersLoading(false)
+    }
+  }
+
+  const handleInviteUser = async () => {
+    if (!tenantId || !inviteEmail) return
+
+    setInviting(true)
+    setInviteError(null)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/tenants/${encodeURIComponent(tenantId)}/users/invite`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          email: inviteEmail,
+          cargo: inviteCargo,
+          rol: 'funcionario',
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to invite user: HTTP ${response.status}`)
+      }
+
+      setInviteEmail('')
+      setInviteCargo('Miembro del equipo')
+      await loadUsers()
+    } catch (e) {
+      setInviteError(e instanceof Error ? e.message : 'Failed to invite user')
+    } finally {
+      setInviting(false)
     }
   }
 
@@ -255,7 +343,67 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
               {activeTab === 'usuarios' && (
                 <div className="space-y-4">
-                  <p className="text-sm text-[#6B6760]">Los usuarios se cargan aquí en Sprint 11.</p>
+                  {/* Invite form */}
+                  <div className="space-y-3 rounded-lg border border-[#E8E4DC] p-4">
+                    <h3 className="text-sm font-medium text-[#1C1B18]">Invitar nuevo usuario</h3>
+                    <input
+                      type="email"
+                      placeholder="Correo electrónico"
+                      value={inviteEmail}
+                      onChange={e => setInviteEmail(e.target.value)}
+                      className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Cargo (ej: Director, Coordinador)"
+                      value={inviteCargo}
+                      onChange={e => setInviteCargo(e.target.value)}
+                      className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+                    />
+                    {inviteError && (
+                      <p className="text-xs text-red-600">{inviteError}</p>
+                    )}
+                    <button
+                      onClick={handleInviteUser}
+                      disabled={!inviteEmail || inviting}
+                      className="w-full px-4 py-2 bg-[#3B6D11] text-white rounded-lg text-sm font-medium hover:bg-[#2D5409] transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
+                    >
+                      {inviting && <Loader2 className="h-4 w-4 animate-spin" />}
+                      Invitar usuario
+                    </button>
+                  </div>
+
+                  {/* Users list */}
+                  {usersLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#6B6760] mr-2" />
+                      <span className="text-sm text-[#6B6760]">Cargando usuarios...</span>
+                    </div>
+                  ) : users.length === 0 ? (
+                    <p className="text-sm text-[#6B6760]">No hay usuarios en este municipio.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {users.map(user => (
+                        <div key={user.id} className="rounded-lg border border-[#E8E4DC] p-3 space-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-[#1C1B18]">{user.nombre} {user.apellido_paterno}</p>
+                              <p className="text-xs text-[#8E8980]">{user.email}</p>
+                            </div>
+                            {user.email_verified ? (
+                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Verificado</span>
+                            ) : (
+                              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Pendiente</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-[#8E8980]">{user.cargo}</p>
+                          <p className="text-xs text-[#8E8980]">
+                            {user.last_login_at ? `Último acceso: ${new Date(user.last_login_at).toLocaleDateString()}` : 'Nunca ha accedido'}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </>

@@ -3745,7 +3745,7 @@ async def get_admin_master_table(
 
         # Get user count
         usuarios_count = db.query(func.count(UserAccount.id)).filter(
-            UserAccount.tenant_id == tenant.id
+            UserAccount.municipio_id == tenant.municipio_id
         ).scalar() or 0
 
         # Get current gate
@@ -3909,6 +3909,107 @@ async def upload_tenant_document(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@router.get("/tenants/{tenant_id}/users")
+async def get_tenant_users(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get all users for a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        return {"users": []}
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    users = db.query(UserAccount).filter(
+        UserAccount.municipio_id == tenant.municipio_id,
+        UserAccount.activo == True
+    ).order_by(UserAccount.created_at.desc()).all()
+
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "email": user.email,
+                "nombre": user.nombre,
+                "apellido_paterno": user.apellido_paterno,
+                "cargo": user.cargo,
+                "dependencia": user.dependencia,
+                "email_verified": user.email_verified_at is not None,
+                "rol": user.rol,
+                "created_at": user.created_at.isoformat(),
+                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+            }
+            for user in users
+        ]
+    }
+
+
+@router.post("/tenants/{tenant_id}/users/invite")
+async def invite_tenant_user(
+    tenant_id: str,
+    email: str,
+    cargo: str = "Miembro del equipo",
+    rol: str = "funcionario",
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Invite a new user to a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # Check if user already exists
+    existing = db.query(UserAccount).filter(UserAccount.email == email).first()
+    if existing:
+        if existing.municipio_id == tenant.municipio_id:
+            return {"message": "User already belongs to this tenant"}
+        else:
+            # User exists in a different municipio, would need migration logic
+            return {"message": "User already exists in a different municipality"}
+
+    # Create placeholder user account (would normally send invitation email)
+    try:
+        from app.routers.auth import hash_password
+        import secrets
+
+        new_user = UserAccount(
+            email=email,
+            hashed_password=hash_password(secrets.token_urlsafe(32)),
+            nombre="Pendiente verificación",
+            apellido_paterno="",
+            cargo=cargo,
+            municipio_id=tenant.municipio_id,
+            estado_mx=tenant.estado_mx,
+            municipio_nombre=tenant.nombre,
+            rol=rol,
+            activo=True,
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        return {
+            "id": new_user.id,
+            "email": new_user.email,
+            "cargo": new_user.cargo,
+            "rol": new_user.rol,
+            "message": "User invitation created successfully",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create invitation: {str(e)}")
 
 
 @router.get("/logs")
