@@ -6,10 +6,12 @@ Provides professional reporting capabilities for stakeholders
 """
 
 from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi.responses import Response
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, date
 import logging
 import json
+import uuid
 
 from app.db.session import get_db
 from app.routers.auth import get_current_user, UserInfo
@@ -284,3 +286,106 @@ def _build_html_report(report: dict) -> str:
     """
 
     return html
+
+
+@router.get("/{simulation_id}/pdf")
+async def generate_simulation_pdf(
+    simulation_id: str,
+    request: Request,
+    document_id: str = "01_resumen_ejecutivo_municipal",
+    user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Generate a PDF report for a simulation using the ALQUIMIA document render engine."""
+    tenant_id = request.headers.get("x-tenant-id", "default")
+
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    simulation = (
+        db.query(Simulation)
+        .filter(
+            Simulation.id == simulation_id,
+            Simulation.user_id == user.id,
+            Simulation.tenant_id == tenant_id,
+        )
+        .first()
+    )
+    if not simulation:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+
+    from app.models.simulation import SimulationVersion
+    latest = (
+        db.query(SimulationVersion)
+        .filter(SimulationVersion.simulation_id == simulation_id)
+        .order_by(SimulationVersion.version_number.desc())
+        .first()
+    )
+    if not latest:
+        raise HTTPException(status_code=404, detail="Simulation has no saved versions")
+
+    state = latest.state_data or {}
+    municipios = simulation.municipios or state.get("municipiosActivos") or []
+    municipio_nombre = municipios[0] if municipios else "Municipio"
+    zm = state.get("zm", "ZM-SLP")
+    today = date.today().isoformat()
+
+    # Build resultados payload for the financial sheet
+    resultados = {
+        "wacc": state.get("wacc"),
+        "horizonte": simulation.horizonte or state.get("horizonte"),
+        "municipiosActivos": municipios,
+        "presetTrayectoria": state.get("presetTrayectoria"),
+        "precios": state.get("precios", {}),
+    }
+
+    manifest = {
+        "zm": zm,
+        "municipio": municipio_nombre,
+        "version": "0.1-borrador",
+        "score_datos": None,
+        "warnings_activos": [],
+        "fuentes_usadas": [],
+        "fecha": today,
+    }
+
+    try:
+        from app.export.pdf_renderer import render_consulting_document_pdf
+        from app.export.municipal_context import merge_municipal_context
+
+        ctx = merge_municipal_context(
+            municipio_nombre,
+            {},
+            zm=zm,
+            municipio_nombre=municipio_nombre,
+        )
+
+        package_id = f"rpt-{uuid.uuid4().hex[:12]}"
+        pdf_bytes, reason = render_consulting_document_pdf(
+            document_id=document_id,
+            manifest=manifest,
+            resultados=resultados,
+            theme_zm=zm,
+            theme_municipio=municipio_nombre,
+            package_id=package_id,
+            module_label=f"Simulación: {simulation.name}",
+            contexto_municipal=ctx,
+            draft_ejecutivo=None,
+        )
+
+        if not pdf_bytes:
+            raise HTTPException(status_code=503, detail=reason or "PDF generation failed")
+
+        slug = municipio_nombre.replace(" ", "_")[:32]
+        filename = f"ALQUIMIA_reporte_{slug}_{today}.pdf"
+        return Response(
+            content=pdf_bytes,
+            media_type="application/pdf",
+            headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+        )
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"PDF generation failed for simulation {simulation_id}: {exc}")
+        raise HTTPException(status_code=500, detail=f"PDF generation failed: {exc}")
