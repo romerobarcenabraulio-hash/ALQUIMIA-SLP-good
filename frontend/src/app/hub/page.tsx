@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Recycle, FileText, BarChart2, ArrowRight, TrendingUp,
-  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale, MapPin, Search,
+  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale, MapPin, Search, Zap,
 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
@@ -51,6 +51,7 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   ],
   planning: [
     { label: 'Simulaciones', href: '/simulaciones', icon: <BarChart2 size={16} />, color: '#1C4B8F', desc: 'Revisar escenarios guardados' },
+    { label: 'Análisis RCD', href: '/rcd', icon: <Zap size={16} />, color: '#7B3F00', desc: 'Composición de residuos construcción' },
     { label: 'Plan Maestro', href: '/hub/plan-maestro', icon: <FileText size={16} />, color: '#3B6D11', desc: 'Generar Plan Maestro para cabildo' },
     { label: 'Documentos Hub', href: '/hub/documentos', icon: <Download size={16} />, color: '#7B3F00', desc: 'Paquete de documentos institucionales' },
   ],
