@@ -20,6 +20,7 @@ if _REPO_ROOT.is_dir() and str(_REPO_ROOT) not in sys.path:
 
 from app.routers import auth, simulate, generate_plan, hub, admin, simulations, reports
 from app.routers.stripe_webhooks import router as stripe_router
+from app.routers.tenant_users import router as tenant_users_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
 from app.market.router import router as market_router
@@ -270,6 +271,7 @@ app.include_router(planning_risk_router,   prefix="/api/planning/risk",   tags=[
 app.include_router(planning_prices_router, prefix="/api/planning/prices", tags=["planning-prices"])
 app.include_router(lifecycle_router, prefix="/api/v1/lifecycle", tags=["bios-lifecycle"])
 app.include_router(stripe_router, tags=["stripe"])
+app.include_router(tenant_users_router, tags=["tenant-users"])
 
 
 @app.api_route("/health", methods=["GET", "HEAD"])

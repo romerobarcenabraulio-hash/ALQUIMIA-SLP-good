@@ -70,9 +70,13 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
   const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios' | 'acciones'>('resumen')
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteNombre, setInviteNombre] = useState('')
+  const [inviteApellido, setInviteApellido] = useState('')
   const [inviteCargo, setInviteCargo] = useState('Miembro del equipo')
+  const [inviteRol, setInviteRol] = useState('funcionario')
   const [inviting, setInviting] = useState(false)
   const [inviteError, setInviteError] = useState<string | null>(null)
+  const [inviteSuccess, setInviteSuccess] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isOpen || !tenantId) return
@@ -198,17 +202,25 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
         headers,
         body: JSON.stringify({
           email: inviteEmail,
+          nombre: inviteNombre,
+          apellido_paterno: inviteApellido,
           cargo: inviteCargo,
-          rol: 'funcionario',
+          rol: inviteRol,
         }),
       })
 
       if (!response.ok) {
-        throw new Error(`Failed to invite user: HTTP ${response.status}`)
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.detail || `Error HTTP ${response.status}`)
       }
 
+      const result = await response.json()
       setInviteEmail('')
+      setInviteNombre('')
+      setInviteApellido('')
       setInviteCargo('Miembro del equipo')
+      setInviteRol('funcionario')
+      setInviteSuccess(`Usuario creado. Contraseña temporal: ${result.temp_password}`)
       await loadUsers()
     } catch (e) {
       setInviteError(e instanceof Error ? e.message : 'Failed to invite user')
@@ -449,6 +461,22 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                   {/* Invite form */}
                   <div className="space-y-3 rounded-lg border border-[#E8E4DC] p-4">
                     <h3 className="text-sm font-medium text-[#1C1B18]">Invitar nuevo usuario</h3>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Nombre(s)"
+                        value={inviteNombre}
+                        onChange={e => setInviteNombre(e.target.value)}
+                        className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Apellido paterno"
+                        value={inviteApellido}
+                        onChange={e => setInviteApellido(e.target.value)}
+                        className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+                      />
+                    </div>
                     <input
                       type="email"
                       placeholder="Correo electrónico"
@@ -456,23 +484,39 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                       onChange={e => setInviteEmail(e.target.value)}
                       className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
                     />
-                    <input
-                      type="text"
-                      placeholder="Cargo (ej: Director, Coordinador)"
-                      value={inviteCargo}
-                      onChange={e => setInviteCargo(e.target.value)}
-                      className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
-                    />
-                    {inviteError && (
-                      <p className="text-xs text-red-600">{inviteError}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        placeholder="Cargo"
+                        value={inviteCargo}
+                        onChange={e => setInviteCargo(e.target.value)}
+                        className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+                      />
+                      <select
+                        value={inviteRol}
+                        onChange={e => setInviteRol(e.target.value)}
+                        className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none bg-white"
+                      >
+                        <option value="funcionario">Funcionario</option>
+                        <option value="coordinador">Coordinador</option>
+                        <option value="director">Director</option>
+                        <option value="observer">Observador</option>
+                      </select>
+                    </div>
+                    {inviteError && <p className="text-xs text-red-600">{inviteError}</p>}
+                    {inviteSuccess && (
+                      <div className="rounded bg-green-50 border border-green-200 p-2">
+                        <p className="text-xs text-green-800 font-mono break-all">{inviteSuccess}</p>
+                        <p className="text-xs text-green-600 mt-1">Comparte esta contraseña de forma segura. No se mostrará de nuevo.</p>
+                      </div>
                     )}
                     <button
                       onClick={handleInviteUser}
-                      disabled={!inviteEmail || inviting}
+                      disabled={!inviteEmail || !inviteNombre || !inviteApellido || inviting}
                       className="w-full px-4 py-2 bg-[#3B6D11] text-white rounded-lg text-sm font-medium hover:bg-[#2D5409] transition-colors disabled:opacity-50 inline-flex items-center justify-center gap-2"
                     >
                       {inviting && <Loader2 className="h-4 w-4 animate-spin" />}
-                      Invitar usuario
+                      Crear cuenta
                     </button>
                   </div>
 
@@ -483,25 +527,30 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                       <span className="text-sm text-[#6B6760]">Cargando usuarios...</span>
                     </div>
                   ) : users.length === 0 ? (
-                    <p className="text-sm text-[#6B6760]">No hay usuarios en este municipio.</p>
+                    <p className="text-sm text-[#6B6760]">No hay usuarios registrados en este municipio.</p>
                   ) : (
                     <div className="space-y-2">
                       {users.map(user => (
-                        <div key={user.id} className="rounded-lg border border-[#E8E4DC] p-3 space-y-1">
-                          <div className="flex items-start justify-between">
-                            <div>
-                              <p className="text-sm font-medium text-[#1C1B18]">{user.nombre} {user.apellido_paterno}</p>
-                              <p className="text-xs text-[#8E8980]">{user.email}</p>
+                        <div key={user.id} className="rounded-lg border border-[#E8E4DC] p-3 space-y-2">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-[#1C1B18] truncate">{user.nombre} {user.apellido_paterno}</p>
+                              <p className="text-xs text-[#8E8980] truncate">{user.email}</p>
+                              <p className="text-xs text-[#8E8980]">{user.cargo}</p>
                             </div>
-                            {user.email_verified ? (
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">Verificado</span>
-                            ) : (
-                              <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-1 rounded">Pendiente</span>
-                            )}
+                            <div className="flex flex-col items-end gap-1 shrink-0">
+                              {user.email_verified ? (
+                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded">Verificado</span>
+                              ) : (
+                                <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">Pendiente</span>
+                              )}
+                              <span className="text-xs bg-[#F0EDE6] text-[#6B6760] px-2 py-0.5 rounded capitalize">{user.rol}</span>
+                            </div>
                           </div>
-                          <p className="text-xs text-[#8E8980]">{user.cargo}</p>
                           <p className="text-xs text-[#8E8980]">
-                            {user.last_login_at ? `Último acceso: ${new Date(user.last_login_at).toLocaleDateString()}` : 'Nunca ha accedido'}
+                            {user.last_login_at
+                              ? `Último acceso: ${new Date(user.last_login_at).toLocaleDateString('es-MX')}`
+                              : 'Nunca ha accedido'}
                           </p>
                         </div>
                       ))}
