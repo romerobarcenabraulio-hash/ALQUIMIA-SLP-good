@@ -22,6 +22,8 @@ from app.routers import auth, simulate, generate_plan, hub, admin, simulations, 
 from app.routers.stripe_webhooks import router as stripe_router
 from app.routers.tenant_users import router as tenant_users_router
 from app.routers.propuesta import router as propuesta_router
+from app.routers.catalogo_iniciativas import router as catalogo_iniciativas_router
+from app.routers.esg_report import router as esg_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
 from app.market.router import router as market_router
@@ -274,6 +276,8 @@ app.include_router(lifecycle_router, prefix="/api/v1/lifecycle", tags=["bios-lif
 app.include_router(stripe_router, tags=["stripe"])
 app.include_router(tenant_users_router, tags=["tenant-users"])
 app.include_router(propuesta_router, prefix="/api/v1", tags=["propuesta"])
+app.include_router(catalogo_iniciativas_router, prefix="/api/v1", tags=["catalogo-iniciativas"])
+app.include_router(esg_router, prefix="/api/v1", tags=["esg"])
 
 
 @app.api_route("/health", methods=["GET", "HEAD"])

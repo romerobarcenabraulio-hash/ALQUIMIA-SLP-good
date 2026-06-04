@@ -115,7 +115,7 @@ export function AuditorBadge({ score, showDetail = false, size = 'md' }: BadgePr
       </button>
 
       {open && showDetail && (
-        <div className="absolute right-0 top-full z-50 mt-1.5 w-72 rounded-xl border border-[#E8E4DC] bg-white shadow-lg overflow-hidden">
+        <div className="absolute right-0 top-full z-50 mt-1.5 w-72 rounded-[12px] border border-[#E8E4DC] bg-white shadow-lg overflow-hidden">
           <div className="border-b border-[#F0EDE6] px-4 py-3">
             <p className="text-[12px] font-semibold text-[#1C1B18]">{label}</p>
             <p className="text-[11px] text-[#6B6760]">Score de trazabilidad de datos</p>
@@ -177,7 +177,7 @@ export function ProvenanceTable({ items }: { items: ProvenanceItem[] }) {
   )
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-[#E8E4DC]">
+    <div className="overflow-x-auto rounded-[8px] border border-[#E8E4DC]">
       <table className="w-full text-[11px]">
         <thead>
           <tr className="border-b border-[#F0EDE6] bg-[#FAFAF8]">

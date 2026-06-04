@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { getApiUrl } from '@/lib/api'
 import { Building2, TrendingUp, Factory, CheckCircle, ArrowRight, AlertCircle, Leaf } from 'lucide-react'
@@ -119,7 +119,7 @@ function WasteMixBar({ mix }: { mix: Record<string, number> }) {
 function TierCard({ tier, onSelect }: { tier: TierPropuesta; onSelect: () => void }) {
   return (
     <div
-      className={`relative flex flex-col rounded-xl border p-5 transition-all ${
+      className={`relative flex flex-col rounded-[12px] border p-5 transition-all ${
         tier.recomendado
           ? 'border-[#3B6D11] bg-white shadow-lg ring-2 ring-[#3B6D11]/20'
           : 'border-[#E8E4DC] bg-white hover:border-[#3B6D11]/40'
@@ -158,10 +158,10 @@ function TierCard({ tier, onSelect }: { tier: TierPropuesta; onSelect: () => voi
 
       <button
         onClick={onSelect}
-        className={`mt-5 flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-[13px] font-medium transition-colors ${
+        className={`mt-5 flex w-full items-center justify-center gap-2 rounded-[8px] px-4 py-2.5 text-[13px] font-medium transition-colors ${
           tier.recomendado
             ? 'bg-[#3B6D11] text-white hover:bg-[#2D5409]'
-            : 'border border-[#D8D1C4] text-[#3B3326] hover:border-[#3B6D11] hover:text-[#3B6D11]'
+            : 'border border-[#E8E4DC] text-[#3B3326] hover:border-[#3B6D11] hover:text-[#3B6D11]'
         }`}
       >
         Quiero este plan
@@ -173,7 +173,7 @@ function TierCard({ tier, onSelect }: { tier: TierPropuesta; onSelect: () => voi
 
 // ─── Main Page ───────────────────────────────────────────────────────────────
 
-export default function PropuestaPage() {
+function PropuestaContent() {
   const router = useRouter()
   const params = useSearchParams()
   const municipio = params.get('municipio') ?? ''
@@ -265,12 +265,12 @@ export default function PropuestaPage() {
     return (
       <PublicPageShell>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-center">
+          <div className="rounded-[12px] border border-red-200 bg-red-50 p-6 text-center">
             <AlertCircle size={24} className="mx-auto mb-2 text-red-500" />
             <p className="text-[14px] text-red-700">{error || 'Error desconocido'}</p>
             <button
               onClick={() => router.back()}
-              className="mt-4 rounded-lg border border-red-200 px-4 py-2 text-[13px] text-red-700 hover:bg-red-100"
+              className="mt-4 rounded-[8px] border border-red-200 px-4 py-2 text-[13px] text-red-700 hover:bg-red-100"
             >
               Volver
             </button>
@@ -300,28 +300,28 @@ export default function PropuestaPage() {
         </div>
 
         {/* Oportunidad summary */}
-        <div className="mb-8 rounded-xl border border-[#D8F0C8] bg-[#F2FAF0] p-5">
+        <div className="mb-8 rounded-[12px] border border-[#C9DDB1] bg-[#EAF3DE] p-5">
           <p className="text-[13px] leading-relaxed text-[#2D5409]">{p.resumen_oportunidad}</p>
         </div>
 
         {/* KPI bar */}
         <div className="mb-10 grid grid-cols-2 gap-4 sm:grid-cols-4">
-          <div className="rounded-xl border border-[#E8E4DC] bg-white p-4 text-center">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4 text-center">
             <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Población</p>
             <p className="mt-1 text-[20px] font-bold text-[#1C1B18]">{fmt(p.perfil.poblacion)}</p>
             <p className="text-[10px] text-[#8E8980]">hab.</p>
           </div>
-          <div className="rounded-xl border border-[#E8E4DC] bg-white p-4 text-center">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4 text-center">
             <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Generación</p>
             <p className="mt-1 text-[20px] font-bold text-[#1C1B18]">{fmt(p.perfil.generacion_ton_dia, 1)}</p>
             <p className="text-[10px] text-[#8E8980]">ton/día</p>
           </div>
-          <div className="rounded-xl border border-[#E8E4DC] bg-white p-4 text-center">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4 text-center">
             <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Perdido/día</p>
             <p className="mt-1 text-[20px] font-bold text-[#DC2626]">{fmt(p.brecha.ton_recuperables_perdidas_dia, 1)}</p>
             <p className="text-[10px] text-[#8E8980]">ton recuperables</p>
           </div>
-          <div className="rounded-xl border border-[#D8F0C8] bg-[#F2FAF0] p-4 text-center">
+          <div className="rounded-[12px] border border-[#C9DDB1] bg-[#EAF3DE] p-4 text-center">
             <p className="text-[11px] uppercase tracking-wide text-[#4A7C23]">Potencial anual</p>
             <p className="mt-1 text-[20px] font-bold text-[#3B6D11]">MXN ${mxnM.toFixed(1)}M</p>
             <p className="text-[10px] text-[#4A7C23]">en valor materiales</p>
@@ -331,7 +331,7 @@ export default function PropuestaPage() {
         {/* Two column: mix + empresas */}
         <div className="mb-10 grid gap-6 sm:grid-cols-2">
           {/* Waste mix */}
-          <div className="rounded-xl border border-[#E8E4DC] bg-white p-5">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
             <div className="mb-3 flex items-center gap-2">
               <TrendingUp size={14} className="text-[#3B6D11]" />
               <h2 className="text-[13px] font-semibold text-[#1C1B18]">Composición de residuos</h2>
@@ -351,7 +351,7 @@ export default function PropuestaPage() {
           </div>
 
           {/* Local companies */}
-          <div className="rounded-xl border border-[#E8E4DC] bg-white p-5">
+          <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-5">
             <div className="mb-3 flex items-center gap-2">
               <Factory size={14} className="text-[#3B6D11]" />
               <h2 className="text-[13px] font-semibold text-[#1C1B18]">
@@ -374,7 +374,7 @@ export default function PropuestaPage() {
             ) : (
               <div className="max-h-48 space-y-2 overflow-y-auto">
                 {p.empresas_locales.map((e, i) => (
-                  <div key={i} className="flex items-start gap-2 rounded-lg bg-[#FAFAF8] p-2">
+                  <div key={i} className="flex items-start gap-2 rounded-[8px] bg-[#FAFAF8] p-2">
                     <span className="mt-0.5 rounded bg-[#F0EDE6] px-1.5 py-0.5 text-[9px] font-medium uppercase text-[#6B6760]">
                       {ROL_LABEL[e.rol] ?? e.rol}
                     </span>
@@ -406,7 +406,7 @@ export default function PropuestaPage() {
 
         {/* Advertencias */}
         {p.advertencias.length > 0 && (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <div className="rounded-[12px] border border-amber-200 bg-amber-50 p-4">
             <div className="mb-2 flex items-center gap-2 text-[12px] font-medium text-amber-700">
               <AlertCircle size={13} />
               Notas metodológicas
@@ -420,5 +420,19 @@ export default function PropuestaPage() {
         )}
       </div>
     </PublicPageShell>
+  )
+}
+
+export default function PropuestaPage() {
+  return (
+    <Suspense fallback={
+      <PublicPageShell>
+        <div className="flex min-h-[60vh] items-center justify-center">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#3B6D11] border-t-transparent" />
+        </div>
+      </PublicPageShell>
+    }>
+      <PropuestaContent />
+    </Suspense>
   )
 }

@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Recycle, FileText, BarChart2, ArrowRight, TrendingUp,
-  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle,
+  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale,
 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
@@ -60,6 +60,7 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   ],
   monitoring: [
     { label: 'Reporte ESG', href: '/hub/reporte-esg', icon: <FileText size={16} />, color: '#5B21B6', desc: 'Generar reporte trimestral ESG' },
+    { label: 'Marco regulatorio', href: '/hub/catalogo-iniciativas', icon: <Scale size={16} />, color: '#1A5FA8', desc: 'LGPGIR, NOMs, GRI, ASF y más' },
     { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Dashboard de monitoreo continuo' },
     { label: 'Configuración', href: '/perfil', icon: <Settings size={16} />, color: '#6B6760', desc: 'Ajustes del municipio y equipo' },
   ],
@@ -69,7 +70,7 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
 
 function StatCard({ label, value, sub, color = '#3B6D11' }: { label: string; value: string | number; sub?: string; color?: string }) {
   return (
-    <div className="rounded-xl border border-[#E8E4DC] bg-white p-4">
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-4">
       <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">{label}</p>
       <p className="mt-1 text-[24px] font-bold text-[#1C1B18]" style={{ color }}>{value}</p>
       {sub && <p className="text-[10px] text-[#9E9B96]">{sub}</p>}
@@ -81,10 +82,10 @@ function ActionCard({ action }: { action: QuickAction }) {
   return (
     <Link
       href={action.href || '#'}
-      className="group flex items-start gap-3 rounded-xl border border-[#E8E4DC] bg-white p-4 transition-all hover:border-[#3B6D11]/40 hover:shadow-sm"
+      className="group flex items-start gap-3 rounded-[12px] border border-[#E8E4DC] bg-white p-4 transition-all hover:border-[#3B6D11]/40 hover:shadow-sm"
     >
       <span
-        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-white"
+        className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] text-white"
         style={{ background: action.color }}
       >
         {action.icon}
@@ -227,7 +228,7 @@ function HubContent() {
           {tenant?.id ? (
             <JourneyPanel tenantId={tenant.id} />
           ) : (
-            <div className="rounded-xl border border-[#E8E4DC] bg-[#FAFAF8] p-6 text-center">
+            <div className="rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-6 text-center">
               <AlertTriangle size={20} className="mx-auto mb-2 text-amber-400" />
               <p className="text-[13px] text-[#6B6760]">Municipio no asignado a un tenant activo.</p>
               <p className="mt-1 text-[11px] text-[#9E9B96]">El administrador debe vincular tu cuenta.</p>
@@ -245,7 +246,7 @@ function HubContent() {
           </div>
 
           {/* Navigation shortcuts */}
-          <div className="mt-4 rounded-xl border border-[#E8E4DC] bg-white p-4">
+          <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-4">
             <p className="mb-2 text-[11px] uppercase tracking-wide text-[#8E8980]">Módulos</p>
             <div className="space-y-1">
               {[
@@ -256,7 +257,7 @@ function HubContent() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className="flex items-center gap-2 rounded-lg px-2 py-2 text-[12px] text-[#3B3326] hover:bg-[#F4F2ED] transition-colors"
+                  className="flex items-center gap-2 rounded-[8px] px-2 py-2 text-[12px] text-[#3B3326] hover:bg-[#F4F2ED] transition-colors"
                 >
                   <span className="text-[#3B6D11]">{item.icon}</span>
                   {item.label}

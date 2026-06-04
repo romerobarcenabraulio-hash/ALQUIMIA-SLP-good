@@ -62,10 +62,10 @@ function Field({
         value={value}
         readOnly={readOnly}
         onChange={e => onChange?.(e.target.value)}
-        className={`mt-1 w-full rounded-lg border px-3 py-2 text-[13px] outline-none transition-colors ${
+        className={`mt-1 w-full rounded-[8px] border px-3 py-2 text-[13px] outline-none transition-colors ${
           readOnly
             ? 'border-[#E8E4DC] bg-[#F4F2ED] text-[#8E8980] cursor-default'
-            : 'border-[#D8D1C4] bg-white text-[#1C1B18] focus:border-[#3B6D11] focus:ring-1 focus:ring-[#3B6D11]/20'
+            : 'border-[#E8E4DC] bg-white text-[#1C1B18] focus:border-[#3B6D11] focus:ring-1 focus:ring-[#3B6D11]/20'
         }`}
       />
       {hint && <p className="mt-1 text-[10px] text-[#9E9B96]">{hint}</p>}
@@ -158,7 +158,7 @@ export default function PerfilPage() {
           </div>
           <button
             onClick={logout}
-            className="rounded-lg border border-[#E8E4DC] px-3 py-1.5 text-[12px] text-[#6B6760] hover:border-red-200 hover:text-red-600 transition-colors"
+            className="rounded-[8px] border border-[#E8E4DC] px-3 py-1.5 text-[12px] text-[#6B6760] hover:border-red-200 hover:text-red-600 transition-colors"
           >
             Cerrar sesión
           </button>
@@ -166,7 +166,7 @@ export default function PerfilPage() {
 
         {/* Municipio context */}
         {profile.municipio_nombre && (
-          <div className="mb-6 flex items-center gap-3 rounded-xl border border-[#D8F0C8] bg-[#F2FAF0] px-4 py-3">
+          <div className="mb-6 flex items-center gap-3 rounded-[12px] border border-[#C9DDB1] bg-[#EAF3DE] px-4 py-3">
             <Building2 size={16} className="shrink-0 text-[#3B6D11]" />
             <div>
               <p className="text-[13px] font-semibold text-[#2D5409]">{profile.municipio_nombre}</p>
@@ -180,7 +180,7 @@ export default function PerfilPage() {
         )}
 
         {/* Editable fields */}
-        <div className="rounded-xl border border-[#E8E4DC] bg-white p-6">
+        <div className="rounded-[12px] border border-[#E8E4DC] bg-white p-6">
           <div className="mb-4 flex items-center gap-2">
             <User size={14} className="text-[#3B6D11]" />
             <h2 className="text-[13px] font-semibold text-[#1C1B18]">Datos personales</h2>
@@ -222,7 +222,7 @@ export default function PerfilPage() {
           </div>
 
           {error && (
-            <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+            <div className="mt-4 flex items-center gap-2 rounded-[8px] border border-red-200 bg-red-50 px-3 py-2">
               <AlertCircle size={13} className="shrink-0 text-red-500" />
               <p className="text-[12px] text-red-700">{error}</p>
             </div>
@@ -232,7 +232,7 @@ export default function PerfilPage() {
             <button
               onClick={save}
               disabled={saving}
-              className="flex items-center gap-2 rounded-lg bg-[#3B6D11] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2D5409] disabled:opacity-60 transition-colors"
+              className="flex items-center gap-2 rounded-[8px] bg-[#3B6D11] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#2D5409] disabled:opacity-60 transition-colors"
             >
               <Save size={13} />
               {saving ? 'Guardando…' : 'Guardar cambios'}
@@ -247,7 +247,7 @@ export default function PerfilPage() {
         </div>
 
         {/* Account security */}
-        <div className="mt-4 rounded-xl border border-[#E8E4DC] bg-white p-6">
+        <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
           <div className="mb-3 flex items-center gap-2">
             <Shield size={14} className="text-[#3B6D11]" />
             <h2 className="text-[13px] font-semibold text-[#1C1B18]">Seguridad</h2>
@@ -259,7 +259,7 @@ export default function PerfilPage() {
             </div>
             <a
               href="/setup-2fa"
-              className="rounded-lg border border-[#D8D1C4] px-3 py-1.5 text-[12px] text-[#3B3326] hover:border-[#3B6D11] transition-colors"
+              className="rounded-[8px] border border-[#E8E4DC] px-3 py-1.5 text-[12px] text-[#3B3326] hover:border-[#3B6D11] transition-colors"
             >
               Cambiar
             </a>

@@ -169,7 +169,7 @@ export function JourneyPanel({ tenantId }: Props) {
   const currentIdx = stageIndex(currentStage)
 
   return (
-    <div className="rounded-xl border border-[#E8E4DC] bg-white overflow-hidden">
+    <div className="rounded-[12px] border border-[#E8E4DC] bg-white overflow-hidden">
       {/* Progress bar */}
       <div className="flex border-b border-[#F0EDE6]">
         {STAGES.map((stage, i) => {
@@ -182,7 +182,7 @@ export function JourneyPanel({ tenantId }: Props) {
               key={stage.id}
               onClick={() => setExpanded(expanded === stage.id ? currentStage : stage.id)}
               className={`flex flex-1 flex-col items-center gap-0.5 px-2 py-3 text-center transition-colors ${
-                active ? 'bg-[#F2FAF0]' : locked ? 'opacity-40' : 'hover:bg-[#FAFAF8]'
+                active ? 'bg-[#EAF3DE]' : locked ? 'opacity-40' : 'hover:bg-[#FAFAF8]'
               }`}
             >
               <span
@@ -240,7 +240,7 @@ export function JourneyPanel({ tenantId }: Props) {
                 {stageGates.map(g => (
                   <div
                     key={g.id}
-                    className="flex items-start gap-3 rounded-lg border border-[#F0EDE6] bg-[#FAFAF8] px-3 py-2.5"
+                    className="flex items-start gap-3 rounded-[8px] border border-[#F0EDE6] bg-[#FAFAF8] px-3 py-2.5"
                   >
                     <span className="mt-0.5 shrink-0">
                       {gateIcon(g.state?.status ?? 'no_iniciado')}

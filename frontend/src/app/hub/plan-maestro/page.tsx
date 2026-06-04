@@ -173,7 +173,7 @@ export default function PlanMaestroPage() {
 
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
-          <Link href="/hub" className="rounded-lg p-1.5 text-[#6B6760] hover:bg-[#F0EDE6] hover:text-[#1C1B18] transition-colors">
+          <Link href="/hub" className="rounded-[8px] p-1.5 text-[#6B6760] hover:bg-[#F0EDE6] hover:text-[#1C1B18] transition-colors">
             <ArrowLeft size={16} />
           </Link>
           <div className="flex-1">
@@ -185,13 +185,13 @@ export default function PlanMaestroPage() {
 
         {/* Simulation selector */}
         {sims.length === 0 ? (
-          <div className="mb-6 rounded-xl border border-amber-200 bg-amber-50 p-5 text-center">
+          <div className="mb-6 rounded-[12px] border border-amber-200 bg-amber-50 p-5 text-center">
             <BarChart2 size={20} className="mx-auto mb-2 text-amber-500" />
             <p className="text-[13px] text-amber-700">No hay simulaciones guardadas.</p>
             <p className="mt-1 text-[12px] text-amber-600">Crea y guarda al menos un escenario en el simulador.</p>
             <Link
               href="/simulator"
-              className="mt-3 inline-flex items-center gap-2 rounded-lg bg-amber-100 px-4 py-2 text-[12px] font-medium text-amber-800 hover:bg-amber-200 transition-colors"
+              className="mt-3 inline-flex items-center gap-2 rounded-[8px] bg-amber-100 px-4 py-2 text-[12px] font-medium text-amber-800 hover:bg-amber-200 transition-colors"
             >
               Ir al simulador
             </Link>
@@ -204,7 +204,7 @@ export default function PlanMaestroPage() {
             <select
               value={selectedId ?? ''}
               onChange={e => setSelectedId(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-[#D8D1C4] bg-white px-3 py-2 text-[13px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
+              className="mt-1 w-full rounded-[8px] border border-[#E8E4DC] bg-white px-3 py-2 text-[13px] text-[#1C1B18] outline-none focus:border-[#3B6D11]"
             >
               {sims.map(s => (
                 <option key={s.id} value={s.id}>
@@ -226,12 +226,12 @@ export default function PlanMaestroPage() {
             return (
               <div
                 key={doc.id}
-                className={`flex flex-col rounded-xl border p-4 ${
+                className={`flex flex-col rounded-[12px] border p-4 ${
                   locked ? 'border-[#E8E4DC] bg-[#FAFAF8] opacity-60' : 'border-[#E8E4DC] bg-white'
                 }`}
               >
                 <div className="flex items-start gap-3">
-                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F0EDE6]">
+                  <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] bg-[#F0EDE6]">
                     {locked ? <Lock size={14} className="text-[#C4BFB6]" /> : <FileText size={14} className="text-[#3B6D11]" />}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -244,7 +244,7 @@ export default function PlanMaestroPage() {
                 </div>
 
                 {locked ? (
-                  <div className="mt-3 rounded-lg bg-[#F0EDE6] px-3 py-1.5 text-center">
+                  <div className="mt-3 rounded-[8px] bg-[#F0EDE6] px-3 py-1.5 text-center">
                     <p className="text-[10px] text-[#8E8980]">
                       Disponible en Tier {doc.tier_minimo.charAt(0).toUpperCase() + doc.tier_minimo.slice(1)}
                     </p>
@@ -252,7 +252,7 @@ export default function PlanMaestroPage() {
                 ) : (
                   <>
                     {err && (
-                      <div className="mt-2 flex items-center gap-1.5 rounded-lg bg-red-50 px-2 py-1">
+                      <div className="mt-2 flex items-center gap-1.5 rounded-[8px] bg-red-50 px-2 py-1">
                         <AlertCircle size={11} className="text-red-500" />
                         <p className="text-[10px] text-red-700">{err}</p>
                       </div>
@@ -260,7 +260,7 @@ export default function PlanMaestroPage() {
                     <button
                       onClick={() => downloadDoc(doc.id)}
                       disabled={!selectedId || !!downloading}
-                      className="mt-3 flex items-center justify-center gap-2 rounded-lg bg-[#3B6D11] px-3 py-2 text-[12px] font-medium text-white hover:bg-[#2D5409] disabled:opacity-50 transition-colors"
+                      className="mt-3 flex items-center justify-center gap-2 rounded-[8px] bg-[#3B6D11] px-3 py-2 text-[12px] font-medium text-white hover:bg-[#2D5409] disabled:opacity-50 transition-colors"
                     >
                       {isDownloading ? (
                         <><Loader2 size={13} className="animate-spin" /> Generando…</>
@@ -276,7 +276,7 @@ export default function PlanMaestroPage() {
         </div>
 
         {/* Footer note */}
-        <div className="mt-8 rounded-xl border border-[#E8E4DC] bg-[#FAFAF8] p-4">
+        <div className="mt-8 rounded-[12px] border border-[#E8E4DC] bg-[#FAFAF8] p-4">
           <div className="flex items-start gap-2">
             <CheckCircle2 size={14} className="mt-0.5 shrink-0 text-[#3B6D11]" />
             <div>
