@@ -40,6 +40,22 @@ export type LegalGatedActionStatus = 'ready' | 'warning' | 'blocked'
 export type LegalGatedScope = 'municipio' | 'city_zm'
 export type WasteScope = 'rsu_municipal' | 'regulado' | 'peligroso' | 'especial'
 
+/** Module progression status for sequential unlocking (progresión bloqueada). */
+export type ModuleProgressionStatus = 'locked' | 'unlocked' | 'completed'
+
+/** Module identifiers for progression tracking. */
+export type DecisionModuleId = 'M00B' | 'M01' | 'M02A' | 'M02B' | 'M02C' | 'M02D' | 'M03' | 'M04' | 'M05' | 'M06' | 'M07' | 'M08' | 'M09' | 'M10' | 'M11' | 'M12' | 'M13' | 'M14' | 'M15'
+
+/** Module progression state: tracks which modules are unlocked and their completion. */
+export interface ModuleProgressionState {
+  /** Map of module ID → current progression status. */
+  statusByModule: Record<DecisionModuleId, ModuleProgressionStatus>
+  /** Array of module IDs marked as "completed" by user (eligible for locking when moving forward). */
+  completedModules: DecisionModuleId[]
+  /** Current active module (where user focus is). */
+  currentModuleId: DecisionModuleId | null
+}
+
 export interface Municipio {
   id:        string
   nombre:    string
@@ -626,6 +642,10 @@ export interface SimulatorState {
 
   /** M02D — verificaciones de campo y checklist (no sustituye organigrama objetivo M07). */
   organigramaDiagnostico: import('@/data/organigramaDiagnostico').OrganigramaDiagnosticoPersist
+
+  // ── Module progression locking (progresión bloqueada) ───────────────────────
+  /** Module progression state: tracks which modules are unlocked and completed. */
+  moduleProgression: ModuleProgressionState
 }
 
 export interface SeleccionMunicipioCatalog {
