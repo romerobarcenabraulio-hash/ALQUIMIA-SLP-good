@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, Search, ShieldCheck, Users } from 'lucide-react'
+import { BrainCircuit, CheckCircle2, FileCheck2, Landmark, Plus, RefreshCw, ScrollText, Search, ShieldCheck, Users, Lock } from 'lucide-react'
+import { useRBAC } from '@/hooks/useRBAC'
 import { AppShell } from '@/components/layout/AppShell'
 import { ALQUIMIA_TEMPLATE_REGISTRY } from '@/lib/alquimiaTemplates'
 import type { TemplateReadiness } from '@/lib/alquimiaTemplates'
@@ -276,6 +277,25 @@ async function fetchAdminJson<T>(backendPath: string, localPath: string, headers
 }
 
 export default function AdminPage() {
+  const { canAccessAdminPanel } = useRBAC()
+
+  // Access control check
+  if (!canAccessAdminPanel) {
+    return (
+      <AppShell>
+        <div className="flex items-center justify-center min-h-screen bg-gray-50">
+          <div className="rounded-lg border border-gray-200 bg-white p-8 text-center max-w-md">
+            <Lock className="mx-auto h-12 w-12 text-gray-400" />
+            <h1 className="mt-4 text-xl font-semibold text-gray-900">Acceso denegado</h1>
+            <p className="mt-2 text-sm text-gray-600">
+              Solo los administradores pueden acceder al panel de administración
+            </p>
+          </div>
+        </div>
+      </AppShell>
+    )
+  }
+
   const [tenants, setTenants] = useState<AdminTenant[]>([])
   const [states, setStates] = useState<InegiState[]>(fallbackStates)
   const [municipalities, setMunicipalities] = useState<InegiMunicipality[]>([])
