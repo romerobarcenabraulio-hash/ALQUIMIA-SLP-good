@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Recycle, FileText, BarChart2, ArrowRight, TrendingUp,
-  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale,
+  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale, MapPin,
 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
@@ -55,6 +55,7 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   ],
   execution: [
     { label: 'Documentos Hub', href: '/hub/documentos', icon: <Download size={16} />, color: '#3B6D11', desc: 'Paquete completo de implementación' },
+    { label: 'Mapa de circularidad', href: '/hub/mapa-circularidad', icon: <MapPin size={16} />, color: '#1C4B8F', desc: 'Centros de acopio y flujos RSU' },
     { label: 'Empresas locales', href: '/gobierno/rsu#denue', icon: <Users size={16} />, color: '#1C4B8F', desc: 'Recicladores y compradores ancla' },
     { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <TrendingUp size={16} />, color: '#7B3F00', desc: 'Monitoreo de metas operativas' },
   ],
