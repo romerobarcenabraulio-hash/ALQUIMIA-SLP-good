@@ -333,6 +333,16 @@ export default function AdminPage() {
   const [evidenceCoverage, setEvidenceCoverage] = useState<StageEvidenceCoverage[]>([])
   const [activeTenantTab, setActiveTenantTab] = useState<AdminTenantTab>('resumen')
   const [templateReadiness, setTemplateReadiness] = useState<TemplateReadiness[]>([])
+  const [platformStats, setPlatformStats] = useState<{
+    total_tenants: number
+    active_tenants: number
+    validation_count: number
+    planning_count: number
+    execution_count: number
+    expansion_count: number
+    total_users: number
+    total_documents: number
+  } | null>(null)
 
   const selected = useMemo(
     () => tenants.find(t => t.id === selectedId) ?? tenants[0] ?? null,
@@ -408,6 +418,18 @@ export default function AdminPage() {
     void loadBibliographyPanel(selected.id)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected?.id])
+
+  async function loadPlatformStats() {
+    try {
+      const res = await fetch(`${getApiUrl()}/api/admin/stats`, { headers: authHeaders() })
+      if (res.ok) {
+        const data = await res.json()
+        setPlatformStats(data)
+      }
+    } catch {
+      // non-critical — silently skip
+    }
+  }
 
   async function loadTenants(nextSelectedId?: string) {
     setLoading(true)
@@ -529,6 +551,7 @@ export default function AdminPage() {
     void loadTenants()
     void loadA11Panel()
     void loadInegiStates()
+    void loadPlatformStats()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -738,6 +761,29 @@ export default function AdminPage() {
           <div className={`mb-4 border px-4 py-3 text-[12px] ${error ? 'border-[#EBC0BA] bg-[#FBEAEA] text-[#A8322A]' : 'border-[#C9DDB1] bg-[#EAF3DE] text-[#2F5B0D]'}`}>
             {error ?? message}
           </div>
+        )}
+
+        {platformStats && (
+          <section className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-8">
+            {[
+              { label: 'Municipios', value: platformStats.total_tenants, icon: <Landmark size={14} /> },
+              { label: 'Activos', value: platformStats.active_tenants, icon: <CheckCircle2 size={14} /> },
+              { label: 'Validación', value: platformStats.validation_count, icon: null },
+              { label: 'Planeación', value: platformStats.planning_count, icon: null },
+              { label: 'Ejecución', value: platformStats.execution_count, icon: null },
+              { label: 'Expansión', value: platformStats.expansion_count, icon: null },
+              { label: 'Usuarios', value: platformStats.total_users, icon: <Users size={14} /> },
+              { label: 'Documentos', value: platformStats.total_documents, icon: <ScrollText size={14} /> },
+            ].map(({ label, value, icon }) => (
+              <div key={label} className="border border-[#E1DACE] bg-[#FDFCFA] px-3 py-3 text-center">
+                <div className="flex items-center justify-center gap-1 text-[#6B6760] mb-1">
+                  {icon}
+                  <span className="text-[10px] uppercase tracking-wide">{label}</span>
+                </div>
+                <p className="text-[22px] font-semibold text-[#1C1B18]">{value}</p>
+              </div>
+            ))}
+          </section>
         )}
 
         <section className="mb-5 border border-[#E1DACE] bg-[#FDFCFA] px-4 py-4">
