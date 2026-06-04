@@ -3899,6 +3899,23 @@ async def upload_tenant_document(
         db.commit()
         db.refresh(doc)
 
+        # Create audit log entry
+        from app.models.admin_tenant import TenantAuditLog
+        audit = TenantAuditLog(
+            tenant_id=tenant_id,
+            actor=_.sub,
+            action="document_uploaded",
+            payload={
+                "document_id": doc.id,
+                "document_type": document_type,
+                "filename": file.filename,
+                "source": source,
+                "file_size": len(content),
+            }
+        )
+        db.add(audit)
+        db.commit()
+
         return {
             "id": doc.id,
             "document_type": doc.document_type,
@@ -3999,6 +4016,22 @@ async def invite_tenant_user(
         db.add(new_user)
         db.commit()
         db.refresh(new_user)
+
+        # Create audit log entry
+        from app.models.admin_tenant import TenantAuditLog
+        audit = TenantAuditLog(
+            tenant_id=tenant_id,
+            actor=_.sub,
+            action="user_invited",
+            payload={
+                "user_id": new_user.id,
+                "email": email,
+                "cargo": cargo,
+                "rol": rol,
+            }
+        )
+        db.add(audit)
+        db.commit()
 
         return {
             "id": new_user.id,
