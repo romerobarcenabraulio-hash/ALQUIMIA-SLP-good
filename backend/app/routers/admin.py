@@ -4248,6 +4248,108 @@ async def export_admin_master_table(
     )
 
 
+@router.post("/api/tenants/bulk/export")
+async def bulk_export_tenants(
+    tenant_ids: list[str],
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Export data for multiple tenants as ZIP."""
+    import zipfile
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    if not tenant_ids or len(tenant_ids) == 0:
+        raise HTTPException(status_code=400, detail="No tenants specified")
+
+    if len(tenant_ids) > 100:
+        raise HTTPException(status_code=400, detail="Maximum 100 tenants per export")
+
+    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft
+
+    # Verify all tenants exist
+    tenants = db.query(AdminTenant).filter(AdminTenant.id.in_(tenant_ids)).all()
+    if len(tenants) != len(tenant_ids):
+        raise HTTPException(status_code=404, detail="Some tenants not found")
+
+    # Create ZIP file
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for tenant in tenants:
+            # Tenant metadata
+            tenant_data = {
+                "id": tenant.id,
+                "nombre": tenant.nombre,
+                "estado": tenant.estado_mx,
+                "inegi_clave": tenant.inegi_clave,
+                "stage": tenant.state.current_stage if tenant.state else "unknown",
+                "tier": tenant.tier_comercial,
+                "created_at": tenant.created_at.isoformat(),
+                "updated_at": tenant.updated_at.isoformat(),
+            }
+
+            # User count
+            usuarios_count = db.query(func.count(UserAccount.id)).filter(
+                UserAccount.municipio_id == tenant.municipio_id
+            ).scalar() or 0
+
+            # Document count
+            docs_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+                TenantDocumentDraft.tenant_id == tenant.id
+            ).scalar() or 0
+
+            tenant_data["usuarios_count"] = usuarios_count
+            tenant_data["documents_count"] = docs_count
+
+            # Add metadata file
+            import json
+            metadata_json = json.dumps(tenant_data, indent=2, ensure_ascii=False)
+            zipf.writestr(f"{tenant.nombre}/metadata.json", metadata_json)
+
+            # Add documents list
+            documents = db.query(TenantDocumentDraft).filter(
+                TenantDocumentDraft.tenant_id == tenant.id
+            ).all()
+
+            docs_data = []
+            for doc in documents:
+                docs_data.append({
+                    "id": doc.id,
+                    "type": doc.document_type,
+                    "title": doc.title,
+                    "status": doc.status,
+                    "created_at": doc.created_at.isoformat(),
+                })
+
+            docs_json = json.dumps(docs_data, indent=2, ensure_ascii=False)
+            zipf.writestr(f"{tenant.nombre}/documents.json", docs_json)
+
+    zip_buffer.seek(0)
+
+    # Create audit log entry
+    from app.models.admin_tenant import TenantAuditLog
+    audit = TenantAuditLog(
+        tenant_id=tenant_ids[0],  # Log to first tenant
+        actor=_.sub,
+        action="bulk_export",
+        payload={
+            "tenant_count": len(tenant_ids),
+            "tenant_ids": tenant_ids,
+        }
+    )
+    db.add(audit)
+    db.commit()
+
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=municipios_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.zip"}
+    )
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [

@@ -68,6 +68,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
+  const [bulkExporting, setBulkExporting] = useState(false)
 
   const handleExport = async () => {
     setExporting(true)
@@ -105,6 +106,47 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       console.error('Export failed:', e)
     } finally {
       setExporting(false)
+    }
+  }
+
+  const handleBulkExport = async () => {
+    if (selectedIds.size === 0) return
+
+    setBulkExporting(true)
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/bulk/export`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          tenant_ids: Array.from(selectedIds),
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Bulk export failed: HTTP ${response.status}`)
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `municipios_bulk_${new Date().toISOString().split('T')[0]}.zip`
+      document.body.appendChild(a)
+      a.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+
+      clearSelection()
+    } catch (e) {
+      console.error('Bulk export failed:', e)
+    } finally {
+      setBulkExporting(false)
     }
   }
 
@@ -188,6 +230,14 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             {selectedCount} municipio{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
           </p>
           <div className="flex gap-2">
+            <button
+              onClick={handleBulkExport}
+              disabled={bulkExporting}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors rounded disabled:opacity-50 inline-flex items-center gap-1"
+            >
+              <Download className="h-3 w-3" />
+              {bulkExporting ? 'Exportando...' : 'Exportar ZIP'}
+            </button>
             <button
               onClick={clearSelection}
               className="px-3 py-1.5 text-xs font-medium text-blue-700 hover:text-blue-900 transition-colors"
