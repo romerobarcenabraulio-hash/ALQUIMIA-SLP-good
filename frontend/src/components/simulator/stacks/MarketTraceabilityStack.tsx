@@ -17,6 +17,7 @@ import {
   CHART_TOOLTIP_STYLE,
 } from '@/lib/chartTheme'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { TRAJECTORY_UI, PRECIOS_DEFAULTS, COMPOSICION_RSU } from '@/lib/constants'
 import { cn } from '@/lib/utils'
 import { ConsultingExportButton } from '@/components/simulator/ConsultingExportButton'
@@ -1272,6 +1273,9 @@ function Page3() {
 // ── Root component ────────────────────────────────────────────────────────────
 
 export function MarketTraceabilityStack({ pageOnly }: { pageOnly?: 1 | 2 | 3 } = {}) {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('mercado_materiales')
+
   const { resultados, horizonte, presetTrayectoria, seleccionMunicipioCatalog } = useSimulatorStore()
   const [pageInternal, setPageInternal] = useState<1 | 2 | 3>(pageOnly ?? 2)
   const page = pageOnly ?? pageInternal

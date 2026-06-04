@@ -6,6 +6,7 @@ import {
 } from 'recharts'
 import { Users, ChevronDown, Shield, CheckCircle } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { cn } from '@/lib/utils'
 import { CA_CONFIG } from '@/lib/constants'
 import { ANCLA_PROGRAMA_RSU } from '@/data/organigramaMunicipalCanon'
@@ -128,6 +129,9 @@ function raciColor(val: string) {
 }
 
 export function OrganigramaStack() {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('organigrama_operativo')
+
   const { profile } = useTenantMunicipalProfile()
   const { mixCAs, resultados, zmActiva, municipiosActivos } = useSimulatorStore()
   const [caTipo, setCaTipo] = useState<'P' | 'M' | 'G'>('M')
