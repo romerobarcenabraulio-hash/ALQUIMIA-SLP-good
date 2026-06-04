@@ -13,8 +13,10 @@ import {
   Calendar,
   CheckCircle2,
   AlertTriangle,
+  Download,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { getApiUrl } from '@/lib/api'
 import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 
 interface AdminMasterTableProps {
@@ -58,6 +60,46 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   } = useAdminMasterTable()
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
+  const [exporting, setExporting] = useState(false)
+
+  const handleExport = async () => {
+    setExporting(true)
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const params = new URLSearchParams({
+        search,
+        etapa: etapaFilter,
+        sort_by: sortBy,
+        sort_order: sortOrder,
+      })
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/table/export?${params}`, {
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Export failed: HTTP ${response.status}`)
+      }
+
+      const blob = await response.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `municipios_${new Date().toISOString().split('T')[0]}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      URL.revokeObjectURL(url)
+      document.body.removeChild(a)
+    } catch (e) {
+      console.error('Export failed:', e)
+    } finally {
+      setExporting(false)
+    }
+  }
 
   return (
     <div className={cn('space-y-4 rounded-lg border border-[#E8E4DC] bg-white p-5', className)}>
@@ -95,6 +137,16 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             title="Refresh"
           >
             <Loader2 className={cn('h-4 w-4', loading && 'animate-spin')} />
+          </button>
+
+          <button
+            onClick={handleExport}
+            disabled={exporting}
+            className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors disabled:opacity-50 flex items-center gap-2"
+            title="Export to Excel"
+          >
+            <Download className="h-4 w-4" />
+            {exporting ? 'Exportando...' : 'Exportar'}
           </button>
         </div>
 

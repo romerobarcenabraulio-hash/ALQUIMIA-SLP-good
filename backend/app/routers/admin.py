@@ -4012,6 +4012,209 @@ async def invite_tenant_user(
         raise HTTPException(status_code=500, detail=f"Failed to create invitation: {str(e)}")
 
 
+@router.get("/api/tenants/table/export")
+async def export_admin_master_table(
+    search: str = Query(""),
+    etapa: str = Query(""),
+    sort_by: str = Query("updated_at"),
+    sort_order: str = Query("desc"),
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Export admin master table to Excel."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import and_, or_
+    from app.models.admin_tenant import AdminTenant, TenantState, TenantDocumentDraft
+    from app.models.logistics import LogisticsDailySummary
+
+    query = db.query(AdminTenant).options(
+        selectinload(AdminTenant.state),
+        selectinload(AdminTenant.audit_log),
+    )
+
+    # Apply same filters as table endpoint
+    if search:
+        search_lower = search.lower()
+        query = query.filter(
+            or_(
+                AdminTenant.nombre.ilike(f"%{search}%"),
+                AdminTenant.estado_mx.ilike(f"%{search}%"),
+                AdminTenant.inegi_clave.ilike(f"%{search}%"),
+            )
+        )
+
+    if etapa:
+        query = query.join(TenantState).filter(TenantState.current_stage == etapa)
+
+    # Apply sorting
+    valid_sort_fields = {"municipio", "etapa", "dias_en_etapa", "avance", "updated_at"}
+    sort_by = sort_by if sort_by in valid_sort_fields else "updated_at"
+
+    if sort_by == "municipio":
+        query = query.order_by(AdminTenant.nombre.asc() if sort_order == "asc" else AdminTenant.nombre.desc())
+    elif sort_by == "etapa":
+        query = query.join(TenantState).order_by(
+            TenantState.current_stage.asc() if sort_order == "asc" else TenantState.current_stage.desc()
+        )
+    elif sort_by == "dias_en_etapa":
+        query = query.join(TenantState).order_by(
+            (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).asc()
+            if sort_order == "asc"
+            else (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).desc()
+        )
+    else:
+        query = query.order_by(AdminTenant.updated_at.desc() if sort_order == "desc" else AdminTenant.updated_at.asc())
+
+    tenants = query.all()
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Municipios"
+
+    # Define styles
+    header_fill = PatternFill(start_color="3B6D11", end_color="3B6D11", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
+    )
+
+    # Column headers
+    headers = [
+        "Municipio",
+        "Estado",
+        "INEGI",
+        "Etapa",
+        "Gate Actual",
+        "Usuarios",
+        "Días en Etapa",
+        "Avance %",
+        "Módulos",
+        "Documentos",
+        "HERMES",
+        "Facturado",
+        "Pagado",
+        "Última Actividad",
+        "Próxima Acción",
+    ]
+
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Data rows
+    for row_num, tenant in enumerate(tenants, 2):
+        dias_en_etapa = 0
+        if tenant.state and tenant.state.fecha_cambio_stage:
+            dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+        usuarios_count = db.query(func.count(UserAccount.id)).filter(
+            UserAccount.municipio_id == tenant.municipio_id
+        ).scalar() or 0
+
+        gate_actual = None
+        if tenant.gates:
+            for gate in sorted(tenant.gates, key=lambda g: g.gate_id, reverse=True):
+                if gate.status != "no_iniciado":
+                    gate_actual = gate.gate_id
+                    break
+
+        total_capabilities = len(tenant.capabilities) if tenant.capabilities else 10
+        active_capabilities = len([c for c in tenant.capabilities if c.active]) if tenant.capabilities else 0
+        avance_pct = int((active_capabilities / total_capabilities * 100)) if total_capabilities > 0 else 0
+
+        docs_total = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id
+        ).scalar() or 0
+        docs_delivered = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id,
+            TenantDocumentDraft.status == "finalizado"
+        ).scalar() or 0
+
+        logistics_exists = db.query(LogisticsDailySummary).filter(
+            LogisticsDailySummary.municipio_id == tenant.municipio_id
+        ).first() is not None
+        hermes_status = "ready" if logistics_exists else "pending"
+
+        next_action_map = {
+            "validation": "Completar validación",
+            "planning": "Revisar plan",
+            "execution": "Ejecutar plan",
+            "expansion": "Evaluar expansión",
+        }
+        proxima_accion = next_action_map.get(tenant.state.current_stage if tenant.state else "", "Ver detalles")
+
+        row_data = [
+            tenant.nombre,
+            tenant.estado_mx,
+            tenant.inegi_clave,
+            tenant.state.current_stage if tenant.state else "",
+            gate_actual or "",
+            usuarios_count,
+            dias_en_etapa,
+            avance_pct,
+            f"{active_capabilities}/{total_capabilities}",
+            f"{docs_delivered}/{docs_total}",
+            hermes_status,
+            "Sí" if docs_delivered > 0 else "No",
+            "No",
+            tenant.updated_at.strftime("%Y-%m-%d"),
+            proxima_accion,
+        ]
+
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_num, column=col_num)
+            cell.value = value
+            cell.border = thin_border
+            if col_num in [6, 7, 8]:  # Numeric columns
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+
+    # Adjust column widths
+    ws.column_dimensions["A"].width = 25
+    ws.column_dimensions["B"].width = 15
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 15
+    ws.column_dimensions["E"].width = 12
+    ws.column_dimensions["F"].width = 10
+    ws.column_dimensions["G"].width = 13
+    ws.column_dimensions["H"].width = 10
+    ws.column_dimensions["I"].width = 15
+    ws.column_dimensions["J"].width = 13
+    ws.column_dimensions["K"].width = 12
+    ws.column_dimensions["L"].width = 12
+    ws.column_dimensions["M"].width = 10
+    ws.column_dimensions["N"].width = 18
+    ws.column_dimensions["O"].width = 20
+
+    # Write to BytesIO
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+
+    return StreamingResponse(
+        iter([excel_file.getvalue()]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=municipios_tabla.xlsx"}
+    )
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [
