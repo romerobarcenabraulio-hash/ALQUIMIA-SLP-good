@@ -862,6 +862,32 @@ export function MunicipalContextStack({
         </div>
       )}
 
+      {/* ── Justificación Técnica · M03B ─────────────────────────────────────── */}
+      <details className="group mt-4">
+        <summary className="flex cursor-pointer list-none items-center gap-2 rounded-[8px] border border-[#E8E4DC] bg-[#FAFAF8] px-4 py-3 text-[13px] font-medium text-[#1C1B18] hover:bg-[#F5F2EC]">
+          <ChevronDown className="h-4 w-4 text-[#A8A49C] transition-transform group-open:rotate-180" />
+          Justificación técnica · M03B
+        </summary>
+        <div className="mt-2 rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] px-5 py-4 space-y-3 text-[13px] leading-6 text-[#5C574F]">
+          <p>
+            <span className="font-semibold text-[#1C1B18]">Fuente de datos:</span>{' '}
+            Reglamento municipal cargado en plataforma (documento del cliente) o catálogo jurídico estatal. Sin reglamento cargado, los resultados son orientativos; no habilitan plan ni declaratoria.
+          </p>
+          <p>
+            <span className="font-semibold text-[#1C1B18]">Método de evaluación:</span>{' '}
+            Checklist de artículos mínimos operables según LGPGIR y reglamentación estatal aplicable. Cada artículo recibe estado: adecuado, obsoleto, ausente o en conflicto.
+          </p>
+          <p>
+            <span className="font-semibold text-[#1C1B18]">Alcance:</span>{' '}
+            Diagnóstico jurídico municipal. No certifica cumplimiento legal ni sustituye dictamen de síndico o asesor jurídico externo.
+          </p>
+          <p>
+            <span className="font-semibold text-[#1C1B18]">Límite metodológico:</span>{' '}
+            La cobertura de municipios comparables proviene de bibliografía nacional y estatal. No es auditoría local. Sirve como contexto para detectar brechas, no como verdad municipal de terceros.
+          </p>
+        </div>
+      </details>
+
       {/* ── Bottom action bar ─────────────────────────────────────────────────── */}
       {!view && <ModuleBottomBar onProfundizar={() => setTabInternal('cobertura')} />}
 

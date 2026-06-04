@@ -1175,10 +1175,10 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
                 onNavigateModule={setActiveModuleId}
                 onValidateProposal={clientPreview && platformStage === 'validation' ? validateProposalAndOpenPlanning : undefined}
               />
-              {tenantData.data && (
+              {tenantData.data && !clientPreview && (
                 <ConsultingPackagePanel
                   tenantData={tenantData.data}
-                  showTechnicalPanel={!clientPreview}
+                  showTechnicalPanel={true}
                 />
               )}
               {tenantData.data && (
