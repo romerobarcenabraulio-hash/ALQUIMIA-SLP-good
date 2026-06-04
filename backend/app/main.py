@@ -18,7 +18,7 @@ if _REPO_ROOT.is_dir() and str(_REPO_ROOT) not in sys.path:
     if (_REPO_ROOT / "modules").is_dir():
         sys.path.insert(0, str(_REPO_ROOT))
 
-from app.routers import auth, simulate, generate_plan, hub, admin, simulations, reports
+from app.routers import auth, simulate, generate_plan, hub, admin, simulations, reports, payments
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
 from app.market.router import router as market_router
@@ -212,6 +212,7 @@ app.include_router(simulate.router,      prefix="/simulate", tags=["simulate"])
 app.include_router(generate_plan.router, prefix="/generate", tags=["generate"])
 app.include_router(hub.router,           prefix="/hub",       tags=["hub"])
 app.include_router(admin.router,         prefix="/admin",     tags=["admin"])
+app.include_router(payments.router,      prefix="/api",      tags=["payments"])
 app.include_router(simulations.router,   prefix="/api",      tags=["simulations"])
 app.include_router(reports.router,       prefix="/api",      tags=["reports"])
 app.include_router(legal_router,         prefix="/legal",     tags=["legal"])
