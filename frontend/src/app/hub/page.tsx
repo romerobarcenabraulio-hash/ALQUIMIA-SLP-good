@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   Recycle, FileText, BarChart2, ArrowRight, TrendingUp,
-  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale, MapPin,
+  Download, Settings, Users, CheckCircle2, Clock, AlertTriangle, Scale, MapPin, Search,
 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
@@ -45,6 +45,7 @@ interface QuickAction {
 const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   validation: [
     { label: 'Ver propuesta', href: '', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Propuesta personalizada de circularidad' },
+    { label: 'ARCHIVO', href: '/archivo', icon: <Search size={16} />, color: '#1A5FA8', desc: 'Búsqueda semántica en catálogo regulatorio' },
     { label: 'Simulador', href: '/simulator', icon: <BarChart2 size={16} />, color: '#1C4B8F', desc: 'Modelar escenarios financieros' },
     { label: 'Subir reglamento', href: '/gobierno/rsu', icon: <FileText size={16} />, color: '#7B3F00', desc: 'Diagnóstico jurídico del municipio' },
   ],

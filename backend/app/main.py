@@ -25,6 +25,7 @@ from app.routers.propuesta import router as propuesta_router
 from app.routers.catalogo_iniciativas import router as catalogo_iniciativas_router
 from app.routers.modo_b import router as modo_b_router
 from app.routers.notifications import router as notifications_router
+from app.routers.archivo import router as archivo_router
 from app.routers.esg_report import router as esg_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
@@ -281,6 +282,7 @@ app.include_router(propuesta_router, prefix="/api/v1", tags=["propuesta"])
 app.include_router(catalogo_iniciativas_router, prefix="/api/v1", tags=["catalogo-iniciativas"])
 app.include_router(modo_b_router, prefix="/api/v1", tags=["modo-b"])
 app.include_router(notifications_router, prefix="/api/v1", tags=["notifications"])
+app.include_router(archivo_router, prefix="/api/v1", tags=["archivo"])
 app.include_router(esg_router, prefix="/api/v1", tags=["esg"])
 
 
