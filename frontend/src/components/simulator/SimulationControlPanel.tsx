@@ -562,6 +562,18 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
             )}
           </div>
 
+          {searchQuery && (
+            <p className="text-xs text-[#6B6760] px-1">
+              Found {simulations.filter(sim =>
+                sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).length} simulation{simulations.filter(sim =>
+                sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).length !== 1 ? 's' : ''}
+            </p>
+          )}
+
           <div className="max-h-60 overflow-y-auto">
             {loadingSimulations ? (
               <div className="flex items-center justify-center py-8">
