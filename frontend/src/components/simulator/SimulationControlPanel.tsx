@@ -29,6 +29,7 @@ import {
 } from '@/lib/dataExportImport'
 import { ReportGenerator } from '@/components/simulator/ReportGenerator'
 import { SimulationVersionTimeline } from '@/components/simulator/SimulationVersionTimeline'
+import { SimulationHelp } from '@/components/simulator/SimulationHelp'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -146,7 +147,10 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
       {/* Header with status indicators */}
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="font-semibold text-[#1C1B18]">Simulation Management</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="font-semibold text-[#1C1B18]">Simulation Management</h3>
+            <SimulationHelp />
+          </div>
           <p className="text-xs text-[#6B6760] mt-1">Save, load, export, and backup your simulations</p>
         </div>
 
