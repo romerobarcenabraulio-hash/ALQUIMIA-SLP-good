@@ -6,7 +6,7 @@
  * Production-ready component with full feature integration
  */
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Save,
   Upload,
@@ -18,6 +18,8 @@ import {
   WifiOff,
   Clock,
   Eye,
+  Copy,
+  Trash2,
 } from 'lucide-react'
 import { useSimulationPersistenceV2 } from '@/hooks/useSimulationPersistenceV2'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -30,6 +32,9 @@ import {
 import { ReportGenerator } from '@/components/simulator/ReportGenerator'
 import { SimulationVersionTimeline } from '@/components/simulator/SimulationVersionTimeline'
 import { SimulationHelp } from '@/components/simulator/SimulationHelp'
+import { SimulationActivityLog } from '@/components/simulator/SimulationActivityLog'
+import { SimulationStats } from '@/components/simulator/SimulationStats'
+import { SimulationContextMenu } from '@/components/simulator/SimulationContextMenu'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -67,6 +72,46 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [importError, setImportError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
+  const [selectedForExport, setSelectedForExport] = useState<Set<string>>(new Set())
+  const [showBulkExport, setShowBulkExport] = useState(false)
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name'>('recent')
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+      const isCtrlOrCmd = isMac ? e.metaKey : e.ctrlKey
+
+      if (!isCtrlOrCmd) return
+
+      switch (e.key.toLowerCase()) {
+        case 's':
+          e.preventDefault()
+          setShowSaveDialog(true)
+          break
+        case 'o':
+          e.preventDefault()
+          setShowLoadDialog(true)
+          void loadSimulationsList()
+          break
+        case 'e':
+          e.preventDefault()
+          setShowExportMenu(!showExportMenu)
+          break
+        case '?':
+          e.preventDefault()
+          // Open help - would need to pass ref to help button
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showExportMenu, loadSimulationsList])
 
   // Save handlers
   const handleSaveClick = async () => {
@@ -88,6 +133,120 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
     } catch {
       // Error handled by hook
     }
+  }
+
+  const handleDuplicateSimulation = async (simId: string) => {
+    setDuplicating(simId)
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      if (tenantId) {
+        headers['x-tenant-id'] = tenantId
+      }
+
+      const response = await fetch(`/api/simulations/${encodeURIComponent(simId)}/duplicate`, {
+        method: 'POST',
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to duplicate simulation')
+      }
+
+      await loadSimulationsList()
+    } catch (e) {
+      console.error('Duplication failed:', e)
+    } finally {
+      setDuplicating(null)
+    }
+  }
+
+  const handleDeleteSimulation = async (simId: string) => {
+    if (!confirm('Are you sure you want to delete this simulation? This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(simId)
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      if (tenantId) {
+        headers['x-tenant-id'] = tenantId
+      }
+
+      const response = await fetch(`/api/simulations/${encodeURIComponent(simId)}`, {
+        method: 'DELETE',
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete simulation')
+      }
+
+      await loadSimulationsList()
+      if (currentSimulationId === simId) {
+        // TODO: Reset current simulation
+      }
+    } catch (e) {
+      console.error('Deletion failed:', e)
+    } finally {
+      setDeleting(null)
+    }
+  }
+
+  const handleBulkExport = () => {
+    if (selectedForExport.size === 0) return
+
+    const selectedSims = simulations.filter(s => selectedForExport.has(s.id))
+    const bulkData = {
+      exportDate: new Date().toISOString(),
+      simulations: selectedSims.map(sim => ({
+        id: sim.id,
+        name: sim.name,
+        description: sim.description,
+        createdAt: sim.createdAt,
+        updatedAt: sim.updatedAt,
+      })),
+      count: selectedSims.length,
+    }
+
+    const dataStr = JSON.stringify(bulkData, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = `simulations-export-${new Date().toISOString().split('T')[0]}.json`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    setSelectedForExport(new Set())
+    setShowBulkExport(false)
+  }
+
+  const toggleSimulationSelection = (simId: string) => {
+    const newSelected = new Set(selectedForExport)
+    if (newSelected.has(simId)) {
+      newSelected.delete(simId)
+    } else {
+      newSelected.add(simId)
+    }
+    setSelectedForExport(newSelected)
   }
 
   // Export handlers
@@ -191,6 +350,9 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
           )}
         </div>
       </div>
+
+      {/* Statistics */}
+      <SimulationStats tenantId={tenantId} />
 
       {/* Last save time */}
       {lastSaveTime && (
@@ -373,13 +535,44 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
       {/* Load dialog */}
       {showLoadDialog && (
         <div className="space-y-3 rounded-lg bg-[#FDFCFA] p-4 border border-[#E8E4DC]">
-          <input
-            type="text"
-            placeholder="Search simulations..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
-          />
+          <div className="flex gap-2 items-center">
+            <input
+              type="text"
+              placeholder="Search simulations..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="flex-1 rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+            />
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-xs focus:border-[#3B6D11] focus:outline-none bg-white"
+            >
+              <option value="recent">Recent</option>
+              <option value="oldest">Oldest</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+            {selectedForExport.size > 0 && (
+              <button
+                onClick={() => setShowBulkExport(!showBulkExport)}
+                className="px-3 py-2 rounded-lg bg-blue-50 border border-blue-200 text-xs font-medium text-blue-700 hover:bg-blue-100"
+              >
+                Export {selectedForExport.size}
+              </button>
+            )}
+          </div>
+
+          {searchQuery && (
+            <p className="text-xs text-[#6B6760] px-1">
+              Found {simulations.filter(sim =>
+                sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).length} simulation{simulations.filter(sim =>
+                sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+              ).length !== 1 ? 's' : ''}
+            </p>
+          )}
 
           <div className="max-h-60 overflow-y-auto">
             {loadingSimulations ? (
@@ -400,37 +593,99 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                     sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
                   )
+                  .sort((a, b) => {
+                    if (sortBy === 'recent') {
+                      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                    } else if (sortBy === 'oldest') {
+                      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+                    } else if (sortBy === 'name') {
+                      return a.name.localeCompare(b.name)
+                    }
+                    return 0
+                  })
                   .map(sim => (
-                    <button
+                    <div
                       key={sim.id}
-                      onClick={() => {
-                        handleLoadClick(sim.id)
-                        setSearchQuery('')
-                      }}
                       className={cn(
-                        'w-full rounded-lg border p-3 text-left transition-colors text-sm',
-                        currentSimulationId === sim.id
+                        'rounded-lg border p-3 transition-colors',
+                        selectedForExport.has(sim.id)
+                          ? 'bg-blue-50 border-blue-200'
+                          : currentSimulationId === sim.id
                           ? 'bg-green-50 border-green-200'
-                          : 'bg-white border-[#E8E4DC] hover:bg-[#F4F2ED]'
+                          : 'bg-white border-[#E8E4DC]'
                       )}
                     >
-                      <p className="font-medium text-[#1C1B18]">{sim.name}</p>
-                      {sim.description && (
-                        <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
-                      )}
-                      <p className="text-xs text-[#8E8980] mt-1">
-                        {new Date(sim.updatedAt).toLocaleString()}
-                      </p>
-                    </button>
+                      <div className="flex items-start gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedForExport.has(sim.id)}
+                          onChange={() => toggleSimulationSelection(sim.id)}
+                          className="mt-1"
+                        />
+                        <button
+                          onClick={() => {
+                            handleLoadClick(sim.id)
+                            setSearchQuery('')
+                          }}
+                          className="flex-1 text-left hover:opacity-80"
+                        >
+                          <p className="font-medium text-[#1C1B18] text-sm">{sim.name}</p>
+                          {sim.description && (
+                            <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
+                          )}
+                          <div className="flex gap-3 text-xs text-[#8E8980] mt-1 flex-wrap">
+                            {(sim.municipios as string[])?.length > 0 && (
+                              <span>📍 {(sim.municipios as string[]).length} municipio{(sim.municipios as string[]).length !== 1 ? 's' : ''}</span>
+                            )}
+                            {(sim.horizonte as number) > 0 && (
+                              <span>📅 {sim.horizonte}y horizon</span>
+                            )}
+                            <span>{new Date(sim.updatedAt).toLocaleDateString()}</span>
+                          </div>
+                        </button>
+                        <SimulationContextMenu
+                          simulationId={sim.id}
+                          simulationName={sim.name}
+                          onDuplicate={handleDuplicateSimulation}
+                          onDelete={handleDeleteSimulation}
+                          onExport={() => handleExportJSON()}
+                          disabled={duplicating === sim.id || deleting === sim.id}
+                        />
+                      </div>
+                    </div>
                   ))}
               </div>
             )}
           </div>
 
+          {showBulkExport && selectedForExport.size > 0 && (
+            <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 space-y-2">
+              <p className="text-xs font-medium text-blue-900">
+                Export {selectedForExport.size} simulation{selectedForExport.size !== 1 ? 's' : ''}?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleBulkExport}
+                  className="flex-1 rounded-lg bg-blue-600 text-white px-3 py-1.5 text-xs font-medium hover:bg-blue-700"
+                >
+                  Export
+                </button>
+                <button
+                  onClick={() => setShowBulkExport(false)}
+                  className="flex-1 rounded-lg bg-white border border-blue-200 text-blue-700 px-3 py-1.5 text-xs font-medium hover:bg-blue-50"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => {
               setShowLoadDialog(false)
               setSearchQuery('')
+              setSelectedForExport(new Set())
+              setShowBulkExport(false)
             }}
             className="w-full rounded-lg border border-[#E8E4DC] bg-white px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F4F2ED]"
           >
@@ -461,6 +716,15 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
         <SimulationVersionTimeline
           simulationId={currentSimulationId}
           tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+        />
+      )}
+
+      {/* Activity log */}
+      {currentSimulationId && (
+        <SimulationActivityLog
+          simulationId={currentSimulationId}
+          tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+          maxEntries={20}
         />
       )}
     </div>

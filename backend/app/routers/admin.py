@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel, field_validator
 from typing import List
 import logging
@@ -3637,6 +3637,871 @@ async def get_legacy_quarantine_manifest(_: UserInfo = Depends(require_admin)):
                 "deletion_criteria": "No hay consumidores frontend ni tests de MVP que lo requieran.",
             },
         ],
+    }
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Sprint 10: Admin Master Table Endpoints
+# ────────────────────────────────────────────────────────────────────────────
+
+
+class AdminTableRow(BaseModel):
+    """Optimized data structure for admin master table (columns 1-12)."""
+    id: str
+    municipio: str
+    estado: str
+    inegi_clave: str
+    etapa: str
+    gate_actual: str | None
+    usuarios_count: int
+    dias_en_etapa: int
+    avance_validacion_pct: int
+    avance_modulos_count: dict  # {completados, total}
+    documentos_solicitados: dict  # {entregados, total}
+    hermes_status: str  # pending, partially_mapped, ready
+    facturado: bool
+    pagado: bool
+    ultima_actividad: str
+    proxima_accion: str
+    created_at: str
+    updated_at: str
+
+
+@router.get("/api/tenants/table")
+async def get_admin_master_table(
+    search: str = Query("", description="Search by municipio, estado, INEGI clave"),
+    etapa: str = Query("", description="Filter by stage: validation, planning, execution, expansion"),
+    sort_by: str = Query("updated_at", description="Sort field: municipio, etapa, dias_en_etapa, avance"),
+    sort_order: str = Query("desc", description="asc or desc"),
+    limit: int = Query(25, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get optimized data for admin master table with columns 1-12."""
+    if db is None:
+        # Fallback to in-memory for demo
+        return {"rows": [], "total": 0}
+
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import and_, or_
+    from app.models.admin_tenant import AdminTenant, TenantState
+
+    query = db.query(AdminTenant).options(
+        selectinload(AdminTenant.state),
+        selectinload(AdminTenant.audit_log),
+    )
+
+    # Search filter
+    if search:
+        search_lower = search.lower()
+        query = query.filter(
+            or_(
+                AdminTenant.nombre.ilike(f"%{search}%"),
+                AdminTenant.estado_mx.ilike(f"%{search}%"),
+                AdminTenant.inegi_clave.ilike(f"%{search}%"),
+            )
+        )
+
+    # Stage filter
+    if etapa:
+        query = query.join(TenantState).filter(TenantState.current_stage == etapa)
+
+    # Count total before pagination
+    total = query.count()
+
+    # Sorting
+    valid_sort_fields = {"municipio", "etapa", "dias_en_etapa", "avance", "updated_at"}
+    sort_by = sort_by if sort_by in valid_sort_fields else "updated_at"
+
+    if sort_by == "municipio":
+        query = query.order_by(AdminTenant.nombre.asc() if sort_order == "asc" else AdminTenant.nombre.desc())
+    elif sort_by == "etapa":
+        query = query.join(TenantState).order_by(
+            TenantState.current_stage.asc() if sort_order == "asc" else TenantState.current_stage.desc()
+        )
+    elif sort_by == "dias_en_etapa":
+        query = query.join(TenantState).order_by(
+            (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).asc()
+            if sort_order == "asc"
+            else (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).desc()
+        )
+    else:
+        query = query.order_by(AdminTenant.updated_at.desc() if sort_order == "desc" else AdminTenant.updated_at.asc())
+
+    # Pagination
+    tenants = query.offset(offset).limit(limit).all()
+
+    # Format rows
+    from sqlalchemy import func
+    from app.models.user_account import UserAccount
+    from app.models.admin_tenant import TenantDocumentDraft
+
+    rows: list[AdminTableRow] = []
+    for tenant in tenants:
+        dias_en_etapa = 0
+        if tenant.state and tenant.state.fecha_cambio_stage:
+            dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+        # Get user count
+        usuarios_count = db.query(func.count(UserAccount.id)).filter(
+            UserAccount.municipio_id == tenant.municipio_id
+        ).scalar() or 0
+
+        # Get current gate
+        gate_actual = None
+        if tenant.gates:
+            # Get the highest gate that's been started
+            for gate in sorted(tenant.gates, key=lambda g: g.gate_id, reverse=True):
+                if gate.status != "no_iniciado":
+                    gate_actual = gate.gate_id
+                    break
+
+        # Calculate module completion metrics
+        total_capabilities = len(tenant.capabilities) if tenant.capabilities else 10
+        active_capabilities = len([c for c in tenant.capabilities if c.active]) if tenant.capabilities else 0
+        modulos_completos = active_capabilities
+        modulos_total = max(total_capabilities, 1)
+        avance_pct = int((modulos_completos / modulos_total * 100)) if modulos_total > 0 else 0
+
+        # Calculate document metrics
+        docs_total_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id
+        ).scalar() or 0
+        docs_delivered_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id,
+            TenantDocumentDraft.status == "finalizado"
+        ).scalar() or 0
+        docs_entregados = docs_delivered_count
+        docs_total = docs_total_count if docs_total_count > 0 else 8
+
+        # Calculate HERMES status (check if logistics data exists for municipio)
+        from app.models.logistics import LogisticsDailySummary
+        logistics_exists = db.query(LogisticsDailySummary).filter(
+            LogisticsDailySummary.municipio_id == tenant.municipio_id
+        ).first() is not None
+        hermes_status = "ready" if logistics_exists else "pending"
+
+        # Determine next action based on stage
+        next_action_map = {
+            "validation": "Completar validación",
+            "planning": "Revisar plan",
+            "execution": "Ejecutar plan",
+            "expansion": "Evaluar expansión",
+        }
+        proxima_accion = next_action_map.get(tenant.state.current_stage if tenant.state else "", "Ver detalles")
+
+        rows.append(
+            AdminTableRow(
+                id=tenant.id,
+                municipio=tenant.nombre,
+                estado=tenant.estado_mx,
+                inegi_clave=tenant.inegi_clave,
+                etapa=tenant.state.current_stage if tenant.state else "unknown",
+                gate_actual=gate_actual,
+                usuarios_count=usuarios_count,
+                dias_en_etapa=dias_en_etapa,
+                avance_validacion_pct=avance_pct,
+                avance_modulos_count={"completados": modulos_completos, "total": modulos_total},
+                documentos_solicitados={"entregados": docs_entregados, "total": docs_total},
+                hermes_status=hermes_status,
+                facturado=docs_delivered_count > 0,
+                pagado=False,  # Placeholder - would integrate with payment system
+                ultima_actividad=tenant.updated_at.isoformat(),
+                proxima_accion=proxima_accion,
+                created_at=tenant.created_at.isoformat(),
+                updated_at=tenant.updated_at.isoformat(),
+            )
+        )
+
+    return {
+        "rows": rows,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
+@router.get("/tenants/{tenant_id}/documents")
+async def get_tenant_documents(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get all documents for a tenant."""
+    from app.models.admin_tenant import TenantDocumentDraft
+
+    if db is None:
+        return {"documents": []}
+
+    documents = db.query(TenantDocumentDraft).filter(
+        TenantDocumentDraft.tenant_id == tenant_id
+    ).order_by(TenantDocumentDraft.updated_at.desc()).all()
+
+    return {
+        "documents": [
+            {
+                "id": doc.id,
+                "document_type": doc.document_type,
+                "title": doc.title,
+                "status": doc.status,
+                "qa_status": doc.qa_status,
+                "version": doc.version,
+                "created_by": doc.created_by,
+                "updated_by": doc.updated_by,
+                "created_at": doc.created_at.isoformat(),
+                "updated_at": doc.updated_at.isoformat(),
+            }
+            for doc in documents
+        ]
+    }
+
+
+@router.post("/tenants/{tenant_id}/documents/upload")
+async def upload_tenant_document(
+    tenant_id: str,
+    file: UploadFile = File(...),
+    document_type: str = "Reglamento",
+    source: str = "client_email",
+    notes: str = "",
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Upload a document for a tenant."""
+    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    # Verify tenant exists
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # For now, just store metadata - actual file handling would need storage service
+    try:
+        content = await file.read()
+        # Limit file size (50 MB)
+        if len(content) > 50 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large (max 50 MB)")
+
+        doc = TenantDocumentDraft(
+            tenant_id=tenant_id,
+            document_type=document_type,
+            title=file.filename or f"{document_type}_uploaded",
+            status="human_review_required",
+            qa_status="partial",
+            content_md=f"Uploaded: {file.filename}\nSource: {source}\nNotes: {notes}\n\n--- Document content will be processed ---",
+            created_by=_.sub,
+            updated_by=_.sub,
+        )
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
+
+        # Create audit log entry
+        from app.models.admin_tenant import TenantAuditLog
+        audit = TenantAuditLog(
+            tenant_id=tenant_id,
+            actor=_.sub,
+            action="document_uploaded",
+            payload={
+                "document_id": doc.id,
+                "document_type": document_type,
+                "filename": file.filename,
+                "source": source,
+                "file_size": len(content),
+            }
+        )
+        db.add(audit)
+        db.commit()
+
+        return {
+            "id": doc.id,
+            "document_type": doc.document_type,
+            "title": doc.title,
+            "status": doc.status,
+            "message": "Document uploaded successfully",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@router.get("/tenants/{tenant_id}/users")
+async def get_tenant_users(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get all users for a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        return {"users": []}
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    users = db.query(UserAccount).filter(
+        UserAccount.municipio_id == tenant.municipio_id,
+        UserAccount.activo == True
+    ).order_by(UserAccount.created_at.desc()).all()
+
+    return {
+        "users": [
+            {
+                "id": user.id,
+                "email": user.email,
+                "nombre": user.nombre,
+                "apellido_paterno": user.apellido_paterno,
+                "cargo": user.cargo,
+                "dependencia": user.dependencia,
+                "email_verified": user.email_verified_at is not None,
+                "rol": user.rol,
+                "created_at": user.created_at.isoformat(),
+                "last_login_at": user.last_login_at.isoformat() if user.last_login_at else None,
+            }
+            for user in users
+        ]
+    }
+
+
+@router.post("/tenants/{tenant_id}/users/invite")
+async def invite_tenant_user(
+    tenant_id: str,
+    email: str,
+    cargo: str = "Miembro del equipo",
+    rol: str = "funcionario",
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Invite a new user to a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # Check if user already exists
+    existing = db.query(UserAccount).filter(UserAccount.email == email).first()
+    if existing:
+        if existing.municipio_id == tenant.municipio_id:
+            return {"message": "User already belongs to this tenant"}
+        else:
+            # User exists in a different municipio, would need migration logic
+            return {"message": "User already exists in a different municipality"}
+
+    # Create placeholder user account (would normally send invitation email)
+    try:
+        from app.routers.auth import hash_password
+        import secrets
+
+        new_user = UserAccount(
+            email=email,
+            hashed_password=hash_password(secrets.token_urlsafe(32)),
+            nombre="Pendiente verificación",
+            apellido_paterno="",
+            cargo=cargo,
+            municipio_id=tenant.municipio_id,
+            estado_mx=tenant.estado_mx,
+            municipio_nombre=tenant.nombre,
+            rol=rol,
+            activo=True,
+        )
+        db.add(new_user)
+        db.commit()
+        db.refresh(new_user)
+
+        # Create audit log entry
+        from app.models.admin_tenant import TenantAuditLog
+        audit = TenantAuditLog(
+            tenant_id=tenant_id,
+            actor=_.sub,
+            action="user_invited",
+            payload={
+                "user_id": new_user.id,
+                "email": email,
+                "cargo": cargo,
+                "rol": rol,
+            }
+        )
+        db.add(audit)
+        db.commit()
+
+        return {
+            "id": new_user.id,
+            "email": new_user.email,
+            "cargo": new_user.cargo,
+            "rol": new_user.rol,
+            "message": "User invitation created successfully",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to create invitation: {str(e)}")
+
+
+@router.get("/api/tenants/table/export")
+async def export_admin_master_table(
+    search: str = Query(""),
+    etapa: str = Query(""),
+    sort_by: str = Query("updated_at"),
+    sort_order: str = Query("desc"),
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Export admin master table to Excel."""
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import and_, or_
+    from app.models.admin_tenant import AdminTenant, TenantState, TenantDocumentDraft
+    from app.models.logistics import LogisticsDailySummary
+
+    query = db.query(AdminTenant).options(
+        selectinload(AdminTenant.state),
+        selectinload(AdminTenant.audit_log),
+    )
+
+    # Apply same filters as table endpoint
+    if search:
+        search_lower = search.lower()
+        query = query.filter(
+            or_(
+                AdminTenant.nombre.ilike(f"%{search}%"),
+                AdminTenant.estado_mx.ilike(f"%{search}%"),
+                AdminTenant.inegi_clave.ilike(f"%{search}%"),
+            )
+        )
+
+    if etapa:
+        query = query.join(TenantState).filter(TenantState.current_stage == etapa)
+
+    # Apply sorting
+    valid_sort_fields = {"municipio", "etapa", "dias_en_etapa", "avance", "updated_at"}
+    sort_by = sort_by if sort_by in valid_sort_fields else "updated_at"
+
+    if sort_by == "municipio":
+        query = query.order_by(AdminTenant.nombre.asc() if sort_order == "asc" else AdminTenant.nombre.desc())
+    elif sort_by == "etapa":
+        query = query.join(TenantState).order_by(
+            TenantState.current_stage.asc() if sort_order == "asc" else TenantState.current_stage.desc()
+        )
+    elif sort_by == "dias_en_etapa":
+        query = query.join(TenantState).order_by(
+            (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).asc()
+            if sort_order == "asc"
+            else (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).desc()
+        )
+    else:
+        query = query.order_by(AdminTenant.updated_at.desc() if sort_order == "desc" else AdminTenant.updated_at.asc())
+
+    tenants = query.all()
+
+    # Create workbook
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Municipios"
+
+    # Define styles
+    header_fill = PatternFill(start_color="3B6D11", end_color="3B6D11", fill_type="solid")
+    header_font = Font(bold=True, color="FFFFFF", size=11)
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
+    )
+
+    # Column headers
+    headers = [
+        "Municipio",
+        "Estado",
+        "INEGI",
+        "Etapa",
+        "Gate Actual",
+        "Usuarios",
+        "Días en Etapa",
+        "Avance %",
+        "Módulos",
+        "Documentos",
+        "HERMES",
+        "Facturado",
+        "Pagado",
+        "Última Actividad",
+        "Próxima Acción",
+    ]
+
+    for col_num, header in enumerate(headers, 1):
+        cell = ws.cell(row=1, column=col_num)
+        cell.value = header
+        cell.fill = header_fill
+        cell.font = header_font
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Data rows
+    for row_num, tenant in enumerate(tenants, 2):
+        dias_en_etapa = 0
+        if tenant.state and tenant.state.fecha_cambio_stage:
+            dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+        usuarios_count = db.query(func.count(UserAccount.id)).filter(
+            UserAccount.municipio_id == tenant.municipio_id
+        ).scalar() or 0
+
+        gate_actual = None
+        if tenant.gates:
+            for gate in sorted(tenant.gates, key=lambda g: g.gate_id, reverse=True):
+                if gate.status != "no_iniciado":
+                    gate_actual = gate.gate_id
+                    break
+
+        total_capabilities = len(tenant.capabilities) if tenant.capabilities else 10
+        active_capabilities = len([c for c in tenant.capabilities if c.active]) if tenant.capabilities else 0
+        avance_pct = int((active_capabilities / total_capabilities * 100)) if total_capabilities > 0 else 0
+
+        docs_total = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id
+        ).scalar() or 0
+        docs_delivered = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id,
+            TenantDocumentDraft.status == "finalizado"
+        ).scalar() or 0
+
+        logistics_exists = db.query(LogisticsDailySummary).filter(
+            LogisticsDailySummary.municipio_id == tenant.municipio_id
+        ).first() is not None
+        hermes_status = "ready" if logistics_exists else "pending"
+
+        next_action_map = {
+            "validation": "Completar validación",
+            "planning": "Revisar plan",
+            "execution": "Ejecutar plan",
+            "expansion": "Evaluar expansión",
+        }
+        proxima_accion = next_action_map.get(tenant.state.current_stage if tenant.state else "", "Ver detalles")
+
+        row_data = [
+            tenant.nombre,
+            tenant.estado_mx,
+            tenant.inegi_clave,
+            tenant.state.current_stage if tenant.state else "",
+            gate_actual or "",
+            usuarios_count,
+            dias_en_etapa,
+            avance_pct,
+            f"{active_capabilities}/{total_capabilities}",
+            f"{docs_delivered}/{docs_total}",
+            hermes_status,
+            "Sí" if docs_delivered > 0 else "No",
+            "No",
+            tenant.updated_at.strftime("%Y-%m-%d"),
+            proxima_accion,
+        ]
+
+        for col_num, value in enumerate(row_data, 1):
+            cell = ws.cell(row=row_num, column=col_num)
+            cell.value = value
+            cell.border = thin_border
+            if col_num in [6, 7, 8]:  # Numeric columns
+                cell.alignment = Alignment(horizontal="center", vertical="center")
+            else:
+                cell.alignment = Alignment(horizontal="left", vertical="center")
+
+    # Adjust column widths
+    ws.column_dimensions["A"].width = 25
+    ws.column_dimensions["B"].width = 15
+    ws.column_dimensions["C"].width = 12
+    ws.column_dimensions["D"].width = 15
+    ws.column_dimensions["E"].width = 12
+    ws.column_dimensions["F"].width = 10
+    ws.column_dimensions["G"].width = 13
+    ws.column_dimensions["H"].width = 10
+    ws.column_dimensions["I"].width = 15
+    ws.column_dimensions["J"].width = 13
+    ws.column_dimensions["K"].width = 12
+    ws.column_dimensions["L"].width = 12
+    ws.column_dimensions["M"].width = 10
+    ws.column_dimensions["N"].width = 18
+    ws.column_dimensions["O"].width = 20
+
+    # Write to BytesIO
+    excel_file = BytesIO()
+    wb.save(excel_file)
+    excel_file.seek(0)
+
+    return StreamingResponse(
+        iter([excel_file.getvalue()]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=municipios_tabla.xlsx"}
+    )
+
+
+@router.post("/api/tenants/bulk/export")
+async def bulk_export_tenants(
+    tenant_ids: list[str],
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+):
+    """Export data for multiple tenants as ZIP."""
+    import zipfile
+    from io import BytesIO
+    from fastapi.responses import StreamingResponse
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    if not tenant_ids or len(tenant_ids) == 0:
+        raise HTTPException(status_code=400, detail="No tenants specified")
+
+    if len(tenant_ids) > 100:
+        raise HTTPException(status_code=400, detail="Maximum 100 tenants per export")
+
+    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft
+
+    # Verify all tenants exist
+    tenants = db.query(AdminTenant).filter(AdminTenant.id.in_(tenant_ids)).all()
+    if len(tenants) != len(tenant_ids):
+        raise HTTPException(status_code=404, detail="Some tenants not found")
+
+    # Create ZIP file
+    zip_buffer = BytesIO()
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for tenant in tenants:
+            # Tenant metadata
+            tenant_data = {
+                "id": tenant.id,
+                "nombre": tenant.nombre,
+                "estado": tenant.estado_mx,
+                "inegi_clave": tenant.inegi_clave,
+                "stage": tenant.state.current_stage if tenant.state else "unknown",
+                "tier": tenant.tier_comercial,
+                "created_at": tenant.created_at.isoformat(),
+                "updated_at": tenant.updated_at.isoformat(),
+            }
+
+            # User count
+            usuarios_count = db.query(func.count(UserAccount.id)).filter(
+                UserAccount.municipio_id == tenant.municipio_id
+            ).scalar() or 0
+
+            # Document count
+            docs_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+                TenantDocumentDraft.tenant_id == tenant.id
+            ).scalar() or 0
+
+            tenant_data["usuarios_count"] = usuarios_count
+            tenant_data["documents_count"] = docs_count
+
+            # Add metadata file
+            import json
+            metadata_json = json.dumps(tenant_data, indent=2, ensure_ascii=False)
+            zipf.writestr(f"{tenant.nombre}/metadata.json", metadata_json)
+
+            # Add documents list
+            documents = db.query(TenantDocumentDraft).filter(
+                TenantDocumentDraft.tenant_id == tenant.id
+            ).all()
+
+            docs_data = []
+            for doc in documents:
+                docs_data.append({
+                    "id": doc.id,
+                    "type": doc.document_type,
+                    "title": doc.title,
+                    "status": doc.status,
+                    "created_at": doc.created_at.isoformat(),
+                })
+
+            docs_json = json.dumps(docs_data, indent=2, ensure_ascii=False)
+            zipf.writestr(f"{tenant.nombre}/documents.json", docs_json)
+
+    zip_buffer.seek(0)
+
+    # Create audit log entry
+    from app.models.admin_tenant import TenantAuditLog
+    audit = TenantAuditLog(
+        tenant_id=tenant_ids[0],  # Log to first tenant
+        actor=_.sub,
+        action="bulk_export",
+        payload={
+            "tenant_count": len(tenant_ids),
+            "tenant_ids": tenant_ids,
+        }
+    )
+    db.add(audit)
+    db.commit()
+
+    return StreamingResponse(
+        iter([zip_buffer.getvalue()]),
+        media_type="application/zip",
+        headers={"Content-Disposition": f"attachment; filename=municipios_export_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}.zip"}
+    )
+
+
+@router.get("/api/admin/stats")
+async def get_admin_stats(
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get platform statistics and KPIs."""
+    from app.models.admin_tenant import AdminTenant, TenantState, TenantDocumentDraft
+
+    if db is None:
+        return {
+            "total_tenants": 0,
+            "by_stage": {},
+            "avg_usuarios": 0,
+            "total_documents": 0,
+            "ready_for_expansion": 0,
+        }
+
+    # Total tenants
+    total_tenants = db.query(func.count(AdminTenant.id)).scalar() or 0
+
+    # Tenants by stage
+    stage_counts = db.query(
+        TenantState.current_stage,
+        func.count(AdminTenant.id)
+    ).join(AdminTenant).group_by(TenantState.current_stage).all()
+
+    by_stage = {
+        "validation": 0,
+        "planning": 0,
+        "execution": 0,
+        "expansion": 0,
+    }
+    for stage, count in stage_counts:
+        if stage in by_stage:
+            by_stage[stage] = count
+
+    # Average users per tenant
+    avg_query = db.query(func.avg(func.count(UserAccount.id))).group_by(
+        UserAccount.municipio_id
+    ).subquery()
+    avg_usuarios = db.query(func.avg(avg_query.c.count_1)).scalar() or 0
+
+    # Total documents
+    total_documents = db.query(func.count(TenantDocumentDraft.id)).scalar() or 0
+
+    # Count tenants ready for expansion (in execution for 30+ days)
+    from datetime import timedelta
+    cutoff = datetime.now(timezone.utc) - timedelta(days=30)
+    ready_for_expansion = db.query(func.count(AdminTenant.id)).join(TenantState).filter(
+        TenantState.current_stage == "execution",
+        TenantState.fecha_cambio_stage <= cutoff
+    ).scalar() or 0
+
+    return {
+        "total_tenants": total_tenants,
+        "by_stage": by_stage,
+        "avg_usuarios": round(float(avg_usuarios), 1) if avg_usuarios else 0,
+        "total_documents": total_documents,
+        "ready_for_expansion": ready_for_expansion,
+    }
+
+
+@router.get("/tenants/{tenant_id}/action-items")
+async def get_tenant_action_items(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get action items/tasks for a tenant."""
+    from app.models.admin_tenant import AdminTenant
+
+    if db is None:
+        return {"items": []}
+
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # For MVP, we'll return suggested actions based on tenant state
+    items = []
+
+    dias_en_etapa = 0
+    if tenant.state and tenant.state.fecha_cambio_stage:
+        dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+    # Generate suggested actions based on stage
+    stage = tenant.state.current_stage if tenant.state else "unknown"
+
+    if stage == "validation":
+        if dias_en_etapa < 14:
+            items.append({
+                "id": "val_docs_01",
+                "title": "Solicitar documentos pendientes",
+                "priority": "high",
+                "daysOverdue": 0,
+            })
+            items.append({
+                "id": "val_review_01",
+                "title": "Revisar documentos enviados",
+                "priority": "high",
+                "daysOverdue": 0,
+            })
+        elif dias_en_etapa < 30:
+            items.append({
+                "id": "val_followup_01",
+                "title": "Seguimiento de validación",
+                "priority": "medium",
+                "daysOverdue": dias_en_etapa - 14,
+            })
+
+    elif stage == "planning":
+        items.append({
+            "id": "plan_schedule_01",
+            "title": "Programar reunión de planeación",
+            "priority": "high",
+            "daysOverdue": 0,
+        })
+        if dias_en_etapa > 21:
+            items.append({
+                "id": "plan_review_01",
+                "title": "Revisar avance del plan",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 21,
+            })
+
+    elif stage == "execution":
+        items.append({
+            "id": "exec_monitor_01",
+            "title": "Monitorear ejecución",
+            "priority": "medium",
+            "daysOverdue": 0,
+        })
+        if dias_en_etapa > 30:
+            items.append({
+                "id": "exec_report_01",
+                "title": "Solicitar reporte de avance",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 30,
+            })
+        if dias_en_etapa > 60:
+            items.append({
+                "id": "exec_expansion_01",
+                "title": "Evaluar readiness para expansión",
+                "priority": "high",
+                "daysOverdue": dias_en_etapa - 60,
+            })
+
+    return {
+        "tenant_id": tenant_id,
+        "stage": stage,
+        "dias_en_etapa": dias_en_etapa,
+        "items": items,
     }
 
 
