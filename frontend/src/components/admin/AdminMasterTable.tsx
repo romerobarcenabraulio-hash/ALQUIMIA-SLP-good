@@ -22,8 +22,11 @@ import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
 import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 
+import type { AdminNotification } from '@/hooks/useAdminNotifications'
+
 interface AdminMasterTableProps {
   onRowClick?: (tenantId: string) => void
+  onNotify?: (notification: Omit<AdminNotification, 'id' | 'timestamp' | 'read'>) => void
   className?: string
 }
 
@@ -49,7 +52,7 @@ const URGENCY_COLORS = (days: number) => {
   return 'text-red-600'
 }
 
-export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProps) {
+export function AdminMasterTable({ onRowClick, onNotify, className }: AdminMasterTableProps) {
   const {
     rows,
     loading,
@@ -308,8 +311,18 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       document.body.removeChild(a)
 
       clearSelection()
+      onNotify?.({
+        type: 'success',
+        title: 'Exportación completada',
+        message: `${selectedIds.size} municipio(s) exportado(s) a ZIP`,
+      })
     } catch (e) {
       console.error('Bulk export failed:', e)
+      onNotify?.({
+        type: 'error',
+        title: 'Error en exportación',
+        message: 'No se pudo completar la exportación',
+      })
     } finally {
       setBulkExporting(false)
     }
@@ -344,8 +357,18 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       setSelectedNewStage('')
       clearSelection()
       fetchData()
+      onNotify?.({
+        type: 'success',
+        title: 'Etapa actualizada',
+        message: `${selectedIds.size} municipio(s) actualizado(s) exitosamente`,
+      })
     } catch (e) {
       console.error('Bulk status update failed:', e)
+      onNotify?.({
+        type: 'error',
+        title: 'Error al actualizar',
+        message: e instanceof Error ? e.message : 'No se pudo actualizar la etapa',
+      })
     } finally {
       setBulkStatusUpdating(false)
     }
@@ -385,9 +408,20 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       setSelectedDocType('Reglamento')
       clearSelection()
       fetchData()
+      onNotify?.({
+        type: 'success',
+        title: 'Documento subido',
+        message: `Documento subido a ${selectedIds.size} municipio(s)`,
+      })
     } catch (e) {
       console.error('Bulk document upload failed:', e)
-      setDocUploadError(e instanceof Error ? e.message : 'Upload failed')
+      const errorMsg = e instanceof Error ? e.message : 'Upload failed'
+      setDocUploadError(errorMsg)
+      onNotify?.({
+        type: 'error',
+        title: 'Error al subir documento',
+        message: errorMsg,
+      })
     } finally {
       setBulkDocUploading(false)
     }
