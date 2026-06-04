@@ -3646,7 +3646,7 @@ async def get_legacy_quarantine_manifest(_: UserInfo = Depends(require_admin)):
 
 
 class AdminTableRow(BaseModel):
-    """Optimized data structure for admin master table (columns 1-6)."""
+    """Optimized data structure for admin master table (columns 1-12)."""
     id: str
     municipio: str
     estado: str
@@ -3658,6 +3658,11 @@ class AdminTableRow(BaseModel):
     avance_validacion_pct: int
     avance_modulos_count: dict  # {completados, total}
     documentos_solicitados: dict  # {entregados, total}
+    hermes_status: str  # pending, partially_mapped, ready
+    facturado: bool
+    pagado: bool
+    ultima_actividad: str
+    proxima_accion: str
     created_at: str
     updated_at: str
 
@@ -3673,7 +3678,7 @@ async def get_admin_master_table(
     _: UserInfo = Depends(require_admin),
     db=Depends(get_db),
 ) -> dict:
-    """Get optimized data for admin master table with columns 1-6."""
+    """Get optimized data for admin master table with columns 1-12."""
     if db is None:
         # Fallback to in-memory for demo
         return {"rows": [], "total": 0}
@@ -3770,6 +3775,22 @@ async def get_admin_master_table(
         docs_entregados = docs_delivered_count
         docs_total = docs_total_count if docs_total_count > 0 else 8
 
+        # Calculate HERMES status (check if logistics data exists for municipio)
+        from app.models.logistics import LogisticsDailySummary
+        logistics_exists = db.query(LogisticsDailySummary).filter(
+            LogisticsDailySummary.municipio_id == tenant.municipio_id
+        ).first() is not None
+        hermes_status = "ready" if logistics_exists else "pending"
+
+        # Determine next action based on stage
+        next_action_map = {
+            "validation": "Completar validación",
+            "planning": "Revisar plan",
+            "execution": "Ejecutar plan",
+            "expansion": "Evaluar expansión",
+        }
+        proxima_accion = next_action_map.get(tenant.state.current_stage if tenant.state else "", "Ver detalles")
+
         rows.append(
             AdminTableRow(
                 id=tenant.id,
@@ -3783,6 +3804,11 @@ async def get_admin_master_table(
                 avance_validacion_pct=avance_pct,
                 avance_modulos_count={"completados": modulos_completos, "total": modulos_total},
                 documentos_solicitados={"entregados": docs_entregados, "total": docs_total},
+                hermes_status=hermes_status,
+                facturado=docs_delivered_count > 0,
+                pagado=False,  # Placeholder - would integrate with payment system
+                ultima_actividad=tenant.updated_at.isoformat(),
+                proxima_accion=proxima_accion,
                 created_at=tenant.created_at.isoformat(),
                 updated_at=tenant.updated_at.isoformat(),
             )

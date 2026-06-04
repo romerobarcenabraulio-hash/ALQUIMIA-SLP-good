@@ -13,6 +13,11 @@ export interface AdminTableRow {
   avance_validacion_pct: number
   avance_modulos_count: { completados: number; total: number }
   documentos_solicitados: { entregados: number; total: number }
+  hermes_status: string
+  facturado: boolean
+  pagado: boolean
+  ultima_actividad: string
+  proxima_accion: string
   created_at: string
   updated_at: string
 }

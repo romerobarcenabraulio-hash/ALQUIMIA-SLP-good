@@ -11,6 +11,8 @@ import {
   ChevronRight,
   Users,
   Calendar,
+  CheckCircle2,
+  AlertTriangle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
@@ -140,7 +142,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E8E4DC]">
-                <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-48">
+                <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-40">
                   <button
                     onClick={() => toggleSort('municipio')}
                     className="flex items-center gap-1 hover:text-[#3B6D11]"
@@ -149,7 +151,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                     {sortBy === 'municipio' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
                   </button>
                 </th>
-                <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-32">
+                <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-28">
                   <button
                     onClick={() => toggleSort('etapa')}
                     className="flex items-center gap-1 hover:text-[#3B6D11]"
@@ -158,24 +160,25 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                     {sortBy === 'etapa' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
                   </button>
                 </th>
-                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-24">
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">
                   <div className="flex items-center justify-center gap-1">
                     <Users className="h-3 w-3" />
-                    Usuarios
                   </div>
                 </th>
-                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-24">
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">
                   <button
                     onClick={() => toggleSort('dias_en_etapa')}
                     className="flex items-center justify-center gap-1 hover:text-[#3B6D11] w-full"
                   >
                     <Calendar className="h-3 w-3" />
-                    Días
-                    {sortBy === 'dias_en_etapa' && (sortOrder === 'asc' ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)}
                   </button>
                 </th>
-                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-28">Avance</th>
-                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-32">Documentos</th>
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">Avance</th>
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-24">Docs</th>
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">HERMES</th>
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">Fac.</th>
+                <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-20">Pago</th>
+                <th className="text-left px-3 py-2 font-semibold text-[#1C1B18] w-32">Próxima acción</th>
                 <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-16"></th>
               </tr>
             </thead>
@@ -222,9 +225,36 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                     </div>
                   </td>
                   <td className="px-3 py-3 text-center">
-                    <span className="text-[#1C1B18] font-medium">
+                    <span className="text-xs text-[#1C1B18]">
                       {row.documentos_solicitados.entregados}/{row.documentos_solicitados.total}
                     </span>
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    <span className={cn(
+                      'px-2 py-1 rounded text-xs font-medium',
+                      row.hermes_status === 'ready' ? 'bg-green-100 text-green-700' :
+                      row.hermes_status === 'partially_mapped' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    )}>
+                      {row.hermes_status === 'ready' ? '✓' : row.hermes_status === 'partially_mapped' ? '◐' : '○'}
+                    </span>
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    {row.facturado ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-gray-300 mx-auto" />
+                    )}
+                  </td>
+                  <td className="px-3 py-3 text-center">
+                    {row.pagado ? (
+                      <CheckCircle2 className="h-4 w-4 text-green-600 mx-auto" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4 text-gray-300 mx-auto" />
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    <p className="text-xs text-[#6B6760]">{row.proxima_accion}</p>
                   </td>
                   <td className="px-3 py-3 text-center">
                     <ChevronRight className={cn('h-4 w-4 text-[#8E8980] transition-transform', expandedRow === row.id && 'rotate-90')} />
