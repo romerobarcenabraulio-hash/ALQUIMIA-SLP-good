@@ -76,11 +76,13 @@ describe('State Validation', () => {
   describe('preciosMaterial validation', () => {
     it('accepts valid material prices', () => {
       const result = validateState({
-        preciosMaterial: {
+        precios: {
           pet: 8.50,
           hdpe: 6.00,
           papel: 4.25,
           vidrio: 1.50,
+          aluminio: 2.00,
+          organico: 0.50,
         },
       }, 'strict')
       expect(result.isValid).toBe(true)
@@ -88,14 +90,14 @@ describe('State Validation', () => {
 
     it('rejects negative prices', () => {
       const result = validateState({
-        preciosMaterial: { pet: -5 },
+        precios: { pet: -5, hdpe: 1, papel: 1, vidrio: 1, aluminio: 1, organico: 1 },
       }, 'strict')
       expect(result.isValid).toBe(false)
     })
 
     it('warns on unusually high prices', () => {
       const result = validateState({
-        preciosMaterial: { pet: 999999999 },
+        precios: { pet: 999999999, hdpe: 1, papel: 1, vidrio: 1, aluminio: 1, organico: 1 },
       }, 'strict')
       expect(result.warnings.length > 0).toBe(true)
     })

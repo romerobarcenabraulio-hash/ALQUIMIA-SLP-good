@@ -113,21 +113,12 @@ export function exportAsCSV(
   }
 
   // Material prices
-  if (state.preciosMaterial) {
+  if (state.precios) {
     lines.push('MATERIAL,PRICE_MXN')
-    Object.entries(state.preciosMaterial).forEach(([material, price]) => {
+    Object.entries(state.precios).forEach(([material, price]) => {
       lines.push(`${material},${price}`)
     })
     lines.push('')
-  }
-
-  // Results if available
-  if (state.resultados) {
-    lines.push('RESULT_KEY,VALUE')
-    Object.entries(state.resultados).forEach(([key, value]) => {
-      const stringValue = typeof value === 'object' ? JSON.stringify(value) : String(value)
-      lines.push(`"${key}","${stringValue}"`)
-    })
   }
 
   logAudit('export_generated', `Exported simulation as CSV`, true, {

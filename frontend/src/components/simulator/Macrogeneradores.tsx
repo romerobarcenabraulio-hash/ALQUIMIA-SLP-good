@@ -55,7 +55,7 @@ export default function Macrogeneradores() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const macroImpactSummary = useSimulatorStore(s => s.macroImpactSummary)
   const setMacroImpactSummary = useSimulatorStore(s => s.setMacroImpactSummary)
-  const { canEditData } = useDataPermissions()
+  const { canModifyParameters } = useDataPermissions()
 
   const [generators, setGenerators] = useState<MacroGenerator[]>([])
   const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set())
@@ -268,7 +268,7 @@ export default function Macrogeneradores() {
     }
   }
 
-  if (!canEditData) {
+  if (!canModifyParameters) {
     return (
       <div className="space-y-6">
         <div className="mb-6">

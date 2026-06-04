@@ -141,25 +141,29 @@ const VALIDATION_RULES = {
     return errors
   },
 
-  preciosMaterial: (value: unknown): ValidationError[] => {
+  precios: (value: unknown): ValidationError[] => {
     const errors: ValidationError[] = []
 
-    if (typeof value !== 'object' || value === null) {
+    if (value === null || value === undefined) {
+      return errors // Optional field
+    }
+
+    if (typeof value !== 'object') {
       errors.push({
-        field: 'preciosMaterial',
+        field: 'precios',
         message: 'Material prices must be an object',
         severity: 'error',
       })
       return errors
     }
 
-    const prices = value as Record<string, unknown>
+    const prices = value as Record<string, number>
     const validMaterials = ['pet', 'hdpe', 'papel', 'vidrio', 'aluminio', 'organico']
 
     Object.entries(prices).forEach(([material, price]) => {
       if (!validMaterials.includes(material)) {
         errors.push({
-          field: `preciosMaterial.${material}`,
+          field: `precios.${material}`,
           message: `Unknown material type: ${material}`,
           severity: 'warning',
         })
@@ -167,7 +171,7 @@ const VALIDATION_RULES = {
 
       if (typeof price !== 'number' || price < 0) {
         errors.push({
-          field: `preciosMaterial.${material}`,
+          field: `precios.${material}`,
           message: 'Price must be a non-negative number',
           severity: 'error',
           context: { value: price },
@@ -176,7 +180,7 @@ const VALIDATION_RULES = {
 
       if (price > 1000000) {
         errors.push({
-          field: `preciosMaterial.${material}`,
+          field: `precios.${material}`,
           message: 'Price seems unusually high - check for decimal errors',
           severity: 'warning',
           context: { value: price },
@@ -187,41 +191,6 @@ const VALIDATION_RULES = {
     return errors
   },
 
-  resultados: (value: unknown): ValidationError[] => {
-    const errors: ValidationError[] = []
-
-    if (value === null || value === undefined) {
-      return errors // Optional field
-    }
-
-    if (typeof value !== 'object') {
-      errors.push({
-        field: 'resultados',
-        message: 'Results must be an object',
-        severity: 'warning',
-      })
-      return errors
-    }
-
-    const results = value as Record<string, unknown>
-
-    // Validate that critical calculation fields exist if results are computed
-    const hasResults = Object.keys(results).length > 0
-    if (hasResults) {
-      const criticalFields = ['costoAnualPromedio', 'tasaCircularidad', 'impactoAmbiente']
-      criticalFields.forEach(field => {
-        if (!(field in results)) {
-          errors.push({
-            field: `resultados.${field}`,
-            message: `Critical field missing: ${field}`,
-            severity: 'warning',
-          })
-        }
-      })
-    }
-
-    return errors
-  },
 
   moduleProgression: (value: unknown): ValidationError[] => {
     const errors: ValidationError[] = []
@@ -275,14 +244,9 @@ export function validateState(state: Partial<SimulatorState>, level: ValidationL
     errs.forEach(e => (e.severity === 'error' ? errors : warnings).push(e))
   }
 
-  if ('preciosMaterial' in state && state.preciosMaterial !== undefined) {
-    const errs = VALIDATION_RULES.preciosMaterial(state.preciosMaterial)
-    errs.forEach(e => (e.severity === 'error' ? errors : warnings).push(e))
-  }
-
-  if ('resultados' in state && state.resultados !== undefined) {
-    const errs = VALIDATION_RULES.resultados(state.resultados)
-    errs.forEach(e => (e.severity === 'error' ? errors : warnings).push(e))
+  if ('precios' in state && state.precios !== undefined) {
+    const errs = VALIDATION_RULES.precios(state.precios)
+    errs.forEach((e) => (e.severity === 'error' ? errors : warnings).push(e))
   }
 
   if ('moduleProgression' in state && state.moduleProgression !== undefined) {

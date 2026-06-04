@@ -33,8 +33,8 @@ export function ConsultingExportButton({
         : 'inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors'
 
   const canExport = action === 'executive_pdf' ? canExportPDF
-    : action === 'consulting_workbook_xlsx' ? canExportXLSX
-    : action === 'json_export' ? canExportJSON
+    : action === 'master_index' ? canExportPDF
+    : action === 'full_zip' ? canExportPDF
     : canExportPDF
 
   if (!canExport) {

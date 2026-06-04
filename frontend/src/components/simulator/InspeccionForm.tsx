@@ -90,7 +90,7 @@ function NivelSelect({
 
 export function InspeccionForm() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
-  const { canEditData } = useDataPermissions()
+  const { canModifyParameters } = useDataPermissions()
 
   const opcionesMunicipioPredio = useMemo(() => {
     const raw = [...new Set(municipiosActivos.map(m => m.trim().toLowerCase()).filter(Boolean))]
@@ -275,7 +275,7 @@ export function InspeccionForm() {
     uso,
   ])
 
-  if (!canEditData) {
+  if (!canModifyParameters) {
     return (
       <div className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
         <h2 className="font-serif text-[20px] text-[#1C1B18]">Formulario de Inspección</h2>

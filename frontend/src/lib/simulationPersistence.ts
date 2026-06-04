@@ -71,21 +71,35 @@ export interface SimulationVersionResponse {
  */
 export function serializeSimulatorState(state: Partial<SimulatorState>): Record<string, unknown> {
   return {
+    // Geographic
     zmActiva: state.zmActiva,
     municipiosActivos: state.municipiosActivos,
+    tiposVivienda: state.tiposVivienda,
+
+    // Plan
     horizonte: state.horizonte,
-    audience: state.audience,
-    journeyMode: state.journeyMode,
-    resultados: state.resultados,
-    propuestaSlots: state.propuestaSlots,
-    pctCapturaPorAño: state.pctCapturaPorAño,
     presetTrayectoria: state.presetTrayectoria,
-    preciosMaterial: state.preciosMaterial,
-    opexLogistica: state.opexLogistica,
+    pctCapturaPorAño: state.pctCapturaPorAño,
+    mesInicio: state.mesInicio,
+    journeyMode: state.journeyMode,
+
+    // Financial & Prices
+    precios: state.precios,
+    wacc: state.wacc,
+    tipoCambio: state.tipoCambio,
+
+    // Operational
+    mermaLogPct: state.mermaLogPct,
+    rechazoPorMat: state.rechazoPorMat,
+    mixCAs: state.mixCAs,
+    capCamionTon: state.capCamionTon,
+
+    // Module progression
     moduleProgression: state.moduleProgression,
-    antecedentesReportaje: state.antecedentesReportaje,
-    antecedentesLoading: false,
-    // More fields as needed
+
+    // Other important fields
+    clientSetupComplete: state.clientSetupComplete,
+    encuestaResultados: state.encuestaResultados,
   }
 }
 
