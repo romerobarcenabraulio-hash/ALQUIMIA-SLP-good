@@ -2,8 +2,10 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
+import { Lock } from 'lucide-react'
 import { compareScenarios } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPermissions } from '@/hooks/useDataPermissions'
 import type { ComparadorResponse } from '@/types'
 import { NarrativeBridge } from '@/components/simulator/NarrativeBridge'
 
@@ -40,6 +42,7 @@ function createRow(index: number): ScenarioRow {
 
 export function ComparadorEscenarios() {
   const municipio = useSimulatorStore(s => s.municipiosActivos[0] ?? '')
+  const { canCreateScenario } = useDataPermissions()
   const [scenarios, setScenarios] = useState<ScenarioRow[]>([createRow(0), createRow(1)])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -96,6 +99,25 @@ export function ComparadorEscenarios() {
   async function onCompare() {
     setLastPayload(payload)
     await run(payload)
+  }
+
+  if (!canCreateScenario) {
+    return (
+      <section className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
+        <h2 className="font-serif text-[24px] text-[#1C1B18]">
+          Comparador de escenarios municipales
+        </h2>
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-amber-900">Acceso restringido</p>
+            <p className="mt-1 text-sm text-amber-800">
+              No tienes permisos para crear o modificar escenarios. Contacta a un administrador si necesitas acceso.
+            </p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (

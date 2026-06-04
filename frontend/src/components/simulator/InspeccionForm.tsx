@@ -1,9 +1,11 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { getApiUrl } from '@/lib/api'
 import { withRequestId } from '@/lib/requestId'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPermissions } from '@/hooks/useDataPermissions'
 import { cn, formatFastApiDetail } from '@/lib/utils'
 import type {
   CatalogoEscalerasSlpDto,
@@ -88,6 +90,7 @@ function NivelSelect({
 
 export function InspeccionForm() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
+  const { canEditData } = useDataPermissions()
 
   const opcionesMunicipioPredio = useMemo(() => {
     const raw = [...new Set(municipiosActivos.map(m => m.trim().toLowerCase()).filter(Boolean))]
@@ -271,6 +274,23 @@ export function InspeccionForm() {
     tipo,
     uso,
   ])
+
+  if (!canEditData) {
+    return (
+      <div className="space-y-4 rounded-xl border border-[#E8E4DC] bg-white p-5">
+        <h2 className="font-serif text-[20px] text-[#1C1B18]">Formulario de Inspección</h2>
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-amber-900">Acceso restringido</p>
+            <p className="mt-1 text-sm text-amber-800">
+              No tienes permisos para crear o editar datos de inspección. Contacta a un administrador si necesitas acceso.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
