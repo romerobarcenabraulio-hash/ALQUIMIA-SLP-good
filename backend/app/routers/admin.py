@@ -3640,6 +3640,135 @@ async def get_legacy_quarantine_manifest(_: UserInfo = Depends(require_admin)):
     }
 
 
+# ────────────────────────────────────────────────────────────────────────────
+# Sprint 10: Admin Master Table Endpoints
+# ────────────────────────────────────────────────────────────────────────────
+
+
+class AdminTableRow(BaseModel):
+    """Optimized data structure for admin master table (columns 1-6)."""
+    id: str
+    municipio: str
+    estado: str
+    inegi_clave: str
+    etapa: str
+    gate_actual: str | None
+    usuarios_count: int
+    dias_en_etapa: int
+    avance_validacion_pct: int
+    avance_modulos_count: dict  # {completados, total}
+    documentos_solicitados: dict  # {entregados, total}
+    created_at: str
+    updated_at: str
+
+
+@router.get("/api/tenants/table")
+async def get_admin_master_table(
+    search: str = Query("", description="Search by municipio, estado, INEGI clave"),
+    etapa: str = Query("", description="Filter by stage: validation, planning, execution, expansion"),
+    sort_by: str = Query("updated_at", description="Sort field: municipio, etapa, dias_en_etapa, avance"),
+    sort_order: str = Query("desc", description="asc or desc"),
+    limit: int = Query(25, ge=1, le=100),
+    offset: int = Query(0, ge=0),
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get optimized data for admin master table with columns 1-6."""
+    if db is None:
+        # Fallback to in-memory for demo
+        return {"rows": [], "total": 0}
+
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import and_, or_
+    from app.models.admin_tenant import AdminTenant, TenantState
+
+    query = db.query(AdminTenant).options(
+        selectinload(AdminTenant.state),
+        selectinload(AdminTenant.audit_log),
+    )
+
+    # Search filter
+    if search:
+        search_lower = search.lower()
+        query = query.filter(
+            or_(
+                AdminTenant.nombre.ilike(f"%{search}%"),
+                AdminTenant.estado_mx.ilike(f"%{search}%"),
+                AdminTenant.inegi_clave.ilike(f"%{search}%"),
+            )
+        )
+
+    # Stage filter
+    if etapa:
+        query = query.join(TenantState).filter(TenantState.current_stage == etapa)
+
+    # Count total before pagination
+    total = query.count()
+
+    # Sorting
+    valid_sort_fields = {"municipio", "etapa", "dias_en_etapa", "avance", "updated_at"}
+    sort_by = sort_by if sort_by in valid_sort_fields else "updated_at"
+
+    if sort_by == "municipio":
+        query = query.order_by(AdminTenant.nombre.asc() if sort_order == "asc" else AdminTenant.nombre.desc())
+    elif sort_by == "etapa":
+        query = query.join(TenantState).order_by(
+            TenantState.current_stage.asc() if sort_order == "asc" else TenantState.current_stage.desc()
+        )
+    elif sort_by == "dias_en_etapa":
+        query = query.join(TenantState).order_by(
+            (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).asc()
+            if sort_order == "asc"
+            else (datetime.now(timezone.utc) - TenantState.fecha_cambio_stage).desc()
+        )
+    else:
+        query = query.order_by(AdminTenant.updated_at.desc() if sort_order == "desc" else AdminTenant.updated_at.asc())
+
+    # Pagination
+    tenants = query.offset(offset).limit(limit).all()
+
+    # Format rows
+    rows: list[AdminTableRow] = []
+    for tenant in tenants:
+        dias_en_etapa = 0
+        if tenant.state and tenant.state.fecha_cambio_stage:
+            dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
+
+        # Calculate completion metrics (simplified)
+        avance_pct = 30  # Placeholder: would read from tenant_data
+        modulos_completos = 3
+        modulos_total = 10
+
+        # Calculate document metrics
+        docs_entregados = 2
+        docs_total = 8
+
+        rows.append(
+            AdminTableRow(
+                id=tenant.id,
+                municipio=tenant.nombre,
+                estado=tenant.estado_mx,
+                inegi_clave=tenant.inegi_clave,
+                etapa=tenant.state.current_stage if tenant.state else "unknown",
+                gate_actual=None,  # Would read from TenantGate
+                usuarios_count=0,  # Would count from users table
+                dias_en_etapa=dias_en_etapa,
+                avance_validacion_pct=avance_pct,
+                avance_modulos_count={"completados": modulos_completos, "total": modulos_total},
+                documentos_solicitados={"entregados": docs_entregados, "total": docs_total},
+                created_at=tenant.created_at.isoformat(),
+                updated_at=tenant.updated_at.isoformat(),
+            )
+        )
+
+    return {
+        "rows": rows,
+        "total": total,
+        "limit": limit,
+        "offset": offset,
+    }
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [
