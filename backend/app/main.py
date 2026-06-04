@@ -28,6 +28,8 @@ from app.routers.notifications import router as notifications_router
 from app.routers.archivo import router as archivo_router
 from app.routers.rcd_fraccion import router as rcd_router
 from app.routers.nous import router as nous_router
+from app.routers.partners import router as partners_router
+from app.routers.banobras import router as banobras_router
 from app.routers.esg_report import router as esg_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
@@ -287,6 +289,8 @@ app.include_router(notifications_router, prefix="/api/v1", tags=["notifications"
 app.include_router(archivo_router, prefix="/api/v1", tags=["archivo"])
 app.include_router(rcd_router, prefix="/api/v1", tags=["rcd-fraccion"])
 app.include_router(nous_router, prefix="/api/v1", tags=["nous"])
+app.include_router(partners_router, prefix="/api/v1", tags=["partners"])
+app.include_router(banobras_router, prefix="/api/v1", tags=["banobras"])
 app.include_router(esg_router, prefix="/api/v1", tags=["esg"])
 
 

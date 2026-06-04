@@ -64,7 +64,8 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   monitoring: [
     { label: 'Reporte ESG', href: '/hub/reporte-esg', icon: <FileText size={16} />, color: '#5B21B6', desc: 'Generar reporte trimestral ESG' },
     { label: 'Marco regulatorio', href: '/hub/catalogo-iniciativas', icon: <Scale size={16} />, color: '#1A5FA8', desc: 'LGPGIR, NOMs, GRI, ASF y más' },
-    { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Dashboard de monitoreo continuo' },
+    { label: 'Socios y BANOBRAS', href: '/hub/partners', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Ecosistema y elegibilidad crédito verde' },
+    { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <BarChart2 size={16} />, color: '#7B3F00', desc: 'Dashboard de monitoreo continuo' },
     { label: 'Configuración', href: '/perfil', icon: <Settings size={16} />, color: '#6B6760', desc: 'Ajustes del municipio y equipo' },
   ],
 }
