@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   ChevronDown,
@@ -24,6 +24,15 @@ import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 interface AdminMasterTableProps {
   onRowClick?: (tenantId: string) => void
   className?: string
+}
+
+interface SavedFilter {
+  id: string
+  name: string
+  search: string
+  etapa: string
+  quickFilter: string
+  createdAt: string
 }
 
 const ETAPA_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -78,6 +87,61 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null)
   const [selectedDocType, setSelectedDocType] = useState<string>('Reglamento')
   const [docUploadError, setDocUploadError] = useState<string | null>(null)
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+  const [saveFilterModalOpen, setSaveFilterModalOpen] = useState(false)
+  const [filterName, setFilterName] = useState('')
+  const [showSavedFilters, setShowSavedFilters] = useState(false)
+
+  // Load saved filters from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('admin_saved_filters')
+      if (stored) {
+        try {
+          setSavedFilters(JSON.parse(stored))
+        } catch (e) {
+          console.error('Failed to load saved filters:', e)
+        }
+      }
+    }
+  }, [])
+
+  const saveCurrentFilter = () => {
+    if (!filterName.trim()) return
+
+    const newFilter: SavedFilter = {
+      id: Date.now().toString(),
+      name: filterName.trim(),
+      search,
+      etapa: etapaFilter,
+      quickFilter,
+      createdAt: new Date().toISOString(),
+    }
+
+    const updated = [...savedFilters, newFilter]
+    setSavedFilters(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_saved_filters', JSON.stringify(updated))
+    }
+
+    setSaveFilterModalOpen(false)
+    setFilterName('')
+  }
+
+  const applyFilter = (filter: SavedFilter) => {
+    handleSearch(filter.search)
+    handleFilterByEtapa(filter.etapa)
+    handleQuickFilter(filter.quickFilter as any)
+    setShowSavedFilters(false)
+  }
+
+  const deleteFilter = (id: string) => {
+    const updated = savedFilters.filter(f => f.id !== id)
+    setSavedFilters(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_saved_filters', JSON.stringify(updated))
+    }
+  }
 
   const handleExport = async () => {
     setExporting(true)
@@ -284,6 +348,53 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             <Download className="h-4 w-4" />
             {exporting ? 'Exportando...' : 'Exportar'}
           </button>
+
+          <button
+            onClick={() => setSaveFilterModalOpen(true)}
+            className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors flex items-center gap-2"
+            title="Save current filters"
+          >
+            💾 Guardar filtro
+          </button>
+
+          {savedFilters.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowSavedFilters(!showSavedFilters)}
+                className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors flex items-center gap-2"
+              >
+                ⭐ Filtros guardados ({savedFilters.length})
+              </button>
+
+              {showSavedFilters && (
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-lg border border-[#E8E4DC] shadow-lg z-10 min-w-64">
+                  <div className="max-h-64 overflow-y-auto">
+                    {savedFilters.map(filter => (
+                      <div key={filter.id} className="px-4 py-3 border-b border-[#E8E4DC] last:border-b-0 flex items-center justify-between gap-2 hover:bg-[#F4F2ED]">
+                        <button
+                          onClick={() => applyFilter(filter)}
+                          className="flex-1 text-left"
+                        >
+                          <p className="text-sm font-medium text-[#1C1B18]">{filter.name}</p>
+                          <p className="text-xs text-[#8E8980]">
+                            {filter.search && `🔍 "${filter.search}"`}
+                            {filter.etapa && ` · ${filter.etapa}`}
+                            {filter.quickFilter && ` · ${filter.quickFilter}`}
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => deleteFilter(filter.id)}
+                          className="p-1 text-[#8E8980] hover:text-red-600 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quick filters */}
@@ -560,6 +671,52 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                 className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
               >
                 {bulkStatusUpdating ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Filter Modal */}
+      {saveFilterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Guardar filtro</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Guarda tu combinación de filtros actual para acceso rápido
+            </p>
+
+            <input
+              type="text"
+              placeholder="Nombre del filtro (ej: Municipios urgentes)"
+              value={filterName}
+              onChange={e => setFilterName(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-[#E8E4DC] text-sm focus:border-[#3B6D11] focus:outline-none mb-4"
+            />
+
+            <div className="text-xs text-[#6B6760] mb-6 space-y-1">
+              {search && <p>🔍 Búsqueda: "{search}"</p>}
+              {etapaFilter && <p>📊 Etapa: {etapaFilter}</p>}
+              {quickFilter && <p>⚡ Filtro rápido: {quickFilter}</p>}
+              {!search && !etapaFilter && !quickFilter && <p className="italic">Sin filtros activos</p>}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setSaveFilterModalOpen(false)
+                  setFilterName('')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveCurrentFilter}
+                disabled={!filterName.trim()}
+                className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
+              >
+                Guardar
               </button>
             </div>
           </div>
