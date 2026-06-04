@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Search,
   ChevronDown,
@@ -95,6 +95,13 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 
+  // Virtual scrolling state
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const ROW_HEIGHT = 52 // pixels per row (adjust based on actual row height)
+  const VISIBLE_ROWS = 10 // number of rows visible at a time
+  const BUFFER_ROWS = 2 // buffer rows above/below for smooth scrolling
+
   // Load saved filters and favorites from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -169,6 +176,17 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   }
 
   const isFavorited = (tenantId: string) => favorites.has(tenantId)
+
+  // Virtual scrolling calculations
+  const filteredRows = rows.filter(row => !showOnlyFavorites || favorites.has(row.id))
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS)
+  const endIndex = Math.min(filteredRows.length, startIndex + VISIBLE_ROWS + BUFFER_ROWS * 2)
+  const visibleRows = filteredRows.slice(startIndex, endIndex)
+  const topOffset = startIndex * ROW_HEIGHT
+
+  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop((e.target as HTMLDivElement).scrollTop)
+  }
 
   const handleExport = async () => {
     setExporting(true)
@@ -516,7 +534,12 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       ) : rows.length === 0 ? (
         <p className="text-center py-8 text-sm text-[#6B6760]">No hay municipios</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div
+          ref={tableContainerRef}
+          onScroll={handleTableScroll}
+          className="overflow-x-auto overflow-y-auto"
+          style={{ maxHeight: `${VISIBLE_ROWS * ROW_HEIGHT + 52}px` }}
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E8E4DC]">
@@ -568,8 +591,8 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                 <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-16"></th>
               </tr>
             </thead>
-            <tbody>
-              {rows.filter(row => !showOnlyFavorites || favorites.has(row.id)).map(row => (
+            <tbody style={{ transform: `translateY(${topOffset}px)` }}>
+              {visibleRows.map(row => (
                 <tr
                   key={row.id}
                   className={cn(
@@ -676,6 +699,10 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                   </td>
                 </tr>
               ))}
+              {/* Spacer row to maintain correct scroll height */}
+              <tr style={{ height: `${(filteredRows.length - endIndex) * ROW_HEIGHT}px` }}>
+                <td colSpan={20}></td>
+              </tr>
             </tbody>
           </table>
         </div>
