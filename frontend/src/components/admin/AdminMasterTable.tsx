@@ -102,6 +102,13 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const VISIBLE_ROWS = 10 // number of rows visible at a time
   const BUFFER_ROWS = 2 // buffer rows above/below for smooth scrolling
 
+  // Advanced filtering state
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [filterByDaysInStage, setFilterByDaysInStage] = useState<{ min: number; max: number } | null>(null)
+  const [filterByHermesStatus, setFilterByHermesStatus] = useState<string>('')
+  const [filterByDocumentStatus, setFilterByDocumentStatus] = useState<string>('')
+  const [filterByUserCount, setFilterByUserCount] = useState<string>('')
+
   // Load saved filters and favorites from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -177,8 +184,48 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
   const isFavorited = (tenantId: string) => favorites.has(tenantId)
 
+  // Apply advanced filters
+  const applyAdvancedFilters = (rowsToFilter: typeof rows) => {
+    return rowsToFilter.filter(row => {
+      // Favorites filter
+      if (showOnlyFavorites && !favorites.has(row.id)) return false
+
+      // Days in stage filter
+      if (filterByDaysInStage) {
+        const daysInStage = row.dias_en_etapa
+        if (daysInStage < filterByDaysInStage.min || daysInStage > filterByDaysInStage.max) {
+          return false
+        }
+      }
+
+      // HERMES status filter
+      if (filterByHermesStatus && row.hermes_status !== filterByHermesStatus) {
+        return false
+      }
+
+      // Document status filter
+      if (filterByDocumentStatus) {
+        const docStatus =
+          filterByDocumentStatus === 'uploaded'
+            ? row.documentos_solicitados.entregados > 0
+            : filterByDocumentStatus === 'pending'
+              ? row.documentos_solicitados.entregados < row.documentos_solicitados.total
+              : true
+        if (!docStatus) return false
+      }
+
+      // User count filter
+      if (filterByUserCount) {
+        const hasUsers = filterByUserCount === 'with-users' ? row.usuarios_count > 0 : row.usuarios_count === 0
+        if (!hasUsers) return false
+      }
+
+      return true
+    })
+  }
+
   // Virtual scrolling calculations
-  const filteredRows = rows.filter(row => !showOnlyFavorites || favorites.has(row.id))
+  const filteredRows = applyAdvancedFilters(rows)
   const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS)
   const endIndex = Math.min(filteredRows.length, startIndex + VISIBLE_ROWS + BUFFER_ROWS * 2)
   const visibleRows = filteredRows.slice(startIndex, endIndex)
@@ -478,6 +525,110 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             </button>
           ))}
         </div>
+
+        {/* Advanced Filters Toggle */}
+        <button
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className="text-xs font-medium text-[#6B6760] hover:text-[#3B6D11] transition-colors flex items-center gap-1"
+        >
+          {showAdvancedFilters ? '▼' : '▶'} Filtros avanzados
+        </button>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="rounded-lg border border-[#E8E4DC] bg-[#FDFCFA] p-4 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Days in Stage */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Días en etapa</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={filterByDaysInStage?.min ?? ''}
+                    onChange={e => {
+                      const min = e.target.value ? parseInt(e.target.value) : null
+                      setFilterByDaysInStage(
+                        min !== null ? { min, max: filterByDaysInStage?.max ?? 999 } : null
+                      )
+                    }}
+                    className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filterByDaysInStage?.max ?? ''}
+                    onChange={e => {
+                      const max = e.target.value ? parseInt(e.target.value) : null
+                      setFilterByDaysInStage(
+                        max !== null ? { min: filterByDaysInStage?.min ?? 0, max } : null
+                      )
+                    }}
+                    className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* HERMES Status */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Estado HERMES</label>
+                <select
+                  value={filterByHermesStatus}
+                  onChange={e => setFilterByHermesStatus(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="ready">✓ Listo</option>
+                  <option value="partially_mapped">◐ Parcial</option>
+                  <option value="pending">○ Pendiente</option>
+                </select>
+              </div>
+
+              {/* Document Status */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Documentos</label>
+                <select
+                  value={filterByDocumentStatus}
+                  onChange={e => setFilterByDocumentStatus(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="uploaded">Subidos</option>
+                  <option value="pending">Pendientes</option>
+                </select>
+              </div>
+
+              {/* User Count */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Usuarios</label>
+                <select
+                  value={filterByUserCount}
+                  onChange={e => setFilterByUserCount(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="with-users">Con usuarios</option>
+                  <option value="without-users">Sin usuarios</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Reset Filters */}
+            {(filterByDaysInStage || filterByHermesStatus || filterByDocumentStatus || filterByUserCount) && (
+              <button
+                onClick={() => {
+                  setFilterByDaysInStage(null)
+                  setFilterByHermesStatus('')
+                  setFilterByDocumentStatus('')
+                  setFilterByUserCount('')
+                }}
+                className="text-xs font-medium text-[#6B6760] hover:text-red-600 transition-colors"
+              >
+                Limpiar filtros avanzados
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bulk Actions Bar */}
