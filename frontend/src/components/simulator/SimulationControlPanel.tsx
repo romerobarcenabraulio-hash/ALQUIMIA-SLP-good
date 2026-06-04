@@ -28,6 +28,7 @@ import {
   readFileContents,
 } from '@/lib/dataExportImport'
 import { ReportGenerator } from '@/components/simulator/ReportGenerator'
+import { SimulationVersionTimeline } from '@/components/simulator/SimulationVersionTimeline'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -419,6 +420,14 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
         <ReportGenerator
           simulationId={currentSimulationId}
           simulationName={simulations.find(s => s.id === currentSimulationId)?.name || 'Simulation'}
+          tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+        />
+      )}
+
+      {/* Version history and timeline */}
+      {currentSimulationId && (
+        <SimulationVersionTimeline
+          simulationId={currentSimulationId}
           tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
         />
       )}
