@@ -1,8 +1,9 @@
 'use client'
 
-import { Loader2 } from 'lucide-react'
+import { Lock, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useConsultingExport, type ExportAction } from '@/hooks/useConsultingExport'
+import { useExportPermissions } from '@/hooks/useExportPermissions'
 
 interface ConsultingExportButtonProps {
   action?: ExportAction
@@ -22,6 +23,7 @@ export function ConsultingExportButton({
   variant = 'footer',
 }: ConsultingExportButtonProps) {
   const { loading, error, runExport } = useConsultingExport()
+  const { canExportPDF, canExportXLSX, canExportJSON } = useExportPermissions()
 
   const base =
     variant === 'header'
@@ -29,6 +31,26 @@ export function ConsultingExportButton({
       : variant === 'primary'
         ? 'inline-flex items-center gap-1.5 px-4 py-2 rounded-[8px] bg-[#3B6D11] text-white text-[12px] font-medium hover:bg-[#2D5409] transition-colors'
         : 'inline-flex items-center gap-1.5 px-3 py-2 rounded-[8px] border border-[#E8E4DC] bg-white text-[11px] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors'
+
+  const canExport = action === 'executive_pdf' ? canExportPDF
+    : action === 'consulting_workbook_xlsx' ? canExportXLSX
+    : action === 'json_export' ? canExportJSON
+    : canExportPDF
+
+  if (!canExport) {
+    return (
+      <span className="inline-flex flex-col items-end gap-0.5">
+        <button
+          type="button"
+          disabled
+          title="No tienes permisos para exportar este contenido"
+          className={cn(base, 'opacity-60 cursor-not-allowed', className)}
+        >
+          <Lock className="h-3.5 w-3.5" aria-hidden />
+        </button>
+      </span>
+    )
+  }
 
   return (
     <span className="inline-flex flex-col items-end gap-0.5">

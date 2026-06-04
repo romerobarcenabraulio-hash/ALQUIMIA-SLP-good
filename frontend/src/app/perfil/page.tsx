@@ -2,10 +2,11 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { AlertTriangle, CheckCircle2, Download, Settings, ShieldCheck, Upload, Users } from 'lucide-react'
+import { AlertTriangle, CheckCircle2, Download, Lock, Settings, ShieldCheck, Upload, Users } from 'lucide-react'
 import Link from 'next/link'
 import { AppShell } from '@/components/layout/AppShell'
 import { buildTemplateReadiness } from '@/lib/alquimiaTemplates'
+import { useRBAC } from '@/hooks/useRBAC'
 import type { DocumentGap, TenantReceivedDocument } from '@/lib/tenantDiagnosticData'
 import { documentLabel } from '@/lib/tenantDiagnosticData'
 import { useTenantData } from '@/hooks/useTenantData'
@@ -128,6 +129,7 @@ function PendingDocumentQueue({
   documents: TenantReceivedDocument[]
   onChanged: () => void
 }) {
+  const { canUploadDocuments } = useRBAC()
   const [selectedGap, setSelectedGap] = useState<DocumentGap | null>(null)
   const [file, setFile] = useState<File | null>(null)
   const [busy, setBusy] = useState(false)
@@ -176,6 +178,30 @@ function PendingDocumentQueue({
     }
     setMessage('Pendiente marcado como no aplicable sin borrar trazabilidad.')
     onChanged()
+  }
+
+  if (!canUploadDocuments) {
+    return (
+      <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+        <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+          <div>
+            <div className="flex items-center gap-2">
+              <Upload size={16} className="text-[#3B6D11]" />
+              <h2 className="text-[14px] font-semibold text-[#1C1B18]">Mis pendientes documentales</h2>
+            </div>
+          </div>
+        </div>
+        <div className="mt-4 flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-amber-900">Acceso restringido</p>
+            <p className="mt-1 text-sm text-amber-800">
+              No tienes permisos para subir documentos. Contacta a un administrador si necesitas acceso.
+            </p>
+          </div>
+        </div>
+      </section>
+    )
   }
 
   return (
