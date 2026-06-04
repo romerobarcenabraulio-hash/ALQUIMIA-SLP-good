@@ -16,6 +16,7 @@ import {
   Download,
   Trash2,
   FileUp,
+  Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
@@ -91,8 +92,10 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [saveFilterModalOpen, setSaveFilterModalOpen] = useState(false)
   const [filterName, setFilterName] = useState('')
   const [showSavedFilters, setShowSavedFilters] = useState(false)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
 
-  // Load saved filters from localStorage on mount
+  // Load saved filters and favorites from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem('admin_saved_filters')
@@ -101,6 +104,15 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
           setSavedFilters(JSON.parse(stored))
         } catch (e) {
           console.error('Failed to load saved filters:', e)
+        }
+      }
+
+      const storedFavs = localStorage.getItem('admin_favorite_tenants')
+      if (storedFavs) {
+        try {
+          setFavorites(new Set(JSON.parse(storedFavs)))
+        } catch (e) {
+          console.error('Failed to load favorites:', e)
         }
       }
     }
@@ -142,6 +154,21 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       localStorage.setItem('admin_saved_filters', JSON.stringify(updated))
     }
   }
+
+  const toggleFavorite = (tenantId: string) => {
+    const updated = new Set(favorites)
+    if (updated.has(tenantId)) {
+      updated.delete(tenantId)
+    } else {
+      updated.add(tenantId)
+    }
+    setFavorites(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_favorite_tenants', JSON.stringify(Array.from(updated)))
+    }
+  }
+
+  const isFavorited = (tenantId: string) => favorites.has(tenantId)
 
   const handleExport = async () => {
     setExporting(true)
@@ -357,13 +384,27 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             💾 Guardar filtro
           </button>
 
+          {favorites.size > 0 && (
+            <button
+              onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+              className={cn(
+                'px-3 py-2 rounded-lg border transition-colors flex items-center gap-2',
+                showOnlyFavorites
+                  ? 'bg-yellow-100 border-yellow-300 text-yellow-700'
+                  : 'border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED]'
+              )}
+            >
+              ⭐ Favoritos ({favorites.size})
+            </button>
+          )}
+
           {savedFilters.length > 0 && (
             <div className="relative">
               <button
                 onClick={() => setShowSavedFilters(!showSavedFilters)}
                 className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors flex items-center gap-2"
               >
-                ⭐ Filtros guardados ({savedFilters.length})
+                🔖 Filtros guardados ({savedFilters.length})
               </button>
 
               {showSavedFilters && (
@@ -528,7 +569,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               </tr>
             </thead>
             <tbody>
-              {rows.map(row => (
+              {rows.filter(row => !showOnlyFavorites || favorites.has(row.id)).map(row => (
                 <tr
                   key={row.id}
                   className={cn(
@@ -551,9 +592,25 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                       onRowClick?.(row.id)
                     }}
                   >
-                    <div>
-                      <p className="font-medium text-[#1C1B18]">{row.municipio}</p>
-                      <p className="text-xs text-[#8E8980]">{row.estado} · {row.inegi_clave}</p>
+                    <div className="flex items-start gap-2">
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          toggleFavorite(row.id)
+                        }}
+                        className="flex-shrink-0 mt-0.5 p-1 rounded hover:bg-[#F4F2ED] transition-colors"
+                        title={isFavorited(row.id) ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        {isFavorited(row.id) ? (
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
+                        ) : (
+                          <Star className="h-4 w-4 text-[#D1CCBE]" />
+                        )}
+                      </button>
+                      <div>
+                        <p className="font-medium text-[#1C1B18]">{row.municipio}</p>
+                        <p className="text-xs text-[#8E8980]">{row.estado} · {row.inegi_clave}</p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-3">
