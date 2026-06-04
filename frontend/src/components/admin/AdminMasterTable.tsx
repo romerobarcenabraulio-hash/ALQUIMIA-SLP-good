@@ -69,6 +69,9 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
   const [bulkExporting, setBulkExporting] = useState(false)
+  const [bulkStatusModalOpen, setBulkStatusModalOpen] = useState(false)
+  const [bulkStatusUpdating, setBulkStatusUpdating] = useState(false)
+  const [selectedNewStage, setSelectedNewStage] = useState<string>('')
 
   const handleExport = async () => {
     setExporting(true)
@@ -147,6 +150,42 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       console.error('Bulk export failed:', e)
     } finally {
       setBulkExporting(false)
+    }
+  }
+
+  const handleBulkStatusUpdate = async () => {
+    if (selectedIds.size === 0 || !selectedNewStage) return
+
+    setBulkStatusUpdating(true)
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/bulk/update-status`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          tenant_ids: Array.from(selectedIds),
+          new_stage: selectedNewStage,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Failed to update status' }))
+        throw new Error(error.detail || `Update failed: HTTP ${response.status}`)
+      }
+
+      setBulkStatusModalOpen(false)
+      setSelectedNewStage('')
+      clearSelection()
+      fetchData()
+    } catch (e) {
+      console.error('Bulk status update failed:', e)
+    } finally {
+      setBulkStatusUpdating(false)
     }
   }
 
@@ -230,6 +269,12 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             {selectedCount} municipio{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
           </p>
           <div className="flex gap-2">
+            <button
+              onClick={() => setBulkStatusModalOpen(true)}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 transition-colors rounded inline-flex items-center gap-1"
+            >
+              Actualizar etapa
+            </button>
             <button
               onClick={handleBulkExport}
               disabled={bulkExporting}
@@ -410,6 +455,59 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Bulk Status Update Modal */}
+      {bulkStatusModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Actualizar etapa</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Cambiar etapa para {selectedCount} municipio{selectedCount !== 1 ? 's' : ''}
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {[
+                { value: 'validation', label: 'Validación', color: 'blue' },
+                { value: 'planning', label: 'Planeación', color: 'yellow' },
+                { value: 'execution', label: 'Ejecución', color: 'green' },
+                { value: 'expansion', label: 'Expansión', color: 'purple' },
+              ].map(stage => (
+                <button
+                  key={stage.value}
+                  onClick={() => setSelectedNewStage(stage.value)}
+                  className={cn(
+                    'w-full px-4 py-2 rounded-lg border-2 transition-all text-left',
+                    selectedNewStage === stage.value
+                      ? `border-${stage.color}-500 bg-${stage.color}-50`
+                      : 'border-[#E8E4DC] hover:border-[#3B6D11]'
+                  )}
+                >
+                  <p className="font-medium text-[#1C1B18]">{stage.label}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setBulkStatusModalOpen(false)
+                  setSelectedNewStage('')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkStatusUpdate}
+                disabled={!selectedNewStage || bulkStatusUpdating}
+                className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
+              >
+                {bulkStatusUpdating ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
