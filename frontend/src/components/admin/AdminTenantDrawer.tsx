@@ -5,6 +5,7 @@ import { X, AlertCircle, FileUp, Loader2, CheckCircle2, AlertTriangle, Clock } f
 import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { AdminDocumentUploadModal } from './AdminDocumentUploadModal'
+import { JourneyPanel } from '@/components/journey/JourneyPanel'
 
 interface TenantDrawerProps {
   tenantId: string | null
@@ -67,7 +68,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
   const [usersLoading, setUsersLoading] = useState(false)
   const [actionsLoading, setActionsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios' | 'acciones'>('resumen')
+  const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios' | 'acciones' | 'journey'>('resumen')
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
   const [inviteEmail, setInviteEmail] = useState('')
   const [inviteNombre, setInviteNombre] = useState('')
@@ -276,7 +277,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
         {/* Tabs */}
         <div className="flex gap-1 border-b border-[#E8E4DC] px-6">
-          {(['resumen', 'documentos', 'usuarios', 'acciones'] as const).map(tab => (
+          {(['resumen', 'journey', 'documentos', 'usuarios', 'acciones'] as const).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -288,6 +289,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
               )}
             >
               {tab === 'resumen' && 'Resumen'}
+              {tab === 'journey' && 'Journey'}
               {tab === 'documentos' && 'Documentos'}
               {tab === 'usuarios' && 'Usuarios'}
               {tab === 'acciones' && 'Acciones'}
@@ -345,6 +347,35 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                       <p className="mt-1 text-[#6B6760]">{new Date(data.updated_at).toLocaleDateString()}</p>
                     </div>
                   </div>
+                </div>
+              )}
+
+              {activeTab === 'journey' && tenantId && (
+                <div className="space-y-4">
+                  <JourneyPanel tenantId={tenantId} />
+                  {data && (
+                    <div className="rounded-xl border border-[#E8E4DC] bg-white p-4">
+                      <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[#6B6760]">Contrato</p>
+                      <div className="grid grid-cols-2 gap-3 text-[12px]">
+                        <div>
+                          <p className="text-[10px] text-[#8E8980]">Tier comercial</p>
+                          <p className="font-semibold capitalize text-[#1C1B18]">{data.tier_comercial}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-[#8E8980]">Etapa actual</p>
+                          <p className="font-semibold capitalize text-[#1C1B18]">{data.current_stage}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-[#8E8980]">Alta en plataforma</p>
+                          <p className="font-semibold text-[#1C1B18]">{new Date(data.created_at).toLocaleDateString('es-MX')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] text-[#8E8980]">Última actividad</p>
+                          <p className="font-semibold text-[#1C1B18]">{new Date(data.updated_at).toLocaleDateString('es-MX')}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
