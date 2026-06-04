@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File
 from pydantic import BaseModel, field_validator
 from typing import List
 import logging
@@ -3794,6 +3794,95 @@ async def get_admin_master_table(
         "limit": limit,
         "offset": offset,
     }
+
+
+@router.get("/tenants/{tenant_id}/documents")
+async def get_tenant_documents(
+    tenant_id: str,
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Get all documents for a tenant."""
+    from app.models.admin_tenant import TenantDocumentDraft
+
+    if db is None:
+        return {"documents": []}
+
+    documents = db.query(TenantDocumentDraft).filter(
+        TenantDocumentDraft.tenant_id == tenant_id
+    ).order_by(TenantDocumentDraft.updated_at.desc()).all()
+
+    return {
+        "documents": [
+            {
+                "id": doc.id,
+                "document_type": doc.document_type,
+                "title": doc.title,
+                "status": doc.status,
+                "qa_status": doc.qa_status,
+                "version": doc.version,
+                "created_by": doc.created_by,
+                "updated_by": doc.updated_by,
+                "created_at": doc.created_at.isoformat(),
+                "updated_at": doc.updated_at.isoformat(),
+            }
+            for doc in documents
+        ]
+    }
+
+
+@router.post("/tenants/{tenant_id}/documents/upload")
+async def upload_tenant_document(
+    tenant_id: str,
+    file: UploadFile = File(...),
+    document_type: str = "Reglamento",
+    source: str = "client_email",
+    notes: str = "",
+    _: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Upload a document for a tenant."""
+    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    # Verify tenant exists
+    tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
+    if not tenant:
+        raise HTTPException(status_code=404, detail="Tenant not found")
+
+    # For now, just store metadata - actual file handling would need storage service
+    try:
+        content = await file.read()
+        # Limit file size (50 MB)
+        if len(content) > 50 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="File too large (max 50 MB)")
+
+        doc = TenantDocumentDraft(
+            tenant_id=tenant_id,
+            document_type=document_type,
+            title=file.filename or f"{document_type}_uploaded",
+            status="human_review_required",
+            qa_status="partial",
+            content_md=f"Uploaded: {file.filename}\nSource: {source}\nNotes: {notes}\n\n--- Document content will be processed ---",
+            created_by=_.sub,
+            updated_by=_.sub,
+        )
+        db.add(doc)
+        db.commit()
+        db.refresh(doc)
+
+        return {
+            "id": doc.id,
+            "document_type": doc.document_type,
+            "title": doc.title,
+            "status": doc.status,
+            "message": "Document uploaded successfully",
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
 @router.get("/logs")

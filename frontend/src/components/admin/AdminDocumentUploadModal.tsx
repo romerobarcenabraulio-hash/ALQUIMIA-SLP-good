@@ -86,14 +86,17 @@ export function AdminDocumentUploadModal({
         ...(token && { Authorization: `Bearer ${token}` }),
       }
 
-      // TODO: Replace with actual backend endpoint
-      // const response = await fetch(`/api/admin/tenants/${tenantId}/documents/upload`, {
-      //   method: 'POST',
-      //   headers,
-      //   body: formData,
-      // })
+      const { getApiUrl } = await import('@/lib/api')
+      const response = await fetch(`${getApiUrl()}/admin/tenants/${encodeURIComponent(tenantId)}/documents/upload`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
 
-      // For now, simulate success
+      if (!response.ok) {
+        throw new Error(`Upload failed: HTTP ${response.status}`)
+      }
+
       setSuccess(true)
       setTimeout(() => {
         setFile(null)

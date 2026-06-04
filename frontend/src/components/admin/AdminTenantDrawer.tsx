@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { X, Loader2, AlertCircle, FileUp } from 'lucide-react'
+import { X, AlertCircle, FileUp, Loader2 } from 'lucide-react'
 import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { AdminDocumentUploadModal } from './AdminDocumentUploadModal'
@@ -24,9 +24,24 @@ interface TenantResumen {
   current_stage: string
 }
 
+interface TenantDocument {
+  id: string
+  document_type: string
+  title: string
+  status: string
+  qa_status: string
+  version: number
+  created_by: string
+  updated_by: string
+  created_at: string
+  updated_at: string
+}
+
 export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: TenantDrawerProps) {
   const [data, setData] = useState<TenantResumen | null>(null)
+  const [documents, setDocuments] = useState<TenantDocument[]>([])
   const [loading, setLoading] = useState(false)
+  const [documentsLoading, setDocumentsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios'>('resumen')
   const [uploadModalOpen, setUploadModalOpen] = useState(false)
@@ -36,6 +51,12 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
     loadTenantData()
   }, [isOpen, tenantId])
+
+  useEffect(() => {
+    if (activeTab === 'documentos' && tenantId) {
+      loadDocuments()
+    }
+  }, [activeTab, tenantId])
 
   const loadTenantData = async () => {
     if (!tenantId) return
@@ -64,6 +85,35 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
       setError(e instanceof Error ? e.message : 'Failed to load tenant')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadDocuments = async () => {
+    if (!tenantId) return
+
+    setDocumentsLoading(true)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/tenants/${encodeURIComponent(tenantId)}/documents`, {
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to load documents: HTTP ${response.status}`)
+      }
+
+      const data = await response.json()
+      setDocuments(data.documents || [])
+    } catch (e) {
+      console.error('Failed to load documents:', e)
+    } finally {
+      setDocumentsLoading(false)
     }
   }
 
@@ -158,7 +208,6 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
               {activeTab === 'documentos' && (
                 <div className="space-y-4">
-                  <p className="text-sm text-[#6B6760]">Los documentos se cargan aquí en Sprint 11.</p>
                   <button
                     onClick={() => setUploadModalOpen(true)}
                     className="inline-flex items-center gap-2 px-4 py-2 bg-[#3B6D11] text-white rounded-lg text-sm font-medium hover:bg-[#2D5409] transition-colors"
@@ -166,6 +215,41 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
                     <FileUp className="h-4 w-4" />
                     Subir Documento
                   </button>
+
+                  {documentsLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <Loader2 className="h-4 w-4 animate-spin text-[#6B6760] mr-2" />
+                      <span className="text-sm text-[#6B6760]">Cargando documentos...</span>
+                    </div>
+                  ) : documents.length === 0 ? (
+                    <p className="text-sm text-[#6B6760]">No hay documentos aún.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {documents.map(doc => (
+                        <div key={doc.id} className="rounded-lg border border-[#E8E4DC] p-3 space-y-1">
+                          <div className="flex items-start justify-between">
+                            <div>
+                              <p className="text-sm font-medium text-[#1C1B18]">{doc.title}</p>
+                              <p className="text-xs text-[#8E8980]">{doc.document_type}</p>
+                            </div>
+                            <span className={cn(
+                              'px-2 py-1 rounded text-xs font-medium',
+                              doc.status === 'finalizado' ? 'bg-green-100 text-green-700' :
+                              doc.status === 'en_revision' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-blue-100 text-blue-700'
+                            )}>
+                              {doc.status === 'finalizado' ? 'Finalizado' :
+                               doc.status === 'en_revision' ? 'En revisión' :
+                               'Pendiente'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-[#8E8980]">
+                            Actualizado: {new Date(doc.updated_at).toLocaleDateString()}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 
