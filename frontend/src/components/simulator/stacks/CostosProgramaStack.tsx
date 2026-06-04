@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from 'react'
 import { DollarSign, Users, Clock, TrendingUp, Truck } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { CapexOpexBreakdown } from '@/components/simulator/CapexOpexBreakdown'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import {
@@ -41,6 +42,9 @@ const fasesData = FASES_INVERSION.map(f => ({
 }))
 
 export function CostosProgramaStack() {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('costos_programa')
+
   const mixCAs     = useSimulatorStore(s => s.mixCAs)
   const resultados = useSimulatorStore(s => s.resultados)
   const zmActiva = useSimulatorStore(s => s.zmActiva)

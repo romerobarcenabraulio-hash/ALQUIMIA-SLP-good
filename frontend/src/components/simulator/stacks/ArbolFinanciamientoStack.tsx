@@ -5,6 +5,7 @@ import {
   CheckCircle, XCircle, ChevronDown, DollarSign, Clock, Shield, TrendingUp,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { cn } from '@/lib/utils'
 
 // ── Financing paths data ──────────────────────────────────────────────────────
@@ -135,6 +136,9 @@ function RailSection({ title, children, open: defaultOpen = false }: { title: st
 }
 
 export function ArbolFinanciamientoStack() {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('arbol_financiamiento')
+
   const { resultados } = useSimulatorStore()
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
 

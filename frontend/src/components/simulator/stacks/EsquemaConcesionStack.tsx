@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
 } from 'recharts'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { ChartPanel } from '@/components/ui/ChartPanel'
 import {
   CHART_AXIS_TICK,
@@ -186,6 +187,9 @@ function ResultCard({ variant, text, legalRef, municipioLabel }: ResultCardProps
 
 // ── Main component ────────────────────────────────────────────────────────────
 export function EsquemaConcesionStack() {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('esquema_concesion')
+
   const {
     zmActiva,
     arbolDecisionAnswers,
