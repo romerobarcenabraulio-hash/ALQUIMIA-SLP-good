@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.security import OAuth2PasswordBearer
@@ -731,6 +731,41 @@ async def login_totp(req: LoginTotpRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserInfo)
 async def me(current_user: UserInfo = Depends(get_current_user)):
     return current_user
+
+
+class UpdateProfileRequest(BaseModel):
+    nombre: Optional[str] = None
+    apellido_paterno: Optional[str] = None
+    cargo: Optional[str] = None
+    telefono: Optional[str] = None
+
+
+@router.patch("/me", response_model=UserInfo)
+async def update_me(
+    body: UpdateProfileRequest,
+    current_user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update editable profile fields for the authenticated user."""
+    if db is None:
+        raise HTTPException(status_code=503, detail="Database not available")
+
+    user = get_user_by_email(db, current_user.email)
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+
+    if body.nombre is not None:
+        user.nombre = body.nombre.strip()
+    if body.apellido_paterno is not None:
+        user.apellido_paterno = body.apellido_paterno.strip()
+    if body.cargo is not None:
+        user.cargo = body.cargo.strip()
+    if body.telefono is not None:
+        user.telefono = body.telefono.strip()
+
+    db.commit()
+    db.refresh(user)
+    return _user_info_from_db(user)
 
 
 @router.post("/refresh")
