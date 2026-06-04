@@ -27,6 +27,7 @@ import {
   importFromJSON,
   readFileContents,
 } from '@/lib/dataExportImport'
+import { ReportGenerator } from '@/components/simulator/ReportGenerator'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -411,6 +412,15 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
           <span className="font-medium">Active Simulation:</span>{' '}
           {simulations.find(s => s.id === currentSimulationId)?.name || currentSimulationId}
         </div>
+      )}
+
+      {/* Report generation */}
+      {currentSimulationId && (
+        <ReportGenerator
+          simulationId={currentSimulationId}
+          simulationName={simulations.find(s => s.id === currentSimulationId)?.name || 'Simulation'}
+          tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+        />
       )}
     </div>
   )
