@@ -75,6 +75,7 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [deleting, setDeleting] = useState<string | null>(null)
   const [selectedForExport, setSelectedForExport] = useState<Set<string>>(new Set())
   const [showBulkExport, setShowBulkExport] = useState(false)
+  const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name'>('recent')
 
   // Save handlers
   const handleSaveClick = async () => {
@@ -506,6 +507,15 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
               onChange={e => setSearchQuery(e.target.value)}
               className="flex-1 rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
             />
+            <select
+              value={sortBy}
+              onChange={e => setSortBy(e.target.value as typeof sortBy)}
+              className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-xs focus:border-[#3B6D11] focus:outline-none bg-white"
+            >
+              <option value="recent">Recent</option>
+              <option value="oldest">Oldest</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
             {selectedForExport.size > 0 && (
               <button
                 onClick={() => setShowBulkExport(!showBulkExport)}
@@ -535,6 +545,16 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                     sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                     sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
                   )
+                  .sort((a, b) => {
+                    if (sortBy === 'recent') {
+                      return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
+                    } else if (sortBy === 'oldest') {
+                      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime()
+                    } else if (sortBy === 'name') {
+                      return a.name.localeCompare(b.name)
+                    }
+                    return 0
+                  })
                   .map(sim => (
                     <div
                       key={sim.id}
@@ -565,9 +585,15 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                           {sim.description && (
                             <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
                           )}
-                          <p className="text-xs text-[#8E8980] mt-1">
-                            {new Date(sim.updatedAt).toLocaleString()}
-                          </p>
+                          <div className="flex gap-3 text-xs text-[#8E8980] mt-1 flex-wrap">
+                            {(sim.municipios as string[])?.length > 0 && (
+                              <span>📍 {(sim.municipios as string[]).length} municipio{(sim.municipios as string[]).length !== 1 ? 's' : ''}</span>
+                            )}
+                            {(sim.horizonte as number) > 0 && (
+                              <span>📅 {sim.horizonte}y horizon</span>
+                            )}
+                            <span>{new Date(sim.updatedAt).toLocaleDateString()}</span>
+                          </div>
                         </button>
                       </div>
                       <div className="flex gap-2 mt-2">
