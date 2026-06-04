@@ -1,9 +1,11 @@
 'use client'
 
 import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Lock } from 'lucide-react'
 import type { MacroGenerator, MacroImpactSummary, MacroTipo, DeclaracionGeneracionRSU } from '@/types'
 import { computeMacroImpact, createMacroGenerator, getMacroGenerators, getDeclaracionesVoluntarias, updateMacroGenerator } from '@/lib/api'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPermissions } from '@/hooks/useDataPermissions'
 
 const TIPO_LABEL: Record<string, string> = {
   hotel: 'Hotel',
@@ -53,6 +55,7 @@ export default function Macrogeneradores() {
   const municipiosActivos = useSimulatorStore(s => s.municipiosActivos)
   const macroImpactSummary = useSimulatorStore(s => s.macroImpactSummary)
   const setMacroImpactSummary = useSimulatorStore(s => s.setMacroImpactSummary)
+  const { canEditData } = useDataPermissions()
 
   const [generators, setGenerators] = useState<MacroGenerator[]>([])
   const [disabledIds, setDisabledIds] = useState<Set<string>>(new Set())
@@ -263,6 +266,27 @@ export default function Macrogeneradores() {
     } finally {
       setCreating(false)
     }
+  }
+
+  if (!canEditData) {
+    return (
+      <div className="space-y-6">
+        <div className="mb-6">
+          <h3 className="mt-1 font-serif text-[22px] text-[#1C1B18]">
+            Grandes fuentes RSU · {zmActiva}
+          </h3>
+        </div>
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-amber-900">Acceso restringido</p>
+            <p className="mt-1 text-sm text-amber-800">
+              No tienes permisos para crear o modificar macrogeneradores. Contacta a un administrador si necesitas acceso.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
