@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import {
   Search,
   ChevronDown,
@@ -15,6 +15,8 @@ import {
   AlertTriangle,
   Download,
   Trash2,
+  FileUp,
+  Star,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
@@ -23,6 +25,15 @@ import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 interface AdminMasterTableProps {
   onRowClick?: (tenantId: string) => void
   className?: string
+}
+
+interface SavedFilter {
+  id: string
+  name: string
+  search: string
+  etapa: string
+  quickFilter: string
+  createdAt: string
 }
 
 const ETAPA_COLORS: Record<string, { bg: string; text: string; label: string }> = {
@@ -69,6 +80,95 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [exporting, setExporting] = useState(false)
   const [bulkExporting, setBulkExporting] = useState(false)
+  const [bulkStatusModalOpen, setBulkStatusModalOpen] = useState(false)
+  const [bulkStatusUpdating, setBulkStatusUpdating] = useState(false)
+  const [selectedNewStage, setSelectedNewStage] = useState<string>('')
+  const [bulkDocUploadModalOpen, setBulkDocUploadModalOpen] = useState(false)
+  const [bulkDocUploading, setBulkDocUploading] = useState(false)
+  const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null)
+  const [selectedDocType, setSelectedDocType] = useState<string>('Reglamento')
+  const [docUploadError, setDocUploadError] = useState<string | null>(null)
+  const [savedFilters, setSavedFilters] = useState<SavedFilter[]>([])
+  const [saveFilterModalOpen, setSaveFilterModalOpen] = useState(false)
+  const [filterName, setFilterName] = useState('')
+  const [showSavedFilters, setShowSavedFilters] = useState(false)
+  const [favorites, setFavorites] = useState<Set<string>>(new Set())
+  const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+
+  // Load saved filters and favorites from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('admin_saved_filters')
+      if (stored) {
+        try {
+          setSavedFilters(JSON.parse(stored))
+        } catch (e) {
+          console.error('Failed to load saved filters:', e)
+        }
+      }
+
+      const storedFavs = localStorage.getItem('admin_favorite_tenants')
+      if (storedFavs) {
+        try {
+          setFavorites(new Set(JSON.parse(storedFavs)))
+        } catch (e) {
+          console.error('Failed to load favorites:', e)
+        }
+      }
+    }
+  }, [])
+
+  const saveCurrentFilter = () => {
+    if (!filterName.trim()) return
+
+    const newFilter: SavedFilter = {
+      id: Date.now().toString(),
+      name: filterName.trim(),
+      search,
+      etapa: etapaFilter,
+      quickFilter,
+      createdAt: new Date().toISOString(),
+    }
+
+    const updated = [...savedFilters, newFilter]
+    setSavedFilters(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_saved_filters', JSON.stringify(updated))
+    }
+
+    setSaveFilterModalOpen(false)
+    setFilterName('')
+  }
+
+  const applyFilter = (filter: SavedFilter) => {
+    handleSearch(filter.search)
+    handleFilterByEtapa(filter.etapa)
+    handleQuickFilter(filter.quickFilter as any)
+    setShowSavedFilters(false)
+  }
+
+  const deleteFilter = (id: string) => {
+    const updated = savedFilters.filter(f => f.id !== id)
+    setSavedFilters(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_saved_filters', JSON.stringify(updated))
+    }
+  }
+
+  const toggleFavorite = (tenantId: string) => {
+    const updated = new Set(favorites)
+    if (updated.has(tenantId)) {
+      updated.delete(tenantId)
+    } else {
+      updated.add(tenantId)
+    }
+    setFavorites(updated)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('admin_favorite_tenants', JSON.stringify(Array.from(updated)))
+    }
+  }
+
+  const isFavorited = (tenantId: string) => favorites.has(tenantId)
 
   const handleExport = async () => {
     setExporting(true)
@@ -150,6 +250,84 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
     }
   }
 
+  const handleBulkStatusUpdate = async () => {
+    if (selectedIds.size === 0 || !selectedNewStage) return
+
+    setBulkStatusUpdating(true)
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/bulk/update-status`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          tenant_ids: Array.from(selectedIds),
+          new_stage: selectedNewStage,
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Failed to update status' }))
+        throw new Error(error.detail || `Update failed: HTTP ${response.status}`)
+      }
+
+      setBulkStatusModalOpen(false)
+      setSelectedNewStage('')
+      clearSelection()
+      fetchData()
+    } catch (e) {
+      console.error('Bulk status update failed:', e)
+    } finally {
+      setBulkStatusUpdating(false)
+    }
+  }
+
+  const handleBulkDocumentUpload = async () => {
+    if (selectedIds.size === 0 || !selectedDocFile || !selectedDocType) return
+
+    setBulkDocUploading(true)
+    setDocUploadError(null)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const formData = new FormData()
+      formData.append('file', selectedDocFile)
+      formData.append('tenant_ids', Array.from(selectedIds).join(','))
+      formData.append('document_type', selectedDocType)
+      formData.append('source', 'founder_research')
+
+      const headers: HeadersInit = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/bulk/upload-document`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Upload failed' }))
+        throw new Error(error.detail || `Upload failed: HTTP ${response.status}`)
+      }
+
+      setBulkDocUploadModalOpen(false)
+      setSelectedDocFile(null)
+      setSelectedDocType('Reglamento')
+      clearSelection()
+      fetchData()
+    } catch (e) {
+      console.error('Bulk document upload failed:', e)
+      setDocUploadError(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setBulkDocUploading(false)
+    }
+  }
+
   return (
     <div className={cn('space-y-4 rounded-lg border border-[#E8E4DC] bg-white p-5', className)}>
       {/* Toolbar */}
@@ -197,6 +375,67 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             <Download className="h-4 w-4" />
             {exporting ? 'Exportando...' : 'Exportar'}
           </button>
+
+          <button
+            onClick={() => setSaveFilterModalOpen(true)}
+            className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors flex items-center gap-2"
+            title="Save current filters"
+          >
+            💾 Guardar filtro
+          </button>
+
+          {favorites.size > 0 && (
+            <button
+              onClick={() => setShowOnlyFavorites(!showOnlyFavorites)}
+              className={cn(
+                'px-3 py-2 rounded-lg border transition-colors flex items-center gap-2',
+                showOnlyFavorites
+                  ? 'bg-yellow-100 border-yellow-300 text-yellow-700'
+                  : 'border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED]'
+              )}
+            >
+              ⭐ Favoritos ({favorites.size})
+            </button>
+          )}
+
+          {savedFilters.length > 0 && (
+            <div className="relative">
+              <button
+                onClick={() => setShowSavedFilters(!showSavedFilters)}
+                className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors flex items-center gap-2"
+              >
+                🔖 Filtros guardados ({savedFilters.length})
+              </button>
+
+              {showSavedFilters && (
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-lg border border-[#E8E4DC] shadow-lg z-10 min-w-64">
+                  <div className="max-h-64 overflow-y-auto">
+                    {savedFilters.map(filter => (
+                      <div key={filter.id} className="px-4 py-3 border-b border-[#E8E4DC] last:border-b-0 flex items-center justify-between gap-2 hover:bg-[#F4F2ED]">
+                        <button
+                          onClick={() => applyFilter(filter)}
+                          className="flex-1 text-left"
+                        >
+                          <p className="text-sm font-medium text-[#1C1B18]">{filter.name}</p>
+                          <p className="text-xs text-[#8E8980]">
+                            {filter.search && `🔍 "${filter.search}"`}
+                            {filter.etapa && ` · ${filter.etapa}`}
+                            {filter.quickFilter && ` · ${filter.quickFilter}`}
+                          </p>
+                        </button>
+                        <button
+                          onClick={() => deleteFilter(filter.id)}
+                          className="p-1 text-[#8E8980] hover:text-red-600 transition-colors"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Quick filters */}
@@ -225,11 +464,24 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
       {/* Bulk Actions Bar */}
       {selectedCount > 0 && (
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-center justify-between">
+        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-center justify-between flex-wrap gap-3">
           <p className="text-sm font-medium text-blue-900">
             {selectedCount} municipio{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setBulkStatusModalOpen(true)}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 transition-colors rounded inline-flex items-center gap-1"
+            >
+              Actualizar etapa
+            </button>
+            <button
+              onClick={() => setBulkDocUploadModalOpen(true)}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors rounded inline-flex items-center gap-1"
+            >
+              <FileUp className="h-3 w-3" />
+              Subir documento
+            </button>
             <button
               onClick={handleBulkExport}
               disabled={bulkExporting}
@@ -317,7 +569,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               </tr>
             </thead>
             <tbody>
-              {rows.map(row => (
+              {rows.filter(row => !showOnlyFavorites || favorites.has(row.id)).map(row => (
                 <tr
                   key={row.id}
                   className={cn(
@@ -340,9 +592,25 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                       onRowClick?.(row.id)
                     }}
                   >
-                    <div>
-                      <p className="font-medium text-[#1C1B18]">{row.municipio}</p>
-                      <p className="text-xs text-[#8E8980]">{row.estado} · {row.inegi_clave}</p>
+                    <div className="flex items-start gap-2">
+                      <button
+                        onClick={e => {
+                          e.stopPropagation()
+                          toggleFavorite(row.id)
+                        }}
+                        className="flex-shrink-0 mt-0.5 p-1 rounded hover:bg-[#F4F2ED] transition-colors"
+                        title={isFavorited(row.id) ? 'Remove from favorites' : 'Add to favorites'}
+                      >
+                        {isFavorited(row.id) ? (
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-500" />
+                        ) : (
+                          <Star className="h-4 w-4 text-[#D1CCBE]" />
+                        )}
+                      </button>
+                      <div>
+                        <p className="font-medium text-[#1C1B18]">{row.municipio}</p>
+                        <p className="text-xs text-[#8E8980]">{row.estado} · {row.inegi_clave}</p>
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-3">
@@ -410,6 +678,202 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Bulk Status Update Modal */}
+      {bulkStatusModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Actualizar etapa</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Cambiar etapa para {selectedCount} municipio{selectedCount !== 1 ? 's' : ''}
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {[
+                { value: 'validation', label: 'Validación', color: 'blue' },
+                { value: 'planning', label: 'Planeación', color: 'yellow' },
+                { value: 'execution', label: 'Ejecución', color: 'green' },
+                { value: 'expansion', label: 'Expansión', color: 'purple' },
+              ].map(stage => (
+                <button
+                  key={stage.value}
+                  onClick={() => setSelectedNewStage(stage.value)}
+                  className={cn(
+                    'w-full px-4 py-2 rounded-lg border-2 transition-all text-left',
+                    selectedNewStage === stage.value
+                      ? `border-${stage.color}-500 bg-${stage.color}-50`
+                      : 'border-[#E8E4DC] hover:border-[#3B6D11]'
+                  )}
+                >
+                  <p className="font-medium text-[#1C1B18]">{stage.label}</p>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setBulkStatusModalOpen(false)
+                  setSelectedNewStage('')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkStatusUpdate}
+                disabled={!selectedNewStage || bulkStatusUpdating}
+                className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
+              >
+                {bulkStatusUpdating ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Save Filter Modal */}
+      {saveFilterModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Guardar filtro</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Guarda tu combinación de filtros actual para acceso rápido
+            </p>
+
+            <input
+              type="text"
+              placeholder="Nombre del filtro (ej: Municipios urgentes)"
+              value={filterName}
+              onChange={e => setFilterName(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-[#E8E4DC] text-sm focus:border-[#3B6D11] focus:outline-none mb-4"
+            />
+
+            <div className="text-xs text-[#6B6760] mb-6 space-y-1">
+              {search && <p>🔍 Búsqueda: "{search}"</p>}
+              {etapaFilter && <p>📊 Etapa: {etapaFilter}</p>}
+              {quickFilter && <p>⚡ Filtro rápido: {quickFilter}</p>}
+              {!search && !etapaFilter && !quickFilter && <p className="italic">Sin filtros activos</p>}
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setSaveFilterModalOpen(false)
+                  setFilterName('')
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={saveCurrentFilter}
+                disabled={!filterName.trim()}
+                className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
+              >
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Document Upload Modal */}
+      {bulkDocUploadModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Subir documento</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Para {selectedCount} municipio{selectedCount !== 1 ? 's' : ''}
+            </p>
+
+            {docUploadError && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-3 mb-4 flex gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700">{docUploadError}</p>
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Tipo de documento</label>
+                <select
+                  value={selectedDocType}
+                  onChange={e => setSelectedDocType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[#E8E4DC] text-sm focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="Reglamento">Reglamento</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Procedimiento">Procedimiento</option>
+                  <option value="Política">Política</option>
+                  <option value="Guía">Guía</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Archivo PDF</label>
+                <div
+                  className="border-2 border-dashed border-[#E8E4DC] rounded-lg p-6 text-center hover:border-[#3B6D11] transition-colors cursor-pointer"
+                  onClick={() => document.getElementById('bulk-doc-file-input')?.click()}
+                >
+                  {selectedDocFile ? (
+                    <p className="text-sm text-[#1C1B18] font-medium">{selectedDocFile.name}</p>
+                  ) : (
+                    <div className="space-y-1">
+                      <FileUp className="h-5 w-5 mx-auto text-[#8E8980]" />
+                      <p className="text-xs text-[#6B6760]">Haz clic para seleccionar un archivo</p>
+                      <p className="text-xs text-[#8E8980]">o arrastra un PDF aquí</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="bulk-doc-file-input"
+                  type="file"
+                  accept=".pdf"
+                  onChange={e => {
+                    if (e.target.files?.[0]) {
+                      setSelectedDocFile(e.target.files[0])
+                      setDocUploadError(null)
+                    }
+                  }}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setBulkDocUploadModalOpen(false)
+                  setSelectedDocFile(null)
+                  setDocUploadError(null)
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDocumentUpload}
+                disabled={!selectedDocFile || bulkDocUploading}
+                className="flex-1 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 transition-colors font-medium inline-flex items-center justify-center gap-2"
+              >
+                {bulkDocUploading ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Subiendo...
+                  </>
+                ) : (
+                  <>
+                    <FileUp className="h-3 w-3" />
+                    Subir
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 

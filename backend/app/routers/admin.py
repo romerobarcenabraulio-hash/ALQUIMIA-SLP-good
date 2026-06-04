@@ -4505,6 +4505,179 @@ async def get_tenant_action_items(
     }
 
 
+@router.post("/api/tenants/bulk/upload-document")
+async def bulk_upload_document(
+    file: UploadFile = File(...),
+    tenant_ids: str = Form(...),
+    document_type: str = Form(...),
+    source: str = Form(default="founder_research"),
+    notes: str = Form(default=""),
+    admin: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Upload a document to multiple tenants at once."""
+    from app.models.admin_tenant import AdminTenant, TenantAuditLog
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    # Parse tenant IDs from comma-separated string
+    try:
+        ids_list = [tid.strip() for tid in tenant_ids.split(',') if tid.strip()]
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid tenant_ids format")
+
+    if not ids_list:
+        raise HTTPException(status_code=400, detail="At least one tenant_id is required")
+
+    if not document_type:
+        raise HTTPException(status_code=400, detail="document_type is required")
+
+    # Limit bulk uploads to 20 tenants
+    if len(ids_list) > 20:
+        raise HTTPException(status_code=400, detail="Maximum 20 tenants per bulk upload")
+
+    # Validate file
+    if not file.filename or not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    if file.size and file.size > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size cannot exceed 50 MB")
+
+    # Verify all tenants exist
+    tenants = db.query(AdminTenant).filter(AdminTenant.id.in_(ids_list)).all()
+    if len(tenants) != len(ids_list):
+        raise HTTPException(status_code=404, detail="One or more tenants not found")
+
+    uploaded_count = 0
+    now = datetime.now(timezone.utc)
+
+    try:
+        # Read file content once
+        file_content = await file.read()
+        file_size = len(file_content)
+
+        for tenant in tenants:
+            # For MVP, store document metadata in database
+            from app.models.admin_tenant import TenantDocumentDraft
+
+            doc = TenantDocumentDraft(
+                tenant_id=tenant.id,
+                document_type=document_type,
+                title=file.filename or f"{document_type}_uploaded",
+                status="human_review_required",
+                qa_status="partial",
+                content_md=f"Uploaded: {file.filename}\nSource: {source}\nNotes: {notes}\n\n--- Document content will be processed ---",
+                created_by=admin.sub,
+                updated_by=admin.sub,
+            )
+            db.add(doc)
+
+            # Add audit log
+            audit_log = TenantAuditLog(
+                tenant_id=tenant.id,
+                actor=admin.sub,
+                action="bulk_document_upload",
+                payload={
+                    "document_type": document_type,
+                    "filename": file.filename,
+                    "source": source,
+                    "file_size": file_size,
+                    "bulk_operation": True,
+                },
+            )
+            db.add(audit_log)
+            uploaded_count += 1
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Uploaded document to {uploaded_count} tenant(s)",
+            "uploaded_count": uploaded_count,
+            "document_type": document_type,
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to upload document: {str(e)}")
+
+
+@router.post("/api/tenants/bulk/update-status")
+async def bulk_update_tenant_status(
+    request: dict,
+    admin: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Update etapa for multiple tenants at once."""
+    from app.models.admin_tenant import AdminTenant, TenantState, TenantAuditLog
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    tenant_ids = request.get("tenant_ids", [])
+    new_stage = request.get("new_stage", "").strip()
+
+    if not tenant_ids or not new_stage:
+        raise HTTPException(status_code=400, detail="tenant_ids and new_stage are required")
+
+    # Validate stage
+    valid_stages = ["validation", "planning", "execution", "expansion"]
+    if new_stage not in valid_stages:
+        raise HTTPException(status_code=400, detail=f"Invalid stage. Must be one of: {', '.join(valid_stages)}")
+
+    # Limit bulk updates to 50 at a time
+    if len(tenant_ids) > 50:
+        raise HTTPException(status_code=400, detail="Maximum 50 tenants per bulk update")
+
+    # Verify all tenants exist
+    tenants = db.query(AdminTenant).filter(AdminTenant.id.in_(tenant_ids)).all()
+    if len(tenants) != len(tenant_ids):
+        raise HTTPException(status_code=404, detail="One or more tenants not found")
+
+    updated_count = 0
+    now = datetime.now(timezone.utc)
+
+    try:
+        for tenant in tenants:
+            # Update or create tenant state
+            if not tenant.state:
+                tenant.state = TenantState(
+                    tenant_id=tenant.id,
+                    current_stage=new_stage,
+                    fecha_cambio_stage=now,
+                )
+                db.add(tenant.state)
+            else:
+                tenant.state.current_stage = new_stage
+                tenant.state.fecha_cambio_stage = now
+
+            # Add audit log
+            audit_log = TenantAuditLog(
+                tenant_id=tenant.id,
+                actor=admin.sub,
+                action="bulk_stage_update",
+                payload={
+                    "new_stage": new_stage,
+                    "bulk_operation": True,
+                },
+            )
+            db.add(audit_log)
+            updated_count += 1
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Updated {updated_count} tenant(s) to {new_stage}",
+            "updated_count": updated_count,
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to update tenants: {str(e)}")
+
+
 @router.get("/logs")
 async def get_logs(_: UserInfo = Depends(require_admin)):
     return [
