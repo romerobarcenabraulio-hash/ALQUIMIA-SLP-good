@@ -6,6 +6,7 @@ import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { AdminDocumentUploadModal } from './AdminDocumentUploadModal'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
+import { ModoBToggle } from '@/components/hub/ModoBToggle'
 
 interface TenantDrawerProps {
   tenantId: string | null
@@ -428,6 +429,9 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
 
               {activeTab === 'acciones' && (
                 <div className="space-y-4">
+                  {tenantId && (
+                    <ModoBToggle tenantId={tenantId} />
+                  )}
                   {actionsLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-4 w-4 animate-spin text-[#6B6760] mr-2" />
