@@ -21,6 +21,8 @@ interface UseAdminMasterTableOptions {
   autoLoad?: boolean
 }
 
+type QuickFilter = 'urgentes' | 'vencidos' | 'mi_pendientes' | ''
+
 export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
   const { autoLoad = true } = options
 
@@ -31,6 +33,7 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
 
   const [search, setSearch] = useState('')
   const [etapaFilter, setEtapaFilter] = useState('')
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('')
   const [sortBy, setSortBy] = useState<'municipio' | 'etapa' | 'dias_en_etapa' | 'avance' | 'updated_at'>('updated_at')
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
   const [currentPage, setCurrentPage] = useState(0)
@@ -101,16 +104,35 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     setCurrentPage(0)
   }, [])
 
+  const handleQuickFilter = useCallback((filter: QuickFilter) => {
+    setQuickFilter(filter)
+    setCurrentPage(0)
+  }, [])
+
   const goToPage = useCallback((page: number) => {
     const maxPages = Math.ceil(total / pageSize)
     setCurrentPage(Math.min(Math.max(0, page), maxPages - 1))
   }, [total, pageSize])
 
+  // Apply client-side quick filters
+  const filteredRows = rows.filter(row => {
+    if (quickFilter === 'urgentes') {
+      return row.dias_en_etapa >= 60
+    }
+    if (quickFilter === 'vencidos') {
+      return row.dias_en_etapa >= 90
+    }
+    if (quickFilter === 'mi_pendientes') {
+      return row.etapa !== 'expansion'
+    }
+    return true
+  })
+
   const maxPages = Math.ceil(total / pageSize)
 
   return {
     // Data
-    rows,
+    rows: filteredRows,
     loading,
     error,
     total,
@@ -123,6 +145,7 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     // Filters & sorting
     search,
     etapaFilter,
+    quickFilter,
     sortBy,
     sortOrder,
 
@@ -130,6 +153,7 @@ export function useAdminMasterTable(options: UseAdminMasterTableOptions = {}) {
     fetchData,
     handleSearch,
     handleFilterByEtapa,
+    handleQuickFilter,
     toggleSort,
     goToPage,
   }

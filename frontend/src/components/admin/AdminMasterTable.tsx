@@ -44,11 +44,13 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
     maxPages,
     search,
     etapaFilter,
+    quickFilter,
     sortBy,
     sortOrder,
     fetchData,
     handleSearch,
     handleFilterByEtapa,
+    handleQuickFilter,
     toggleSort,
     goToPage,
   } = useAdminMasterTable()
@@ -58,39 +60,64 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   return (
     <div className={cn('space-y-4 rounded-lg border border-[#E8E4DC] bg-white p-5', className)}>
       {/* Toolbar */}
-      <div className="flex gap-3 flex-wrap items-center">
-        <div className="flex-1 min-w-64">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E8980]" />
-            <input
-              type="text"
-              placeholder="Buscar municipio, estado, INEGI..."
-              value={search}
-              onChange={e => handleSearch(e.target.value)}
-              className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 pl-10 text-sm focus:border-[#3B6D11] focus:outline-none"
-            />
+      <div className="space-y-3">
+        <div className="flex gap-3 flex-wrap items-center">
+          <div className="flex-1 min-w-64">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#8E8980]" />
+              <input
+                type="text"
+                placeholder="Buscar municipio, estado, INEGI..."
+                value={search}
+                onChange={e => handleSearch(e.target.value)}
+                className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 pl-10 text-sm focus:border-[#3B6D11] focus:outline-none"
+              />
+            </div>
           </div>
+
+          <select
+            value={etapaFilter}
+            onChange={e => handleFilterByEtapa(e.target.value)}
+            className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none bg-white"
+          >
+            <option value="">Todas las etapas</option>
+            <option value="validation">Validación</option>
+            <option value="planning">Planeación</option>
+            <option value="execution">Ejecución</option>
+            <option value="expansion">Expansión</option>
+          </select>
+
+          <button
+            onClick={() => fetchData()}
+            className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+            title="Refresh"
+          >
+            <Loader2 className={cn('h-4 w-4', loading && 'animate-spin')} />
+          </button>
         </div>
 
-        <select
-          value={etapaFilter}
-          onChange={e => handleFilterByEtapa(e.target.value)}
-          className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none bg-white"
-        >
-          <option value="">Todas las etapas</option>
-          <option value="validation">Validación</option>
-          <option value="planning">Planeación</option>
-          <option value="execution">Ejecución</option>
-          <option value="expansion">Expansión</option>
-        </select>
-
-        <button
-          onClick={() => fetchData()}
-          className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
-          title="Refresh"
-        >
-          <Loader2 className={cn('h-4 w-4', loading && 'animate-spin')} />
-        </button>
+        {/* Quick filters */}
+        <div className="flex gap-2 flex-wrap">
+          {[
+            { key: '', label: 'Todos' },
+            { key: 'urgentes', label: '🔴 Urgentes (60+ días)' },
+            { key: 'vencidos', label: '⚠️ Vencidos (90+ días)' },
+            { key: 'mi_pendientes', label: '📋 Pendientes' },
+          ].map(filter => (
+            <button
+              key={filter.key}
+              onClick={() => handleQuickFilter(filter.key as any)}
+              className={cn(
+                'px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
+                quickFilter === filter.key
+                  ? 'bg-[#3B6D11] text-white'
+                  : 'border border-[#E8E4DC] text-[#6B6760] hover:border-[#3B6D11] hover:text-[#3B6D11]'
+              )}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
