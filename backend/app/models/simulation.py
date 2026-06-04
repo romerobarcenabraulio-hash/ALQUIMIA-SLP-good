@@ -62,8 +62,9 @@ class Simulation(Base):
         Index("idx_tenant_updated", "tenant_id", "updated_at"),
     )
 
-    def to_dict(self) -> dict:
+    def to_dict(self, current_user_id: str = None) -> dict:
         """Convert to JSON-serializable dict for API responses."""
+        is_owner = current_user_id is None or self.user_id == current_user_id
         return {
             "id": self.id,
             "name": self.name,
@@ -71,9 +72,13 @@ class Simulation(Base):
             "createdAt": self.created_at.isoformat(),
             "updatedAt": self.updated_at.isoformat(),
             "municipios": self.municipios or [],
-            "horizonte": self.horizonte,
+            "horizonte": self.horizonte or 0,
             "userId": self.user_id,
             "tenantId": self.tenant_id,
+            "createdBy": self.user_id,
+            "updatedBy": self.user_id,
+            "isOwner": is_owner,
+            "canEdit": is_owner,
         }
 
 

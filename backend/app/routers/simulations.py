@@ -5,9 +5,10 @@ Simulation persistence API supporting save, load, export, import, versioning,
 and audit logging for the ALQUIMIA platform. Multi-tenant and multi-user support.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from sqlalchemy.orm import Session
 from datetime import datetime
+from pydantic import BaseModel
 import uuid
 import logging
 from typing import Any, Optional
@@ -25,29 +26,20 @@ logger = logging.getLogger(__name__)
 # ────────────────────────────────────────────────────────────────────────────
 
 
-class SaveSimulationRequest:
+class SaveSimulationRequest(BaseModel):
     """Request to save a simulation."""
 
-    def __init__(self, name: str, description: Optional[str] = None, state: dict = None):
-        self.name = name
-        self.description = description
-        self.state = state or {}
+    name: str
+    description: Optional[str] = None
+    state: Optional[dict] = None
 
 
-class SaveSimulationResponse:
-    """Response after saving a simulation."""
+class LoadSimulationResponse(BaseModel):
+    """Response after loading a simulation."""
 
-    def __init__(self, id: str, name: str, saved_at: datetime):
-        self.id = id
-        self.name = name
-        self.saved_at = saved_at
-
-    def dict(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "savedAt": self.saved_at.isoformat(),
-        }
+    state: dict
+    metadata: dict
+    versionNumber: int
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -96,9 +88,8 @@ def _log_audit(
 
 @router.post("/save")
 async def save_simulation(
-    name: str,
-    description: Optional[str] = None,
-    state: Optional[dict] = None,
+    request: SaveSimulationRequest,
+    http_request: Request,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -107,7 +98,10 @@ async def save_simulation(
     Automatically creates a version snapshot for rollback capability.
     """
     start_time = datetime.utcnow()
-    state_data = state or {}
+    state_data = request.state or {}
+
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
 
     try:
         # Extract metadata from state
@@ -124,10 +118,10 @@ async def save_simulation(
         # Create simulation record
         simulation = Simulation(
             id=sim_id,
-            user_id=user.user_id,
-            tenant_id=user.tenant_id or "default",
-            name=name,
-            description=description,
+            user_id=user.id,
+            tenant_id=tenant_id,
+            name=request.name,
+            description=request.description,
             municipios=municipios,
             horizonte=horizonte,
             checksum=checksum,
@@ -153,9 +147,9 @@ async def save_simulation(
             db,
             sim_id,
             "simulation_saved",
-            user.user_id,
+            user.id,
             True,
-            f'Saved simulation "{name}"',
+            f'Saved simulation "{request.name}"',
             {"version": 1, "size": len(str(state_data))},
             duration_ms,
         )
@@ -164,7 +158,7 @@ async def save_simulation(
 
         return {
             "id": sim_id,
-            "name": name,
+            "name": request.name,
             "savedAt": simulation.created_at.isoformat(),
         }
 
@@ -177,36 +171,39 @@ async def save_simulation(
 @router.get("/")
 async def list_simulations(
     page: int = 1,
-    limit: int = 10,
+    page_size: int = 10,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
+    request: Request = None,
 ):
     """
     List simulations for current user/tenant.
     Paginated response with metadata only (not full state).
     """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+
     try:
         # Query simulations for this user/tenant
         query = (
             db.query(Simulation)
             .filter(
-                Simulation.user_id == user.user_id,
-                Simulation.tenant_id == (user.tenant_id or "default"),
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
             )
             .order_by(Simulation.updated_at.desc())
         )
 
         total = query.count()
 
-        offset = (page - 1) * limit
-        simulations = query.offset(offset).limit(limit).all()
+        offset = (page - 1) * page_size
+        simulations = query.offset(offset).limit(page_size).all()
 
         return {
-            "simulations": [sim.to_dict() for sim in simulations],
+            "simulations": [sim.to_dict(user.id) for sim in simulations],
             "total": total,
             "page": page,
-            "limit": limit,
-            "pages": (total + limit - 1) // limit,
+            "pageSize": page_size,
         }
 
     except Exception as exc:
@@ -217,6 +214,7 @@ async def list_simulations(
 @router.get("/{simulation_id}")
 async def load_simulation(
     simulation_id: str,
+    http_request: Request,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -224,6 +222,8 @@ async def load_simulation(
     Load a specific simulation with full state.
     Returns the latest version by default.
     """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
     start_time = datetime.utcnow()
 
     try:
@@ -232,8 +232,8 @@ async def load_simulation(
             db.query(Simulation)
             .filter(
                 Simulation.id == simulation_id,
-                Simulation.user_id == user.user_id,
-                Simulation.tenant_id == (user.tenant_id or "default"),
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
             )
             .first()
         )
@@ -259,7 +259,7 @@ async def load_simulation(
             db,
             simulation_id,
             "simulation_loaded",
-            user.user_id,
+            user.id,
             True,
             f'Loaded simulation "{simulation.name}"',
             {"version": latest_version.version_number},
@@ -268,7 +268,7 @@ async def load_simulation(
 
         return {
             "state": latest_version.state_data,
-            "metadata": simulation.to_dict(),
+            "metadata": simulation.to_dict(user.id),
             "versionNumber": latest_version.version_number,
         }
 
@@ -282,20 +282,24 @@ async def load_simulation(
 @router.delete("/{simulation_id}")
 async def delete_simulation(
     simulation_id: str,
+    http_request: Request,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Delete a simulation and all its versions/audit logs.
     """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+
     try:
         # Verify user owns this simulation
         simulation = (
             db.query(Simulation)
             .filter(
                 Simulation.id == simulation_id,
-                Simulation.user_id == user.user_id,
-                Simulation.tenant_id == (user.tenant_id or "default"),
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
             )
             .first()
         )
@@ -307,7 +311,7 @@ async def delete_simulation(
         db.delete(simulation)
         db.commit()
 
-        logger.info(f"Deleted simulation {simulation_id} for user {user.user_id}")
+        logger.info(f"Deleted simulation {simulation_id} for user {user.id}")
 
         return {"success": True, "id": simulation_id}
 
@@ -322,6 +326,7 @@ async def delete_simulation(
 @router.get("/{simulation_id}/versions")
 async def get_simulation_versions(
     simulation_id: str,
+    http_request: Request,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -329,14 +334,17 @@ async def get_simulation_versions(
     Get version history for a simulation.
     Returns metadata only (not full state) to keep response small.
     """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+
     try:
         # Verify user owns this simulation
         simulation = (
             db.query(Simulation)
             .filter(
                 Simulation.id == simulation_id,
-                Simulation.user_id == user.user_id,
-                Simulation.tenant_id == (user.tenant_id or "default"),
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
             )
             .first()
         )
@@ -377,6 +385,7 @@ async def get_simulation_versions(
 async def restore_simulation_version(
     simulation_id: str,
     version_id: str,
+    http_request: Request,
     user: UserInfo = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -384,6 +393,8 @@ async def restore_simulation_version(
     Restore a simulation to a previous version.
     Creates a new version as a checkpoint of the restoration.
     """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
     start_time = datetime.utcnow()
 
     try:
@@ -392,8 +403,8 @@ async def restore_simulation_version(
             db.query(Simulation)
             .filter(
                 Simulation.id == simulation_id,
-                Simulation.user_id == user.user_id,
-                Simulation.tenant_id == (user.tenant_id or "default"),
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
             )
             .first()
         )
@@ -425,7 +436,7 @@ async def restore_simulation_version(
             simulation_id=simulation_id,
             version_number=max_version + 1,
             state_data=version_to_restore.state_data,
-            created_by=user.user_id,
+            created_by=user.id,
             checkpoint_name=f"Restored from v{version_to_restore.version_number}",
         )
 
@@ -438,7 +449,7 @@ async def restore_simulation_version(
             db,
             simulation_id,
             "simulation_restored",
-            user.user_id,
+            user.id,
             True,
             f"Restored from version {version_to_restore.version_number}",
             {"fromVersion": version_to_restore.version_number, "toVersion": max_version + 1},
@@ -489,7 +500,7 @@ async def batch_audit_logs(
                 id=entry.get("id", str(uuid.uuid4())),
                 simulation_id=sim_id,
                 action=entry.get("action", "unknown"),
-                actor_id=user.user_id,
+                actor_id=user.id,
                 success=entry.get("success", False),
                 message=entry.get("message", ""),
                 details=entry.get("details"),
@@ -501,7 +512,7 @@ async def batch_audit_logs(
 
         db.commit()
 
-        logger.info(f"Batch inserted {inserted_count} audit logs for user {user.user_id}")
+        logger.info(f"Batch inserted {inserted_count} audit logs for user {user.id}")
 
         return {"success": True, "inserted": inserted_count}
 
