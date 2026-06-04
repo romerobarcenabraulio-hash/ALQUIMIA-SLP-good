@@ -34,6 +34,7 @@ import { SimulationVersionTimeline } from '@/components/simulator/SimulationVers
 import { SimulationHelp } from '@/components/simulator/SimulationHelp'
 import { SimulationActivityLog } from '@/components/simulator/SimulationActivityLog'
 import { SimulationStats } from '@/components/simulator/SimulationStats'
+import { SimulationContextMenu } from '@/components/simulator/SimulationContextMenu'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -595,40 +596,14 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                             <span>{new Date(sim.updatedAt).toLocaleDateString()}</span>
                           </div>
                         </button>
-                      </div>
-                      <div className="flex gap-2 mt-2">
-                        <button
-                          onClick={() => handleDuplicateSimulation(sim.id)}
-                          disabled={duplicating === sim.id}
-                          className="flex-1 inline-flex items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-[#3B6D11] bg-green-50 border border-green-200 hover:bg-green-100 disabled:opacity-50"
-                        >
-                          {duplicating === sim.id ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            </>
-                          ) : (
-                            <>
-                              <Copy className="h-3 w-3" />
-                              Duplicate
-                            </>
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleDeleteSimulation(sim.id)}
-                          disabled={deleting === sim.id}
-                          className="flex-1 inline-flex items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-50"
-                        >
-                          {deleting === sim.id ? (
-                            <>
-                              <Loader2 className="h-3 w-3 animate-spin" />
-                            </>
-                          ) : (
-                            <>
-                              <Trash2 className="h-3 w-3" />
-                              Delete
-                            </>
-                          )}
-                        </button>
+                        <SimulationContextMenu
+                          simulationId={sim.id}
+                          simulationName={sim.name}
+                          onDuplicate={handleDuplicateSimulation}
+                          onDelete={handleDeleteSimulation}
+                          onExport={() => handleExportJSON()}
+                          disabled={duplicating === sim.id || deleting === sim.id}
+                        />
                       </div>
                     </div>
                   ))}
