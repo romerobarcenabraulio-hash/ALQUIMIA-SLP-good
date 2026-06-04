@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { TenantContextChip } from '@/components/layout/TenantContextChip'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 export function InstitutionalHeader({
   label = 'Plataforma institucional',
@@ -23,6 +24,7 @@ export function InstitutionalHeader({
           </span>
         </div>
         <div className="flex items-center gap-3 text-right text-[11px] leading-5 text-[#6B6760]">
+          <NotificationBell />
           <TenantContextChip />
           <Link href="/perfil" className="font-semibold text-[#3B3326] hover:text-[#3B6D11]">
             Perfil

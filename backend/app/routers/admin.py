@@ -14,6 +14,7 @@ from typing import List
 import logging
 
 from app.routers.auth import get_current_user, UserInfo, hash_password, DEMO_USERS
+from app.notifications.triggers import trigger_gate_approval
 from app.db.session import get_db
 from app.redis_cache import distributed_cached, DistributedCacheInvalidationContext
 from app.admin.tenant_state import (
@@ -3490,6 +3491,26 @@ async def close_gate_manual(
         )
     )
     db.flush()
+
+    # Trigger notifications to tenant users
+    try:
+        from app.models.user_account import UserAccount
+        tenant_users = db.query(UserAccount).filter(
+            UserAccount.municipio_id == tenant.municipio_id,
+            UserAccount.activo == True,
+        ).all()
+        for tenant_user in tenant_users:
+            trigger_gate_approval(
+                db,
+                tenant_user.id,
+                tenant_id,
+                gate_id,
+                "cerrado",
+                req.decisor_humano,
+            )
+    except Exception as exc:
+        logger.warning("trigger_notifications_failed: %s", exc)
+
     return _tenant_to_dict(_db_get_tenant(db, tenant_id))
 
 
