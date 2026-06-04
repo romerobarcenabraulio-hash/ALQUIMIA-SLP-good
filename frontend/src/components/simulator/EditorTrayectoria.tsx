@@ -1,6 +1,8 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
+import { Lock } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPermissions } from '@/hooks/useDataPermissions'
 import { PRESETS_TRAYECTORIA } from '@/lib/constants'
 import { CapturaAreaChart } from '@/components/charts/CapturaAreaChart'
 import { Slider } from '@/components/ui/Slider'
@@ -11,6 +13,7 @@ import { Conclusion } from '@/components/editorial/Conclusion'
 
 export function EditorTrayectoria() {
   const { horizonte, pctCapturaPorAño, presetTrayectoria, setPreset, setPctCapturaAño, resultados } = useSimulatorStore()
+  const { canEditAssumptions } = useDataPermissions()
   const [narrativa, setNarrativa] = useState('')
   const state = useSimulatorStore()
 
@@ -21,6 +24,23 @@ export function EditorTrayectoria() {
   }, 400))
 
   useEffect(() => { updateNarrativa.current() }, [pctCapturaPorAño, horizonte, resultados])
+
+  if (!canEditAssumptions) {
+    return (
+      <div>
+        <h2 className="font-serif text-[24px] text-[#1C1B18] mb-4">¿A qué ritmo captura RSU?</h2>
+        <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
+          <Lock className="h-5 w-5 text-amber-600 flex-shrink-0" />
+          <div>
+            <p className="font-medium text-amber-900">Acceso restringido</p>
+            <p className="mt-1 text-sm text-amber-800">
+              No tienes permisos para modificar los supuestos de captura. Contacta a un administrador si necesitas acceso.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
