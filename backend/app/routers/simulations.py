@@ -472,6 +472,105 @@ async def restore_simulation_version(
         raise HTTPException(status_code=500, detail=f"Failed to restore simulation version: {str(exc)}")
 
 
+@router.get("/{simulation_id}/compare/{version_id_1}/with/{version_id_2}")
+async def compare_versions(
+    simulation_id: str,
+    version_id_1: str,
+    version_id_2: str,
+    request: Request = None,
+    user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Compare two simulation versions to identify differences.
+    Returns a delta showing what changed between versions.
+    """
+    # Extract tenant_id from header
+    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+
+    try:
+        # Verify user owns this simulation
+        simulation = (
+            db.query(Simulation)
+            .filter(
+                Simulation.id == simulation_id,
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .first()
+        )
+
+        if not simulation:
+            raise HTTPException(status_code=404, detail="Simulation not found")
+
+        # Get both versions
+        version1 = (
+            db.query(SimulationVersion)
+            .filter(
+                SimulationVersion.id == version_id_1,
+                SimulationVersion.simulation_id == simulation_id,
+            )
+            .first()
+        )
+
+        version2 = (
+            db.query(SimulationVersion)
+            .filter(
+                SimulationVersion.id == version_id_2,
+                SimulationVersion.simulation_id == simulation_id,
+            )
+            .first()
+        )
+
+        if not version1 or not version2:
+            raise HTTPException(status_code=404, detail="One or both versions not found")
+
+        # Compare states
+        import json
+        state1 = version1.state_data or {}
+        state2 = version2.state_data or {}
+
+        differences = []
+        all_keys = set(state1.keys()) | set(state2.keys())
+
+        for key in sorted(all_keys):
+            val1 = state1.get(key)
+            val2 = state2.get(key)
+
+            # Skip if values are the same (use JSON serialization for comparison)
+            if json.dumps(val1, sort_keys=True, default=str) == json.dumps(val2, sort_keys=True, default=str):
+                continue
+
+            differences.append({
+                "field": key,
+                "oldValue": val1,
+                "newValue": val2,
+                "changed": True,
+            })
+
+        return {
+            "simulation_id": simulation_id,
+            "version1": {
+                "id": version1.id,
+                "number": version1.version_number,
+                "createdAt": version1.created_at.isoformat(),
+            },
+            "version2": {
+                "id": version2.id,
+                "number": version2.version_number,
+                "createdAt": version2.created_at.isoformat(),
+            },
+            "differences": differences,
+            "total_differences": len(differences),
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"Failed to compare versions: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to compare versions: {str(exc)}")
+
+
 @router.post("/audit-logs/batch")
 async def batch_audit_logs(
     entries: list[dict],
