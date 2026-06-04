@@ -29,6 +29,8 @@ import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDat
 import { TenantActorsPanel } from '@/components/simulator/TenantProfilePanels'
 import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
 import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
+import { ModuleProgressionLock } from '@/components/simulator/ModuleProgressionLock'
+import { getDecisionModuleId, hasModuleProgression } from '@/lib/moduleProgressionMapping'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -222,6 +224,21 @@ const KronosGateStatusStack = dynamic(
   },
 )
 
+/**
+ * Helper function to wrap module content with progression locking if applicable.
+ * Modules that are part of the M00B-M15 sequence get locked based on user progression.
+ */
+function wrapWithModuleProgression(canonicalModuleId: string, content: ReactNode): ReactNode {
+  const decisionModuleId = getDecisionModuleId(canonicalModuleId)
+  if (!decisionModuleId) return content
+
+  return (
+    <ModuleProgressionLock moduleId={decisionModuleId}>
+      {content}
+    </ModuleProgressionLock>
+  )
+}
+
 export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNode {
   const { module, audience, isOrganizationJourney, sociodemographicBlock, onNavigate } = ctx
 
@@ -269,39 +286,39 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
     case 'guia_circularidad':
       return <GuiaCircularidadStack onNavigate={onNavigate} />
     case 'antecedentes_municipales':
-      return <AntecedentesMunicipalesStack />
+      return wrapWithModuleProgression(moduleId, <AntecedentesMunicipalesStack />)
     case 'city_baseline':
-      return <CityBaselineStack />
+      return wrapWithModuleProgression(moduleId, <CityBaselineStack />)
     case 'social_diagnostico':
-      return <SocialAuthorityConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />
+      return wrapWithModuleProgression(moduleId, <SocialAuthorityConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />)
     case 'capacidad_institucional':
-      return <InstitutionalConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />
+      return wrapWithModuleProgression(moduleId, <InstitutionalConsolidatedModule sociodemographicBlock={sociodemographicBlock} moduleAnchor={module.module_id} />)
     case 'marco_legal':
-      return <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />
+      return wrapWithModuleProgression(moduleId, <MunicipalContextStack block={sociodemographicBlock} moduleAnchor={module.module_id} view="diagnostico" />)
     case 'costo_omision':
-      return <OmissionImpactConsolidatedModule />
+      return wrapWithModuleProgression(moduleId, <OmissionImpactConsolidatedModule />)
     case 'roadmap_implementacion':
-      return <RoadmapConsolidatedModule />
+      return wrapWithModuleProgression(moduleId, <RoadmapConsolidatedModule />)
     case 'infraestructura':
-      return <InfrastructureOperationsStack />
+      return wrapWithModuleProgression(moduleId, <InfrastructureOperationsStack />)
     case 'organigrama':
-      return <OrganigramaStack />
+      return wrapWithModuleProgression(moduleId, <OrganigramaStack />)
     case 'logistica':
-      return <LogisticsEducationConsolidatedModule />
+      return wrapWithModuleProgression(moduleId, <LogisticsEducationConsolidatedModule />)
     case 'costos_programa':
-      return <CostosProgramaStack />
+      return wrapWithModuleProgression(moduleId, <CostosProgramaStack />)
     case 'mercado_materiales':
-      return <MarketTraceabilityStack pageOnly={2} />
+      return wrapWithModuleProgression(moduleId, <MarketTraceabilityStack pageOnly={2} />)
     case 'esquema_concesion':
-      return <EsquemaConcesionPanel />
+      return wrapWithModuleProgression(moduleId, <EsquemaConcesionPanel />)
     case 'arbol_financiamiento':
-      return <ArbolFinanciamientoStack />
+      return wrapWithModuleProgression(moduleId, <ArbolFinanciamientoStack />)
     case 'escenarios_financieros':
-      return <ScenariosExportStack />
+      return wrapWithModuleProgression(moduleId, <ScenariosExportStack />)
     case 'riesgos_modelo':
-      return <MarketTraceabilityStack pageOnly={1} />
+      return wrapWithModuleProgression(moduleId, <MarketTraceabilityStack pageOnly={1} />)
     case 'expediente_cabildo':
-      return <ExpedienteCabildoStack />
+      return wrapWithModuleProgression(moduleId, <ExpedienteCabildoStack />)
     case 'inspeccion':
       return <InspeccionStack />
     case 'monitoreo_operativo':

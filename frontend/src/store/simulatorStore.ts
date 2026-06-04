@@ -6,11 +6,13 @@ import type {
   CityContext,
   CoverageStatus,
   DecisionModule,
+  DecisionModuleId,
   EscenarioGuardado,
   MacroImpactSummary,
   MarketSummary,
   MunicipioMxApi,
   MunicipioProfile,
+  ModuleProgressionStatus,
   OperationsSummary,
   PortalEntry,
   PropuestaSlotTupla,
@@ -254,6 +256,20 @@ interface SimulatorStore extends SimulatorState {
   setOrganigramaVerificacion: (nodoId: string, v: import('@/data/organigramaDiagnostico').VerificacionOrg) => void
   toggleOrganigramaChecklist: (itemId: string) => void
   setOrganigramaNotaCampo: (v: string) => void
+
+  // ── Module progression locking (progresión bloqueada) ───────────────────────
+  /** Mark a module as completed by the user. */
+  markModuleCompleted: (moduleId: DecisionModuleId) => void
+  /** Unlock next module in sequence when current is completed. */
+  unlockNextModule: (currentModuleId: DecisionModuleId) => void
+  /** Check if module is unlocked. */
+  isModuleUnlocked: (moduleId: DecisionModuleId) => boolean
+  /** Check if module is completed. */
+  isModuleCompleted: (moduleId: DecisionModuleId) => boolean
+  /** Get current module progression status. */
+  getModuleStatus: (moduleId: DecisionModuleId) => ModuleProgressionStatus
+  /** Set current active module. */
+  setCurrentModule: (moduleId: DecisionModuleId | null) => void
 }
 
 const defaultState: SimulatorState = {
@@ -318,6 +334,16 @@ const defaultState: SimulatorState = {
   },
   fechaInicioPrograma: null,
   organigramaDiagnostico: { ...ORGANIGRAMA_DIAGNOSTICO_PERSIST_EMPTY },
+  // Module progression locking
+  moduleProgression: {
+    statusByModule: {
+      'M00B': 'unlocked', 'M01': 'locked', 'M02A': 'locked', 'M02B': 'locked', 'M02C': 'locked', 'M02D': 'locked',
+      'M03': 'locked', 'M04': 'locked', 'M05': 'locked', 'M06': 'locked', 'M07': 'locked', 'M08': 'locked',
+      'M09': 'locked', 'M10': 'locked', 'M11': 'locked', 'M12': 'locked', 'M13': 'locked', 'M14': 'locked', 'M15': 'locked',
+    },
+    completedModules: [],
+    currentModuleId: 'M00B',
+  },
 }
 
 /** Plantilla de estado inicial (tests Q-024 y fixtures). */
@@ -1108,6 +1134,60 @@ export const useSimulatorStore = create<SimulatorStore>()(
             // Red o backend no disponible — continúa con valores por defecto
           }
         },
+
+        markModuleCompleted: (moduleId: DecisionModuleId) => {
+          set((state) => ({
+            moduleProgression: {
+              ...state.moduleProgression,
+              completedModules: [...state.moduleProgression.completedModules, moduleId],
+            },
+          }))
+        },
+
+        unlockNextModule: (currentModuleId: DecisionModuleId) => {
+          const moduleOrder: DecisionModuleId[] = [
+            'M00B', 'M01', 'M02A', 'M02B', 'M02C', 'M02D',
+            'M03', 'M04', 'M05', 'M06', 'M07', 'M08',
+            'M09', 'M10', 'M11', 'M12', 'M13', 'M14', 'M15',
+          ]
+          const currentIdx = moduleOrder.indexOf(currentModuleId)
+          if (currentIdx >= 0 && currentIdx < moduleOrder.length - 1) {
+            const nextModule = moduleOrder[currentIdx + 1]
+            set((state) => ({
+              moduleProgression: {
+                ...state.moduleProgression,
+                statusByModule: {
+                  ...state.moduleProgression.statusByModule,
+                  [nextModule]: 'unlocked' as const,
+                },
+              },
+            }))
+          }
+        },
+
+        isModuleUnlocked: (moduleId: DecisionModuleId) => {
+          const st = get()
+          return st.moduleProgression.statusByModule[moduleId] !== 'locked'
+        },
+
+        isModuleCompleted: (moduleId: DecisionModuleId) => {
+          const st = get()
+          return st.moduleProgression.statusByModule[moduleId] === 'completed'
+        },
+
+        getModuleStatus: (moduleId: DecisionModuleId) => {
+          const st = get()
+          return st.moduleProgression.statusByModule[moduleId]
+        },
+
+        setCurrentModule: (moduleId: DecisionModuleId | null) => {
+          set((state) => ({
+            moduleProgression: {
+              ...state.moduleProgression,
+              currentModuleId: moduleId,
+            },
+          }))
+        },
       }),
       {
         name: 'alquimia-simulator',
@@ -1122,6 +1202,7 @@ export const useSimulatorStore = create<SimulatorStore>()(
           zmActiva: s.zmActiva,
           municipiosActivos: s.municipiosActivos,
           seleccionMunicipioCatalog: s.seleccionMunicipioCatalog,
+          moduleProgression: s.moduleProgression,
         }),
         onRehydrateStorage: () => (partial, error) => {
           if (error || typeof window === 'undefined') return
