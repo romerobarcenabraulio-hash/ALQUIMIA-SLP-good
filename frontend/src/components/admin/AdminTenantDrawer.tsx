@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, Loader2, AlertCircle, FileUp } from 'lucide-react'
 import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { AdminDocumentUploadModal } from './AdminDocumentUploadModal'
 
 interface TenantDrawerProps {
   tenantId: string | null
@@ -28,6 +29,7 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'resumen' | 'documentos' | 'usuarios'>('resumen')
+  const [uploadModalOpen, setUploadModalOpen] = useState(false)
 
   useEffect(() => {
     if (!isOpen || !tenantId) return
@@ -157,7 +159,10 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
               {activeTab === 'documentos' && (
                 <div className="space-y-4">
                   <p className="text-sm text-[#6B6760]">Los documentos se cargan aquí en Sprint 11.</p>
-                  <button className="inline-flex items-center gap-2 px-4 py-2 bg-[#3B6D11] text-white rounded-lg text-sm font-medium hover:bg-[#2D5409] transition-colors">
+                  <button
+                    onClick={() => setUploadModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-[#3B6D11] text-white rounded-lg text-sm font-medium hover:bg-[#2D5409] transition-colors"
+                  >
                     <FileUp className="h-4 w-4" />
                     Subir Documento
                   </button>
@@ -172,6 +177,18 @@ export function AdminTenantDrawer({ tenantId, isOpen, onClose, className }: Tena
             </>
           ) : null}
         </div>
+
+        {/* Upload Modal */}
+        {data && (
+          <AdminDocumentUploadModal
+            tenantId={data.id}
+            tenantName={data.nombre}
+            documentType="Reglamento"
+            isOpen={uploadModalOpen}
+            onClose={() => setUploadModalOpen(false)}
+            onSuccess={() => loadTenantData()}
+          />
+        )}
       </div>
     </div>
   )

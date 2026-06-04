@@ -3728,18 +3728,34 @@ async def get_admin_master_table(
     tenants = query.offset(offset).limit(limit).all()
 
     # Format rows
+    from sqlalchemy import func
     rows: list[AdminTableRow] = []
     for tenant in tenants:
         dias_en_etapa = 0
         if tenant.state and tenant.state.fecha_cambio_stage:
             dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
 
-        # Calculate completion metrics (simplified)
-        avance_pct = 30  # Placeholder: would read from tenant_data
+        # Get user count
+        from app.models.user_account import UserAccount
+        usuarios_count = db.query(func.count(UserAccount.id)).filter(
+            UserAccount.tenant_id == tenant.id
+        ).scalar() or 0
+
+        # Get current gate
+        gate_actual = None
+        if tenant.gates:
+            # Get the highest gate that's been started
+            for gate in sorted(tenant.gates, key=lambda g: g.gate_id, reverse=True):
+                if gate.status != "no_iniciado":
+                    gate_actual = gate.gate_id
+                    break
+
+        # Calculate completion metrics (simplified - would read from tenant_data)
+        avance_pct = 30
         modulos_completos = 3
         modulos_total = 10
 
-        # Calculate document metrics
+        # Calculate document metrics (simplified)
         docs_entregados = 2
         docs_total = 8
 
@@ -3750,8 +3766,8 @@ async def get_admin_master_table(
                 estado=tenant.estado_mx,
                 inegi_clave=tenant.inegi_clave,
                 etapa=tenant.state.current_stage if tenant.state else "unknown",
-                gate_actual=None,  # Would read from TenantGate
-                usuarios_count=0,  # Would count from users table
+                gate_actual=gate_actual,
+                usuarios_count=usuarios_count,
                 dias_en_etapa=dias_en_etapa,
                 avance_validacion_pct=avance_pct,
                 avance_modulos_count={"completados": modulos_completos, "total": modulos_total},
