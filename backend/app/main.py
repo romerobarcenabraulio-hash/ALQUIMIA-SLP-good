@@ -66,6 +66,7 @@ from app.observability import (
     build_deep_health_payload,
     get_app_environment,
 )
+from app.redis_cache import init_redis, close_redis
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +178,20 @@ async def lifespan(app: FastAPI):
         logger.info("ADN SLP cargado correctamente")
     except Exception as e:
         logger.warning(f"ADN SLP no pudo cargarse (modo offline): {e}")
+
+    # Inicializar Redis para caché distribuido
+    try:
+        await init_redis()
+    except Exception as e:
+        logger.warning(f"Redis initialization failed: {e}")
+
     yield
+
+    # Cleanup
+    try:
+        await close_redis()
+    except Exception as e:
+        logger.warning(f"Redis cleanup failed: {e}")
 
 app = FastAPI(
     title="ALQUIMIA API",

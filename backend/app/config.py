@@ -21,6 +21,7 @@ class Settings(BaseSettings):
 
     # DB
     DATABASE_URL: str = "postgresql://alquimia:alquimia@localhost:5432/alquimia"
+    REDIS_URL: Optional[str] = None  # redis://localhost:6379/0 or REDIS_CLOUD_URL; optional (falls back to in-memory)
 
     # APIs externas
     SERPER_API_KEY:   Optional[str] = None
