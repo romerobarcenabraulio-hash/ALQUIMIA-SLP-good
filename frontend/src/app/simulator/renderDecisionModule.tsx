@@ -404,8 +404,7 @@ function ConsolidatedModuleTabs({
                     : 'border-transparent text-[#6B6760] hover:text-[#1C1B18]',
                 ].join(' ')}
               >
-                <span className="font-mono text-[10px] text-[#A8A49C]">M{tab.moduleCode}</span>
-                <span className="ml-1.5">{tab.label}</span>
+                <span>{tab.label}</span>
               </button>
             )
           })}
@@ -545,8 +544,8 @@ function ModuleEmpty({ module }: { module: DecisionModule }) {
     <div className="rounded-[10px] border border-dashed border-[#E8E4DC] bg-[#FAFAF8] px-5 py-5">
       <p className="text-[13px] font-semibold text-[#1C1B18]">Módulo pendiente de conexión</p>
       <p className="mt-2 text-[12px] leading-relaxed text-[#6B6760]">
-        Este paso del recorrido (<span className="font-mono text-[11px]">{module.module_id}</span>) aún no tiene
-        herramienta activa en el simulador. Puede deberse a una audiencia distinta o a un módulo en despliegue.
+        Este módulo está en preparación. El equipo ALQUIMIA lo habilitará con evidencia validada antes de la siguiente
+        sesión de trabajo.
       </p>
       <p className="mt-3 text-[11px] text-[#A8A49C]">Siguiente acción sugerida: {module.next_action}</p>
     </div>

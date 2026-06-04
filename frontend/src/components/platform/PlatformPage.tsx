@@ -29,7 +29,6 @@ import { renderDecisionModule } from '@/app/simulator/renderDecisionModule'
 import {
   PLATFORM_MODULE_GROUPS,
   childModulesForGroup,
-  groupedModulesForClientStage,
   isPlatformModuleGroup,
   visibleModuleNumber,
 } from '@/lib/platformModuleGroups'
@@ -915,8 +914,8 @@ export function PlatformPage({ platformStage }: { platformStage: ClientPlatformS
   const adminClientPreview = canUseInternalView && searchParams.get('preview') === 'client'
   const clientPreview = viewMode === 'client' || adminClientPreview
   const visiblePlatformModules = useMemo(
-    () => clientPreview ? groupedModulesForClientStage(platformStage) : platformModules,
-    [clientPreview, platformModules, platformStage],
+    () => platformModules,
+    [platformModules],
   )
   const readOnlyIds = useMemo(() => readOnlyModuleIds(visiblePlatformModules), [visiblePlatformModules])
   const badgeStage: ClientPlatformStage =
