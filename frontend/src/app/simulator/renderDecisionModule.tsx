@@ -28,6 +28,7 @@ import ProyectoVivoPortal from '@/components/simulator/ProyectoVivoPortal'
 import { MunicipioDataAwaitingBanner } from '@/components/simulator/MunicipioDataAwaitingBanner'
 import { TenantActorsPanel } from '@/components/simulator/TenantProfilePanels'
 import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -424,6 +425,9 @@ function SocialAuthorityConsolidatedModule({
   sociodemographicBlock: DecisionModuleRenderContext['sociodemographicBlock']
   moduleAnchor: string
 }) {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('social_diagnostico')
+
   return (
     <ConsolidatedModuleTabs
       tabs={[

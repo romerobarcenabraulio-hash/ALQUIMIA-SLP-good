@@ -4,8 +4,12 @@ import { DiagnosticoJuridico } from '@/components/simulator/DiagnosticoJuridico'
 import { ReglamentoCargaCiudadPanel } from '@/components/simulator/ReglamentoCargaCiudadPanel'
 import { useSimulatorStore } from '@/store/simulatorStore'
 import { FASES_INSTITUCIONALES } from '@/lib/constants'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 
 export function CapacidadInstitucionalStack() {
+  // Sprint 3 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('capacidad_institucional')
+
   const agoraLegalBloqueado = useSimulatorStore(s => s.agoraLegalBloqueado)
   const faseInstitucional = useSimulatorStore(s => s.faseInstitucional)
   const pasoNormativo = FASES_INSTITUCIONALES.find(f => f.fase === faseInstitucional)

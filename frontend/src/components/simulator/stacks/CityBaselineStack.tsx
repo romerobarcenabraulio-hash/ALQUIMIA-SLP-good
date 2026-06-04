@@ -7,6 +7,7 @@ import {
 } from 'recharts'
 import { Check, TrendingUp, Leaf, Heart, Truck, ChevronDown } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { PRESETS_TRAYECTORIA, TRAJECTORY_UI, RSU_SEMARNAT, PRECIOS_RANGO } from '@/lib/constants'
 import { fmt, cn, MATERIAL_LABELS } from '@/lib/utils'
 import { getMunicipalNarrative } from '@/data/municipalNarratives'
@@ -168,6 +169,9 @@ function KpiStrip({ icon: Icon, label, value, sub, accent }: {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function CityBaselineStack() {
+  // Sprint 3 · Load DataPoints for this module (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('city_baseline')
+
   const {
     resultados,
     resultadosSinPrograma,
