@@ -4505,6 +4505,104 @@ async def get_tenant_action_items(
     }
 
 
+@router.post("/api/tenants/bulk/upload-document")
+async def bulk_upload_document(
+    file: UploadFile = File(...),
+    tenant_ids: str = Form(...),
+    document_type: str = Form(...),
+    source: str = Form(default="founder_research"),
+    notes: str = Form(default=""),
+    admin: UserInfo = Depends(require_admin),
+    db=Depends(get_db),
+) -> dict:
+    """Upload a document to multiple tenants at once."""
+    from app.models.admin_tenant import AdminTenant, TenantAuditLog
+
+    if db is None:
+        raise HTTPException(status_code=500, detail="Database not available")
+
+    # Parse tenant IDs from comma-separated string
+    try:
+        ids_list = [tid.strip() for tid in tenant_ids.split(',') if tid.strip()]
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid tenant_ids format")
+
+    if not ids_list:
+        raise HTTPException(status_code=400, detail="At least one tenant_id is required")
+
+    if not document_type:
+        raise HTTPException(status_code=400, detail="document_type is required")
+
+    # Limit bulk uploads to 20 tenants
+    if len(ids_list) > 20:
+        raise HTTPException(status_code=400, detail="Maximum 20 tenants per bulk upload")
+
+    # Validate file
+    if not file.filename or not file.filename.lower().endswith('.pdf'):
+        raise HTTPException(status_code=400, detail="Only PDF files are allowed")
+
+    if file.size and file.size > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File size cannot exceed 50 MB")
+
+    # Verify all tenants exist
+    tenants = db.query(AdminTenant).filter(AdminTenant.id.in_(ids_list)).all()
+    if len(tenants) != len(ids_list):
+        raise HTTPException(status_code=404, detail="One or more tenants not found")
+
+    uploaded_count = 0
+    now = datetime.now(timezone.utc)
+
+    try:
+        # Read file content once
+        file_content = await file.read()
+        file_size = len(file_content)
+
+        for tenant in tenants:
+            # For MVP, store document metadata in database
+            from app.models.admin_tenant import TenantDocumentDraft
+
+            doc = TenantDocumentDraft(
+                tenant_id=tenant.id,
+                document_type=document_type,
+                title=file.filename or f"{document_type}_uploaded",
+                status="human_review_required",
+                qa_status="partial",
+                content_md=f"Uploaded: {file.filename}\nSource: {source}\nNotes: {notes}\n\n--- Document content will be processed ---",
+                created_by=admin.sub,
+                updated_by=admin.sub,
+            )
+            db.add(doc)
+
+            # Add audit log
+            audit_log = TenantAuditLog(
+                tenant_id=tenant.id,
+                actor=admin.sub,
+                action="bulk_document_upload",
+                payload={
+                    "document_type": document_type,
+                    "filename": file.filename,
+                    "source": source,
+                    "file_size": file_size,
+                    "bulk_operation": True,
+                },
+            )
+            db.add(audit_log)
+            uploaded_count += 1
+
+        db.commit()
+
+        return {
+            "status": "success",
+            "message": f"Uploaded document to {uploaded_count} tenant(s)",
+            "uploaded_count": uploaded_count,
+            "document_type": document_type,
+        }
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Failed to upload document: {str(e)}")
+
+
 @router.post("/api/tenants/bulk/update-status")
 async def bulk_update_tenant_status(
     request: dict,
@@ -4557,9 +4655,9 @@ async def bulk_update_tenant_status(
             # Add audit log
             audit_log = TenantAuditLog(
                 tenant_id=tenant.id,
-                user_id=admin.sub,
+                actor=admin.sub,
                 action="bulk_stage_update",
-                details={
+                payload={
                     "new_stage": new_stage,
                     "bulk_operation": True,
                 },

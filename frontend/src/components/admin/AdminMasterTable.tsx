@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Download,
   Trash2,
+  FileUp,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
@@ -72,6 +73,11 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [bulkStatusModalOpen, setBulkStatusModalOpen] = useState(false)
   const [bulkStatusUpdating, setBulkStatusUpdating] = useState(false)
   const [selectedNewStage, setSelectedNewStage] = useState<string>('')
+  const [bulkDocUploadModalOpen, setBulkDocUploadModalOpen] = useState(false)
+  const [bulkDocUploading, setBulkDocUploading] = useState(false)
+  const [selectedDocFile, setSelectedDocFile] = useState<File | null>(null)
+  const [selectedDocType, setSelectedDocType] = useState<string>('Reglamento')
+  const [docUploadError, setDocUploadError] = useState<string | null>(null)
 
   const handleExport = async () => {
     setExporting(true)
@@ -189,6 +195,48 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
     }
   }
 
+  const handleBulkDocumentUpload = async () => {
+    if (selectedIds.size === 0 || !selectedDocFile || !selectedDocType) return
+
+    setBulkDocUploading(true)
+    setDocUploadError(null)
+
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      const formData = new FormData()
+      formData.append('file', selectedDocFile)
+      formData.append('tenant_ids', Array.from(selectedIds).join(','))
+      formData.append('document_type', selectedDocType)
+      formData.append('source', 'founder_research')
+
+      const headers: HeadersInit = {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      }
+
+      const response = await fetch(`${getApiUrl()}/admin/api/tenants/bulk/upload-document`, {
+        method: 'POST',
+        headers,
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json().catch(() => ({ detail: 'Upload failed' }))
+        throw new Error(error.detail || `Upload failed: HTTP ${response.status}`)
+      }
+
+      setBulkDocUploadModalOpen(false)
+      setSelectedDocFile(null)
+      setSelectedDocType('Reglamento')
+      clearSelection()
+      fetchData()
+    } catch (e) {
+      console.error('Bulk document upload failed:', e)
+      setDocUploadError(e instanceof Error ? e.message : 'Upload failed')
+    } finally {
+      setBulkDocUploading(false)
+    }
+  }
+
   return (
     <div className={cn('space-y-4 rounded-lg border border-[#E8E4DC] bg-white p-5', className)}>
       {/* Toolbar */}
@@ -264,16 +312,23 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
       {/* Bulk Actions Bar */}
       {selectedCount > 0 && (
-        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-center justify-between">
+        <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-center justify-between flex-wrap gap-3">
           <p className="text-sm font-medium text-blue-900">
             {selectedCount} municipio{selectedCount !== 1 ? 's' : ''} seleccionado{selectedCount !== 1 ? 's' : ''}
           </p>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <button
               onClick={() => setBulkStatusModalOpen(true)}
               className="px-3 py-1.5 text-xs font-medium text-white bg-green-600 hover:bg-green-700 transition-colors rounded inline-flex items-center gap-1"
             >
               Actualizar etapa
+            </button>
+            <button
+              onClick={() => setBulkDocUploadModalOpen(true)}
+              className="px-3 py-1.5 text-xs font-medium text-white bg-purple-600 hover:bg-purple-700 transition-colors rounded inline-flex items-center gap-1"
+            >
+              <FileUp className="h-3 w-3" />
+              Subir documento
             </button>
             <button
               onClick={handleBulkExport}
@@ -505,6 +560,103 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                 className="flex-1 px-4 py-2 rounded-lg bg-[#3B6D11] text-white hover:bg-[#2D5209] disabled:opacity-50 transition-colors font-medium"
               >
                 {bulkStatusUpdating ? 'Actualizando...' : 'Actualizar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Document Upload Modal */}
+      {bulkDocUploadModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-semibold text-[#1C1B18] mb-4">Subir documento</h3>
+            <p className="text-sm text-[#6B6760] mb-4">
+              Para {selectedCount} municipio{selectedCount !== 1 ? 's' : ''}
+            </p>
+
+            {docUploadError && (
+              <div className="rounded-lg bg-red-50 border border-red-200 p-3 mb-4 flex gap-2">
+                <AlertCircle className="h-4 w-4 text-red-600 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-red-700">{docUploadError}</p>
+              </div>
+            )}
+
+            <div className="space-y-4 mb-6">
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Tipo de documento</label>
+                <select
+                  value={selectedDocType}
+                  onChange={e => setSelectedDocType(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-[#E8E4DC] text-sm focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="Reglamento">Reglamento</option>
+                  <option value="Manual">Manual</option>
+                  <option value="Procedimiento">Procedimiento</option>
+                  <option value="Política">Política</option>
+                  <option value="Guía">Guía</option>
+                  <option value="Otro">Otro</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Archivo PDF</label>
+                <div
+                  className="border-2 border-dashed border-[#E8E4DC] rounded-lg p-6 text-center hover:border-[#3B6D11] transition-colors cursor-pointer"
+                  onClick={() => document.getElementById('bulk-doc-file-input')?.click()}
+                >
+                  {selectedDocFile ? (
+                    <p className="text-sm text-[#1C1B18] font-medium">{selectedDocFile.name}</p>
+                  ) : (
+                    <div className="space-y-1">
+                      <FileUp className="h-5 w-5 mx-auto text-[#8E8980]" />
+                      <p className="text-xs text-[#6B6760]">Haz clic para seleccionar un archivo</p>
+                      <p className="text-xs text-[#8E8980]">o arrastra un PDF aquí</p>
+                    </div>
+                  )}
+                </div>
+                <input
+                  id="bulk-doc-file-input"
+                  type="file"
+                  accept=".pdf"
+                  onChange={e => {
+                    if (e.target.files?.[0]) {
+                      setSelectedDocFile(e.target.files[0])
+                      setDocUploadError(null)
+                    }
+                  }}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => {
+                  setBulkDocUploadModalOpen(false)
+                  setSelectedDocFile(null)
+                  setDocUploadError(null)
+                }}
+                className="flex-1 px-4 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleBulkDocumentUpload}
+                disabled={!selectedDocFile || bulkDocUploading}
+                className="flex-1 px-4 py-2 rounded-lg bg-purple-600 text-white hover:bg-purple-700 disabled:opacity-50 transition-colors font-medium inline-flex items-center justify-center gap-2"
+              >
+                {bulkDocUploading ? (
+                  <>
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Subiendo...
+                  </>
+                ) : (
+                  <>
+                    <FileUp className="h-3 w-3" />
+                    Subir
+                  </>
+                )}
               </button>
             </div>
           </div>
