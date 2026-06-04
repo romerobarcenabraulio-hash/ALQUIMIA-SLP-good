@@ -65,6 +65,7 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [saveDescription, setSaveDescription] = useState('')
   const [importError, setImportError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Save handlers
   const handleSaveClick = async () => {
@@ -367,39 +368,66 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
 
       {/* Load dialog */}
       {showLoadDialog && (
-        <div className="space-y-3 rounded-lg bg-[#FDFCFA] p-4 border border-[#E8E4DC] max-h-60 overflow-y-auto">
-          {loadingSimulations ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
-            </div>
-          ) : simulations.length === 0 ? (
-            <p className="text-sm text-gray-500">No saved simulations yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {simulations.map(sim => (
-                <button
-                  key={sim.id}
-                  onClick={() => handleLoadClick(sim.id)}
-                  className={cn(
-                    'w-full rounded-lg border p-3 text-left transition-colors text-sm',
-                    currentSimulationId === sim.id
-                      ? 'bg-green-50 border-green-200'
-                      : 'bg-white border-[#E8E4DC] hover:bg-[#F4F2ED]'
-                  )}
-                >
-                  <p className="font-medium text-[#1C1B18]">{sim.name}</p>
-                  {sim.description && (
-                    <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
-                  )}
-                  <p className="text-xs text-[#8E8980] mt-1">
-                    {new Date(sim.updatedAt).toLocaleString()}
-                  </p>
-                </button>
-              ))}
-            </div>
-          )}
+        <div className="space-y-3 rounded-lg bg-[#FDFCFA] p-4 border border-[#E8E4DC]">
+          <input
+            type="text"
+            placeholder="Search simulations..."
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none"
+          />
+
+          <div className="max-h-60 overflow-y-auto">
+            {loadingSimulations ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-gray-400" />
+              </div>
+            ) : simulations.length === 0 ? (
+              <p className="text-sm text-gray-500">No saved simulations yet.</p>
+            ) : simulations.filter(sim =>
+              sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+            ).length === 0 ? (
+              <p className="text-sm text-gray-500">No simulations match your search.</p>
+            ) : (
+              <div className="space-y-2">
+                {simulations
+                  .filter(sim =>
+                    sim.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
+                  )
+                  .map(sim => (
+                    <button
+                      key={sim.id}
+                      onClick={() => {
+                        handleLoadClick(sim.id)
+                        setSearchQuery('')
+                      }}
+                      className={cn(
+                        'w-full rounded-lg border p-3 text-left transition-colors text-sm',
+                        currentSimulationId === sim.id
+                          ? 'bg-green-50 border-green-200'
+                          : 'bg-white border-[#E8E4DC] hover:bg-[#F4F2ED]'
+                      )}
+                    >
+                      <p className="font-medium text-[#1C1B18]">{sim.name}</p>
+                      {sim.description && (
+                        <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
+                      )}
+                      <p className="text-xs text-[#8E8980] mt-1">
+                        {new Date(sim.updatedAt).toLocaleString()}
+                      </p>
+                    </button>
+                  ))}
+              </div>
+            )}
+          </div>
+
           <button
-            onClick={() => setShowLoadDialog(false)}
+            onClick={() => {
+              setShowLoadDialog(false)
+              setSearchQuery('')
+            }}
             className="w-full rounded-lg border border-[#E8E4DC] bg-white px-4 py-2 text-sm font-medium text-[#1C1B18] hover:bg-[#F4F2ED]"
           >
             Close
