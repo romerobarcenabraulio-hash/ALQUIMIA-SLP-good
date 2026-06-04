@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import {
   Search,
-  Filter,
   ChevronDown,
   ChevronUp,
   Loader2,
@@ -12,26 +11,9 @@ import {
   ChevronRight,
   Users,
   Calendar,
-  FileCheck2,
 } from 'lucide-react'
-import { getApiUrl } from '@/lib/api'
 import { cn } from '@/lib/utils'
-
-interface AdminTableRow {
-  id: string
-  municipio: string
-  estado: string
-  inegi_clave: string
-  etapa: string
-  gate_actual: string | null
-  usuarios_count: number
-  dias_en_etapa: number
-  avance_validacion_pct: number
-  avance_modulos_count: { completados: number; total: number }
-  documentos_solicitados: { entregados: number; total: number }
-  created_at: string
-  updated_at: string
-}
+import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 
 interface AdminMasterTableProps {
   onRowClick?: (tenantId: string) => void
@@ -52,74 +34,26 @@ const URGENCY_COLORS = (days: number) => {
 }
 
 export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProps) {
-  const [rows, setRows] = useState<AdminTableRow[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const [search, setSearch] = useState('')
-  const [etapaFilter, setEtapaFilter] = useState('')
-  const [sortBy, setSortBy] = useState<'municipio' | 'etapa' | 'dias_en_etapa' | 'avance'>('updated_at' as any)
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-
-  const [currentPage, setCurrentPage] = useState(0)
-  const [total, setTotal] = useState(0)
-  const pageSize = 25
+  const {
+    rows,
+    loading,
+    error,
+    total,
+    currentPage,
+    pageSize,
+    maxPages,
+    search,
+    etapaFilter,
+    sortBy,
+    sortOrder,
+    fetchData,
+    handleSearch,
+    handleFilterByEtapa,
+    toggleSort,
+    goToPage,
+  } = useAdminMasterTable()
 
   const [expandedRow, setExpandedRow] = useState<string | null>(null)
-
-  const loadData = useCallback(async () => {
-    setLoading(true)
-    setError(null)
-
-    try {
-      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
-      const headers: HeadersInit = {
-        'Content-Type': 'application/json',
-        ...(token && { Authorization: `Bearer ${token}` }),
-      }
-
-      const params = new URLSearchParams({
-        search,
-        etapa: etapaFilter,
-        sort_by: sortBy,
-        sort_order: sortOrder,
-        limit: String(pageSize),
-        offset: String(currentPage * pageSize),
-      })
-
-      const response = await fetch(`${getApiUrl()}/admin/api/tenants/table?${params}`, {
-        headers,
-      })
-
-      if (!response.ok) {
-        throw new Error(`Failed to load table: HTTP ${response.status}`)
-      }
-
-      const data = await response.json()
-      setRows(data.rows || [])
-      setTotal(data.total || 0)
-      setCurrentPage(0) // Reset to first page on filter change
-    } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to load data')
-    } finally {
-      setLoading(false)
-    }
-  }, [search, etapaFilter, sortBy, sortOrder, currentPage, pageSize])
-
-  useEffect(() => {
-    loadData()
-  }, [loadData])
-
-  const toggleSort = (field: typeof sortBy) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortBy(field)
-      setSortOrder('desc')
-    }
-  }
-
-  const maxPages = Math.ceil(total / pageSize)
 
   return (
     <div className={cn('space-y-4 rounded-lg border border-[#E8E4DC] bg-white p-5', className)}>
@@ -132,7 +66,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
               type="text"
               placeholder="Buscar municipio, estado, INEGI..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={e => handleSearch(e.target.value)}
               className="w-full rounded-lg border border-[#E8E4DC] px-3 py-2 pl-10 text-sm focus:border-[#3B6D11] focus:outline-none"
             />
           </div>
@@ -140,7 +74,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
         <select
           value={etapaFilter}
-          onChange={e => setEtapaFilter(e.target.value)}
+          onChange={e => handleFilterByEtapa(e.target.value)}
           className="rounded-lg border border-[#E8E4DC] px-3 py-2 text-sm focus:border-[#3B6D11] focus:outline-none bg-white"
         >
           <option value="">Todas las etapas</option>
@@ -151,7 +85,7 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
         </select>
 
         <button
-          onClick={() => loadData()}
+          onClick={() => fetchData()}
           className="px-3 py-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] transition-colors"
           title="Refresh"
         >
@@ -283,14 +217,14 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
           </p>
           <div className="flex gap-2">
             <button
-              onClick={() => setCurrentPage(p => Math.max(0, p - 1))}
+              onClick={() => goToPage(currentPage - 1)}
               disabled={currentPage === 0}
               className="p-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] disabled:opacity-50 transition-colors"
             >
               <ChevronLeft className="h-4 w-4" />
             </button>
             <button
-              onClick={() => setCurrentPage(p => Math.min(maxPages - 1, p + 1))}
+              onClick={() => goToPage(currentPage + 1)}
               disabled={currentPage >= maxPages - 1}
               className="p-2 rounded-lg border border-[#E8E4DC] text-[#6B6760] hover:bg-[#F4F2ED] disabled:opacity-50 transition-colors"
             >
