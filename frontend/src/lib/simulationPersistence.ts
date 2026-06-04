@@ -20,6 +20,7 @@ export interface SimulationMetadata {
   updatedBy: string
   isOwner: boolean
   canEdit: boolean
+  tenantId?: string
 }
 
 export interface SimulationSnapshot {

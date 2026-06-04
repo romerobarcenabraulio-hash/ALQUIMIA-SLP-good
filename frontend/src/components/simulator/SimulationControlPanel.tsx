@@ -18,6 +18,8 @@ import {
   WifiOff,
   Clock,
   Eye,
+  Copy,
+  Trash2,
 } from 'lucide-react'
 import { useSimulationPersistenceV2 } from '@/hooks/useSimulationPersistenceV2'
 import { useSimulatorStore } from '@/store/simulatorStore'
@@ -30,6 +32,7 @@ import {
 import { ReportGenerator } from '@/components/simulator/ReportGenerator'
 import { SimulationVersionTimeline } from '@/components/simulator/SimulationVersionTimeline'
 import { SimulationHelp } from '@/components/simulator/SimulationHelp'
+import { SimulationActivityLog } from '@/components/simulator/SimulationActivityLog'
 import { cn } from '@/lib/utils'
 
 interface SimulationControlPanelProps {
@@ -67,6 +70,8 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [importError, setImportError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [duplicating, setDuplicating] = useState<string | null>(null)
+  const [deleting, setDeleting] = useState<string | null>(null)
 
   // Save handlers
   const handleSaveClick = async () => {
@@ -87,6 +92,79 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
       setShowLoadDialog(false)
     } catch {
       // Error handled by hook
+    }
+  }
+
+  const handleDuplicateSimulation = async (simId: string) => {
+    setDuplicating(simId)
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      if (tenantId) {
+        headers['x-tenant-id'] = tenantId
+      }
+
+      const response = await fetch(`/api/simulations/${encodeURIComponent(simId)}/duplicate`, {
+        method: 'POST',
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to duplicate simulation')
+      }
+
+      await loadSimulationsList()
+    } catch (e) {
+      console.error('Duplication failed:', e)
+    } finally {
+      setDuplicating(null)
+    }
+  }
+
+  const handleDeleteSimulation = async (simId: string) => {
+    if (!confirm('Are you sure you want to delete this simulation? This action cannot be undone.')) {
+      return
+    }
+
+    setDeleting(simId)
+    try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json',
+      }
+
+      const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      if (tenantId) {
+        headers['x-tenant-id'] = tenantId
+      }
+
+      const response = await fetch(`/api/simulations/${encodeURIComponent(simId)}`, {
+        method: 'DELETE',
+        headers,
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete simulation')
+      }
+
+      await loadSimulationsList()
+      if (currentSimulationId === simId) {
+        // TODO: Reset current simulation
+      }
+    } catch (e) {
+      console.error('Deletion failed:', e)
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -401,27 +479,65 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
                     sim.description?.toLowerCase().includes(searchQuery.toLowerCase())
                   )
                   .map(sim => (
-                    <button
+                    <div
                       key={sim.id}
-                      onClick={() => {
-                        handleLoadClick(sim.id)
-                        setSearchQuery('')
-                      }}
                       className={cn(
-                        'w-full rounded-lg border p-3 text-left transition-colors text-sm',
+                        'rounded-lg border p-3 transition-colors',
                         currentSimulationId === sim.id
                           ? 'bg-green-50 border-green-200'
-                          : 'bg-white border-[#E8E4DC] hover:bg-[#F4F2ED]'
+                          : 'bg-white border-[#E8E4DC]'
                       )}
                     >
-                      <p className="font-medium text-[#1C1B18]">{sim.name}</p>
-                      {sim.description && (
-                        <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
-                      )}
-                      <p className="text-xs text-[#8E8980] mt-1">
-                        {new Date(sim.updatedAt).toLocaleString()}
-                      </p>
-                    </button>
+                      <button
+                        onClick={() => {
+                          handleLoadClick(sim.id)
+                          setSearchQuery('')
+                        }}
+                        className="w-full text-left hover:opacity-80"
+                      >
+                        <p className="font-medium text-[#1C1B18] text-sm">{sim.name}</p>
+                        {sim.description && (
+                          <p className="text-xs text-[#6B6760] line-clamp-1">{sim.description}</p>
+                        )}
+                        <p className="text-xs text-[#8E8980] mt-1">
+                          {new Date(sim.updatedAt).toLocaleString()}
+                        </p>
+                      </button>
+                      <div className="flex gap-2 mt-2">
+                        <button
+                          onClick={() => handleDuplicateSimulation(sim.id)}
+                          disabled={duplicating === sim.id}
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-[#3B6D11] bg-green-50 border border-green-200 hover:bg-green-100 disabled:opacity-50"
+                        >
+                          {duplicating === sim.id ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="h-3 w-3" />
+                              Duplicate
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDeleteSimulation(sim.id)}
+                          disabled={deleting === sim.id}
+                          className="flex-1 inline-flex items-center justify-center gap-1 rounded px-2 py-1.5 text-xs font-medium text-red-700 bg-red-50 border border-red-200 hover:bg-red-100 disabled:opacity-50"
+                        >
+                          {deleting === sim.id ? (
+                            <>
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="h-3 w-3" />
+                              Delete
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
                   ))}
               </div>
             )}
@@ -461,6 +577,15 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
         <SimulationVersionTimeline
           simulationId={currentSimulationId}
           tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+        />
+      )}
+
+      {/* Activity log */}
+      {currentSimulationId && (
+        <SimulationActivityLog
+          simulationId={currentSimulationId}
+          tenantId={simulations.find(s => s.id === currentSimulationId)?.tenantId}
+          maxEntries={20}
         />
       )}
     </div>

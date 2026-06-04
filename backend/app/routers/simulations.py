@@ -323,6 +323,97 @@ async def delete_simulation(
         raise HTTPException(status_code=500, detail=f"Failed to delete simulation: {str(exc)}")
 
 
+@router.post("/{simulation_id}/duplicate")
+async def duplicate_simulation(
+    simulation_id: str,
+    http_request: Request,
+    user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Duplicate an existing simulation and create a copy with a new name.
+    Creates a new simulation with the same state as the latest version of the original.
+    """
+    # Extract tenant_id from header
+    tenant_id = http_request.headers.get("x-tenant-id", "default") if http_request else "default"
+
+    try:
+        # Verify user owns the original simulation
+        original = (
+            db.query(Simulation)
+            .filter(
+                Simulation.id == simulation_id,
+                Simulation.user_id == user.id,
+                Simulation.tenant_id == tenant_id,
+            )
+            .first()
+        )
+
+        if not original:
+            raise HTTPException(status_code=404, detail="Simulation not found")
+
+        # Get the latest version to copy
+        latest_version = (
+            db.query(SimulationVersion)
+            .filter(SimulationVersion.simulation_id == simulation_id)
+            .order_by(SimulationVersion.version_number.desc())
+            .first()
+        )
+
+        # Create a new simulation
+        new_sim_id = str(uuid.uuid4())
+        new_simulation = Simulation(
+            id=new_sim_id,
+            user_id=user.id,
+            tenant_id=tenant_id,
+            name=f"{original.name} (Copy)",
+            description=f"Copy of {original.name}",
+            latest_version=1,
+        )
+        db.add(new_simulation)
+
+        # Create the first version of the new simulation (copy of latest version)
+        if latest_version:
+            new_version = SimulationVersion(
+                id=str(uuid.uuid4()),
+                simulation_id=new_sim_id,
+                version_number=1,
+                state_data=latest_version.state_data,
+                checksum=latest_version.checksum,
+                metadata=latest_version.metadata,
+            )
+            db.add(new_version)
+
+        # Log audit
+        _log_audit(
+            db,
+            new_sim_id,
+            "simulation_duplicated",
+            user.id,
+            True,
+            f"Duplicated from {original.name}",
+            {"source_simulation_id": simulation_id},
+        )
+
+        db.commit()
+
+        logger.info(f"Duplicated simulation {simulation_id} to {new_sim_id} for user {user.id}")
+
+        return {
+            "success": True,
+            "id": new_sim_id,
+            "name": new_simulation.name,
+            "description": new_simulation.description,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        db.rollback()
+        logger.error(f"Failed to duplicate simulation: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to duplicate simulation: {str(exc)}")
+
+
 @router.get("/{simulation_id}/versions")
 async def get_simulation_versions(
     simulation_id: str,
@@ -569,6 +660,67 @@ async def compare_versions(
     except Exception as exc:
         logger.error(f"Failed to compare versions: {exc}")
         raise HTTPException(status_code=500, detail=f"Failed to compare versions: {str(exc)}")
+
+
+@router.get("/{simulation_id}/audit-logs")
+async def get_simulation_audit_logs(
+    simulation_id: str,
+    limit: int = 50,
+    offset: int = 0,
+    user: UserInfo = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """
+    Get audit logs for a specific simulation.
+    Returns the operation history with pagination.
+    """
+    try:
+        # Verify simulation exists and user owns it
+        simulation = db.query(Simulation).filter(Simulation.id == simulation_id).first()
+
+        if not simulation:
+            raise HTTPException(status_code=404, detail="Simulation not found")
+
+        # Check ownership
+        if simulation.user_id != user.id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this simulation")
+
+        # Get audit logs
+        logs = (
+            db.query(SimulationAuditLog)
+            .filter(SimulationAuditLog.simulation_id == simulation_id)
+            .order_by(SimulationAuditLog.created_at.desc())
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )
+
+        total = db.query(SimulationAuditLog).filter(SimulationAuditLog.simulation_id == simulation_id).count()
+
+        return {
+            "logs": [
+                {
+                    "id": log.id,
+                    "action": log.action,
+                    "actor_id": log.actor_id,
+                    "success": log.success,
+                    "message": log.message,
+                    "timestamp": log.created_at.isoformat(),
+                    "details": log.details,
+                    "duration_ms": log.duration_ms,
+                }
+                for log in logs
+            ],
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+        }
+
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error(f"Failed to fetch audit logs: {exc}")
+        raise HTTPException(status_code=500, detail=f"Failed to fetch audit logs: {str(exc)}")
 
 
 @router.post("/audit-logs/batch")
