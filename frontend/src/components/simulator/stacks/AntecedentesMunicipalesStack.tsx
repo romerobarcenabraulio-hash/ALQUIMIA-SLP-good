@@ -7,6 +7,8 @@ import { useSimulatorStore } from '@/store/simulatorStore'
 import type { AntecedenteEvento } from '@/lib/antecedentesTypes'
 import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
 import { TenantAntecedentesPanel } from '@/components/simulator/TenantProfilePanels'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
+import { DataPointCell } from '@/components/datapoint'
 
 const TIPO_LABEL: Record<string, string> = {
   concesion: 'Concesión',
@@ -76,6 +78,9 @@ export function AntecedentesMunicipalesStack() {
   const antecedentesForMunicipioId = useSimulatorStore(s => s.antecedentesForMunicipioId)
   const refreshAntecedentesReportaje = useSimulatorStore(s => s.refreshAntecedentesReportaje)
 
+  // Sprint 3 · Load DataPoints for this module
+  const { data: dataPoints, loading: dpLoading } = useDataPointsByModule('antecedentes_municipales')
+
   useEffect(() => {
     if (municipiosActivos.length === 0) return
     if (antecedentesForMunicipioId) return
@@ -128,6 +133,23 @@ export function AntecedentesMunicipalesStack() {
       </section>
 
       <TenantAntecedentesPanel profile={profile} />
+
+      {/* Sprint 3 · DataPoints-first approach with legacy fallback */}
+      {dataPoints.length > 0 && !dpLoading && (
+        <section>
+          <h2 className="mb-4 font-serif text-[15px] font-semibold text-[#1C1B18]">
+            Evidencia cargada
+          </h2>
+          <div className="grid gap-3 grid-cols-1 md:grid-cols-2">
+            {dataPoints.map(dp => (
+              <DataPointCell key={dp.id} dataPoint={dp} showSource={true} />
+            ))}
+          </div>
+          <p className="mt-4 text-[11px] text-[#A8A49C] italic">
+            {dataPoints.length} dato{dataPoints.length !== 1 ? 's' : ''} · Cada cifra con fuente y metodología
+          </p>
+        </section>
+      )}
 
       {reportaje && !loading && (
         <>
@@ -198,10 +220,20 @@ export function AntecedentesMunicipalesStack() {
         </>
       )}
 
-      {!loading && !reportaje && (
-        <p className="text-[13px] text-[#6B6760]">
-          No se pudo cargar el reportaje. Cambie de municipio o recargue la página.
-        </p>
+      {!loading && !reportaje && dataPoints.length === 0 && !dpLoading && (
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-6 text-center">
+          <p className="text-[14px] font-medium text-[#1C1B18]">Sin antecedentes cargados</p>
+          <p className="mt-2 text-[13px] text-[#6B6760]">
+            Suba documentos para que ALQUIMIA extraiga automáticamente cifras, hitos y referencias
+            del legado RSU.
+          </p>
+          <a
+            href="/perfil"
+            className="mt-3 inline-block text-[13px] text-[#007ACC] hover:underline"
+          >
+            Ir a documentos →
+          </a>
+        </div>
       )}
 
       <p className="mt-6 text-[12px] text-[#A8A49C]">
