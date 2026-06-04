@@ -6,7 +6,7 @@
  * Production-ready component with full feature integration
  */
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import {
   Save,
   Upload,
@@ -77,6 +77,41 @@ export function SimulationControlPanel({ tenantId, className }: SimulationContro
   const [selectedForExport, setSelectedForExport] = useState<Set<string>>(new Set())
   const [showBulkExport, setShowBulkExport] = useState(false)
   const [sortBy, setSortBy] = useState<'recent' | 'oldest' | 'name'>('recent')
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform)
+      const isCtrlOrCmd = isMac ? e.metaKey : e.ctrlKey
+
+      if (!isCtrlOrCmd) return
+
+      switch (e.key.toLowerCase()) {
+        case 's':
+          e.preventDefault()
+          setShowSaveDialog(true)
+          break
+        case 'o':
+          e.preventDefault()
+          setShowLoadDialog(true)
+          void loadSimulationsList()
+          break
+        case 'e':
+          e.preventDefault()
+          setShowExportMenu(!showExportMenu)
+          break
+        case '?':
+          e.preventDefault()
+          // Open help - would need to pass ref to help button
+          break
+        default:
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [showExportMenu, loadSimulationsList])
 
   // Save handlers
   const handleSaveClick = async () => {
