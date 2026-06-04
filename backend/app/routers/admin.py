@@ -3729,6 +3729,9 @@ async def get_admin_master_table(
 
     # Format rows
     from sqlalchemy import func
+    from app.models.user_account import UserAccount
+    from app.models.admin_tenant import TenantDocumentDraft
+
     rows: list[AdminTableRow] = []
     for tenant in tenants:
         dias_en_etapa = 0
@@ -3736,7 +3739,6 @@ async def get_admin_master_table(
             dias_en_etapa = (datetime.now(timezone.utc) - tenant.state.fecha_cambio_stage).days
 
         # Get user count
-        from app.models.user_account import UserAccount
         usuarios_count = db.query(func.count(UserAccount.id)).filter(
             UserAccount.tenant_id == tenant.id
         ).scalar() or 0
@@ -3750,14 +3752,23 @@ async def get_admin_master_table(
                     gate_actual = gate.gate_id
                     break
 
-        # Calculate completion metrics (simplified - would read from tenant_data)
-        avance_pct = 30
-        modulos_completos = 3
-        modulos_total = 10
+        # Calculate module completion metrics
+        total_capabilities = len(tenant.capabilities) if tenant.capabilities else 10
+        active_capabilities = len([c for c in tenant.capabilities if c.active]) if tenant.capabilities else 0
+        modulos_completos = active_capabilities
+        modulos_total = max(total_capabilities, 1)
+        avance_pct = int((modulos_completos / modulos_total * 100)) if modulos_total > 0 else 0
 
-        # Calculate document metrics (simplified)
-        docs_entregados = 2
-        docs_total = 8
+        # Calculate document metrics
+        docs_total_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id
+        ).scalar() or 0
+        docs_delivered_count = db.query(func.count(TenantDocumentDraft.id)).filter(
+            TenantDocumentDraft.tenant_id == tenant.id,
+            TenantDocumentDraft.status == "finalizado"
+        ).scalar() or 0
+        docs_entregados = docs_delivered_count
+        docs_total = docs_total_count if docs_total_count > 0 else 8
 
         rows.append(
             AdminTableRow(
