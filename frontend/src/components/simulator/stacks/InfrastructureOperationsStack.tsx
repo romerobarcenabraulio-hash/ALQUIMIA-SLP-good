@@ -11,6 +11,7 @@ import {
   Target, Package, ChevronDown,
 } from 'lucide-react'
 import { useSimulatorStore } from '@/store/simulatorStore'
+import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { cn, fmt } from '@/lib/utils'
 import { TRAJECTORY_UI, CA_CONFIG, FASES_CA } from '@/lib/constants'
 import { ChartPanel } from '@/components/ui/ChartPanel'
@@ -191,6 +192,9 @@ function RightRail() {
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function InfrastructureOperationsStack() {
+  // Sprint 4 · Load DataPoints (gradual migration)
+  const { data: dataPoints } = useDataPointsByModule('infraestructura')
+
   const { zmActiva, horizonte, presetTrayectoria, resultados, mixCAs, seleccionMunicipioCatalog } = useSimulatorStore()
 
   const trayectoria = TRAJECTORY_UI.find(t => t.presetId === presetTrayectoria)?.label ?? presetTrayectoria
