@@ -501,3 +501,94 @@ async def get_municipal_aggregate(
             for a in aggregates
         ],
     }
+
+
+@router.get("/generadores/{generador_id}/analytics")
+async def get_generador_analytics(
+    generador_id: str,
+    days: int = Query(30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Get residue analytics and trends for a specific generador."""
+
+    try:
+        gid = UUID(generador_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID")
+
+    # Verify generador exists
+    generador = db.query(GeneradorEntity).filter(
+        and_(
+            GeneradorEntity.id == gid,
+            GeneradorEntity.tenant_id == user.tenant_id,
+        )
+    ).first()
+
+    if not generador:
+        raise HTTPException(status_code=404, detail="Generador not found")
+
+    from datetime import timedelta
+    from app.residue_tracking.analyzer import TrendAnalyzer, MaterialComposition
+
+    cutoff_date = (datetime.utcnow() - timedelta(days=days)).strftime("%Y-%m-%d")
+
+    records = db.query(GeneratorResidueRecord).filter(
+        and_(
+            GeneratorResidueRecord.generador_id == gid,
+            GeneratorResidueRecord.fecha_generacion >= cutoff_date,
+        )
+    ).order_by(GeneratorResidueRecord.fecha_generacion).all()
+
+    if not records:
+        return {
+            "generador_id": str(gid),
+            "dias_con_datos": 0,
+            "mensaje": "No hay datos disponibles"
+        }
+
+    daily_values = [r.cantidad_total_tons for r in records]
+    trend_data = TrendAnalyzer.calculate_trend(daily_values)
+
+    # Aggregate materials
+    all_materiales = {}
+    for record in records:
+        for material, tons in (record.materiales_json or {}).items():
+            if material not in all_materiales:
+                all_materiales[material] = 0
+            all_materiales[material] += tons
+
+    material_composition = MaterialComposition.estimate_recyclable_potential(all_materiales)
+    material_percentages = MaterialComposition.calculate_percentages(all_materiales)
+
+    return {
+        "generador_id": str(gid),
+        "dias_con_datos": len(records),
+        "periodo_dias": days,
+        "trend": trend_data,
+        "materiales_agregados": all_materiales,
+        "material_percentages": material_percentages,
+        "reciclable_potencial": material_composition,
+        "proyeccion_mes_tons": TrendAnalyzer.project_monthly(trend_data["media_tons"], len(records)),
+    }
+
+
+@router.post("/municipios/{municipio}/residue-export-banobras")
+async def export_banobras_format(
+    municipio: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Export municipal residue data in BANOBRAS-compatible format."""
+
+    from app.residue_tracking.aggregator import MunicipalAggregator
+
+    if user.rol not in ["admin", "analista"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    export_data = MunicipalAggregator.generate_banobras_export(db, user.tenant_id)
+
+    # Filter to requested municipality
+    export_data["municipios"] = [m for m in export_data["municipios"] if m["nombre"] == municipio]
+
+    return export_data
