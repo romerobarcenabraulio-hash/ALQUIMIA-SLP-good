@@ -16,6 +16,7 @@ from app.residue_tracking.aggregator import MunicipalAggregator
 from app.residue_tracking.analyzer import OutlierDetector, ResidueValidator
 from app.validation import InputValidator, validate_inputs
 from app.logging_config import logger_residue_tracking, audit_logger
+from app.data_integrity import IntegrityChecker
 
 router = APIRouter()
 
@@ -752,3 +753,97 @@ async def export_banobras_format(
     export_data["municipios"] = [m for m in export_data["municipios"] if m["nombre"] == municipio]
 
     return export_data
+
+
+# ─── Data Integrity & Admin Endpoints ─────────────────────────────────────────
+
+
+@router.get("/admin/data-integrity/check")
+async def check_system_integrity(
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Comprehensive data integrity check.
+
+    Only accessible to admins. Returns summary of data quality issues.
+    """
+
+    if user.rol not in ["admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    logger_residue_tracking.info("System integrity check requested")
+    audit_logger.log_access("DataIntegrity", "system", str(user.id), "check")
+
+    status = IntegrityChecker.check_all_system_integrity(db, user.tenant_id)
+
+    return status
+
+
+@router.get("/admin/data-integrity/generador/{generador_id}")
+async def check_generador_integrity(
+    generador_id: str,
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Check data integrity for a specific generador.
+
+    Only accessible to admins.
+    """
+
+    if user.rol not in ["admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    try:
+        gid = UUID(generador_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID")
+
+    # Verify ownership
+    generador = db.query(GeneradorEntity).filter(
+        and_(
+            GeneradorEntity.id == gid,
+            GeneradorEntity.tenant_id == user.tenant_id,
+        )
+    ).first()
+
+    if not generador:
+        raise HTTPException(status_code=404, detail="Generador not found")
+
+    logger_residue_tracking.info(f"Generador {gid} integrity check requested")
+    audit_logger.log_access("DataIntegrity", str(gid), str(user.id), "check")
+
+    issues = IntegrityChecker.check_generador_residue_consistency(db, str(gid))
+
+    return {
+        "generador_id": str(gid),
+        "generador_nombre": generador.nombre,
+        **issues,
+    }
+
+
+@router.get("/admin/data-integrity/municipio/{municipio}")
+async def check_municipio_aggregate_integrity(
+    municipio: str,
+    days: int = Query(30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Check aggregation completeness for a municipality.
+
+    Only accessible to admins.
+    """
+
+    if user.rol not in ["admin"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    logger_residue_tracking.info(f"Municipio {municipio} aggregate check requested ({days} days)")
+    audit_logger.log_access("DataIntegrity", municipio, str(user.id), "check_aggregates")
+
+    gaps = IntegrityChecker.check_municipal_aggregate_gaps(db, user.tenant_id, municipio, days)
+    coverage = IntegrityChecker.check_outlier_detection_coverage(db, user.tenant_id, min(days, 7))
+
+    return {
+        "municipio": municipio,
+        "aggregates": gaps,
+        "outlier_detection": coverage,
+    }

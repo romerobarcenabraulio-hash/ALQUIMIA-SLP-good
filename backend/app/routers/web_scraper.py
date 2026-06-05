@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.orm import Session
 from sqlalchemy import and_, desc
 from datetime import datetime
@@ -14,6 +14,7 @@ from app.models.web_scraper import (
 from app.web_scraper.scheduler import (
     execute_scraper_job, process_due_jobs, initialize_scraper_jobs, get_scraper_status
 )
+from app.rate_limiter import get_client_ip, check_rate_limit, public_documents_limiter
 
 router = APIRouter()
 
@@ -23,6 +24,7 @@ router = APIRouter()
 
 @router.get("/documents/scraped")
 async def list_scraped_documents(
+    request: Request,
     source: Optional[str] = Query(None),
     tema: Optional[str] = Query(None),
     ambito: Optional[str] = Query(None),
@@ -33,6 +35,17 @@ async def list_scraped_documents(
     db: Session = Depends(get_db),
 ) -> dict:
     """List scraped documents with optional filters."""
+
+    # Rate limiting for public endpoint
+    client_ip = get_client_ip(request)
+    allowed, remaining = check_rate_limit(public_documents_limiter, client_ip, "documents/scraped")
+
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Rate limit exceeded. Maximum 300 requests per minute per IP.",
+            headers={"Retry-After": "60"},
+        )
 
     query = db.query(ScrapedDocument).filter(ScrapedDocument.activo == True)
 
