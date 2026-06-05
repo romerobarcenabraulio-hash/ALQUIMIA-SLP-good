@@ -60,10 +60,12 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
     { label: 'Documentos Hub', href: '/hub/documentos', icon: <Download size={16} />, color: '#3B6D11', desc: 'Paquete completo de implementación' },
     { label: 'Mapa de circularidad', href: '/hub/mapa-circularidad', icon: <MapPin size={16} />, color: '#1C4B8F', desc: 'Centros de acopio y flujos RSU' },
     { label: 'Generadores de residuos', href: '/hub/generadores', icon: <Users size={16} />, color: '#7B3F00', desc: 'Empresas y entidades generadoras' },
+    { label: 'Registro de residuos', href: '/residue-recording', icon: <BarChart2 size={16} />, color: '#3B6D11', desc: 'Captura diaria de datos' },
     { label: 'Empresas locales', href: '/gobierno/rsu#denue', icon: <Users size={16} />, color: '#1C4B8F', desc: 'Recicladores y compradores ancla' },
     { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <TrendingUp size={16} />, color: '#7B3F00', desc: 'Monitoreo de metas operativas' },
   ],
   monitoring: [
+    { label: 'Análisis de residuos', href: '/hub/residue-analytics', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Tendencias y proyecciones' },
     { label: 'Reporte ESG', href: '/hub/reporte-esg', icon: <FileText size={16} />, color: '#5B21B6', desc: 'Generar reporte trimestral ESG' },
     { label: 'Marco regulatorio', href: '/hub/catalogo-iniciativas', icon: <Scale size={16} />, color: '#1A5FA8', desc: 'LGPGIR, NOMs, GRI, ASF y más' },
     { label: 'Socios y BANOBRAS', href: '/hub/partners', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Ecosistema y elegibilidad crédito verde' },

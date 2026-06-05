@@ -12,6 +12,10 @@ from app.models.generador import (
     GeneradorTipo, GeneradorSource
 )
 from app.models.user_account import User
+from app.residue_tracking.aggregator import MunicipalAggregator
+from app.residue_tracking.analyzer import OutlierDetector, ResidueValidator
+from app.validation import InputValidator, validate_inputs
+from app.logging_config import logger_residue_tracking, audit_logger
 
 router = APIRouter()
 
@@ -573,6 +577,31 @@ async def get_generador_analytics(
     }
 
 
+@router.get("/municipios/{municipio}/residue-analytics")
+async def get_residue_analytics(
+    municipio: str,
+    days: int = Query(30, ge=1, le=365),
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Get residue analytics and trends for a municipality."""
+
+    logger_residue_tracking.info(f"Analytics request for {municipio} ({days} days)")
+
+    analytics = MunicipalAggregator.calculate_trends(db, user.tenant_id, municipio, days)
+
+    if analytics["dias_con_datos"] == 0:
+        raise HTTPException(status_code=404, detail="No residue data available for this municipality")
+
+    audit_logger.log_access("MunicipalResidueData", municipio, str(user.id), "analytics")
+
+    return {
+        "municipio": municipio,
+        "periodo_dias": days,
+        **analytics,
+    }
+
+
 @router.post("/municipios/{municipio}/residue-export-banobras")
 async def export_banobras_format(
     municipio: str,
@@ -581,10 +610,11 @@ async def export_banobras_format(
 ) -> dict:
     """Export municipal residue data in BANOBRAS-compatible format."""
 
-    from app.residue_tracking.aggregator import MunicipalAggregator
-
     if user.rol not in ["admin", "analista"]:
         raise HTTPException(status_code=403, detail="Access denied")
+
+    logger_residue_tracking.info(f"BANOBRAS export for {municipio}")
+    audit_logger.log_access("BanobrasExport", municipio, str(user.id), "export")
 
     export_data = MunicipalAggregator.generate_banobras_export(db, user.tenant_id)
 
