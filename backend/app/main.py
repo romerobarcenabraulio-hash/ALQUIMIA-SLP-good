@@ -32,6 +32,7 @@ from app.routers.partners import router as partners_router
 from app.routers.banobras import router as banobras_router
 from app.routers.generador import router as generador_router
 from app.routers.decision_tree import router as decision_tree_router
+from app.routers.web_scraper import router as web_scraper_router
 from app.routers.esg_report import router as esg_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
@@ -295,6 +296,7 @@ app.include_router(partners_router, prefix="/api/v1", tags=["partners"])
 app.include_router(banobras_router, prefix="/api/v1", tags=["banobras"])
 app.include_router(generador_router, prefix="/api/v1", tags=["generadores"])
 app.include_router(decision_tree_router, prefix="/api/v1", tags=["decision-tree"])
+app.include_router(web_scraper_router, prefix="/api/v1", tags=["web-scraper"])
 app.include_router(esg_router, prefix="/api/v1", tags=["esg"])
 
 
