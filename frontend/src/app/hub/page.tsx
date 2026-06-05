@@ -44,7 +44,7 @@ interface QuickAction {
 
 const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   validation: [
-    { label: 'Ver propuesta', href: '', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Propuesta personalizada de circularidad' },
+    { label: 'Ver propuesta', href: '/comenzar/propuesta', icon: <TrendingUp size={16} />, color: '#3B6D11', desc: 'Propuesta personalizada de circularidad' },
     { label: 'Diagnóstico rápido', href: '/decision-tree', icon: <BarChart2 size={16} />, color: '#1C4B8F', desc: 'Estimar generación de residuos' },
     { label: 'ARCHIVO', href: '/archivo', icon: <Search size={16} />, color: '#1A5FA8', desc: 'Búsqueda semántica en catálogo regulatorio' },
     { label: 'Simulador', href: '/simulator', icon: <BarChart2 size={16} />, color: '#1C4B8F', desc: 'Modelar escenarios financieros' },

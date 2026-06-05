@@ -1,27 +1,21 @@
-"""Web scrapers for DOF, SEMARNAT, COFEMER, INEGI, ASF sources."""
+"""Real web scrapers for DOF, SEMARNAT, COFEMER, INEGI, ASF sources.
+
+Each scraper makes actual HTTP requests and parses HTML/JSON.
+Requires: aiohttp, beautifulsoup4, lxml, pdfplumber
+"""
 
 import asyncio
 import hashlib
 import re
+import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
-import logging
+from urllib.parse import urljoin, urlencode
 
 logger = logging.getLogger(__name__)
 
 
-class BaseScraperError(Exception):
-    """Base exception for scraper errors."""
-    pass
-
-
-class DocumentNotFoundError(BaseScraperError):
-    pass
-
-
 class ScrapedDocumentInfo:
-    """Container for scraped document metadata."""
-
     def __init__(self, titulo: str, url: str, descripcion: str = "",
                  fecha_publicacion: Optional[str] = None, contenido_text: str = ""):
         self.titulo = titulo
@@ -29,126 +23,319 @@ class ScrapedDocumentInfo:
         self.descripcion = descripcion
         self.fecha_publicacion = fecha_publicacion
         self.contenido_text = contenido_text
-        self.pdf_hash = hashlib.sha256(contenido_text.encode()).hexdigest()
+        self.pdf_hash = hashlib.sha256((url + titulo).encode()).hexdigest()
 
     def to_dict(self) -> Dict[str, Any]:
         return {
-            "titulo": self.titulo,
-            "url": self.url,
-            "descripcion": self.descripcion,
-            "fecha_publicacion": self.fecha_publicacion,
-            "contenido_text": self.contenido_text,
-            "pdf_hash": self.pdf_hash,
+            "titulo": self.titulo, "url": self.url,
+            "descripcion": self.descripcion, "fecha_publicacion": self.fecha_publicacion,
+            "contenido_text": self.contenido_text, "pdf_hash": self.pdf_hash,
         }
 
+
+async def _get_html(url: str, timeout: int = 20) -> Optional[str]:
+    """Fetch HTML from URL with timeout and error handling."""
+    try:
+        import aiohttp
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; ALQUIMIA-bot/1.0)"}
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as resp:
+                if resp.status == 200:
+                    return await resp.text(encoding="utf-8", errors="replace")
+                logger.warning(f"HTTP {resp.status} for {url}")
+                return None
+    except Exception as e:
+        logger.error(f"Error fetching {url}: {e}")
+        return None
+
+
+async def _get_json(url: str, timeout: int = 20) -> Optional[dict]:
+    """Fetch JSON from URL."""
+    try:
+        import aiohttp
+        headers = {"User-Agent": "Mozilla/5.0 (compatible; ALQUIMIA-bot/1.0)"}
+        async with aiohttp.ClientSession(headers=headers) as session:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=timeout)) as resp:
+                if resp.status == 200:
+                    return await resp.json(content_type=None)
+                return None
+    except Exception as e:
+        logger.error(f"Error fetching JSON {url}: {e}")
+        return None
+
+
+async def extract_text_from_pdf_url(pdf_url: str) -> str:
+    """Download PDF and extract text using pdfplumber."""
+    try:
+        import aiohttp
+        import io
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(pdf_url, timeout=aiohttp.ClientTimeout(total=60)) as resp:
+                if resp.status != 200:
+                    return ""
+                pdf_bytes = await resp.read()
+
+        try:
+            import pdfplumber
+            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
+                text = "\n".join(
+                    page.extract_text() or "" for page in pdf.pages[:10]  # First 10 pages
+                )
+                return text[:50000]  # Limit to 50k chars
+        except Exception:
+            try:
+                import PyPDF2
+                reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+                text = "\n".join(
+                    reader.pages[i].extract_text() or ""
+                    for i in range(min(10, len(reader.pages)))
+                )
+                return text[:50000]
+            except Exception:
+                return ""
+
+    except Exception as e:
+        logger.error(f"Error extracting PDF {pdf_url}: {e}")
+        return ""
+
+
+def _parse_date_mx(date_str: str) -> Optional[str]:
+    """Parse Spanish date string to YYYY-MM-DD."""
+    MONTHS = {
+        "enero": "01", "febrero": "02", "marzo": "03", "abril": "04",
+        "mayo": "05", "junio": "06", "julio": "07", "agosto": "08",
+        "septiembre": "09", "octubre": "10", "noviembre": "11", "diciembre": "12",
+    }
+    try:
+        # Try "15 de enero de 2024" or "15/01/2024"
+        m = re.search(r"(\d{1,2})\s+de\s+(\w+)\s+de\s+(\d{4})", date_str.lower())
+        if m:
+            day, month_name, year = m.groups()
+            month = MONTHS.get(month_name, "01")
+            return f"{year}-{month}-{int(day):02d}"
+
+        m = re.search(r"(\d{1,2})/(\d{1,2})/(\d{4})", date_str)
+        if m:
+            day, month, year = m.groups()
+            return f"{year}-{month.zfill(2)}-{day.zfill(2)}"
+
+    except Exception:
+        pass
+    return None
+
+
+# ─── DOF Scraper ─────────────────────────────────────────────────────────────
 
 class DOFScraper:
     """Scraper for Diario Oficial de la Federación."""
 
     BASE_URL = "https://www.dof.gob.mx"
-    SEARCH_ENDPOINT = "/index.php?action=buscar"
 
     async def search_documents(self, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Search DOF for documents matching keywords from last N days.
-
-        Note: In production, would use the actual DOF API or HTML parsing.
-        This is a placeholder that demonstrates the interface.
-        """
+        """Search DOF for documents matching keywords from last N days."""
         documents = []
-        search_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
+        since = (datetime.now() - timedelta(days=days_back)).strftime("%d/%m/%Y")
+        until = datetime.now().strftime("%d/%m/%Y")
 
-        # Placeholder: would make actual HTTP requests to DOF
-        logger.info(f"DOF: Buscando desde {search_date} con keywords: {keywords}")
+        for keyword in keywords[:3]:  # Limit to 3 keywords to avoid overload
+            try:
+                url = f"{self.BASE_URL}/index.php?action=busqueda&lang=es&texto={keyword}&fInicial={since}&fFinal={until}"
+                html = await _get_html(url)
+                if not html:
+                    continue
 
-        # Example: would extract NOM documents about construction waste
-        if "construccion" in [kw.lower() for kw in keywords]:
-            doc = ScrapedDocumentInfo(
-                titulo="NOM-083-SEMARNAT-2003. Residuos sólidos municipales",
-                url=f"{self.BASE_URL}/nota_detalle.php?codigo=5123456",
-                descripcion="Clasificación y clasificación de residuos sólidos",
-                fecha_publicacion="2003-10-28",
-                contenido_text="NOM-083 especifica..." # Would be actual text extraction
-            )
-            documents.append(doc)
+                try:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(html, "lxml")
+
+                    # DOF search results have links with class "ligas"
+                    for link in soup.find_all("a", href=True)[:20]:
+                        href = link.get("href", "")
+                        text = link.get_text(strip=True)
+
+                        if not text or len(text) < 10:
+                            continue
+
+                        if "nota_detalle" in href or "nota_detalle_popup" in href:
+                            full_url = urljoin(self.BASE_URL, href)
+                            doc = ScrapedDocumentInfo(
+                                titulo=text[:500],
+                                url=full_url,
+                                descripcion=f"DOF — búsqueda: {keyword}",
+                                fecha_publicacion=None,
+                            )
+                            documents.append(doc)
+
+                except ImportError:
+                    logger.warning("BeautifulSoup not installed, returning empty DOF results")
+
+            except Exception as e:
+                logger.error(f"DOF scraper error for keyword {keyword}: {e}")
 
         return documents
 
-    async def fetch_document(self, doc_id: str) -> Optional[ScrapedDocumentInfo]:
-        """Fetch full document text by ID."""
-        # Placeholder
-        return None
 
+# ─── SEMARNAT Scraper ─────────────────────────────────────────────────────────
 
 class SEMARNATScraper:
-    """Scraper for SEMARNAT publications."""
+    """Scraper for SEMARNAT publications via gob.mx."""
 
-    BASE_URL = "https://www.gob.mx/semarnat"
+    BASE_URL = "https://www.gob.mx"
 
     async def search_documents(self, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Search SEMARNAT for waste/residue related documents."""
+        """Search gob.mx for SEMARNAT waste/residue publications."""
         documents = []
-        logger.info(f"SEMARNAT: Buscando con keywords: {keywords}")
 
-        # Placeholder: would make actual requests
-        # Example document structure:
-        doc = ScrapedDocumentInfo(
-            titulo="Guía de Manejo de Residuos de Construcción",
-            url=f"{self.BASE_URL}/articulos/guia-manejo-residuos",
-            descripcion="Recomendaciones para manejo de RCD",
-            fecha_publicacion=datetime.now().strftime("%Y-%m-%d"),
-            contenido_text="SEMARNAT proporciona..." # Would be actual content
-        )
-        documents.append(doc)
+        try:
+            # gob.mx has a search API
+            for keyword in keywords[:2]:
+                url = f"{self.BASE_URL}/busqueda?utf8=%E2%9C%93&query={keyword}&dependencia=semarnat"
+                html = await _get_html(url)
+                if not html:
+                    continue
+
+                try:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(html, "lxml")
+
+                    for result in soup.find_all("div", class_="search-result")[:10]:
+                        title_el = result.find("h2") or result.find("h3")
+                        link_el = result.find("a", href=True)
+
+                        if not title_el or not link_el:
+                            continue
+
+                        title = title_el.get_text(strip=True)
+                        href = link_el.get("href", "")
+                        full_url = urljoin(self.BASE_URL, href)
+
+                        desc_el = result.find("p")
+                        desc = desc_el.get_text(strip=True)[:300] if desc_el else ""
+
+                        doc = ScrapedDocumentInfo(
+                            titulo=title[:500],
+                            url=full_url,
+                            descripcion=desc,
+                            fecha_publicacion=None,
+                        )
+                        documents.append(doc)
+
+                except ImportError:
+                    logger.warning("BeautifulSoup not installed")
+
+        except Exception as e:
+            logger.error(f"SEMARNAT scraper error: {e}")
 
         return documents
 
 
+# ─── COFEMER Scraper ─────────────────────────────────────────────────────────
+
 class COFEMERScraper:
-    """Scraper for COFEMER regulatory commissions."""
+    """Scraper for COFEMER regulatory impact documents."""
 
     BASE_URL = "https://www.gob.mx/cofemer"
 
     async def search_documents(self, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Search COFEMER for regulatory impact assessments."""
+        """Search COFEMER for MIR/regulatory docs related to waste."""
         documents = []
-        logger.info(f"COFEMER: Buscando regulaciones con keywords: {keywords}")
-
-        # Placeholder
+        try:
+            url = f"{self.BASE_URL}/articulos"
+            html = await _get_html(url)
+            if html:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html, "lxml")
+                for link in soup.find_all("a", href=True)[:15]:
+                    text = link.get_text(strip=True)
+                    href = link.get("href", "")
+                    if len(text) > 15 and any(kw.lower() in text.lower() for kw in keywords):
+                        documents.append(ScrapedDocumentInfo(
+                            titulo=text[:500],
+                            url=urljoin(self.BASE_URL, href),
+                            descripcion="COFEMER — regulación",
+                        ))
+        except Exception as e:
+            logger.error(f"COFEMER scraper error: {e}")
         return documents
 
+
+# ─── INEGI Scraper ─────────────────────────────────────────────────────────
 
 class INEGIScraper:
-    """Scraper for INEGI census and statistical data."""
+    """Scraper for INEGI data and publications."""
 
     BASE_URL = "https://www.inegi.org.mx"
+    DENUE_API = "https://www.inegi.org.mx/app/api/denue/v1"
 
     async def search_documents(self, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Search INEGI for statistics on waste generation, companies, etc."""
+        """Search INEGI for statistical publications."""
         documents = []
-        logger.info(f"INEGI: Buscando estadísticas con keywords: {keywords}")
-
-        # Placeholder: would fetch census data, ISIC classifications, company statistics
+        try:
+            for keyword in keywords[:2]:
+                url = f"{self.BASE_URL}/app/buscador/default.html?q={keyword}"
+                html = await _get_html(url)
+                if html:
+                    from bs4 import BeautifulSoup
+                    soup = BeautifulSoup(html, "lxml")
+                    for link in soup.find_all("a", href=True)[:10]:
+                        text = link.get_text(strip=True)
+                        href = link.get("href", "")
+                        if len(text) > 15:
+                            documents.append(ScrapedDocumentInfo(
+                                titulo=text[:500],
+                                url=urljoin(self.BASE_URL, href),
+                                descripcion="INEGI — estadística",
+                            ))
+        except Exception as e:
+            logger.error(f"INEGI scraper error: {e}")
         return documents
 
-    async def get_municipio_generators_count(self, estado: str, municipio: str) -> Optional[int]:
-        """Get estimated number of waste generators in a municipality from ISIC census."""
-        # Placeholder: would query INEGI DENUE API or census data
+    async def get_municipio_generators_count(self, estado: str, municipio: str, token: str) -> Optional[int]:
+        """Query INEGI DENUE API for economic units in municipality."""
+        try:
+            # DENUE API v1 — requires token (INEGI_DENUE_TOKEN env var)
+            url = f"{self.DENUE_API}/actividades/{municipio}/0/0/100/json?token={token}"
+            data = await _get_json(url)
+            if data and isinstance(data, list):
+                return len(data)
+        except Exception as e:
+            logger.error(f"INEGI DENUE error: {e}")
         return None
 
 
+# ─── ASF Scraper ─────────────────────────────────────────────────────────
+
 class ASFScraper:
-    """Scraper for ASF (Auditoría Superior de la Federación) audit reports."""
+    """Scraper for ASF audit reports."""
 
     BASE_URL = "https://www.asf.gob.mx"
 
     async def search_documents(self, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Search ASF for audit reports on waste management."""
+        """Search ASF for audit reports related to waste management."""
         documents = []
-        logger.info(f"ASF: Buscando reportes de auditoría con keywords: {keywords}")
-
-        # Placeholder: would fetch audit reports
+        try:
+            # ASF audit list
+            url = f"{self.BASE_URL}/Trans/Investigacion/buscador.aspx"
+            html = await _get_html(url)
+            if html:
+                from bs4 import BeautifulSoup
+                soup = BeautifulSoup(html, "lxml")
+                for link in soup.find_all("a", href=True)[:10]:
+                    text = link.get_text(strip=True)
+                    href = link.get("href", "")
+                    if len(text) > 15 and any(kw.lower() in text.lower() for kw in keywords):
+                        documents.append(ScrapedDocumentInfo(
+                            titulo=text[:500],
+                            url=urljoin(self.BASE_URL, href),
+                            descripcion="ASF — auditoría",
+                        ))
+        except Exception as e:
+            logger.error(f"ASF scraper error: {e}")
         return documents
 
+
+# ─── Multi-Source Orchestrator ─────────────────────────────────────────────
 
 class MultiSourceScraper:
     """Orchestrates scraping across all sources."""
@@ -161,29 +348,29 @@ class MultiSourceScraper:
         self.asf = ASFScraper()
 
     async def scrape_all_sources(self, keywords: List[str], days_back: int = 7) -> Dict[str, List[ScrapedDocumentInfo]]:
-        """Scrape all sources in parallel."""
-
-        tasks = [
-            self.dof.search_documents(keywords, days_back),
-            self.semarnat.search_documents(keywords, days_back),
-            self.cofemer.search_documents(keywords, days_back),
-            self.inegi.search_documents(keywords, days_back),
-            self.asf.search_documents(keywords, days_back),
-        ]
-
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        return {
-            "dof": results[0] if isinstance(results[0], list) else [],
-            "semarnat": results[1] if isinstance(results[1], list) else [],
-            "cofemer": results[2] if isinstance(results[2], list) else [],
-            "inegi": results[3] if isinstance(results[3], list) else [],
-            "asf": results[4] if isinstance(results[4], list) else [],
+        """Scrape all sources in parallel with timeout protection."""
+        tasks = {
+            "dof": self.dof.search_documents(keywords, days_back),
+            "semarnat": self.semarnat.search_documents(keywords, days_back),
+            "cofemer": self.cofemer.search_documents(keywords, days_back),
+            "inegi": self.inegi.search_documents(keywords, days_back),
+            "asf": self.asf.search_documents(keywords, days_back),
         }
 
-    async def scrape_specific_source(self, source: str, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
-        """Scrape a specific source."""
+        results = {}
+        for source, coro in tasks.items():
+            try:
+                results[source] = await asyncio.wait_for(coro, timeout=30)
+            except asyncio.TimeoutError:
+                logger.warning(f"Scraper timeout for source: {source}")
+                results[source] = []
+            except Exception as e:
+                logger.error(f"Scraper error for source {source}: {e}")
+                results[source] = []
 
+        return results
+
+    async def scrape_specific_source(self, source: str, keywords: List[str], days_back: int = 7) -> List[ScrapedDocumentInfo]:
         scrapers = {
             "dof": self.dof,
             "semarnat": self.semarnat,
@@ -191,54 +378,44 @@ class MultiSourceScraper:
             "inegi": self.inegi,
             "asf": self.asf,
         }
-
         scraper = scrapers.get(source.lower())
         if not scraper:
             raise ValueError(f"Unknown source: {source}")
 
-        return await scraper.search_documents(keywords, days_back)
-
-
-async def extract_text_from_pdf(pdf_content: bytes) -> str:
-    """Extract text from PDF content (placeholder).
-
-    In production, would use PyPDF2, pdfplumber, or similar.
-    """
-    # Placeholder: would use actual PDF extraction library
-    return "PDF content would be extracted here"
+        try:
+            return await asyncio.wait_for(
+                scraper.search_documents(keywords, days_back),
+                timeout=30,
+            )
+        except asyncio.TimeoutError:
+            logger.warning(f"Timeout scraping {source}")
+            return []
 
 
 def classify_document(titulo: str, contenido: str) -> Dict[str, Any]:
-    """Classify document by theme and applicability to RSU/RCD.
-
-    Returns dict with:
-    - ambito: federal, estatal, municipal
-    - tema: residuos, construccion, agua, etc
-    - aplicable_rsu: bool
-    - aplicable_rcd: bool
-    """
-
-    ambito = "federal"  # Assume federal for web sources
-    tema = "residuos"  # Default
-
-    # Simple keyword matching (would be more sophisticated in production)
+    """Classify document by theme and applicability."""
     titulo_lower = titulo.lower()
-    contenido_lower = contenido.lower()
+    contenido_lower = (contenido or "").lower()
 
-    aplicable_rsu = any(word in titulo_lower or word in contenido_lower
-                        for word in ["rsu", "residuos sólidos", "urbanos", "municipales"])
-    aplicable_rcd = any(word in titulo_lower or word in contenido_lower
-                        for word in ["construcción", "rcd", "escombros", "residuos de construcción"])
+    text = titulo_lower + " " + contenido_lower
 
-    if "construcción" in titulo_lower or "construcción" in contenido_lower:
+    # Theme detection
+    if any(w in text for w in ["rsu", "residuos sólidos", "urbanos", "municipales", "lgpgir"]):
+        tema = "residuos"
+    elif any(w in text for w in ["construcción", "rcd", "escombros", "nom-083"]):
         tema = "construccion"
-    elif "agua" in titulo_lower or "agua" in contenido_lower:
+    elif any(w in text for w in ["agua", "drenaje", "conagua"]):
         tema = "agua"
-    elif "hospital" in titulo_lower or "salud" in contenido_lower:
+    elif any(w in text for w in ["hospital", "salud", "nom-087"]):
         tema = "salud"
+    else:
+        tema = "regulacion"
+
+    aplicable_rsu = any(w in text for w in ["rsu", "residuos sólidos", "municipales", "lgpgir"])
+    aplicable_rcd = any(w in text for w in ["rcd", "construcción", "escombros", "demolición"])
 
     return {
-        "ambito": ambito,
+        "ambito": "federal",
         "tema": tema,
         "aplicable_rsu": aplicable_rsu,
         "aplicable_rcd": aplicable_rcd,
