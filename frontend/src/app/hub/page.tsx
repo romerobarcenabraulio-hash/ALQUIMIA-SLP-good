@@ -58,6 +58,7 @@ const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
   execution: [
     { label: 'Documentos Hub', href: '/hub/documentos', icon: <Download size={16} />, color: '#3B6D11', desc: 'Paquete completo de implementación' },
     { label: 'Mapa de circularidad', href: '/hub/mapa-circularidad', icon: <MapPin size={16} />, color: '#1C4B8F', desc: 'Centros de acopio y flujos RSU' },
+    { label: 'Generadores de residuos', href: '/hub/generadores', icon: <Users size={16} />, color: '#7B3F00', desc: 'Empresas y entidades generadoras' },
     { label: 'Empresas locales', href: '/gobierno/rsu#denue', icon: <Users size={16} />, color: '#1C4B8F', desc: 'Recicladores y compradores ancla' },
     { label: 'Indicadores', href: '/gobierno/rsu#indicadores', icon: <TrendingUp size={16} />, color: '#7B3F00', desc: 'Monitoreo de metas operativas' },
   ],

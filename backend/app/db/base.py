@@ -22,3 +22,4 @@ def import_all_models() -> None:
     import app.models.admin_tenant  # noqa: F401
     import app.models.document_archive  # noqa: F401
     import app.models.simulation  # noqa: F401
+    import app.models.generador  # noqa: F401
