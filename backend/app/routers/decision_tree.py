@@ -259,6 +259,86 @@ async def list_sessions(
     }
 
 
+@router.post("/decision-tree/{session_id}/create-generador")
+async def create_generador_from_session(
+    session_id: str,
+    req: Dict[str, Any],
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Create a GeneradorEntity from a completed decision tree session.
+
+    req: {
+        "nombre": "My Company",
+        "municipio": "San Luis Potosí",
+        "estado_mx": "San Luis Potosí",
+        "contacto_nombre": "John Doe",
+        "contacto_email": "john@example.com",
+        "contacto_telefono": "4441234567"
+    }
+    """
+
+    try:
+        sid = UUID(session_id)
+    except ValueError:
+        raise HTTPException(status_code=400, detail="Invalid UUID")
+
+    session = db.query(DecisionTreeSession).filter(
+        and_(
+            DecisionTreeSession.id == sid,
+            DecisionTreeSession.tenant_id == user.tenant_id,
+        )
+    ).first()
+
+    if not session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    if not session.completado:
+        raise HTTPException(status_code=400, detail="Session must be completed first")
+
+    # Map tree type to generador tipo
+    tipo_map = {
+        "construccion": "construccion",
+        "hospital": "hospital",
+        "comercio": "comercio",
+        "restaurante": "restaurante",
+    }
+
+    from app.models.generador import GeneradorEntity
+
+    generador = GeneradorEntity(
+        tenant_id=user.tenant_id,
+        nombre=req.get("nombre", "Unknown"),
+        tipo=tipo_map.get(session.tree_type, "otro"),
+        municipio=req.get("municipio", session.municipio or "Unknown"),
+        estado_mx=req.get("estado_mx", session.estado_mx or "Unknown"),
+        contacto_nombre=req.get("contacto_nombre"),
+        contacto_email=req.get("contacto_email"),
+        contacto_telefono=req.get("contacto_telefono"),
+        sector_isic=session.sector_isic,
+        sector_desc=session.sector_desc,
+        capacidad_generacion_ton_mes=session.residue_generation_tons_mes,
+        materiales_generados=session.materiales_generados,
+        source="decision_tree",
+        source_metadata={"decision_tree_session_id": str(session.id)},
+    )
+
+    db.add(generador)
+    db.commit()
+    db.refresh(generador)
+
+    return {
+        "id": str(generador.id),
+        "nombre": generador.nombre,
+        "tipo": generador.tipo.value,
+        "municipio": generador.municipio,
+        "capacidad_generacion_ton_mes": generador.capacidad_generacion_ton_mes,
+        "materiales_generados": generador.materiales_generados,
+        "source": "decision_tree",
+        "created_at": generador.created_at.isoformat(),
+    }
+
+
 @router.delete("/decision-tree/{session_id}")
 async def delete_session(
     session_id: str,

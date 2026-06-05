@@ -328,7 +328,137 @@ async def delete_generador(
     generador.deleted_at = datetime.utcnow()
     db.commit()
 
+    audit_logger.log_delete("Generador", str(gid), str(user.id))
+
     return {"status": "deleted", "id": str(generador.id)}
+
+
+@router.get("/generadores/export/json")
+async def export_generadores_json(
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Export all generadores as JSON."""
+
+    if user.rol not in ["admin", "analista"]:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    generadores = db.query(GeneradorEntity).filter(
+        and_(
+            GeneradorEntity.tenant_id == user.tenant_id,
+            GeneradorEntity.deleted_at.is_(None),
+        )
+    ).all()
+
+    audit_logger.log_access("Generador", "all", str(user.id), "export_json")
+
+    return {
+        "exported_at": datetime.utcnow().isoformat(),
+        "total_count": len(generadores),
+        "generadores": [
+            {
+                "nombre": g.nombre,
+                "tipo": g.tipo.value,
+                "rfc": g.rfc,
+                "municipio": g.municipio,
+                "estado_mx": g.estado_mx,
+                "contacto_nombre": g.contacto_nombre,
+                "contacto_email": g.contacto_email,
+                "contacto_telefono": g.contacto_telefono,
+                "sector_isic": g.sector_isic,
+                "capacidad_generacion_ton_mes": g.capacidad_generacion_ton_mes,
+                "materiales_generados": g.materiales_generados,
+            }
+            for g in generadores
+        ],
+    }
+
+
+@router.post("/generadores/import/bulk")
+async def bulk_import_generadores(
+    req: Dict[str, Any],
+    db: Session = Depends(get_db),
+    user: User = Depends(current_user),
+) -> dict:
+    """Bulk import generadores.
+
+    req: {
+        "generadores": [
+            {
+                "nombre": "Company Name",
+                "tipo": "empresa",
+                "rfc": "ABC123456XYZ",
+                "municipio": "San Luis Potosí",
+                "estado_mx": "San Luis Potosí",
+                "contacto_nombre": "John Doe",
+                "contacto_email": "john@example.com",
+                "contacto_telefono": "4441234567",
+                "capacidad_generacion_ton_mes": 10.5,
+                "materiales_generados": ["papel", "plastico"]
+            }
+        ]
+    }
+    """
+
+    if user.rol not in ["admin"]:
+        raise HTTPException(status_code=403, detail="Only admins can bulk import")
+
+    generadores_data = req.get("generadores", [])
+    created_count = 0
+    errors = []
+
+    for i, data in enumerate(generadores_data):
+        try:
+            # Validate required fields
+            if not data.get("nombre"):
+                errors.append(f"Row {i+1}: nombre is required")
+                continue
+
+            # Check for duplicate RFC
+            if data.get("rfc"):
+                existing = db.query(GeneradorEntity).filter(
+                    and_(
+                        GeneradorEntity.tenant_id == user.tenant_id,
+                        GeneradorEntity.rfc == data["rfc"],
+                        GeneradorEntity.deleted_at.is_(None),
+                    )
+                ).first()
+                if existing:
+                    errors.append(f"Row {i+1}: RFC {data['rfc']} already exists")
+                    continue
+
+            generador = GeneradorEntity(
+                tenant_id=user.tenant_id,
+                nombre=data["nombre"],
+                tipo=data.get("tipo", "empresa"),
+                rfc=data.get("rfc"),
+                municipio=data.get("municipio", "Unknown"),
+                estado_mx=data.get("estado_mx", "Unknown"),
+                contacto_nombre=data.get("contacto_nombre"),
+                contacto_email=data.get("contacto_email"),
+                contacto_telefono=data.get("contacto_telefono"),
+                sector_isic=data.get("sector_isic"),
+                capacidad_generacion_ton_mes=data.get("capacidad_generacion_ton_mes"),
+                materiales_generados=data.get("materiales_generados", []),
+                source="bulk_upload",
+            )
+
+            db.add(generador)
+            created_count += 1
+            audit_logger.log_create("Generador", str(generador.id), str(user.id), {"source": "bulk_import", "row": i+1})
+
+        except Exception as e:
+            errors.append(f"Row {i+1}: {str(e)}")
+
+    db.commit()
+    logger_generador.info(f"Bulk import: {created_count} created, {len(errors)} errors")
+
+    return {
+        "created_count": created_count,
+        "error_count": len(errors),
+        "errors": errors if errors else None,
+        "message": f"Imported {created_count} generadores successfully" if created_count > 0 else "No generadores imported",
+    }
 
 
 # ─── Residue Recording ──────────────────────────────────────────────────────

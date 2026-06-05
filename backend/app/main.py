@@ -200,9 +200,23 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"Redis initialization failed: {e}")
 
+    # Iniciar scheduler de fondo (scraper jobs, residue aggregation)
+    try:
+        from app.scheduler import start_scheduler
+        await start_scheduler()
+        logger.info("Background scheduler started")
+    except Exception as e:
+        logger.warning(f"Background scheduler failed to start: {e}")
+
     yield
 
     # Cleanup
+    try:
+        from app.scheduler import stop_scheduler
+        await stop_scheduler()
+    except Exception as e:
+        logger.warning(f"Background scheduler cleanup failed: {e}")
+
     try:
         await close_redis()
     except Exception as e:
