@@ -10,7 +10,7 @@ from app.models.web_scraper import (
     ScrapedDocument, ScraperJob, ScraperLog, ScraperSource, ScraperSchedule
 )
 from app.web_scraper.scrapers import (
-    MultiSourceScraper, classify_document, extract_text_from_pdf
+    MultiSourceScraper, classify_document
 )
 
 logger = logging.getLogger(__name__)

@@ -21,6 +21,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from app.routers.auth import UserInfo, get_current_user
+from app.rate_limiter import get_client_ip, check_rate_limit, public_proposal_limiter
 
 router = APIRouter(prefix="/propuesta", tags=["propuesta"])
 logger = logging.getLogger(__name__)
@@ -410,6 +411,7 @@ async def generate_propuesta(
 
 @router.get("/public/{municipio_nombre}")
 async def get_propuesta_publica(
+    request: Request,
     municipio_nombre: str,
     estado: str = "San Luis Potosí",
 ):
@@ -417,6 +419,14 @@ async def get_propuesta_publica(
     Public (no auth) lightweight proposal for landing/marketing pages.
     Returns only aggregate numbers — no DENUE company list.
     """
+    client_ip = get_client_ip(request)
+    allowed, _ = check_rate_limit(public_proposal_limiter, client_ip, "propuesta/public")
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiadas solicitudes. Máximo 60 por minuto por IP.",
+            headers={"Retry-After": "60"},
+        )
     poblacion_defaults: Dict[str, int] = {
         "san luis potosí": 1_040_443,
         "soledad": 368_516,

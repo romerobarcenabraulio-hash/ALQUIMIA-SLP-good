@@ -8,8 +8,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Header
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
-from app.auth import require_admin, UserInfo
-from app.db import get_db
+from app.routers.auth import UserInfo
+from app.routers.admin import require_admin
+from app.db.session import get_db
 from app.models.payment import (
     Subscription, Invoice, Transaction, PaymentMethod,
     PaymentStatus, InvoiceStatus, SubscriptionTier,

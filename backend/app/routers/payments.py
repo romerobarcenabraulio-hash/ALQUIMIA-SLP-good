@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from datetime import datetime, timezone, timedelta
-from app.auth import require_admin, UserInfo
-from app.db import get_db
+from app.routers.auth import UserInfo
+from app.routers.admin import require_admin
+from app.db.session import get_db
 from app.models.payment import (
     PaymentMethod, Subscription, Invoice, Transaction,
     SubscriptionTier, InvoiceStatus, PaymentStatus

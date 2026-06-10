@@ -87,14 +87,27 @@ function authorizedFounderViewMode(canUseInternalView: boolean, requestedMode: F
   return canUseInternalView ? requestedMode : 'client'
 }
 
+// Evita que la pantalla se quede colgada en "Cargando ciudades disponibles..."
+// si el backend está caído o frío: la petición falla rápido y se muestra el
+// error + la entrada manual por expediente interno.
+async function fetchWithTimeout(input: RequestInfo, init: RequestInit = {}, ms = 12000): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), ms)
+  try {
+    return await fetch(input, { ...init, signal: controller.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
 async function fetchTenantOptions(): Promise<TenantOption[]> {
   let data: Record<string, unknown> = {}
   try {
-    const backendRes = await fetch(`${getApiUrl()}/admin/tenants`, { headers: authHeaders() })
+    const backendRes = await fetchWithTimeout(`${getApiUrl()}/admin/tenants`, { headers: authHeaders() })
     data = await backendRes.json().catch(() => ({}))
     if (!backendRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Expedientes HTTP ${backendRes.status}`)
   } catch {
-    const localRes = await fetch('/api/admin/tenants')
+    const localRes = await fetchWithTimeout('/api/admin/tenants')
     data = await localRes.json().catch(() => ({}))
     if (!localRes.ok) throw new Error(typeof data.detail === 'string' ? data.detail : `Expedientes HTTP ${localRes.status}`)
   }
@@ -127,9 +140,9 @@ async function fetchTenantOptions(): Promise<TenantOption[]> {
 
   return Promise.all(baseOptions.map(async (tenant: TenantOption) => {
     try {
-      const dataRes = await fetch(`/api/tenants/${encodeURIComponent(tenant.id)}/data`, {
+      const dataRes = await fetchWithTimeout(`/api/tenants/${encodeURIComponent(tenant.id)}/data`, {
         headers: { 'x-tenant-id': tenant.id },
-      })
+      }, 8000)
       const tenantData = await dataRes.json().catch(() => ({}))
       if (!dataRes.ok) throw new Error(typeof tenantData.detail === 'string' ? tenantData.detail : `Tenant data HTTP ${dataRes.status}`)
       const gaps: unknown[] = Array.isArray(tenantData.document_gaps) ? tenantData.document_gaps : []

@@ -82,6 +82,8 @@ class RateLimiter:
 # Global rate limiters for different endpoints
 public_documents_limiter = RateLimiter(requests_per_minute=300)  # 5/second per IP
 public_scraper_limiter = RateLimiter(requests_per_minute=100)    # ~1.67/second per IP
+public_proposal_limiter = RateLimiter(requests_per_minute=60)    # 1/second per IP — landing/marketing
+public_survey_limiter = RateLimiter(requests_per_minute=30)      # encuestas públicas por empresa/ciudadano
 
 
 def get_client_ip(request) -> str:

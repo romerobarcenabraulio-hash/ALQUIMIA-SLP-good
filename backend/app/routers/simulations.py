@@ -15,6 +15,7 @@ from typing import Any, Optional
 
 from app.db.session import get_db
 from app.routers.auth import get_current_user, UserInfo
+from app.db.security import resolve_tenant_id_with_db
 from app.models.simulation import Simulation, SimulationVersion, SimulationAuditLog
 
 router = APIRouter(prefix="/simulations", tags=["simulations"])
@@ -100,8 +101,8 @@ async def save_simulation(
     start_time = datetime.utcnow()
     state_data = request.state or {}
 
-    # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    # Tenant del usuario autenticado (no confiar en encabezados del cliente).
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Extract metadata from state
@@ -180,8 +181,8 @@ async def list_simulations(
     List simulations for current user/tenant.
     Paginated response with metadata only (not full state).
     """
-    # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    # Tenant del usuario autenticado (no confiar en encabezados del cliente).
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Query simulations for this user/tenant
@@ -222,7 +223,7 @@ async def get_simulations_stats(
     Returns summary data for dashboard display.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Count simulations
@@ -312,7 +313,7 @@ async def load_simulation(
     Returns the latest version by default.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
     start_time = datetime.utcnow()
 
     try:
@@ -379,7 +380,7 @@ async def delete_simulation(
     Delete a simulation and all its versions/audit logs.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Verify user owns this simulation
@@ -424,7 +425,7 @@ async def duplicate_simulation(
     Creates a new simulation with the same state as the latest version of the original.
     """
     # Extract tenant_id from header
-    tenant_id = http_request.headers.get("x-tenant-id", "default") if http_request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Verify user owns the original simulation
@@ -515,7 +516,7 @@ async def get_simulation_versions(
     Returns metadata only (not full state) to keep response small.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Verify user owns this simulation
@@ -574,7 +575,7 @@ async def restore_simulation_version(
     Creates a new version as a checkpoint of the restoration.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
     start_time = datetime.utcnow()
 
     try:
@@ -666,7 +667,7 @@ async def compare_versions(
     Returns a delta showing what changed between versions.
     """
     # Extract tenant_id from header
-    tenant_id = request.headers.get("x-tenant-id", "default") if request else "default"
+    tenant_id = resolve_tenant_id_with_db(user, db) or "default"
 
     try:
         # Verify user owns this simulation

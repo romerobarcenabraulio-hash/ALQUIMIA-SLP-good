@@ -11,8 +11,10 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 from sqlalchemy.orm import Session
 
-from app.auth import require_admin, UserInfo, hash_password
-from app.db import get_db
+from app.routers.auth import UserInfo
+from app.routers.admin import require_admin
+from app.auth.crypto_password import hash_password
+from app.db.session import get_db
 from app.models.user_account import UserAccount
 from app.models.admin_tenant import AdminTenant
 

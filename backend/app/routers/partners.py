@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.partner import PartnerOrganization, TenantPartnerLink
 from app.routers.auth import UserInfo, get_current_user
+from app.db.security import assert_tenant_access
 
 router = APIRouter(prefix="/partners", tags=["partners"])
 logger = logging.getLogger(__name__)
@@ -232,6 +233,7 @@ async def list_tenant_links(
     """List all partner links for a tenant."""
     if db is None:
         return []
+    assert_tenant_access(user, tenant_id, db)
 
     links = db.query(TenantPartnerLink).filter(
         TenantPartnerLink.tenant_id == tenant_id
@@ -268,6 +270,7 @@ async def create_tenant_link(
     """Link a partner to a tenant."""
     if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
+    assert_tenant_access(user, tenant_id, db)
 
     # Avoid duplicates for same material
     existing = db.query(TenantPartnerLink).filter(
@@ -327,6 +330,7 @@ async def update_link_status(
     link = db.query(TenantPartnerLink).filter(TenantPartnerLink.id == link_id).first()
     if not link:
         raise HTTPException(status_code=404, detail="Link not found")
+    assert_tenant_access(user, link.tenant_id, db)
 
     link.estatus = estatus
     db.commit()

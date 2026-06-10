@@ -6,7 +6,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import DateTime, String, Text, Boolean
+from sqlalchemy import DateTime, String, Text, Boolean, JSON
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -41,7 +41,7 @@ class NousInsight(Base):
     activo: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
     descartado: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
-    datos_respaldo: Mapped[dict] = mapped_column(nullable=False, default=dict)
+    datos_respaldo: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     # Raw data supporting the insight
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, nullable=False, index=True)

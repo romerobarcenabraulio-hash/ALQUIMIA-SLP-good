@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, JSON, Boolean, DateTime, Enum, Float, Text, Index, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import enum
 import uuid
@@ -21,9 +20,9 @@ class DecisionTreeType(str, enum.Enum):
 class DecisionTreeSession(Base):
     __tablename__ = "decision_tree_sessions"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=True, index=True)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("user_accounts.id"), nullable=True, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("admin_tenants.id"), nullable=True, index=True)
+    user_id = Column(String(36), ForeignKey("user_accounts.id"), nullable=True, index=True)
 
     # Session context
     tree_type = Column(Enum(DecisionTreeType), nullable=False)
@@ -60,7 +59,7 @@ class DecisionTreeSession(Base):
 class ComplianceTemplate(Base):
     __tablename__ = "compliance_templates"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
 
     # Template metadata
     tree_type = Column(Enum(DecisionTreeType), nullable=False, unique=True)

@@ -41,7 +41,9 @@ class Notification(Base):
     action_url: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
     action_label: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
-    metadata: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    # 'metadata' es atributo reservado por SQLAlchemy Declarative; el atributo
+    # Python se llama 'meta' pero la columna en BD sigue siendo "metadata".
+    meta: Mapped[dict] = mapped_column("metadata", JSON, nullable=False, default=dict)
     # e.g. { gate_id: "G1", status: "aprobado", ... }
 
     leido: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
