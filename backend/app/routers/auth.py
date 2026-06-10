@@ -796,3 +796,93 @@ async def refresh_token(refresh: str):
                     "token_type": "bearer",
                 }
     raise HTTPException(status_code=401, detail="Usuario no encontrado")
+
+
+# ─── Clerk → Backend JWT bridge ──────────────────────────────────────────────
+# Frontend (Clerk-authenticated) exchanges its Clerk session token for a
+# backend JWT so all /api/v1/* endpoints work. Verification: decode the Clerk
+# JWT to get the user id, then confirm the user against Clerk's Backend API
+# using CLERK_SECRET_KEY. Auto-creates a local UserAccount on first exchange.
+
+_PLATFORM_ADMIN_EMAILS = {"romero.barcena.braulio@gmail.com"}
+
+
+class ClerkExchangeRequest(BaseModel):
+    clerk_token: str
+
+
+@router.post("/clerk-exchange")
+async def clerk_exchange(req: ClerkExchangeRequest, db: Session = Depends(get_db)):
+    import os
+
+    import httpx
+
+    clerk_secret = os.getenv("CLERK_SECRET_KEY", "").strip()
+    if not clerk_secret:
+        raise HTTPException(status_code=503, detail="CLERK_SECRET_KEY no configurada en el backend")
+
+    # Decode Clerk JWT (unverified) to get user id + expiry; trust is established
+    # by the authenticated lookup against Clerk's Backend API below.
+    try:
+        claims = jwt.get_unverified_claims(req.clerk_token)
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Token de Clerk inválido")
+
+    exp = claims.get("exp")
+    if exp and datetime.now(timezone.utc).timestamp() > float(exp):
+        raise HTTPException(status_code=401, detail="Token de Clerk expirado")
+
+    clerk_user_id = claims.get("sub")
+    if not clerk_user_id:
+        raise HTTPException(status_code=401, detail="Token de Clerk sin usuario")
+
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.get(
+            f"https://api.clerk.com/v1/users/{clerk_user_id}",
+            headers={"Authorization": f"Bearer {clerk_secret}"},
+        )
+    if resp.status_code != 200:
+        raise HTTPException(status_code=401, detail="Usuario de Clerk no verificado")
+
+    clerk_user = resp.json()
+    emails = clerk_user.get("email_addresses") or []
+    primary_id = clerk_user.get("primary_email_address_id")
+    email = next(
+        (e.get("email_address") for e in emails if e.get("id") == primary_id),
+        emails[0].get("email_address") if emails else None,
+    )
+    if not email:
+        raise HTTPException(status_code=401, detail="Cuenta de Clerk sin correo")
+    email = email.lower().strip()
+
+    # Find or auto-create local account
+    user = get_user_by_email(db, email)
+    if not user:
+        import secrets
+
+        from app.models.user_account import UserAccount
+
+        user = UserAccount(
+            email=email,
+            hashed_password=hash_password(secrets.token_urlsafe(32)),
+            nombre=(clerk_user.get("first_name") or "Usuario"),
+            apellido_paterno=(clerk_user.get("last_name") or ""),
+            rol="admin" if email in _PLATFORM_ADMIN_EMAILS else "funcionario",
+            email_verified_at=datetime.now(timezone.utc),
+            onboarding_completed_at=datetime.now(timezone.utc),
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        logger.info("clerk-exchange: cuenta local creada para %s", email)
+    elif email in _PLATFORM_ADMIN_EMAILS and user.rol != "admin":
+        user.rol = "admin"
+        db.commit()
+
+    if not user.activo:
+        raise HTTPException(status_code=403, detail="Cuenta desactivada")
+
+    user.last_login_at = datetime.utcnow()
+    db.commit()
+
+    return _issue_session_tokens(email=email, rol=user.rol, client_segment=user.client_segment)

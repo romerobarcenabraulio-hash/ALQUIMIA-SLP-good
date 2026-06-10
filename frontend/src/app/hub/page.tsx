@@ -11,6 +11,7 @@ import { AppShell } from '@/components/layout/AppShell'
 import { JourneyPanel } from '@/components/journey/JourneyPanel'
 import { getApiUrl } from '@/lib/api'
 import { getTokenPayload } from '@/lib/authSession'
+import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -113,6 +114,7 @@ function ActionCard({ action }: { action: QuickAction }) {
 
 function HubContent() {
   const router = useRouter()
+  const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [tenant, setTenant] = useState<TenantSummary | null>(null)
   const [simCount, setSimCount] = useState(0)
@@ -124,7 +126,8 @@ function HubContent() {
   }
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    if (tokenLoading) return
+    const token = bridgedToken
     if (!token) { router.replace('/sign-in'); return }
 
     const payload = getTokenPayload()
@@ -153,7 +156,7 @@ function HubContent() {
       }
       setSimCount((simsData?.simulations ?? []).length)
     }).catch(() => {}).finally(() => setLoading(false))
-  }, [router])
+  }, [router, bridgedToken, tokenLoading])
 
   if (loading) {
     return (

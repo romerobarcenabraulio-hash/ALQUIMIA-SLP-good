@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, Download, Loader2, AlertTriangle, CheckCircle2, MinusCircle, XCircle, BarChart2 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
+import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 import { listSimulations, type SimulationMetadata } from '@/lib/simulationPersistence'
 import { AuditorBadge, buildAuditorScore } from '@/components/auditor/AuditorBadge'
 
@@ -135,6 +136,7 @@ const SECCION_LETTERS: Record<string, string> = {
 
 function ESGContent() {
   const router = useRouter()
+  const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [sims, setSims] = useState<SimulationMetadata[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [reporte, setReporte] = useState<ESGReporte | null>(null)
@@ -148,7 +150,8 @@ function ESGContent() {
   }
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    if (tokenLoading) return
+    const token = bridgedToken
     if (!token) { router.replace('/sign-in'); return }
 
     listSimulations()
@@ -159,7 +162,7 @@ function ESGContent() {
       })
       .catch(() => {})
       .finally(() => setLoading(false))
-  }, [router])
+  }, [router, bridgedToken, tokenLoading])
 
   async function generate() {
     if (!selectedId) return
