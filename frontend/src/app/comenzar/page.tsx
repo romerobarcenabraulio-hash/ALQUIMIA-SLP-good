@@ -75,7 +75,8 @@ export default function ComenzarPage() {
         estado_mx: form.estado,
       })
       localStorage.setItem(key, String(currentCount + 1))
-      router.push(isInstitutionalDomain(form.email) ? '/preparando' : '/pendiente-validacion')
+      const destAfterReg = `/comenzar/propuesta?municipio=${encodeURIComponent(form.municipio)}&estado=${encodeURIComponent(form.estado)}`
+      router.push(isInstitutionalDomain(form.email) ? destAfterReg : '/pendiente-validacion')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo crear la cuenta.')
     } finally {
@@ -122,6 +123,16 @@ export default function ComenzarPage() {
           >
             {loading ? 'Creando cuenta...' : 'Crear cuenta y solicitar diagnóstico'}
           </button>
+          {form.municipio && form.estado && (
+            <div className="mt-3 rounded-[6px] border border-[#D8F0C8] bg-[#F2FAF0] px-3 py-2 text-center">
+              <Link
+                href={`/comenzar/propuesta?municipio=${encodeURIComponent(form.municipio)}&estado=${encodeURIComponent(form.estado)}`}
+                className="text-[12px] font-semibold text-[#3B6D11] hover:underline"
+              >
+                Ver propuesta personalizada para {form.municipio} →
+              </Link>
+            </div>
+          )}
           <p className="mt-4 text-center text-[12px] text-[#6B6760]">
             ¿Ya tienes cuenta? <Link href="/sign-in" className="font-semibold text-[#2F5B0D]">Iniciar sesión</Link>
           </p>

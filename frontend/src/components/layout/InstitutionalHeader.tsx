@@ -1,6 +1,9 @@
 'use client'
 
 import Link from 'next/link'
+import { TenantContextChip } from '@/components/layout/TenantContextChip'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { MobileNav } from '@/components/layout/MobileNav'
 
 export function InstitutionalHeader({
   label = 'Plataforma institucional',
@@ -12,6 +15,7 @@ export function InstitutionalHeader({
   return (
     <header className="sticky top-0 z-50 border-b border-surface-border bg-surface-base/95 backdrop-blur-sm">
       <div className="mx-auto flex min-h-14 max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-1.5 sm:flex-nowrap sm:px-6">
+        <MobileNav />
         <div className="flex min-w-0 shrink-0 items-center gap-3">
           <Link href="/" className="font-serif text-[20px] font-semibold tracking-tight text-[#3B6D11] hover:text-[#2D5409]">
             ALQUIMIA
@@ -22,6 +26,8 @@ export function InstitutionalHeader({
           </span>
         </div>
         <div className="flex items-center gap-3 text-right text-[11px] leading-5 text-[#6B6760]">
+          <NotificationBell />
+          <TenantContextChip />
           <Link href="/perfil" className="font-semibold text-[#3B3326] hover:text-[#3B6D11]">
             Perfil
           </Link>

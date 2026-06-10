@@ -21,6 +21,12 @@ class Settings(BaseSettings):
 
     # DB
     DATABASE_URL: str = "postgresql://alquimia:alquimia@localhost:5432/alquimia"
+    REDIS_URL: Optional[str] = None  # redis://localhost:6379/0 or REDIS_CLOUD_URL; optional (falls back to in-memory)
+
+    # Stripe (Render env: SECRET_KEY_STRIPE, PUBLIC_STRIPE_KEY, STRIPE_WEBHOOK_SECRET)
+    SECRET_KEY_STRIPE: Optional[str] = None
+    PUBLIC_STRIPE_KEY: Optional[str] = None
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
 
     # APIs externas
     SERPER_API_KEY:   Optional[str] = None

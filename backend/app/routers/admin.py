@@ -14,7 +14,9 @@ from typing import List
 import logging
 
 from app.routers.auth import get_current_user, UserInfo, hash_password, DEMO_USERS
+from app.notifications.triggers import trigger_gate_approval
 from app.db.session import get_db
+from app.redis_cache import distributed_cached, DistributedCacheInvalidationContext
 from app.admin.tenant_state import (
     TenantStateError,
     assert_can_access_stage,
@@ -3489,6 +3491,26 @@ async def close_gate_manual(
         )
     )
     db.flush()
+
+    # Trigger notifications to tenant users
+    try:
+        from app.models.user_account import UserAccount
+        tenant_users = db.query(UserAccount).filter(
+            UserAccount.municipio_id == tenant.municipio_id,
+            UserAccount.activo == True,
+        ).all()
+        for tenant_user in tenant_users:
+            trigger_gate_approval(
+                db,
+                tenant_user.id,
+                tenant_id,
+                gate_id,
+                "cerrado",
+                req.decisor_humano,
+            )
+    except Exception as exc:
+        logger.warning("trigger_notifications_failed: %s", exc)
+
     return _tenant_to_dict(_db_get_tenant(db, tenant_id))
 
 
@@ -3668,6 +3690,10 @@ class AdminTableRow(BaseModel):
 
 
 @router.get("/api/tenants/table")
+@distributed_cached(
+    ttl_seconds=60,
+    cache_key=lambda search, etapa, sort_by, sort_order, limit, offset, _=None, db=None: f"table:{search}:{etapa}:{sort_by}:{sort_order}:{limit}:{offset}"
+)
 async def get_admin_master_table(
     search: str = Query("", description="Search by municipio, estado, INEGI clave"),
     etapa: str = Query("", description="Filter by stage: validation, planning, execution, expansion"),
@@ -4351,6 +4377,7 @@ async def bulk_export_tenants(
 
 
 @router.get("/api/admin/stats")
+@distributed_cached(ttl_seconds=300)
 async def get_admin_stats(
     _: UserInfo = Depends(require_admin),
     db=Depends(get_db),

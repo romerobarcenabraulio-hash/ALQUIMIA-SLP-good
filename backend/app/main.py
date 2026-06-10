@@ -19,6 +19,21 @@ if _REPO_ROOT.is_dir() and str(_REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(_REPO_ROOT))
 
 from app.routers import auth, simulate, generate_plan, hub, admin, simulations, reports, payments
+from app.routers.stripe_webhooks import router as stripe_router
+from app.routers.tenant_users import router as tenant_users_router
+from app.routers.propuesta import router as propuesta_router
+from app.routers.catalogo_iniciativas import router as catalogo_iniciativas_router
+from app.routers.modo_b import router as modo_b_router
+from app.routers.notifications import router as notifications_router
+from app.routers.archivo import router as archivo_router
+from app.routers.rcd_fraccion import router as rcd_router
+from app.routers.nous import router as nous_router
+from app.routers.partners import router as partners_router
+from app.routers.banobras import router as banobras_router
+from app.routers.generador import router as generador_router
+from app.routers.decision_tree import router as decision_tree_router
+from app.routers.web_scraper import router as web_scraper_router
+from app.routers.esg_report import router as esg_router
 from app.legal.router import router as legal_router
 from app.data.router import router as data_router
 from app.market.router import router as market_router
@@ -66,6 +81,7 @@ from app.observability import (
     build_deep_health_payload,
     get_app_environment,
 )
+from app.redis_cache import init_redis, close_redis
 
 logger = logging.getLogger(__name__)
 
@@ -177,7 +193,34 @@ async def lifespan(app: FastAPI):
         logger.info("ADN SLP cargado correctamente")
     except Exception as e:
         logger.warning(f"ADN SLP no pudo cargarse (modo offline): {e}")
+
+    # Inicializar Redis para caché distribuido
+    try:
+        await init_redis()
+    except Exception as e:
+        logger.warning(f"Redis initialization failed: {e}")
+
+    # Iniciar scheduler de fondo (scraper jobs, residue aggregation)
+    try:
+        from app.scheduler import start_scheduler
+        await start_scheduler()
+        logger.info("Background scheduler started")
+    except Exception as e:
+        logger.warning(f"Background scheduler failed to start: {e}")
+
     yield
+
+    # Cleanup
+    try:
+        from app.scheduler import stop_scheduler
+        await stop_scheduler()
+    except Exception as e:
+        logger.warning(f"Background scheduler cleanup failed: {e}")
+
+    try:
+        await close_redis()
+    except Exception as e:
+        logger.warning(f"Redis cleanup failed: {e}")
 
 app = FastAPI(
     title="ALQUIMIA API",
@@ -255,6 +298,21 @@ app.include_router(planning_budget_router, prefix="/api/planning/budget", tags=[
 app.include_router(planning_risk_router,   prefix="/api/planning/risk",   tags=["planning-risk"])
 app.include_router(planning_prices_router, prefix="/api/planning/prices", tags=["planning-prices"])
 app.include_router(lifecycle_router, prefix="/api/v1/lifecycle", tags=["bios-lifecycle"])
+app.include_router(stripe_router, tags=["stripe"])
+app.include_router(tenant_users_router, tags=["tenant-users"])
+app.include_router(propuesta_router, prefix="/api/v1", tags=["propuesta"])
+app.include_router(catalogo_iniciativas_router, prefix="/api/v1", tags=["catalogo-iniciativas"])
+app.include_router(modo_b_router, prefix="/api/v1", tags=["modo-b"])
+app.include_router(notifications_router, prefix="/api/v1", tags=["notifications"])
+app.include_router(archivo_router, prefix="/api/v1", tags=["archivo"])
+app.include_router(rcd_router, prefix="/api/v1", tags=["rcd-fraccion"])
+app.include_router(nous_router, prefix="/api/v1", tags=["nous"])
+app.include_router(partners_router, prefix="/api/v1", tags=["partners"])
+app.include_router(banobras_router, prefix="/api/v1", tags=["banobras"])
+app.include_router(generador_router, prefix="/api/v1", tags=["generadores"])
+app.include_router(decision_tree_router, prefix="/api/v1", tags=["decision-tree"])
+app.include_router(web_scraper_router, prefix="/api/v1", tags=["web-scraper"])
+app.include_router(esg_router, prefix="/api/v1", tags=["esg"])
 
 
 @app.api_route("/health", methods=["GET", "HEAD"])

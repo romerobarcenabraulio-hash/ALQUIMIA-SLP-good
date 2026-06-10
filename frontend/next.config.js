@@ -1,3 +1,5 @@
+const { withSentryConfig } = require('@sentry/nextjs')
+
 const isVercelProduction = process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'production'
 const publicApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim()
 
@@ -39,4 +41,9 @@ const nextConfig = {
   },
 }
 
-module.exports = nextConfig
+module.exports = withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG || 'alquimia',
+  project: process.env.SENTRY_PROJECT || 'web',
+  silent: !isVercelProduction,
+  widenClientFileUpload: true,
+})
