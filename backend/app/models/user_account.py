@@ -96,3 +96,8 @@ class AccessLog(Base):
     user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     path: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+# Alias de compatibilidad: los routers Phase D (generador, decision_tree,
+# web_scraper) importan `User`. El modelo real es UserAccount.
+User = UserAccount
