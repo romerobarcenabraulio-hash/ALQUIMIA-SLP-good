@@ -12,10 +12,12 @@ import logging
 from datetime import datetime, timezone
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
+
+from app.rate_limiter import get_client_ip, check_rate_limit, public_survey_limiter
 
 from app.agents.survey_builder import build_survey
 from app.agents.survey_pdf import (
@@ -176,6 +178,7 @@ def _avg_ipc(respuestas: list[EncuestaRespuesta]) -> float:
 
 @router.post("/respuesta", response_model=RespuestaResponse, status_code=201)
 async def registrar_respuesta(
+    request: Request,
     req: RespuestaRequest,
     db: Session = Depends(get_db),
 ) -> RespuestaResponse:
@@ -183,6 +186,15 @@ async def registrar_respuesta(
     Registra una respuesta ciudadana a la encuesta de aceptación.
     Endpoint público (sin autenticación) — accesible desde QR en campo.
     """
+    client_ip = get_client_ip(request)
+    allowed, _ = check_rate_limit(public_survey_limiter, client_ip, "survey/respuesta")
+    if not allowed:
+        raise HTTPException(
+            status_code=429,
+            detail="Demasiadas respuestas. Máximo 30 por minuto por IP.",
+            headers={"Retry-After": "60"},
+        )
+
     if req.tipo_vivienda not in TIPOS_VIVIENDA_VALIDOS:
         raise HTTPException(
             status_code=422,
