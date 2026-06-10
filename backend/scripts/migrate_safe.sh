@@ -13,7 +13,7 @@ fi
 
 cat "$LOG" >&2
 
-if grep -qiE 'already exists|DuplicateTable|duplicate key value violates unique constraint' "$LOG"; then
+if grep -qiE 'already exists|DuplicateTable|duplicate key value violates unique constraint|relation.*already exists|type.*already exists' "$LOG"; then
   echo "WARN: tablas ya presentes — alineando alembic stamp head"
   alembic stamp head
   echo "==> Alembic stamp head OK"
