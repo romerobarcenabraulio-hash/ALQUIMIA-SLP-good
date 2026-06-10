@@ -2798,9 +2798,20 @@ async def create_tenant(
     if req.current_stage != "validation":
         raise HTTPException(status_code=400, detail="Fase 1 solo permite crear tenants en etapa inicial validation")
     actor = user.email
-    if db is None:
-        return _mem_create_tenant(req, actor)
-    return _db_create_tenant(db, req, actor)
+    result = _mem_create_tenant(req, actor) if db is None else _db_create_tenant(db, req, actor)
+    # Investigación dirigida inmediata: scraping del municipio en background.
+    try:
+        from app.web_scraper.kickoff import schedule_tenant_research_kickoff
+
+        schedule_tenant_research_kickoff(
+            tenant_id=str(result.get("id", "")),
+            nombre=req.nombre,
+            estado_mx=req.estado_mx,
+            inegi_clave=req.inegi_clave,
+        )
+    except Exception as exc:
+        logger.warning("research_kickoff_schedule_failed: %s", exc)
+    return result
 
 
 def _db_get_tenant(db, tenant_id: str):
