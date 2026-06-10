@@ -46,7 +46,7 @@ def trigger_gate_approval(
             color=color,
             action_url=f"/hub",
             action_label="Ir al Hub",
-            metadata={
+            meta={
                 "gate_id": gate_id,
                 "status": status,
                 "decisor": decisor,
@@ -88,7 +88,7 @@ def trigger_data_stale(
             color="warning",
             action_url=f"/simulator",
             action_label="Ir al Simulador",
-            metadata={
+            meta={
                 "kpi_name": kpi_name,
                 "days_stale": days_stale,
             },
@@ -129,7 +129,7 @@ def trigger_new_iniciativa(
             color="info",
             action_url=f"/hub/catalogo-iniciativas?q={clave}",
             action_label="Ver catálogo",
-            metadata={
+            meta={
                 "clave": clave,
                 "titulo": titulo,
             },
@@ -176,7 +176,7 @@ def trigger_stage_transition(
             color="success",
             action_url=f"/hub",
             action_label="Ver progreso",
-            metadata={
+            meta={
                 "new_stage": new_stage,
                 "stage_label": stage_label,
             },

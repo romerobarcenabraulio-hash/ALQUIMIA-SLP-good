@@ -85,7 +85,7 @@ def create_notification(
         color=color,
         action_url=action_url,
         action_label=action_label,
-        metadata=metadata or {},
+        meta=metadata or {},
     )
     db.add(notif)
     db.commit()
@@ -153,7 +153,7 @@ async def list_notifications(
                 color=n.color,
                 action_url=n.action_url,
                 action_label=n.action_label,
-                metadata=n.metadata,
+                metadata=n.meta,
                 leido=n.leido,
                 descartado=n.descartado,
                 created_at=n.created_at.isoformat(),
