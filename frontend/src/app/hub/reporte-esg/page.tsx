@@ -144,7 +144,7 @@ function ESGContent() {
 
   function authHdr(): HeadersInit {
     const t = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
-    return (t ? { Authorization: `Bearer ${t}` } : {}) as HeadersInit
+    return t ? { Authorization: `Bearer ${t}` } : {}
   }
 
   useEffect(() => {
