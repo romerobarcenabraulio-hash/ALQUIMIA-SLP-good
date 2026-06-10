@@ -116,7 +116,7 @@ function RCDContent() {
     )
   }
 
-  const totalPct = Object.values(composicion).reduce((a, b) => a + parseFloat(b || 0), 0)
+  const totalPct = Object.values(composicion).reduce((a, b) => a + parseFloat(b || '0'), 0)
   const isValidComposition = Math.abs(totalPct - 100) < 0.1
 
   return (

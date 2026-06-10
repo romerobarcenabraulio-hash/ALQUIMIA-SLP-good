@@ -88,7 +88,7 @@ const TIER_ORDER = { diagnostico: 0, implementacion: 1, operacion: 2 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-function authHdr() {
+function authHdr(): HeadersInit {
   const t = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
   return t ? { Authorization: `Bearer ${t}` } : {}
 }
