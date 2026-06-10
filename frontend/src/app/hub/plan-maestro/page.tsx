@@ -19,6 +19,7 @@ import {
 } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
+import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 import { listSimulations, type SimulationMetadata } from '@/lib/simulationPersistence'
 import { AuditorBadge, buildAuditorScore } from '@/components/auditor/AuditorBadge'
 
@@ -95,6 +96,7 @@ function authHdr(): HeadersInit {
 
 export default function PlanMaestroPage() {
   const router = useRouter()
+  const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [sims, setSims] = useState<SimulationMetadata[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -103,7 +105,8 @@ export default function PlanMaestroPage() {
   const [tenantTier, setTenantTier] = useState<string>('diagnostico')
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    if (tokenLoading) return
+    const token = bridgedToken
     if (!token) { router.replace('/sign-in'); return }
 
     Promise.all([
@@ -121,7 +124,7 @@ export default function PlanMaestroPage() {
       if (list.length > 0) setSelectedId(list[0].id)
       if (tenantData?.tier_comercial) setTenantTier(tenantData.tier_comercial)
     }).catch(() => {}).finally(() => setLoading(false))
-  }, [router])
+  }, [router, bridgedToken, tokenLoading])
 
   async function downloadDoc(docId: string) {
     if (!selectedId) return

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ArrowLeft, CheckCheck, Trash2, Loader2, Filter, Settings } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
+import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
 interface Notification {
   id: string
@@ -49,6 +50,7 @@ function authHdr(): HeadersInit {
 
 function NotificationsContent() {
   const router = useRouter()
+  const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [prefs, setPrefs] = useState<Preferences | null>(null)
   const [loading, setLoading] = useState(true)
@@ -57,7 +59,8 @@ function NotificationsContent() {
   const [filterTipo, setFilterTipo] = useState('')
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    if (tokenLoading) return
+    const token = bridgedToken
     if (!token) { router.replace('/sign-in'); return }
 
     Promise.all([
@@ -68,7 +71,7 @@ function NotificationsContent() {
         .then(r => r.json())
         .then((d: Preferences) => setPrefs(d)),
     ]).finally(() => setLoading(false))
-  }, [router])
+  }, [router, bridgedToken, tokenLoading])
 
   async function markAsRead(id: string) {
     await fetch(`${getApiUrl()}/api/v1/notifications/${id}/leido`, {

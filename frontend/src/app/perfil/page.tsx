@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle2, Save, User, Building2, Shield, AlertCircle } from 'lucide-react'
 import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
+import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
 interface UserProfile {
   id: string
@@ -75,6 +76,7 @@ function Field({
 
 export default function PerfilPage() {
   const router = useRouter()
+  const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [form, setForm] = useState({ nombre: '', apellido_paterno: '', cargo: '', telefono: '' })
   const [loading, setLoading] = useState(true)
@@ -83,7 +85,8 @@ export default function PerfilPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
+    if (tokenLoading) return
+    const token = bridgedToken
     if (!token) { router.replace('/sign-in'); return }
 
     fetch(`${getApiUrl()}/auth/me`, { headers: authHeaders() })
@@ -100,7 +103,7 @@ export default function PerfilPage() {
       })
       .catch(() => router.replace('/sign-in'))
       .finally(() => setLoading(false))
-  }, [router])
+  }, [router, bridgedToken, tokenLoading])
 
   async function save() {
     if (!profile) return

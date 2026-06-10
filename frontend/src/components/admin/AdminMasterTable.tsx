@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
   Search,
   ChevronDown,
@@ -22,8 +22,11 @@ import { cn } from '@/lib/utils'
 import { getApiUrl } from '@/lib/api'
 import { useAdminMasterTable } from '@/hooks/useAdminMasterTable'
 
+import type { AdminNotification } from '@/hooks/useAdminNotifications'
+
 interface AdminMasterTableProps {
   onRowClick?: (tenantId: string) => void
+  onNotify?: (notification: Omit<AdminNotification, 'id' | 'timestamp' | 'read'>) => void
   className?: string
 }
 
@@ -49,7 +52,7 @@ const URGENCY_COLORS = (days: number) => {
   return 'text-red-600'
 }
 
-export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProps) {
+export function AdminMasterTable({ onRowClick, onNotify, className }: AdminMasterTableProps) {
   const {
     rows,
     loading,
@@ -94,6 +97,20 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
   const [showSavedFilters, setShowSavedFilters] = useState(false)
   const [favorites, setFavorites] = useState<Set<string>>(new Set())
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false)
+
+  // Virtual scrolling state
+  const tableContainerRef = useRef<HTMLDivElement>(null)
+  const [scrollTop, setScrollTop] = useState(0)
+  const ROW_HEIGHT = 52 // pixels per row (adjust based on actual row height)
+  const VISIBLE_ROWS = 10 // number of rows visible at a time
+  const BUFFER_ROWS = 2 // buffer rows above/below for smooth scrolling
+
+  // Advanced filtering state
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
+  const [filterByDaysInStage, setFilterByDaysInStage] = useState<{ min: number; max: number } | null>(null)
+  const [filterByHermesStatus, setFilterByHermesStatus] = useState<string>('')
+  const [filterByDocumentStatus, setFilterByDocumentStatus] = useState<string>('')
+  const [filterByUserCount, setFilterByUserCount] = useState<string>('')
 
   // Load saved filters and favorites from localStorage on mount
   useEffect(() => {
@@ -170,6 +187,57 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
 
   const isFavorited = (tenantId: string) => favorites.has(tenantId)
 
+  // Apply advanced filters
+  const applyAdvancedFilters = (rowsToFilter: typeof rows) => {
+    return rowsToFilter.filter(row => {
+      // Favorites filter
+      if (showOnlyFavorites && !favorites.has(row.id)) return false
+
+      // Days in stage filter
+      if (filterByDaysInStage) {
+        const daysInStage = row.dias_en_etapa
+        if (daysInStage < filterByDaysInStage.min || daysInStage > filterByDaysInStage.max) {
+          return false
+        }
+      }
+
+      // HERMES status filter
+      if (filterByHermesStatus && row.hermes_status !== filterByHermesStatus) {
+        return false
+      }
+
+      // Document status filter
+      if (filterByDocumentStatus) {
+        const docStatus =
+          filterByDocumentStatus === 'uploaded'
+            ? row.documentos_solicitados.entregados > 0
+            : filterByDocumentStatus === 'pending'
+              ? row.documentos_solicitados.entregados < row.documentos_solicitados.total
+              : true
+        if (!docStatus) return false
+      }
+
+      // User count filter
+      if (filterByUserCount) {
+        const hasUsers = filterByUserCount === 'with-users' ? row.usuarios_count > 0 : row.usuarios_count === 0
+        if (!hasUsers) return false
+      }
+
+      return true
+    })
+  }
+
+  // Virtual scrolling calculations
+  const filteredRows = applyAdvancedFilters(rows)
+  const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - BUFFER_ROWS)
+  const endIndex = Math.min(filteredRows.length, startIndex + VISIBLE_ROWS + BUFFER_ROWS * 2)
+  const visibleRows = filteredRows.slice(startIndex, endIndex)
+  const topOffset = startIndex * ROW_HEIGHT
+
+  const handleTableScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    setScrollTop((e.target as HTMLDivElement).scrollTop)
+  }
+
   const handleExport = async () => {
     setExporting(true)
     try {
@@ -243,8 +311,18 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       document.body.removeChild(a)
 
       clearSelection()
+      onNotify?.({
+        type: 'success',
+        title: 'Exportación completada',
+        message: `${selectedIds.size} municipio(s) exportado(s) a ZIP`,
+      })
     } catch (e) {
       console.error('Bulk export failed:', e)
+      onNotify?.({
+        type: 'error',
+        title: 'Error en exportación',
+        message: 'No se pudo completar la exportación',
+      })
     } finally {
       setBulkExporting(false)
     }
@@ -279,8 +357,18 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       setSelectedNewStage('')
       clearSelection()
       fetchData()
+      onNotify?.({
+        type: 'success',
+        title: 'Etapa actualizada',
+        message: `${selectedIds.size} municipio(s) actualizado(s) exitosamente`,
+      })
     } catch (e) {
       console.error('Bulk status update failed:', e)
+      onNotify?.({
+        type: 'error',
+        title: 'Error al actualizar',
+        message: e instanceof Error ? e.message : 'No se pudo actualizar la etapa',
+      })
     } finally {
       setBulkStatusUpdating(false)
     }
@@ -320,9 +408,20 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       setSelectedDocType('Reglamento')
       clearSelection()
       fetchData()
+      onNotify?.({
+        type: 'success',
+        title: 'Documento subido',
+        message: `Documento subido a ${selectedIds.size} municipio(s)`,
+      })
     } catch (e) {
       console.error('Bulk document upload failed:', e)
-      setDocUploadError(e instanceof Error ? e.message : 'Upload failed')
+      const errorMsg = e instanceof Error ? e.message : 'Upload failed'
+      setDocUploadError(errorMsg)
+      onNotify?.({
+        type: 'error',
+        title: 'Error al subir documento',
+        message: errorMsg,
+      })
     } finally {
       setBulkDocUploading(false)
     }
@@ -460,6 +559,110 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
             </button>
           ))}
         </div>
+
+        {/* Advanced Filters Toggle */}
+        <button
+          onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+          className="text-xs font-medium text-[#6B6760] hover:text-[#3B6D11] transition-colors flex items-center gap-1"
+        >
+          {showAdvancedFilters ? '▼' : '▶'} Filtros avanzados
+        </button>
+
+        {/* Advanced Filters Panel */}
+        {showAdvancedFilters && (
+          <div className="rounded-lg border border-[#E8E4DC] bg-[#FDFCFA] p-4 space-y-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Days in Stage */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Días en etapa</label>
+                <div className="flex gap-2">
+                  <input
+                    type="number"
+                    placeholder="Min"
+                    value={filterByDaysInStage?.min ?? ''}
+                    onChange={e => {
+                      const min = e.target.value ? parseInt(e.target.value) : null
+                      setFilterByDaysInStage(
+                        min !== null ? { min, max: filterByDaysInStage?.max ?? 999 } : null
+                      )
+                    }}
+                    className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Max"
+                    value={filterByDaysInStage?.max ?? ''}
+                    onChange={e => {
+                      const max = e.target.value ? parseInt(e.target.value) : null
+                      setFilterByDaysInStage(
+                        max !== null ? { min: filterByDaysInStage?.min ?? 0, max } : null
+                      )
+                    }}
+                    className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* HERMES Status */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Estado HERMES</label>
+                <select
+                  value={filterByHermesStatus}
+                  onChange={e => setFilterByHermesStatus(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="ready">✓ Listo</option>
+                  <option value="partially_mapped">◐ Parcial</option>
+                  <option value="pending">○ Pendiente</option>
+                </select>
+              </div>
+
+              {/* Document Status */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Documentos</label>
+                <select
+                  value={filterByDocumentStatus}
+                  onChange={e => setFilterByDocumentStatus(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="uploaded">Subidos</option>
+                  <option value="pending">Pendientes</option>
+                </select>
+              </div>
+
+              {/* User Count */}
+              <div>
+                <label className="block text-xs font-medium text-[#1C1B18] mb-2">Usuarios</label>
+                <select
+                  value={filterByUserCount}
+                  onChange={e => setFilterByUserCount(e.target.value)}
+                  className="w-full px-2 py-1 rounded border border-[#E8E4DC] text-xs focus:border-[#3B6D11] focus:outline-none"
+                >
+                  <option value="">Todos</option>
+                  <option value="with-users">Con usuarios</option>
+                  <option value="without-users">Sin usuarios</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Reset Filters */}
+            {(filterByDaysInStage || filterByHermesStatus || filterByDocumentStatus || filterByUserCount) && (
+              <button
+                onClick={() => {
+                  setFilterByDaysInStage(null)
+                  setFilterByHermesStatus('')
+                  setFilterByDocumentStatus('')
+                  setFilterByUserCount('')
+                }}
+                className="text-xs font-medium text-[#6B6760] hover:text-red-600 transition-colors"
+              >
+                Limpiar filtros avanzados
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Bulk Actions Bar */}
@@ -516,7 +719,12 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
       ) : rows.length === 0 ? (
         <p className="text-center py-8 text-sm text-[#6B6760]">No hay municipios</p>
       ) : (
-        <div className="overflow-x-auto">
+        <div
+          ref={tableContainerRef}
+          onScroll={handleTableScroll}
+          className="overflow-x-auto overflow-y-auto"
+          style={{ maxHeight: `${VISIBLE_ROWS * ROW_HEIGHT + 52}px` }}
+        >
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-[#E8E4DC]">
@@ -568,8 +776,8 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                 <th className="text-center px-3 py-2 font-semibold text-[#1C1B18] w-16"></th>
               </tr>
             </thead>
-            <tbody>
-              {rows.filter(row => !showOnlyFavorites || favorites.has(row.id)).map(row => (
+            <tbody style={{ transform: `translateY(${topOffset}px)` }}>
+              {visibleRows.map(row => (
                 <tr
                   key={row.id}
                   className={cn(
@@ -676,6 +884,10 @@ export function AdminMasterTable({ onRowClick, className }: AdminMasterTableProp
                   </td>
                 </tr>
               ))}
+              {/* Spacer row to maintain correct scroll height */}
+              <tr style={{ height: `${(filteredRows.length - endIndex) * ROW_HEIGHT}px` }}>
+                <td colSpan={20}></td>
+              </tr>
             </tbody>
           </table>
         </div>
