@@ -17,9 +17,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
-from fastapi import Depends
+from fastapi import Depends, HTTPException
 
 from app.routers.auth import UserInfo, get_current_user
+
+# Roles de plataforma que pueden operar sobre cualquier tenant (por diseño).
+ADMIN_ROLES = {"admin", "analista", "founder"}
 
 
 @dataclass
@@ -32,27 +35,47 @@ class AuthedUser:
     municipio_id: Optional[str] = None
 
 
-def _resolve_tenant_id(info: UserInfo) -> Optional[str]:
-    """Resuelve el tenant real (admin_tenants.id) del usuario autenticado.
-
-    Devuelve None si el usuario aún no tiene un municipio completo asignado;
-    en ese caso las consultas tenant-scoped quedan vacías (aislamiento seguro)
-    en lugar de exponer datos de otro tenant.
-    """
-    from app.db.session import get_sync_db
+def resolve_tenant_id_with_db(info: UserInfo, db) -> Optional[str]:
+    """Resuelve el tenant real (admin_tenants.id) del usuario usando una
+    sesión de DB existente. None si el usuario no tiene municipio completo."""
+    if db is None:
+        return None
     from app.routers.auth import _ensure_consulting_tenant_for_user
     from app.auth.user_service import get_user_by_email
 
     try:
-        with get_sync_db() as db:
-            if db is None:
-                return None
-            user = get_user_by_email(db, info.email)
-            if user is None:
-                return None
-            return _ensure_consulting_tenant_for_user(db, user)
+        user = get_user_by_email(db, info.email)
+        if user is None:
+            return None
+        return _ensure_consulting_tenant_for_user(db, user)
     except Exception:
         return None
+
+
+def _resolve_tenant_id(info: UserInfo) -> Optional[str]:
+    """Variante que abre su propia sesión (para dependencias sin db)."""
+    from app.db.session import get_sync_db
+
+    try:
+        with get_sync_db() as db:
+            return resolve_tenant_id_with_db(info, db)
+    except Exception:
+        return None
+
+
+def assert_tenant_access(info: UserInfo, tenant_id: str, db) -> None:
+    """Verifica que el usuario autenticado puede operar sobre `tenant_id`.
+
+    Los roles de plataforma (admin/analista/founder) pasan siempre. Un usuario
+    de municipio solo accede a SU tenant. Lanza 403 en caso contrario.
+    Esto cierra las fugas cross-tenant (gap E1).
+    """
+    if info.rol in ADMIN_ROLES:
+        return
+    caller_tenant = resolve_tenant_id_with_db(info, db)
+    if caller_tenant is not None and caller_tenant == str(tenant_id):
+        return
+    raise HTTPException(status_code=403, detail="No autorizado para este tenant")
 
 
 async def current_user(info: UserInfo = Depends(get_current_user)) -> AuthedUser:

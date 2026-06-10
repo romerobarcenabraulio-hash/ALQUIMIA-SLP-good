@@ -16,6 +16,7 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.models.nous_insights import NousInsight
 from app.routers.auth import UserInfo, get_current_user
+from app.db.security import assert_tenant_access
 from app.nous.engine import generate_insights
 
 router = APIRouter(prefix="/nous", tags=["nous"])
@@ -57,6 +58,7 @@ async def generate_tenant_insights(
     """Generate insights for a tenant based on current data."""
     if db is None:
         raise HTTPException(status_code=503, detail="Database not available")
+    assert_tenant_access(user, body.tenant_id, db)
 
     # Aggregate tenant data (simplified)
     tenant_data = body.simulation_state or {}
@@ -125,6 +127,7 @@ async def list_insights(
     """List active insights for a tenant."""
     if db is None:
         return InsightsResponse(total=0, insights=[])
+    assert_tenant_access(user, tenant_id, db)
 
     q = db.query(NousInsight).filter(
         NousInsight.tenant_id == tenant_id,
@@ -167,6 +170,7 @@ async def dismiss_insight(
     insight = db.query(NousInsight).filter(NousInsight.id == insight_id).first()
     if not insight:
         raise HTTPException(status_code=404, detail="Insight not found")
+    assert_tenant_access(user, insight.tenant_id, db)
 
     insight.descartado = True
     db.commit()
