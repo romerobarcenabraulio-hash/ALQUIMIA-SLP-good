@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, Float, JSON, Boolean, DateTime, Enum, Text, Index, ForeignKey
-from sqlalchemy.dialects.postgresql import UUID
 from datetime import datetime
 import enum
 import uuid
@@ -31,8 +30,8 @@ class GeneradorSource(str, enum.Enum):
 class GeneradorEntity(Base):
     __tablename__ = "generador_entities"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("admin_tenants.id"), nullable=False, index=True)
 
     # Identificación
     nombre = Column(String(255), nullable=False)
@@ -87,9 +86,9 @@ class GeneradorEntity(Base):
 class GeneratorResidueRecord(Base):
     __tablename__ = "generator_residue_records"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    generador_id = Column(UUID(as_uuid=True), ForeignKey("generador_entities.id"), nullable=False, index=True)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    generador_id = Column(String(36), ForeignKey("generador_entities.id"), nullable=False, index=True)
+    tenant_id = Column(String(36), ForeignKey("admin_tenants.id"), nullable=False, index=True)
 
     # Registro diario
     fecha_generacion = Column(String(10), nullable=False)  # YYYY-MM-DD
@@ -117,8 +116,8 @@ class GeneratorResidueRecord(Base):
 class MunicipalResidueAggregate(Base):
     __tablename__ = "municipal_residue_aggregates"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    tenant_id = Column(UUID(as_uuid=True), ForeignKey("tenants.id"), nullable=False, index=True)
+    id = Column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    tenant_id = Column(String(36), ForeignKey("admin_tenants.id"), nullable=False, index=True)
     municipio = Column(String(255), nullable=False, index=True)
     estado_mx = Column(String(50), nullable=False)
 
