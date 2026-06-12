@@ -6,7 +6,8 @@ FROM python:3.12-slim
 
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
-ENV PORT=8000
+# NO fijar PORT aquí: Render inyecta su propio PORT en runtime y la app debe
+# escuchar en ese puerto. Hardcodearlo provoca "No open ports detected".
 ENV PYTHONPATH=/app:/app/backend
 
 WORKDIR /app/backend
@@ -21,5 +22,5 @@ COPY data/ /app/data/
 
 RUN chmod +x scripts/start.sh scripts/migrate_safe.sh
 
-EXPOSE 8000
+EXPOSE 10000
 CMD ["scripts/start.sh"]

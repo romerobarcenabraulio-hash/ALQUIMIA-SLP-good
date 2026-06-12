@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 
-echo "==> ALQUIMIA backend starting (PORT=${PORT:-8000})"
+echo "==> ALQUIMIA backend starting (PORT=${PORT:-10000})"
 
 # Monorepo: modules/, config/, data/ viven un nivel arriba de backend/
 REPO_ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -24,4 +24,4 @@ fi
 "$(dirname "$0")/migrate_safe.sh"
 
 echo "==> Uvicorn"
-exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"
+exec uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-10000}"
