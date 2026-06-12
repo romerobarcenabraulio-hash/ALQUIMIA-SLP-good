@@ -26,15 +26,22 @@ class BackgroundScheduler:
             return
 
         self.running = True
-        logger.info("Background scheduler started")
 
-        # Schedule periodic tasks
-        await self._schedule_scraper_jobs()
-        await self._schedule_residue_aggregation()
+        # Lanzar como tareas de fondo — NO awaitar directamente o bloquean el lifespan
+        self.tasks["scraper"] = asyncio.create_task(self._schedule_scraper_jobs())
+        self.tasks["residue"] = asyncio.create_task(self._schedule_residue_aggregation())
+        logger.info("Background scheduler started")
 
     async def stop(self):
         """Stop the scheduler."""
         self.running = False
+        for name, task in self.tasks.items():
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
+        self.tasks.clear()
         logger.info("Background scheduler stopped")
 
     async def _schedule_scraper_jobs(self):
