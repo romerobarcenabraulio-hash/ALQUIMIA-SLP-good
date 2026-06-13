@@ -85,6 +85,10 @@ def pytest_configure(config) -> None:  # type: ignore[override]
     # Health profundo: en CI local no exigimos ANTHROPIC_API_KEY
     os.environ.setdefault("HEALTH_DEEP_RELAX_AGORA", "1")
     os.environ.setdefault("ALQUIMIA_HIDE_GDL", "1")
+    # Suite hermética: sin DATABASE_URL explícita, forzamos degradación elegante
+    # (get_db → None) en lugar de intentar conectar al PostgreSQL por defecto.
+    # Esto evita "connection refused" / cuelgues en CI sin servicio de BD.
+    os.environ.setdefault("DATABASE_URL", "")
 
 
 def pytest_runtest_setup(item) -> None:
