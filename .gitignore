@@ -48,3 +48,6 @@ frontend/tsconfig.tsbuildinfo
 .env*.local
 .env*.save
 *.env.save
+
+# Temporary CI-equivalent venv for local backend validation
+backend/.venv_ci/
