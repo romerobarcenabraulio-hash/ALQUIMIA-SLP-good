@@ -1,4 +1,5 @@
 """Tests reporte semanal KRONOS."""
+import datetime as _dt
 from pathlib import Path
 from unittest.mock import patch
 
@@ -11,7 +12,19 @@ from app.planning.weekly_status import (
 )
 
 
-def test_build_weekly_status_has_required_fields():
+class _FrozenDate(_dt.date):
+    """Congela hoy a la fecha de los fixtures HERMES para que la ventana de
+    consumo de feeds (14 días) siempre los incluya."""
+
+    @classmethod
+    def today(cls):
+        return _dt.date(2026, 5, 25)
+
+
+def test_build_weekly_status_has_required_fields(monkeypatch):
+    import modules.planning.budget.hermes_consumer as _hc
+    monkeypatch.setattr(_hc, "date", _FrozenDate)
+
     report = build_weekly_status(municipio_id="slp", db=None)
     assert report["week"] == _iso_week()
     assert report["gate_actual"] in {"G1", "G2", "G3", "G4", "G5"}

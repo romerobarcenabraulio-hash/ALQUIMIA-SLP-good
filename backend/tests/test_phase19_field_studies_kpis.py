@@ -81,7 +81,8 @@ def test_phase19_wave_one_kpis_are_contracts_with_standard_source_module_and_gat
 
 
 def test_phase19_registry_and_standards_include_wave_one_without_creating_local_values():
-    registry = json.loads(Path("docs/architecture/capability_registry.json").read_text())
+    _repo_root = Path(__file__).resolve().parents[2]
+    registry = json.loads((_repo_root / "docs/architecture/capability_registry.json").read_text())
     modules = {module["module_id"]: module for module in registry["modules"]}
     assert registry["phase19"]["no_local_study_policy"] == "show_critical_gap_not_municipal_truth"
     assert "technical_defensibility_rule" in modules["city_baseline"]
@@ -95,7 +96,7 @@ def test_phase19_registry_and_standards_include_wave_one_without_creating_local_
         if cap.get("type") == "kpi_wave_one"
     )
 
-    standards = json.loads(Path("docs/architecture/standards_map.json").read_text())
+    standards = json.loads((_repo_root / "docs/architecture/standards_map.json").read_text())
     standards_by_module = {module["module_id"]: {s["code"] for s in module.get("standards", [])} for module in standards["modules"]}
     assert "SDG 11.6.1" in standards_by_module["M01"]
     assert "Wasteaware ISWM Benchmark Indicators" in standards_by_module["M01"]

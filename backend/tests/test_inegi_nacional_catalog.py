@@ -14,7 +14,10 @@ def test_list_estados_completos_32():
 
 def test_fetch_municipios_slp_via_inegi():
     rows = fetch_municipios_inegi("24")
-    assert len(rows) >= 50
+    # La API viva de INEGI entrega los 58 municipios; sin red (CI / 403) cae al
+    # catálogo semilla en memoria. En ambos casos debe traer municipios de SLP
+    # e incluir la capital (24028), sin inventar datos faltantes.
+    assert len(rows) >= 4
     assert any(r.clave_inegi == "24028" for r in rows)
 
 
