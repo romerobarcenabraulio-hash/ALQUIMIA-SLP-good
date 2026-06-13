@@ -385,6 +385,21 @@ export default function AdminPage() {
     return visibleErpRows.find(row => row.tenant_id === selected.id || row.clave_inegi === selected.inegi_clave) ?? null
   }, [selected, visibleErpRows])
 
+  const adminKpis = useMemo(() => {
+    const rows = visibleErpRows
+    const linked = rows.filter(row => row.link_status === 'vinculado').length
+    const needsUser = rows.filter(row => row.link_status === 'tenant_sin_usuario' || row.link_status === 'usuario_sin_tenant').length
+    const ready = rows.filter(row => row.preparation_status === 'listo_para_cliente' || row.preparation_status === 'en_cliente').length
+    const missingRegulation = rows.filter(row => row.regulation_status === 'missing').length
+    return [
+      { label: 'Municipios', value: rows.length, hint: 'filtrados' },
+      { label: 'Vinculados', value: linked, hint: 'tenant + usuario' },
+      { label: 'Listos cliente', value: ready, hint: 'preparados' },
+      { label: 'Reglamento faltante', value: missingRegulation, hint: 'bloqueo formal' },
+      { label: 'Pendiente usuario', value: needsUser, hint: 'vincular acceso' },
+    ]
+  }, [visibleErpRows])
+
   useEffect(() => {
     if (typeof window === 'undefined') return
     const params = new URLSearchParams(window.location.search)
@@ -738,23 +753,40 @@ export default function AdminPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
-        <div className="mb-5 flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6">
+        <div className="mb-4 flex flex-col gap-3 border-b border-[#D8D1C4] pb-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="mb-1 text-[10px] uppercase tracking-[0.08em] text-[#8E8980]">/admin · Plataforma 0</p>
-            <h1 className="font-serif text-[26px] text-[#1C1B18]">Gestor municipal</h1>
+            <p className="mb-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">/admin · Admin Operativo · Command Center</p>
+            <h1 className="text-[22px] font-semibold text-[#1C1B18]">ERP municipal</h1>
+            <p className="mt-1 max-w-3xl text-[12px] leading-5 text-[#5C574F]">
+              Preparación, tenants, usuarios, evidencia y previsualización cliente desde una sola mesa operativa.
+            </p>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              void loadTenants()
-              void loadErpRows()
-              void loadMunicipalitiesForState()
-            }}
-            className="inline-flex h-9 items-center gap-2 border border-[#D8D1C4] bg-[#FDFCFA] px-3 text-[12px] font-medium text-[#1C1B18]"
-          >
-            <RefreshCw size={14} /> Actualizar
-          </button>
+          <div className="flex flex-wrap items-center gap-2">
+            <nav className="flex flex-wrap gap-1" aria-label="Zonas de administración">
+              {[
+                ['#admin-tabla-maestra', 'Tabla'],
+                ['#admin-preparacion', 'Preparar'],
+                ['#admin-operacion', 'Operar'],
+                ['#admin-previsualizacion', 'Preview'],
+              ].map(([href, label]) => (
+                <a key={href} href={href} className="border border-[#D8D1C4] bg-[#FDFCFA] px-3 py-2 text-[11px] font-semibold text-[#1C1B18]">
+                  {label}
+                </a>
+              ))}
+            </nav>
+            <button
+              type="button"
+              onClick={() => {
+                void loadTenants()
+                void loadErpRows()
+                void loadMunicipalitiesForState()
+              }}
+              className="inline-flex h-9 items-center gap-2 bg-[#1C1B18] px-3 text-[12px] font-semibold text-white"
+            >
+              <RefreshCw size={14} /> Actualizar
+            </button>
+          </div>
         </div>
 
         {(message || error) && (
@@ -786,34 +818,26 @@ export default function AdminPage() {
           </section>
         )}
 
-        <section className="mb-5 border border-[#E1DACE] bg-[#FDFCFA] px-4 py-4">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">Admin Operativo</p>
-              <p className="mt-1 max-w-3xl text-[12px] leading-5 text-[#5C574F]">
-                El founder prepara municipios, opera tenants y previsualiza la Vista Cliente sin mover documentos, gates ni IDs internos a `/v`.
-              </p>
+        <section className="mb-4 grid gap-2 border border-[#D8D1C4] bg-[#FDFCFA] p-2 sm:grid-cols-2 lg:grid-cols-5">
+          {adminKpis.map(kpi => (
+            <div key={kpi.label} className="bg-white px-3 py-2">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-[#6B6760]">{kpi.label}</p>
+              <div className="mt-1 flex items-baseline justify-between gap-3">
+                <strong className="text-[24px] leading-none text-[#1C1B18]">{kpi.value}</strong>
+                <span className="text-[11px] text-[#8E8980]">{kpi.hint}</span>
+              </div>
             </div>
-            <nav className="flex flex-wrap gap-2" aria-label="Zonas de administración">
-              {[
-                ['#admin-tabla-maestra', 'Tabla maestra'],
-                ['#admin-preparacion', 'Preparación municipal'],
-                ['#admin-operacion', 'Operación tenant'],
-                ['#admin-previsualizacion', 'Previsualización'],
-              ].map(([href, label]) => (
-                <a key={href} href={href} className="border border-[#D8D1C4] bg-white px-3 py-2 text-[11px] font-semibold text-[#1C1B18]">
-                  {label}
-                </a>
-              ))}
-            </nav>
-          </div>
+          ))}
         </section>
 
-        <section id="admin-tabla-maestra" className="mb-5 scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA]">
-          <div className="border-b border-[#E8E4DC] px-4 py-4">
-            <div className="mb-3 flex items-center gap-2">
-              <Users size={16} className="text-[#3B6D11]" />
-              <h2 className="text-[13px] font-semibold text-[#1C1B18]">Municipios, clientes y usuarios</h2>
+        <section id="admin-tabla-maestra" className="mb-4 scroll-mt-20 border border-[#D8D1C4] bg-[#FDFCFA]">
+          <div className="border-b border-[#D8D1C4] bg-[#F4F2ED] px-3 py-3">
+            <div className="mb-3 flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-2">
+                <Users size={16} className="text-[#3B6D11]" />
+                <h2 className="text-[13px] font-semibold text-[#1C1B18]">Tabla maestra: municipios, tenants y usuarios</h2>
+              </div>
+              <span className="text-[11px] text-[#6B6760]">{visibleErpRows.length} filas filtradas</span>
             </div>
             <div className="grid gap-2 md:grid-cols-[minmax(180px,1fr)_150px_150px_150px_150px_auto]">
               <label className="relative block">
@@ -883,10 +907,10 @@ export default function AdminPage() {
               </button>
             </div>
           </div>
-          <div className="overflow-x-auto">
+          <div className="max-h-[560px] overflow-auto">
             <table className="w-full min-w-[1260px] text-[12px]">
-              <thead>
-                <tr className="border-b border-[#E8E4DC] text-left text-[#6B6760]">
+              <thead className="sticky top-0 z-10 bg-[#FDFCFA]">
+                <tr className="border-b border-[#D8D1C4] text-left text-[#6B6760]">
                   <th className="px-4 py-2 font-medium">Municipio</th>
                   <th className="px-3 py-2 font-medium">Tenant</th>
                   <th className="px-3 py-2 font-medium">Cliente / usuario</th>
@@ -901,7 +925,7 @@ export default function AdminPage() {
                 {visibleErpRows.length === 0 ? (
                   <tr><td colSpan={8} className="px-4 py-6 text-[#8E8980]">Sin filas para los filtros actuales.</td></tr>
                 ) : visibleErpRows.slice(0, 80).map(row => (
-                  <tr key={`${row.clave_inegi}-${row.tenant_id ?? 'catalog'}`} className="border-b border-[#EEE8DE]">
+                  <tr key={`${row.clave_inegi}-${row.tenant_id ?? 'catalog'}`} className="border-b border-[#EEE8DE] hover:bg-[#F8F6F1]">
                     <td className="px-4 py-3">
                       <strong className="block text-[#1C1B18]">{row.municipio}</strong>
                       <span className="text-[11px] text-[#8E8980]">{row.estado} · INEGI {row.clave_inegi} · municipio {row.municipio_id || '-'}</span>
@@ -955,9 +979,9 @@ export default function AdminPage() {
           </div>
         </section>
 
-        <div className="grid gap-5 lg:grid-cols-[360px_minmax(0,1fr)]">
-          <aside className="space-y-5">
-            <section id="admin-preparacion" className="scroll-mt-20 border border-[#E1DACE] bg-[#FDFCFA] p-4">
+        <div className="grid gap-4 lg:grid-cols-[340px_minmax(0,1fr)]">
+          <aside className="space-y-4">
+            <section id="admin-preparacion" className="scroll-mt-20 border border-[#D8D1C4] bg-[#FDFCFA] p-4">
               <div className="mb-4 flex items-center gap-2">
                 <Plus size={16} className="text-[#3B6D11]" />
                 <h2 className="text-[13px] font-semibold text-[#1C1B18]">Preparación municipal</h2>
@@ -1023,7 +1047,7 @@ export default function AdminPage() {
               </div>
             </section>
 
-            <section className="border border-[#E1DACE] bg-[#FDFCFA]">
+            <section className="border border-[#D8D1C4] bg-[#FDFCFA]">
               <div className="flex items-center justify-between border-b border-[#E8E4DC] px-4 py-3">
                 <h2 className="text-[13px] font-semibold text-[#1C1B18]">Tenants</h2>
                 <span className="text-[11px] text-[#8E8980]">{loading ? '...' : tenants.length}</span>
@@ -1046,7 +1070,7 @@ export default function AdminPage() {
             </section>
           </aside>
 
-          <main className="space-y-5">
+          <main className="space-y-4">
             {!selected ? (
               <section className="border border-dashed border-[#D8D1C4] bg-[#FDFCFA] p-8 text-[13px] text-[#6B6760]">
                 Crea o selecciona un tenant.
@@ -1104,14 +1128,8 @@ export default function AdminPage() {
                     >
                       JSON command center
                     </a>
-                    <a
-                      href="/api/admin/legacy/manifest"
-                      className="border border-[#D8D1C4] bg-white px-3 py-2 text-[12px] font-semibold text-[#1C1B18]"
-                    >
-                      Manifest legacy
-	                    </a>
-	                  </div>
-	                </section>
+                  </div>
+                </section>
 
 	                <nav className="flex flex-wrap gap-2 border border-[#E1DACE] bg-[#FDFCFA] p-3" aria-label="Pestañas del tenant">
 	                  {ADMIN_TENANT_TABS.map(tab => (
@@ -1287,46 +1305,42 @@ export default function AdminPage() {
 	                </section>
 	                )}
 
-	                {activeTenantTab === 'resumen' && (
-	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-	                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-	                    <div className="mb-4 flex items-center gap-2">
-	                      <CheckCircle2 size={16} className="text-[#3B6D11]" />
+                {activeTenantTab === 'resumen' && (
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-[#3B6D11]" />
                       <h2 className="text-[13px] font-semibold text-[#1C1B18]">Capabilities activas</h2>
                     </div>
-                    <div className="grid max-h-[320px] gap-2 overflow-auto sm:grid-cols-2">
-                      {selected.capabilities.map(cap => (
-                        <div key={cap.module_id} className="border border-[#E8E4DC] bg-white px-3 py-2 text-[11px] text-[#1C1B18]">
-                          <span className="font-mono">{cap.module_id}</span>
-                          <span className="ml-2 text-[#8E8980]">{cap.source}</span>
-                        </div>
-	                      ))}
-	                    </div>
-	                  </div>
-	                </section>
-	                )}
+                  <div className="grid max-h-[320px] gap-2 overflow-auto sm:grid-cols-2">
+                    {selected.capabilities.map(cap => (
+                      <div key={cap.module_id} className="border border-[#E8E4DC] bg-white px-3 py-2 text-[11px] text-[#1C1B18]">
+                        <span className="font-mono">{cap.module_id}</span>
+                        <span className="ml-2 text-[#8E8980]">{cap.source}</span>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                )}
 
-	                {activeTenantTab === 'auditoria' && (
-	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-	                  <div className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
-	                    <div className="mb-4 flex items-center gap-2">
-	                      <FileCheck2 size={16} className="text-[#3B6D11]" />
+                {activeTenantTab === 'auditoria' && (
+                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
+                  <div className="mb-4 flex items-center gap-2">
+                    <FileCheck2 size={16} className="text-[#3B6D11]" />
                       <h2 className="text-[13px] font-semibold text-[#1C1B18]">Auditoria minima</h2>
                     </div>
-                    <div className="max-h-[320px] space-y-2 overflow-auto">
-                      {[...selected.audit_log].reverse().map(log => (
-                        <div key={log.id} className="border border-[#E8E4DC] bg-white px-3 py-2">
-                          <div className="flex items-center justify-between gap-3 text-[11px]">
-                            <strong className="text-[#1C1B18]">{log.action}</strong>
-                            <span className="text-[#8E8980]">{new Date(log.created_at).toLocaleString()}</span>
-                          </div>
-                          <p className="mt-1 text-[11px] text-[#6B6760]">{log.actor}</p>
+                  <div className="max-h-[320px] space-y-2 overflow-auto">
+                    {[...selected.audit_log].reverse().map(log => (
+                      <div key={log.id} className="border border-[#E8E4DC] bg-white px-3 py-2">
+                        <div className="flex items-center justify-between gap-3 text-[11px]">
+                          <strong className="text-[#1C1B18]">{log.action}</strong>
+                          <span className="text-[#8E8980]">{new Date(log.created_at).toLocaleString()}</span>
                         </div>
-	                      ))}
-	                    </div>
-	                  </div>
-	                </section>
-	                )}
+                        <p className="mt-1 text-[11px] text-[#6B6760]">{log.actor}</p>
+                      </div>
+                    ))}
+                  </div>
+                </section>
+                )}
 
 	                {activeTenantTab === 'exports' && (
 	                <section className="border border-[#E1DACE] bg-[#FDFCFA] p-5">
