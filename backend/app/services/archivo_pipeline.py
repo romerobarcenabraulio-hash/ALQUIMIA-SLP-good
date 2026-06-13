@@ -15,25 +15,19 @@ Each step registers provenance, confidence, and methodological limits.
 """
 from __future__ import annotations
 
-import json
 import logging
 import os
 import re
 import uuid
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Optional, List, Dict, Any, Tuple
+from typing import Optional, List, Dict, Any
 
-from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 
-from app.models.data_point import (
-    DataPoint, DataPointHistory, EvidenceConflict, ModuleCompletionStatus,
-    BibliographyEntry, TenantDataSnapshot
-)
-from app.models.document_archive import TenantDocument, DocumentGap
+from app.models.data_point import DataPoint, TenantDataSnapshot
+from app.models.document_archive import DocumentGap
 
 logger = logging.getLogger("app.archivo_pipeline")
 
