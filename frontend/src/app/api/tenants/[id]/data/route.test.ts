@@ -22,7 +22,10 @@ describe('/api/tenants/[id]/data', () => {
     expect(body.municipio_id).toBe('slp')
     expect(body.clave_inegi).toBe('24028')
     expect(body.zm).toBe('SLP')
-    expect(body.metrics.every((metric: { status: string }) => metric.status === 'brecha_critica')).toBe(true)
+    // Header context is overlaid without flattening every metric into a gap —
+    // verified/inferred evidence in the fixture is preserved.
+    expect(body.metrics.every((metric: { status: string }) => metric.status === 'brecha_critica')).toBe(false)
+    expect(body.metrics.some((metric: { status: string }) => metric.status === 'verificado')).toBe(true)
   })
 
   it('blocks cross-tenant reads', async () => {
