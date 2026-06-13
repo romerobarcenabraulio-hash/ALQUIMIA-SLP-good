@@ -3899,69 +3899,147 @@ async def upload_tenant_document(
     tenant_id: str,
     file: UploadFile = File(...),
     document_type: str = "Reglamento",
+    module_id: str = "general",
     source: str = "client_email",
     notes: str = "",
     _: UserInfo = Depends(require_admin),
     db=Depends(get_db),
 ) -> dict:
-    """Upload a document for a tenant."""
-    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft
+    """Upload a PDF/document for a tenant.
+
+    Saves the file to UPLOAD_DIR (env var, defaults to /tmp/alquimia-docs),
+    creates a TenantDocument record, then runs the ARCHIVO pipeline synchronously
+    in a background thread to extract DataPoints with provenance.
+    """
+    import os
+    import threading
+    from app.models.admin_tenant import AdminTenant, TenantDocumentDraft, TenantAuditLog
+    from app.models.document_archive import TenantDocument
+    from app.services.archivo_pipeline import ArchivoPipeline
 
     if db is None:
         raise HTTPException(status_code=500, detail="Database not available")
 
-    # Verify tenant exists
     tenant = db.query(AdminTenant).filter(AdminTenant.id == tenant_id).first()
     if not tenant:
         raise HTTPException(status_code=404, detail="Tenant not found")
 
-    # For now, just store metadata - actual file handling would need storage service
-    try:
-        content = await file.read()
-        # Limit file size (50 MB)
-        if len(content) > 50 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="File too large (max 50 MB)")
+    content = await file.read()
+    if len(content) > 50 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="File too large (max 50 MB)")
 
-        doc = TenantDocumentDraft(
+    original_filename = file.filename or f"{document_type}_upload"
+    mime_type = file.content_type or "application/octet-stream"
+
+    # ── A: Save file to disk ──────────────────────────────────────────────────
+    upload_dir = Path(os.environ.get("UPLOAD_DIR", "/tmp/alquimia-docs")) / tenant_id
+    upload_dir.mkdir(parents=True, exist_ok=True)
+
+    doc_id = str(uuid.uuid4())
+    safe_name = "".join(c if c.isalnum() or c in "._-" else "_" for c in original_filename)
+    storage_path = upload_dir / f"{doc_id}_{safe_name}"
+    storage_path.write_bytes(content)
+
+    try:
+        # ── Create TenantDocument record ──────────────────────────────────────
+        tenant_doc = TenantDocument(
+            id=doc_id,
+            tenant_id=tenant_id,
+            uploaded_by_user_id=_.sub,
+            module_id=module_id,
+            document_type=document_type,
+            original_filename=original_filename,
+            mime_type=mime_type,
+            file_size_bytes=len(content),
+            storage_path_or_url=str(storage_path),
+            upload_status="received",
+            classification_confidence="suggested_by_filename",
+        )
+        db.add(tenant_doc)
+
+        # Also create TenantDocumentDraft for legacy admin view
+        draft = TenantDocumentDraft(
             tenant_id=tenant_id,
             document_type=document_type,
-            title=file.filename or f"{document_type}_uploaded",
+            title=original_filename,
             status="human_review_required",
             qa_status="partial",
-            content_md=f"Uploaded: {file.filename}\nSource: {source}\nNotes: {notes}\n\n--- Document content will be processed ---",
+            content_md=(
+                f"Uploaded: {original_filename}\n"
+                f"Source: {source}\n"
+                f"Notes: {notes}\n"
+                f"TenantDocument ID: {doc_id}\n"
+            ),
             created_by=_.sub,
             updated_by=_.sub,
         )
-        db.add(doc)
-        db.commit()
-        db.refresh(doc)
+        db.add(draft)
 
-        # Create audit log entry
-        from app.models.admin_tenant import TenantAuditLog
         audit = TenantAuditLog(
             tenant_id=tenant_id,
             actor=_.sub,
             action="document_uploaded",
             payload={
-                "document_id": doc.id,
+                "document_id": doc_id,
                 "document_type": document_type,
-                "filename": file.filename,
+                "module_id": module_id,
+                "filename": original_filename,
                 "source": source,
                 "file_size": len(content),
-            }
+                "storage_path": str(storage_path),
+            },
         )
         db.add(audit)
         db.commit()
 
+        # ── B+C: Run ARCHIVO pipeline in background thread ────────────────────
+        # We need a fresh DB session for the thread (sessions are not thread-safe).
+        from app.db.session import get_sync_db
+
+        def _run_pipeline() -> None:
+            try:
+                with get_sync_db() as bg_db:
+                    if bg_db is None:
+                        logger.error(f"ARCHIVO: no DB session for doc {doc_id}")
+                        return
+                    result = ArchivoPipeline.process_document(
+                        db=bg_db,
+                        tenant_id=tenant_id,
+                        document_id=doc_id,
+                        original_filename=original_filename,
+                        module_id=module_id,
+                        uploaded_by_user_id=_.sub,
+                        document_path=str(storage_path),
+                        institution=source,
+                    )
+                    # Update TenantDocument status
+                    td = bg_db.query(TenantDocument).filter(TenantDocument.id == doc_id).first()
+                    if td:
+                        td.upload_status = result.status
+                        td.processed_at = result.processed_at
+                        bg_db.commit()
+            except Exception as exc:
+                logger.error(f"ARCHIVO background pipeline error for {doc_id}: {exc}")
+
+        t = threading.Thread(target=_run_pipeline, daemon=True)
+        t.start()
+
         return {
-            "id": doc.id,
-            "document_type": doc.document_type,
-            "title": doc.title,
-            "status": doc.status,
-            "message": "Document uploaded successfully",
+            "id": doc_id,
+            "document_type": document_type,
+            "module_id": module_id,
+            "filename": original_filename,
+            "file_size_bytes": len(content),
+            "status": "received",
+            "pipeline": "queued",
+            "message": "Documento recibido. El pipeline ARCHIVO extrae DataPoints en segundo plano.",
         }
+
     except Exception as e:
         db.rollback()
+        # Clean up file on DB failure
+        if storage_path.exists():
+            storage_path.unlink(missing_ok=True)
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
