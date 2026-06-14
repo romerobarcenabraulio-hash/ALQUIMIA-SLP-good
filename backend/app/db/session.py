@@ -59,6 +59,8 @@ def _init_engine() -> bool:
 
         _engine = create_engine(db_url, **engine_kwargs)
         _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
+        from app.db.tenant_isolation import install_tenant_filter
+        install_tenant_filter(_SessionLocal)
         _DB_AVAILABLE = True
         logger.info("PostgreSQL conectado: %s", db_url.split("@")[-1])
         return True

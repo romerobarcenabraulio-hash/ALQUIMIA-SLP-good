@@ -13,6 +13,7 @@ from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+from app.db.tenant_isolation import HasTenantId
 
 
 def _uuid() -> str:
@@ -23,11 +24,10 @@ def _now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class DocumentGap(Base):
+class DocumentGap(HasTenantId, Base):
     __tablename__ = "document_gaps"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    tenant_id: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     module_id: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     document_type: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
@@ -42,11 +42,10 @@ class DocumentGap(Base):
     )
 
 
-class TenantDocument(Base):
+class TenantDocument(HasTenantId, Base):
     __tablename__ = "tenant_documents"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    tenant_id: Mapped[str] = mapped_column(String(64), index=True, nullable=False)
     uploaded_by_user_id: Mapped[str] = mapped_column(String(64), nullable=False, default="mvp_user")
     module_id: Mapped[str] = mapped_column(String(100), index=True, nullable=False)
     document_type: Mapped[str] = mapped_column(String(80), index=True, nullable=False)
