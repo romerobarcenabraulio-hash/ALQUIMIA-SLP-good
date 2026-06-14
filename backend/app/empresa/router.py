@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from typing import Literal
 from uuid import uuid4
 
-from fastapi import APIRouter, HTTPException, Query, Response, status
+from fastapi import APIRouter, Body, HTTPException, Query, Response, status
 
 from app.empresa.pdf_perfil import build_perfil_generacion_pdf
 from app.empresa.schemas import (
@@ -16,6 +16,11 @@ from app.empresa.schemas import (
     MSG_GRAN_GENERADOR,
 )
 from app.empresa.scian_factors import SCIAN_FACTORS, DEFAULT_MATERIAL_KEYS
+from app.empresa.company_survey import (
+    GIRO_CATALOG,
+    get_questions,
+    estimate_generation,
+)
 
 router = APIRouter(prefix="/empresa", tags=["empresa"])
 
@@ -158,3 +163,50 @@ def download_pdf(declaracion_id: str):
             "Content-Disposition": f'attachment; filename="perfil_generacion_rsu_{declaracion_id[:8]}.pdf"'
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# §2 Company survey — per-giro question bank + estimation
+# ---------------------------------------------------------------------------
+
+@router.get("/survey/giros")
+def list_giros():
+    """Return the catalog of supported giro codes with their survey driver unit."""
+    return [
+        {
+            "giro_codigo": code,
+            "sector": info["sector"],
+            "descripcion": info["descripcion"],
+            "unidad": info["unidad"],
+        }
+        for code, info in GIRO_CATALOG.items()
+    ]
+
+
+@router.get("/survey/preguntas/{giro_codigo}")
+def get_survey_questions(giro_codigo: str):
+    """Return the per-giro question bank for a specific sector code."""
+    questions = get_questions(giro_codigo)
+    giro_info = GIRO_CATALOG.get(giro_codigo) or GIRO_CATALOG["000000"]
+    return {
+        "giro_codigo": giro_codigo if giro_codigo in GIRO_CATALOG else "000000",
+        "sector": giro_info["sector"],
+        "descripcion": giro_info["descripcion"],
+        "preguntas": questions,
+    }
+
+
+@router.post("/survey/estimar")
+def estimate_company_generation(
+    giro_codigo: str = Query(..., description="Código SCIAN 6 dígitos"),
+    respuestas: dict = Body(..., description="Mapa pregunta_id → valor numérico"),
+):
+    """Deterministic RSU generation estimate for a company given survey answers.
+
+    Returns kg/año, ton/año, material breakdown, semaforo, and full provenance.
+    This is illustrative only — not a COA SEMARNAT report.
+    """
+    if not giro_codigo.strip():
+        raise HTTPException(status_code=422, detail="giro_codigo requerido")
+    result = estimate_generation(giro_codigo.strip(), respuestas)
+    return result
