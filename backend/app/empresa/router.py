@@ -21,6 +21,7 @@ from app.empresa.company_survey import (
     get_questions,
     estimate_generation,
 )
+from app.empresa.obligation_matrix import get_obligations
 
 router = APIRouter(prefix="/empresa", tags=["empresa"])
 
@@ -210,3 +211,21 @@ def estimate_company_generation(
         raise HTTPException(status_code=422, detail="giro_codigo requerido")
     result = estimate_generation(giro_codigo.strip(), respuestas)
     return result
+
+
+# ---------------------------------------------------------------------------
+# §3 ObligationMatrix
+# ---------------------------------------------------------------------------
+
+@router.get("/obligaciones")
+def company_obligations(
+    giro_codigo: str = Query(..., description="Código SCIAN 6 dígitos"),
+    estado_mx: str = Query(..., description="Clave estatal 2 letras: SLP, JAL, CDMX…"),
+    kg_rsu_anual: float | None = Query(None, description="Estimación anual kg RSU (filtra umbrales)"),
+):
+    """Return legal obligation checklist for a giro × estado combination.
+
+    Merges federal (LGPGIR, NOMs), sector-specific, and state-level obligations.
+    Filters threshold-based obligations when kg_rsu_anual is provided.
+    """
+    return get_obligations(giro_codigo.strip(), estado_mx.strip(), kg_rsu_anual)
