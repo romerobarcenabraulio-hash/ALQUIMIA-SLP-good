@@ -30,6 +30,7 @@ class BackgroundScheduler:
         # Lanzar como tareas de fondo — NO awaitar directamente o bloquean el lifespan
         self.tasks["scraper"] = asyncio.create_task(self._schedule_scraper_jobs())
         self.tasks["residue"] = asyncio.create_task(self._schedule_residue_aggregation())
+        self.tasks["gap_detector"] = asyncio.create_task(self._schedule_gap_detector())
         logger.info("Background scheduler started")
 
     async def stop(self):
@@ -126,6 +127,31 @@ class BackgroundScheduler:
             except Exception as e:
                 logger.error(f"Error in residue aggregation: {e}")
                 # Try again in 1 hour if failed
+                await asyncio.sleep(3600)
+
+
+    async def _schedule_gap_detector(self):
+        """Run GapDetector nightly to emit DocumentGap records for missing docs."""
+        while self.running:
+            try:
+                now = datetime.utcnow()
+                next_run = (now + timedelta(days=1)).replace(
+                    hour=2, minute=0, second=0, microsecond=0
+                )
+                await asyncio.sleep((next_run - now).total_seconds())
+
+                if not self.running:
+                    break
+
+                from app.db.session import get_sync_db
+                from app.services.gap_detector import run_gap_detector
+
+                with get_sync_db() as db:
+                    result = run_gap_detector(db)
+                    logger.info("gap_detector nightly: %s", result)
+
+            except Exception as exc:
+                logger.error("Error in gap_detector scheduler: %s", exc)
                 await asyncio.sleep(3600)
 
 
