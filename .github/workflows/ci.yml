@@ -24,12 +24,15 @@ jobs:
           python-version: "3.12"
 
       - name: Backend — venv, deps, pytest
+        env:
+          DATABASE_URL: sqlite:///./backend/alquimia_ci.db
+          SECRET_KEY: alquimia-secret-ci
+          PYTHONPATH: ${{ github.workspace }}/backend
         run: |
-          cd backend
-          python -m venv .venv
-          .venv/bin/pip install -U pip
-          .venv/bin/pip install -r requirements.txt
-          .venv/bin/python -m pytest tests/ -q
+          python -m venv backend/.venv
+          backend/.venv/bin/pip install -U pip
+          backend/.venv/bin/pip install -r backend/requirements.txt
+          backend/.venv/bin/python -m pytest backend/tests/ -q
 
       - uses: actions/setup-node@v4
         with:

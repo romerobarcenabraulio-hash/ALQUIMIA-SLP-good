@@ -3,11 +3,13 @@ from __future__ import annotations
 
 from datetime import date, datetime
 
-from sqlalchemy import Boolean, Date, DateTime, Float, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import Boolean, Date, DateTime, Float, Integer, JSON, String, Text, UniqueConstraint, func
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
+
+JsonColumn = JSONB().with_variant(JSON(), "sqlite")
 
 
 class GeoCentroAcopio(Base):
@@ -24,8 +26,8 @@ class GeoCentroAcopio(Base):
     zm: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
     lat: Mapped[float | None] = mapped_column(Float, nullable=True)
     lon: Mapped[float | None] = mapped_column(Float, nullable=True)
-    materiales: Mapped[list] = mapped_column(JSONB, nullable=False, server_default="[]")
-    precio_compra: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    materiales: Mapped[list] = mapped_column(JsonColumn, nullable=False, server_default="[]")
+    precio_compra: Mapped[dict] = mapped_column(JsonColumn, nullable=False, server_default="{}")
     telefono: Mapped[str | None] = mapped_column(String(64), nullable=True)
     horario: Mapped[str | None] = mapped_column(String(256), nullable=True)
     acepta_publico: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="true")
@@ -38,7 +40,7 @@ class GeoCentroAcopio(Base):
     score_confianza: Mapped[float] = mapped_column(Float, nullable=False, server_default="0.5")
     notas: Mapped[str | None] = mapped_column(Text, nullable=True)
     place_id: Mapped[str | None] = mapped_column(String(256), nullable=True)
-    payload_json: Mapped[dict] = mapped_column(JSONB, nullable=False, server_default="{}")
+    payload_json: Mapped[dict] = mapped_column(JsonColumn, nullable=False, server_default="{}")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )
@@ -75,8 +77,8 @@ class LogisticsResidentialRoute(Base):
     municipio_id: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
     traced: Mapped[bool] = mapped_column(Boolean, nullable=False, server_default="false")
     source: Mapped[str] = mapped_column(String(64), nullable=False, server_default="draft")
-    depot_json: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    plan_json: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    depot_json: Mapped[dict | None] = mapped_column(JsonColumn, nullable=True)
+    plan_json: Mapped[dict] = mapped_column(JsonColumn, nullable=False)
     saved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

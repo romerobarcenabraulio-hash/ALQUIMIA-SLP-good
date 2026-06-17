@@ -126,6 +126,12 @@ def create_all_tables() -> bool:
         db_url = _get_database_url() or ""
         if db_url.startswith("sqlite"):
             from app.models.document_archive import DocumentGap, TenantDocument
+            from app.models.geo import (
+                ApiUsageDaily,
+                GeoCentroAcopio,
+                GeoMunicipioSync,
+                LogisticsResidentialRoute,
+            )
             from app.models.user_account import (
                 AccessLog,
                 EmailVerificationToken,
@@ -142,6 +148,10 @@ def create_all_tables() -> bool:
                     AccessLog.__table__,
                     DocumentGap.__table__,
                     TenantDocument.__table__,
+                    GeoCentroAcopio.__table__,
+                    GeoMunicipioSync.__table__,
+                    LogisticsResidentialRoute.__table__,
+                    ApiUsageDaily.__table__,
                 ],
             )
             logger.info("Tablas MVP verificadas/creadas en SQLite local")
