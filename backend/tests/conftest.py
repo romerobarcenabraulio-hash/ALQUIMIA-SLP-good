@@ -85,6 +85,10 @@ def pytest_configure(config) -> None:  # type: ignore[override]
     # Health profundo: en CI local no exigimos ANTHROPIC_API_KEY
     os.environ.setdefault("HEALTH_DEEP_RELAX_AGORA", "1")
     os.environ.setdefault("ALQUIMIA_HIDE_GDL", "1")
+    if os.environ.get("DATABASE_URL", "").startswith("sqlite"):
+        from app.db.session import create_all_tables
+
+        create_all_tables()
 
 
 def pytest_runtest_setup(item) -> None:

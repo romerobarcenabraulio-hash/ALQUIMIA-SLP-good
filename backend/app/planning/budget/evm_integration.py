@@ -96,6 +96,18 @@ def derive_evm_from_aurum_hermes(
         ac_total = max(ac_total, 1.0)
 
     feeds, hermes_warnings = consume_hermes_feeds(mid, lookback_days=lookback_days)
+    if not feeds and ac_event.get("fecha"):
+        from datetime import date
+
+        try:
+            fecha_hasta = date.fromisoformat(str(ac_event["fecha"]))
+            feeds, hermes_warnings = consume_hermes_feeds(
+                mid,
+                lookback_days=max(lookback_days, int(ac_event.get("hermes_dias_consumidos") or 1)),
+                fecha_hasta=fecha_hasta,
+            )
+        except ValueError:
+            pass
     datos_faltantes.extend(hermes_warnings)
     hermes_agg = aggregate_hermes_logistics(feeds)
 

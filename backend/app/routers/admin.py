@@ -2615,7 +2615,11 @@ async def admin_inegi_municipalities(
             "datos_estimados": row.datos_estimados,
             "source": "inegi_gaia_or_seed_fallback",
         }
-        if _text_matches(payload, q):
+        searchable = {
+            key: payload[key]
+            for key in ("clave_inegi", "nombre", "municipio_id", "zm")
+        }
+        if _text_matches(searchable, q):
             rows.append(payload)
         if len(rows) >= limit:
             break

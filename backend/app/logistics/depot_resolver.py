@@ -36,7 +36,7 @@ def resolve_depot(
     """
     Prioridad:
     1. operador verificado
-    2. operador candidato (score ≤ 0.55)
+    2. operador candidato con coordenadas
     3. centro_acopio DENUE mejor score
     4. geocode fallback
     """
@@ -48,6 +48,10 @@ def resolve_depot(
 
     if db is not None:
         centros = geo_db.list_centros_db(db, clave_inegi=cve, incluir_operador=True)
+        if not centros:
+            from app.centros_acopio import repository as repo
+
+            centros = repo.list_centros(clave_inegi=cve, incluir_operador=True)
     else:
         from app.centros_acopio import repository as repo
 
@@ -65,10 +69,6 @@ def resolve_depot(
         if not c.verificado
         and c.lat is not None
         and c.lon is not None
-        and (
-            c.fuente == "perfil_municipal"
-            or c.score_confianza <= 0.55
-        )
     ]
     if candidatos:
         best = max(candidatos, key=lambda c: c.score_confianza)
