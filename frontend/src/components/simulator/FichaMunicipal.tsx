@@ -6,10 +6,12 @@
  * Sin fondos de color decorativos. WCAG 2.2 AA.
  */
 
+import { useState } from 'react'
 import type { MunicipioProfile, CoverageStatus } from '@/types'
 import { EditorialStatusLabel } from '@/components/editorial/EditorialStatusLabel'
 import type { EditorialStatusTone } from '@/components/editorial/EditorialStatusLabel'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink, FileDown } from 'lucide-react'
+import { getApiUrl } from '@/lib/api'
 
 // ── Utilidades ────────────────────────────────────────────────────────────────
 
@@ -97,6 +99,27 @@ export interface FichaMunicipalProps {
 
 export function FichaMunicipal({ profile, coverage, onClose }: FichaMunicipalProps) {
   const prov = profile.data_provenance ?? {}
+  const [downloading, setDownloading] = useState(false)
+
+  async function handleDownloadPdf() {
+    setDownloading(true)
+    try {
+      const base = getApiUrl()
+      const res = await fetch(`${base}/national/municipios/${encodeURIComponent(profile.municipio_id)}/pdf-ejecutivo`)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `ALQUIMIA_RSU_${profile.municipio_id}.pdf`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch {
+      // error silencioso — el botón vuelve a su estado normal
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   return (
     <article
@@ -113,15 +136,26 @@ export function FichaMunicipal({ profile, coverage, onClose }: FichaMunicipalPro
             {profile.estado} · ZM {profile.zm_id}
           </p>
         </div>
-        {onClose && (
+        <div className="flex items-center gap-2 shrink-0">
           <button
-            onClick={onClose}
-            aria-label="Cerrar ficha"
-            className="shrink-0 text-[11px] text-[#6B6760] hover:text-[#1C1B18] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11] px-2 py-0.5 rounded"
+            onClick={handleDownloadPdf}
+            disabled={downloading}
+            aria-label={downloading ? 'Generando PDF…' : 'Descargar PDF ejecutivo'}
+            className="inline-flex items-center gap-1.5 rounded-full border border-[#3B6D11] bg-[#EAF3DE] px-3 py-1 text-[11px] font-medium text-[#23470A] transition-colors hover:bg-[#3B6D11] hover:text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11]"
           >
-            Cerrar
+            <FileDown size={12} aria-hidden />
+            {downloading ? 'Generando…' : 'PDF'}
           </button>
-        )}
+          {onClose && (
+            <button
+              onClick={onClose}
+              aria-label="Cerrar ficha"
+              className="text-[11px] text-[#6B6760] hover:text-[#1C1B18] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11] px-2 py-0.5 rounded"
+            >
+              Cerrar
+            </button>
+          )}
+        </div>
       </div>
 
       {/* KPIs principales */}

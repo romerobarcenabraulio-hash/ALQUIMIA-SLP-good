@@ -1,6 +1,8 @@
 """Endpoints nacionales de Fase 8."""
 from __future__ import annotations
 
+from datetime import date
+
 from fastapi import APIRouter, HTTPException
 
 from app.national.catalog import get_profile, get_zm, list_estados, list_zm_municipios
@@ -85,4 +87,33 @@ def rsu_footprint_map():
 def circularity_heatmap_zm(zm_id: str):
     """Mapa calor circularidad (simulador) sobre rejilla proxy — ZM SLP piloto Q-025."""
     return build_circularity_heatmap_response(zm_id)
+
+
+@router.get("/municipios/{municipio_id}/pdf-ejecutivo")
+def municipio_pdf_ejecutivo(municipio_id: str):
+    """PDF ejecutivo municipal — diagnóstico RSU con procedencia por cifra (ALQ-15)."""
+    from fastapi.responses import Response  # noqa: PLC0415
+    from app.national.pdf_ejecutivo import build_pdf_ejecutivo_municipal  # noqa: PLC0415
+
+    profile = get_profile(municipio_id)
+    if profile is None:
+        raise HTTPException(status_code=404, detail=f"Municipio no encontrado: {municipio_id}")
+
+    coverage = coverage_for_municipio(municipio_id)
+
+    pdf_bytes, err = build_pdf_ejecutivo_municipal(profile, coverage)
+    if err or not pdf_bytes:
+        raise HTTPException(status_code=500, detail=err or "Error generando PDF")
+
+    filename = f"ALQUIMIA_RSU_{municipio_id}_{date.today().isoformat()}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+def _date_today() -> str:
+    from datetime import date
+    return date.today().isoformat()
 
