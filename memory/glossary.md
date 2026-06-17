@@ -1,0 +1,22 @@
+# Glosario ALQUIMIA
+
+- **ALQUIMIA:** plataforma de consultoria/operacion para circularidad municipal y, por extension, automatizacion empresarial.
+- **RSU:** residuos solidos urbanos.
+- **RCD:** residuos de construccion y demolición.
+- **RPBI:** residuos peligrosos biologico-infecciosos.
+- **ZM:** zona metropolitana; no sustituye la jurisdiccion municipal.
+- **CVE INEGI:** clave oficial de entidad/municipio usada para catalogo nacional.
+- **MGN:** Marco Geoestadistico Nacional de INEGI.
+- **SCIAN:** clasificacion economica usada para perfil empresarial y factores sectoriales.
+- **CoverageStatus:** estado honesto de cobertura (`VERDE`, `AMARILLO`, `ROJO`); nunca debe presentarse como completo si faltan datos.
+- **Procedencia:** `source` + `fecha` + `metodo` por dato o cifra persistida/mostrada.
+- **Tenant:** municipio/cliente aislado por contexto y, cuando aplica, `tenant_id`.
+- **HasTenantId:** patron de aislamiento multi-tenant en modelos persistentes.
+- **AGORA:** capa de investigacion/razonamiento/bibliografia.
+- **NOUS:** capa de aprendizaje observacional y gobernanza de insights.
+- **Class A:** agentes internos/builder de Alquimia, fijos-versionados.
+- **Class B:** Jarvis o agente del cliente, instanciado por tenant.
+- **Gate humano:** aprobacion requerida antes de acciones irreversibles o externas.
+- **Accion irreversible:** firma, pago, notificacion externa, presentacion oficial, migracion destructiva, deploy prod o cambio infra prod.
+- **Greptile:** review/navegacion de codigo y gate de PR.
+- **Render:** runtime backend; logs/metricas son fuente de verdad cuando el MCP esta operativo.
