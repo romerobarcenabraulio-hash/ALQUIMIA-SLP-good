@@ -141,7 +141,7 @@ export function FichaMunicipal({ profile, coverage, onClose }: FichaMunicipalPro
             onClick={handleDownloadPdf}
             disabled={downloading}
             aria-label={downloading ? 'Generando PDF…' : 'Descargar PDF ejecutivo'}
-            className="inline-flex items-center gap-1.5 rounded-full border border-[#3B6D11] bg-[#EAF3DE] px-3 py-1 text-[11px] font-medium text-[#23470A] transition-colors hover:bg-[#3B6D11] hover:text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11]"
+            className="inline-flex min-h-[44px] items-center gap-1.5 rounded-full border border-[#3B6D11] bg-[#EAF3DE] px-3 py-1 text-[11px] font-medium text-[#23470A] transition-colors hover:bg-[#3B6D11] hover:text-white disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11]"
           >
             <FileDown size={12} aria-hidden />
             {downloading ? 'Generando…' : 'PDF'}
@@ -150,7 +150,7 @@ export function FichaMunicipal({ profile, coverage, onClose }: FichaMunicipalPro
             <button
               onClick={onClose}
               aria-label="Cerrar ficha"
-              className="text-[11px] text-[#6B6760] hover:text-[#1C1B18] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11] px-2 py-0.5 rounded"
+              className="inline-flex min-h-[44px] items-center text-[11px] text-[#6B6760] hover:text-[#1C1B18] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11] px-2 rounded"
             >
               Cerrar
             </button>

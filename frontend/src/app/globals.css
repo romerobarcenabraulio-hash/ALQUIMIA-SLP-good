@@ -191,6 +191,28 @@ body {
 
 .animate-count-up { animation: count-up 0.3s ease-out; }
 
+/* ── prefers-reduced-motion — WCAG 2.2 AA ───────────────────────────────────
+   Desactiva animaciones y transiciones para usuarios que lo solicitan.
+   Cubre: pulse-dot, count-up, btn hover transforms, card transitions.      */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .badge-live .dot { animation: none; }
+  .animate-count-up { animation: none; }
+  .btn-primary,
+  .btn-primary:hover,
+  .btn-primary:active {
+    transform: none;
+    transition: none;
+  }
+}
+
 /* Section divider */
 .section { padding: 64px 0; }
 .section + .section { border-top: 1px solid var(--ivory-border); }

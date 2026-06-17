@@ -154,7 +154,7 @@ export function NarrativeBridge({
           {nextStep.href ? (
             <a
               href={nextStep.href}
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-green-600a hover:underline"
+              className="inline-flex min-h-[44px] items-center gap-2 text-[13px] font-medium text-green-600a hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B6D11] rounded-[4px]"
             >
               {nextStep.label}
               <ArrowRight className="h-4 w-4" aria-hidden />
@@ -163,7 +163,7 @@ export function NarrativeBridge({
             <button
               type="button"
               onClick={nextStep.onClick}
-              className="inline-flex items-center gap-2 text-[13px] font-medium text-green-600a hover:underline"
+              className="inline-flex min-h-[44px] items-center gap-2 text-[13px] font-medium text-green-600a hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B6D11] rounded-[4px]"
             >
               {nextStep.label}
               <ArrowRight className="h-4 w-4" aria-hidden />

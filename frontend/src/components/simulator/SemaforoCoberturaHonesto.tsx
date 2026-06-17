@@ -192,7 +192,7 @@ export function SemaforoCoberturaHonesto({ rows, onSelect, selectedId }: Props) 
                     aria-label={`${row.nombre} — semáforo ${tone}`}
                     className={cn(
                       'rounded-[6px] transition-colors',
-                      onSelect && 'cursor-pointer hover:bg-[#F4F2ED] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11]',
+                      onSelect && 'cursor-pointer hover:bg-[#F4F2ED] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#3B6D11] min-h-[44px]',
                       isSelected && 'ring-1 ring-[#3B6D11]',
                     )}
                   >

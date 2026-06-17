@@ -223,7 +223,7 @@ export default function ScrPage() {
           <button
             onClick={() => load(zm)}
             disabled={loading}
-            className="rounded-full border border-[#1C1B18] bg-[#1C1B18] px-4 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#3B6D11] hover:border-[#3B6D11] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B6D11]"
+            className="inline-flex min-h-[44px] items-center rounded-full border border-[#1C1B18] bg-[#1C1B18] px-4 text-[12px] font-medium text-white transition-colors hover:bg-[#3B6D11] hover:border-[#3B6D11] disabled:opacity-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#3B6D11]"
           >
             {loading ? 'Cargando…' : 'Actualizar'}
           </button>
