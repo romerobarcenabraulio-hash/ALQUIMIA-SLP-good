@@ -64,17 +64,24 @@ function ProvenanceLink({ href }: { href: string }) {
   )
 }
 
+function resolveProvenanceHref(src: unknown): string | null {
+  if (typeof src === 'string') return src
+  if (src !== null && typeof src === 'object' && 'url' in src) {
+    const url = (src as { url: unknown }).url
+    if (typeof url === 'string') return url
+  }
+  return null
+}
+
 function DataRow({ label, value, provenanceKey, provenance }: DataRowProps) {
   const src = provenanceKey && provenance ? provenance[provenanceKey] : undefined
+  const href = resolveProvenanceHref(src)
   return (
     <div className="flex items-baseline justify-between gap-4 py-1.5 border-b border-[#E8E4DC] last:border-0">
       <span className="text-[11px] text-[#6B6760] shrink-0">{label}</span>
       <span className="flex items-center gap-2">
         <span className="text-[12px] font-semibold text-[#1C1B18] tabular-nums">{value}</span>
-        {src && typeof src === 'string' && <ProvenanceLink href={src} />}
-        {src && typeof src === 'object' && src !== null && 'url' in src && typeof (src as {url: string}).url === 'string' && (
-          <ProvenanceLink href={(src as {url: string}).url} />
-        )}
+        {href !== null && <ProvenanceLink href={href} />}
       </span>
     </div>
   )
