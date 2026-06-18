@@ -10,6 +10,27 @@ on:
 jobs:
   checks:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: alquimia
+          POSTGRES_PASSWORD: alquimia
+          POSTGRES_DB: alquimia
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://alquimia:alquimia@localhost:5432/alquimia
+      SECRET_KEY: ci-secret-key-not-for-production
+      ENVIRONMENT: test
+
     steps:
       - uses: actions/checkout@v4
 
@@ -23,12 +44,13 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Backend — venv, deps, pytest
+      - name: Backend — venv, deps, migrate, pytest
         run: |
           cd backend
           python -m venv .venv
           .venv/bin/pip install -U pip
           .venv/bin/pip install -r requirements.txt
+          .venv/bin/alembic upgrade head
           .venv/bin/python -m pytest tests/ -q
 
       - uses: actions/setup-node@v4
