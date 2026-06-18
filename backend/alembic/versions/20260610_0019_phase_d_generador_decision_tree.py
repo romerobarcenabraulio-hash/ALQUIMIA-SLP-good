@@ -42,10 +42,33 @@ def _has_table(bind: Connection, name: str) -> bool:
 
 def upgrade() -> None:
     bind = op.get_bind()
-    # Create ENUM types idempotently before any table that references them.
-    op.execute("CREATE TYPE IF NOT EXISTS generadortipo AS ENUM ('empresa','hospital','hotel','comercio','residencial','industria','construccion','restaurante','escuela','otro')")
-    op.execute("CREATE TYPE IF NOT EXISTS generadorsource AS ENUM ('denue','manual','decision_tree','bulk_upload','admin')")
-    op.execute("CREATE TYPE IF NOT EXISTS decisiontreetype AS ENUM ('construccion','hospital','comercio','restaurante','industria','hotel','escuela','residencial')")
+    # Create ENUM types idempotently (PostgreSQL has no CREATE TYPE IF NOT EXISTS).
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE generadortipo AS ENUM (
+                'empresa','hospital','hotel','comercio','residencial',
+                'industria','construccion','restaurante','escuela','otro'
+            );
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE generadorsource AS ENUM (
+                'denue','manual','decision_tree','bulk_upload','admin'
+            );
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
+    op.execute("""
+        DO $$ BEGIN
+            CREATE TYPE decisiontreetype AS ENUM (
+                'construccion','hospital','comercio','restaurante',
+                'industria','hotel','escuela','residencial'
+            );
+        EXCEPTION WHEN duplicate_object THEN NULL;
+        END $$;
+    """)
 
     if not _has_table(bind, 'generador_entities'):
         op.create_table(
