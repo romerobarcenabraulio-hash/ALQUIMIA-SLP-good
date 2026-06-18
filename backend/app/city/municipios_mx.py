@@ -8,7 +8,9 @@ Generación RSU: kg/hab/día nacional ~0.86 (referencia SEMARNAT) × 0.8 factor 
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 # kg/hab/día base; ton/día = población * GEN_KG_HAB_REF * FACTOR_MX / 1000
 GEN_KG_HAB_REF: float = 0.86
@@ -33,8 +35,29 @@ class MunicipioMxRow:
     datos_estimados: bool
 
 
-# Poblaciones: mixto INEGI 2020 / CONAPO 2024 estimaciones internas (marcado estimados salvo donde ZM ya alinea).
-MUNICIPIOS_MX: tuple[MunicipioMxRow, ...] = (
+_ZM_BY_ESTADO: dict[str, str] = {
+    "24": "SLP",
+    "22": "QRO",
+    "19": "MTY",
+    "14": "GDL",
+}
+
+
+def _repo_root() -> Path:
+    here = Path(__file__).resolve()
+    for base in (here.parents[2].parent, here.parents[2], Path("/app")):
+        if (base / "data" / "geo").is_dir():
+            return base
+    return here.parents[2].parent
+
+
+def _zm_for_estado(estado_id: str) -> str:
+    return _ZM_BY_ESTADO.get(estado_id, f"EDO{estado_id}")
+
+
+# Poblaciones: mixto INEGI 2020 / CONAPO 2024 estimaciones internas
+# (marcado estimados salvo donde ZM ya alinea).
+_SEEDED_MUNICIPIOS_MX: tuple[MunicipioMxRow, ...] = (
     # ── San Luis Potosí (24) — alineado a simulador ZM SLP
     MunicipioMxRow(
         clave_inegi="24028",
@@ -183,6 +206,54 @@ MUNICIPIOS_MX: tuple[MunicipioMxRow, ...] = (
         datos_estimados=True,
     ),
 )
+
+
+def _load_manifest_municipios() -> list[MunicipioMxRow]:
+    path = _repo_root() / "data" / "geo" / "centros_acopio" / "coverage_manifest.json"
+    if not path.is_file():
+        return []
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+
+    municipios = payload.get("municipios", {})
+    if not isinstance(municipios, dict):
+        return []
+
+    rows: list[MunicipioMxRow] = []
+    for raw_cve, item in municipios.items():
+        if not isinstance(item, dict):
+            continue
+        cve = str(item.get("clave_inegi") or raw_cve).strip().zfill(5)
+        estado_id = cve[:2]
+        if not cve.isdigit() or len(cve) != 5 or not ("01" <= estado_id <= "32"):
+            continue
+        poblacion = 50_000
+        rows.append(
+            MunicipioMxRow(
+                clave_inegi=cve,
+                nombre=str(item.get("municipio") or "Municipio"),
+                estado_nombre=str(item.get("estado") or f"Entidad {estado_id}"),
+                estado_id=estado_id,
+                poblacion=poblacion,
+                generacion_rsu_dia=_rsu_ton_dia(poblacion),
+                zm_simulator_id=_zm_for_estado(estado_id),
+                municipio_simulator_id=f"m{cve}",
+                datos_estimados=True,
+            )
+        )
+    return rows
+
+
+def _build_municipios_catalog() -> tuple[MunicipioMxRow, ...]:
+    merged = {row.clave_inegi: row for row in _load_manifest_municipios()}
+    for row in _SEEDED_MUNICIPIOS_MX:
+        merged[row.clave_inegi] = row
+    return tuple(sorted(merged.values(), key=lambda row: (row.estado_id, row.nombre, row.clave_inegi)))
+
+
+MUNICIPIOS_MX: tuple[MunicipioMxRow, ...] = _build_municipios_catalog()
 
 
 def list_municipios_mx(estado_id: str | None = None) -> list[MunicipioMxRow]:
