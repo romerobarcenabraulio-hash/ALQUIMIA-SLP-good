@@ -41,6 +41,8 @@ interface QuickAction {
   desc: string
 }
 
+const CITY_TABS_HUB = ['SLP', 'QRO', 'AGS', 'SAN', 'MEX']
+
 // ─── Quick actions per stage ──────────────────────────────────────────────────
 
 const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
@@ -114,6 +116,8 @@ function ActionCard({ action }: { action: QuickAction }) {
 
 function HubContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const activeZm = searchParams.get('zm') ?? CITY_TABS_HUB[0]
   const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [tenant, setTenant] = useState<TenantSummary | null>(null)
@@ -255,6 +259,16 @@ function HubContent() {
               <ActionCard key={action.label} action={action} />
             ))}
           </div>
+
+          {/* Consulting package shortcut */}
+          <Link
+            href="/v"
+            className="mt-3 flex items-center gap-2 rounded-[12px] border border-[#C9DDB1] bg-[#EAF3DE] px-4 py-3 text-[12px] font-medium text-[#2D5409] hover:border-[#3B6D11] transition-colors"
+          >
+            <FileText size={13} className="shrink-0" />
+            <span>Paquete de consultoría RSU · ZIP índice de referencia · {activeZm}</span>
+            <ArrowRight size={12} className="ml-auto" />
+          </Link>
 
           {/* Navigation shortcuts */}
           <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-4">
