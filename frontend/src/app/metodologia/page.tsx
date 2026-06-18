@@ -90,7 +90,7 @@ export default function MethodologyPage() {
               <p className="font-mono text-[11px] font-semibold text-[#A8A49C]">A</p>
               <h3 className="mt-1 text-[14px] font-semibold text-[#1C1B18]">A · Datos investigados</h3>
               <p className="mt-2 text-[13px] leading-6 text-[#5C574F]">
-                Fuente oficial verificada: INEGI, SEMARNAT, gobierno municipal o estatal. Requiere institución, año, URL y fecha de consulta. Formato Chicago.
+                Fuente oficial verificada: INEGI, SEMARNAT, gobierno municipal o estatal. Requiere institución, año, URL y fecha de consulta. formato Chicago.
               </p>
             </div>
             <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">

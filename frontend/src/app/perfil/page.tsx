@@ -7,6 +7,19 @@ import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
 import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
+const PROFILE_PREFS_KEY = 'alquimia_profile_prefs'
+
+function ProfilePreferencesPanel({ pendingDocuments, emailVerification }: { pendingDocuments: number; emailVerification: boolean }) {
+  return (
+    <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
+      <h2 className="mb-3 text-[13px] font-semibold text-[#1C1B18]">Responsabilidad activa</h2>
+      <p className="text-[12px] text-[#6B6760]">
+        Documentos pendientes: {pendingDocuments} · Verificación de correo: {emailVerification ? 'completada' : 'pendiente'}
+      </p>
+    </div>
+  )
+}
+
 interface UserProfile {
   id: string
   nombre: string
@@ -83,6 +96,15 @@ export default function PerfilPage() {
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState('')
+  const [pendingDocuments] = useState(0)
+
+  const emailVerification = !!profile?.onboarding_completed
+
+  useEffect(() => {
+    if (profile) {
+      try { localStorage.setItem(PROFILE_PREFS_KEY, JSON.stringify({ municipio_id: profile.municipio_id })) } catch { /* ignore */ }
+    }
+  }, [profile])
 
   useEffect(() => {
     if (tokenLoading) return
@@ -248,6 +270,8 @@ export default function PerfilPage() {
             )}
           </div>
         </div>
+
+        <ProfilePreferencesPanel pendingDocuments={pendingDocuments} emailVerification={emailVerification} />
 
         {/* Account security */}
         <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
