@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
@@ -66,7 +68,10 @@ def test_admin_inegi_states_and_municipality_filter_are_available():
     assert len(states.json()["states"]) == 32
     assert {"estado_id": "24", "estado_nombre": "San Luis Potosí"} in states.json()["states"]
 
-    municipalities = client.get("/admin/inegi/municipalities?estado_id=24&q=San%20Luis&limit=20")
+    # Mock fetch_municipios_inegi to avoid flaky live INEGI API calls in CI;
+    # the endpoint merges this with list_municipios_mx (seed), which has "24028".
+    with patch("app.city.inegi_catalog.fetch_municipios_inegi", return_value=[]):
+        municipalities = client.get("/admin/inegi/municipalities?estado_id=24&q=San%20Luis&limit=20")
     assert municipalities.status_code == 200
     body = municipalities.json()
     assert body["territorial_rule"].startswith("municipio y ZM")
