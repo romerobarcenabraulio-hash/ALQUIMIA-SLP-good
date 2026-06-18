@@ -47,7 +47,7 @@ const HELP_TOPICS: HelpTopic[] = [
   },
   {
     title: 'Export & Share Results',
-    description: 'Generate professional reports for stakeholders',
+    description: 'Generate professional reports for actores o partes interesadas',
     steps: [
       'Click the "Export" button to see export options',
       'Choose "Export as JSON" for technical use or data backup',
