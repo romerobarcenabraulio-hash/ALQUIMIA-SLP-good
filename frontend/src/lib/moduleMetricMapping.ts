@@ -41,5 +41,11 @@ function metricText(metric: TenantMetric) {
 export function metricsForConsultingModule(moduleId: string, metrics: TenantMetric[]): TenantMetric[] {
   const patterns = MODULE_METRIC_PATTERNS[moduleId] ?? []
   if (!patterns.length) return []
-  return metrics.filter(metric => patterns.some(pattern => pattern.test(metricText(metric))))
+  return metrics
+    .filter(metric => patterns.some(pattern => pattern.test(metricText(metric))))
+    .map(metric => (
+      moduleId === 'city_baseline' && metric.id === 'rsu_generation'
+        ? { ...metric, label: 'Generación RSU' }
+        : metric
+    ))
 }

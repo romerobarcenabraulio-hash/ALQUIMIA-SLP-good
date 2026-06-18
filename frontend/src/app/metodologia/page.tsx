@@ -2,22 +2,28 @@ import { PublicHero, PublicPageShell } from '@/components/public/PublicPageShell
 
 const dataCategories = [
   {
-    code: '01',
-    label: 'Documento del cliente',
+    code: 'A',
+    label: 'A · Datos investigados',
     description:
-      'Documento cargado directamente por el municipio o institución contratante. Conserva: nombre del documento, página, cita literal, usuario de carga, fecha y estado de revisión.',
+      'Dato obtenido por investigación documental en fuentes municipales, estatales o federales. Conserva institución, año, URL, fecha de consulta y referencia en formato Chicago.',
   },
   {
-    code: '02',
+    code: 'B',
+    label: 'B · Datos calculados',
+    description:
+      'Dato derivado mediante fórmula transparente. Conserva campos fuente, método, alcance territorial y sello de cálculo para no presentarse como medición oficial.',
+  },
+  {
+    code: 'C',
+    label: 'C · Datos del cliente',
+    description:
+      'Documento o cifra cargada directamente por el municipio o institución contratante. Conserva nombre del documento, página, cita literal, usuario de carga, fecha y estado de revisión.',
+  },
+  {
+    code: '01',
     label: 'Investigación municipal',
     description:
       'Dato obtenido de fuentes oficiales del municipio en cuestión: actas de cabildo, planes de desarrollo, padrones, estudios propios. Institución emisora, año, URL y fecha de consulta requeridos.',
-  },
-  {
-    code: '03',
-    label: 'Dato estatal',
-    description:
-      'Estadística o normativa de nivel estatal aplicable al municipio. Fuente: gobierno del estado, SEMARNAT estatal, organismos intermedios. Alcance territorial explícito.',
   },
   {
     code: '04',
@@ -91,8 +97,8 @@ export default function MethodologyPage() {
                 Cero cifras sin cita; cero benchmarks tratados como estudio local.
               </h2>
               <p className="mt-4 max-w-md text-[14px] leading-7 text-[#5C574F]">
-                La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un
-                claim municipal local ni sustituye reglamento, estudio local o documento del cliente.
+                La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un claim
+                municipal local ni sustituye reglamento, estudio local o documento del cliente.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">

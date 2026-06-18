@@ -7,6 +7,8 @@ import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
 import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
+const PROFILE_PREFS_KEY = 'alquimia.profile.preferences'
+
 interface UserProfile {
   id: string
   nombre: string
@@ -21,9 +23,91 @@ interface UserProfile {
   reglamento_uploaded: boolean
 }
 
+interface ProfilePreferences {
+  responsibility: 'active' | 'observer'
+  pendingDocuments: string[]
+  emailVerification: 'verified' | 'pending'
+}
+
+const defaultPreferences: ProfilePreferences = {
+  responsibility: 'active',
+  pendingDocuments: ['reglamento_limpia', 'estudio_cuarteo'],
+  emailVerification: 'pending',
+}
+
 function authHeaders(): HeadersInit {
   const token = typeof window !== 'undefined' ? localStorage.getItem('alquimia_token') : null
   return token ? { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' } : { 'Content-Type': 'application/json' }
+}
+
+function loadProfilePreferences(): ProfilePreferences {
+  if (typeof window === 'undefined') return defaultPreferences
+  try {
+    const stored = window.localStorage.getItem(PROFILE_PREFS_KEY)
+    return stored ? { ...defaultPreferences, ...JSON.parse(stored) } : defaultPreferences
+  } catch {
+    return defaultPreferences
+  }
+}
+
+function ProfilePreferencesPanel({ profile }: { profile: UserProfile }) {
+  const [preferences, setPreferences] = useState<ProfilePreferences>(defaultPreferences)
+
+  useEffect(() => {
+    const nextPreferences = loadProfilePreferences()
+    setPreferences({
+      ...nextPreferences,
+      emailVerification: profile.email ? 'verified' : nextPreferences.emailVerification,
+      pendingDocuments: profile.reglamento_uploaded
+        ? nextPreferences.pendingDocuments.filter(document => document !== 'reglamento_limpia')
+        : nextPreferences.pendingDocuments,
+    })
+  }, [profile.email, profile.reglamento_uploaded])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    window.localStorage.setItem(PROFILE_PREFS_KEY, JSON.stringify(preferences))
+  }, [preferences])
+
+  const pendingDocuments = preferences.pendingDocuments
+  const emailVerification = preferences.emailVerification
+
+  return (
+    <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
+      <div className="mb-3 flex items-center gap-2">
+        <CheckCircle2 size={14} className="text-[#3B6D11]" />
+        <h2 className="text-[13px] font-semibold text-[#1C1B18]">Responsabilidad activa</h2>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
+          <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Rol operativo</p>
+          <p className="mt-1 text-[13px] font-semibold text-[#1C1B18]">
+            {preferences.responsibility === 'active' ? 'Responsable municipal' : 'Observador'}
+          </p>
+        </div>
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
+          <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Documentos pendientes</p>
+          <p className="mt-1 text-[13px] font-semibold text-[#1C1B18]">{pendingDocuments.length}</p>
+        </div>
+        <div className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-3">
+          <p className="text-[11px] uppercase tracking-wide text-[#8E8980]">Correo</p>
+          <p className="mt-1 text-[13px] font-semibold text-[#1C1B18]">
+            {emailVerification === 'verified' ? 'Verificado' : 'Por confirmar'}
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => setPreferences(current => ({
+          ...current,
+          responsibility: current.responsibility === 'active' ? 'observer' : 'active',
+        }))}
+        className="mt-4 rounded-[8px] border border-[#D8D2C5] px-3 py-1.5 text-[12px] text-[#3B3326] hover:border-[#3B6D11] transition-colors"
+      >
+        Cambiar responsabilidad
+      </button>
+    </div>
+  )
 }
 
 function rolLabel(rol: string): string {
@@ -248,6 +332,8 @@ export default function PerfilPage() {
             )}
           </div>
         </div>
+
+        <ProfilePreferencesPanel profile={profile} />
 
         {/* Account security */}
         <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
