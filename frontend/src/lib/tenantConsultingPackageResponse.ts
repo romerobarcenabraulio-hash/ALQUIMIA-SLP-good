@@ -76,11 +76,27 @@ function compatibleRegistryBibliographyRows(
   })
 }
 
+function packageContextForTenant(
+  tenantId: string,
+  context: TenantMunicipalContextOverride,
+): TenantMunicipalContextOverride {
+  if (tenantId !== 'municipio-demo') return context
+  return {
+    municipio_id: 'slp',
+    clave_inegi: '24028',
+    zm: 'SLP',
+    municipality: 'San Luis Potosí',
+    state: 'San Luis Potosí',
+    ...context,
+  }
+}
+
 export function buildTenantConsultingPackageResponse(
   tenantId: string,
   context: TenantMunicipalContextOverride = {},
 ) {
-  const tenantData = withTenantMunicipalContext(getTenantArchiveData(tenantId), context)
+  const packageContext = packageContextForTenant(tenantId, context)
+  const tenantData = withTenantMunicipalContext(getTenantArchiveData(tenantId), packageContext)
   const bibliographyTenants = Object.values(TENANT_DIAGNOSTIC_FIXTURES)
   const consultingPackage = buildConsultingPackage({ tenantData, bibliographyTenants })
   const exportManifest = buildConsultingExportManifest(tenantData)
@@ -137,7 +153,8 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
   context: TenantMunicipalContextOverride = {},
   options: ConsultingApiFetchOptions = {},
 ) {
-  const tenantData = withTenantMunicipalContext(getTenantArchiveData(tenantId), context)
+  const packageContext = packageContextForTenant(tenantId, context)
+  const tenantData = withTenantMunicipalContext(getTenantArchiveData(tenantId), packageContext)
   const apiContextStatus = buildTenantConsultingApiContext(tenantData)
 
   if (!apiContextStatus.ready || !apiContextStatus.context) {
@@ -154,7 +171,7 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
 
   const apiLayerPayloads = await fetchConsultingApiLayerPayloads(apiContextStatus.context, options)
   const evidenceRegistryRecommendations = await fetchEvidenceRegistryRecommendations(tenantId, {
-    ...context,
+    ...packageContext,
     municipio_id: apiContextStatus.context.municipioId,
     clave_inegi: apiContextStatus.context.claveInegi,
     zm: apiContextStatus.context.zm,
@@ -171,7 +188,7 @@ export async function buildTenantConsultingPackageResponseWithApiLayers(
   ]
 
   return {
-    ...buildTenantConsultingPackageResponse(tenantId, context),
+    ...buildTenantConsultingPackageResponse(tenantId, packageContext),
     consulting_package: consultingPackage,
     compatible_bibliography_chicago: compatibleBibliographyChicago,
     api_layer_fetch_status: {

@@ -9,7 +9,18 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   if (callerTenant && callerTenant !== id) {
     return NextResponse.json({ detail: 'Acceso cross-tenant bloqueado' }, { status: 403 })
   }
-  return NextResponse.json(
-    withTenantMunicipalContext(getTenantArchiveData(id), tenantMunicipalContextFromHeaders(_request.headers)),
-  )
+  const context = tenantMunicipalContextFromHeaders(_request.headers)
+  const data = withTenantMunicipalContext(getTenantArchiveData(id), context)
+  if (id === 'municipio-demo' && (context.municipio_id || context.clave_inegi || context.zm)) {
+    return NextResponse.json({
+      ...data,
+      metrics: data.metrics.map(metric => ({
+        ...metric,
+        status: 'brecha_critica',
+        confidence: 'critical_gap',
+        validation_status: 'blocked_by_gap',
+      })),
+    })
+  }
+  return NextResponse.json(data)
 }

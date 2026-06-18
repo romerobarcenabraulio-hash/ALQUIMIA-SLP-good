@@ -31,7 +31,13 @@ function hasRegulation(data: TenantDiagnosticData) {
 
 function hasMinimumBibliography(data: TenantDiagnosticData) {
   const citedMetrics = data.metrics.filter(metric => Boolean(metric.citation_id))
-  const usableMetrics = data.metrics.filter(metric => metric.status === 'verificado' || metric.status === 'inferido')
+  const usableMetrics = data.metrics.filter(metric =>
+    metric.status === 'verificado'
+    || metric.status === 'inferido'
+    || Boolean(metric.formula)
+    || Boolean(metric.derived_from?.length)
+    || metric.value !== null,
+  )
   return citedMetrics.length >= 2 && usableMetrics.length >= 2
 }
 

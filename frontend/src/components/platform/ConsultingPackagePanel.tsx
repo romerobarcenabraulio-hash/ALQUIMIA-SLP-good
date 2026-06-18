@@ -9,6 +9,7 @@ import {
 } from '@/lib/consultingPackageEngine'
 import { tenantMunicipalContextHeadersFromStorage } from '@/lib/tenantRuntimeMunicipalContext'
 import { buildConsultingInputRegistry } from '@/lib/consultingInputRegistry'
+import { getTenantArchiveData } from '@/lib/documentArchiveStore'
 import type { TenantDiagnosticData } from '@/lib/tenantDiagnosticData'
 import type { TenantConsultingPackageResponse } from '@/lib/tenantConsultingPackageResponse'
 import { ConsultingDiagramSuite } from '@/components/platform/ConsultingDiagrams'
@@ -79,10 +80,14 @@ export function ConsultingPackagePanel({
   showTechnicalPanel: boolean
 }) {
   const [apiResponse, setApiResponse] = useState<TenantConsultingPackageResponse | null>(null)
+  const packageTenantData = useMemo(
+    () => tenantData.tenant_id === 'municipio-demo' ? getTenantArchiveData(tenantData.tenant_id) : tenantData,
+    [tenantData],
+  )
   const fallbackPackage = useMemo(() => {
-    const inputRegistry = buildConsultingInputRegistry(tenantData)
-    return buildConsultingPackage({ tenantData, inputRegistry })
-  }, [tenantData])
+    const inputRegistry = buildConsultingInputRegistry(packageTenantData)
+    return buildConsultingPackage({ tenantData: packageTenantData, inputRegistry })
+  }, [packageTenantData])
 
   useEffect(() => {
     let cancelled = false

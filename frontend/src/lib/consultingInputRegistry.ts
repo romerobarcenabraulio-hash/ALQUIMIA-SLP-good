@@ -98,6 +98,7 @@ function metricConfidence(metric: TenantMetric): ConsultingInputSource['confiden
 }
 
 function statusFromMetric(metric: TenantMetric): ConsultingInputStatus {
+  if (metric.id === 'rsu_generation' && metric.derived_from?.length) return 'assumption'
   if (metric.status === 'brecha_critica') return 'blocked'
   if (metric.status === 'verificado') return 'available'
   if (metric.status === 'inferido') return 'assumption'

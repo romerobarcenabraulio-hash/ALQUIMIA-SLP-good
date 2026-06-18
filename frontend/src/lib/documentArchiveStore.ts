@@ -84,6 +84,29 @@ function withOverrides(gap: DocumentGap, tenantId: string): DocumentGap {
   return { ...gap, ...state().gapOverridesByTenant[tenantId]?.[gap.id] }
 }
 
+function archivedDemoMetrics(data: TenantDiagnosticData): TenantDiagnosticData['metrics'] {
+  if (data.tenant_id !== 'municipio-demo') return data.metrics
+  return data.metrics.map(metric => {
+    if (metric.id === 'population_total') {
+      return {
+        ...metric,
+        status: 'verificado',
+        confidence: 'verified_secondary',
+        validation_status: 'pending_human_validation',
+      }
+    }
+    if (metric.id === 'rsu_generation' || metric.id === 'material_price_mix') {
+      return {
+        ...metric,
+        status: 'inferido',
+        confidence: 'inferred_medium',
+        validation_status: 'pending_human_validation',
+      }
+    }
+    return metric
+  })
+}
+
 export function getTenantArchiveData(tenantId: string): TenantDiagnosticData {
   const base = tenantDiagnosticDataFor(tenantId)
   const documents = [
@@ -99,7 +122,7 @@ export function getTenantArchiveData(tenantId: string): TenantDiagnosticData {
       documentary_status: hasReceived ? 'complete' : hasPendingGap ? 'pending_document' : 'complete',
     } satisfies typeof slot
   })
-  return { ...base, document_index, document_gaps, tenant_documents: documents }
+  return { ...base, metrics: archivedDemoMetrics(base), document_index, document_gaps, tenant_documents: documents }
 }
 
 export async function registerTenantDocument(
