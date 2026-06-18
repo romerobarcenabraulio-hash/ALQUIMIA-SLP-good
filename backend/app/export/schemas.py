@@ -15,7 +15,7 @@ from pydantic import BaseModel, Field
 
 class DocumentTheme(BaseModel):
     """Tema visual e institucional del paquete documental."""
-    brand_name:      str = "ALQUIMIA · paquete documental"
+    brand_name:      str = "ALQUIMIA · ÁGORA GOV"
     municipio:       str = ""
     zm:              str = ""
     date:            str = ""
