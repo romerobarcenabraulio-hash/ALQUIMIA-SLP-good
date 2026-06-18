@@ -21,15 +21,18 @@ _GENERADOR_TIPO = sa.Enum(
     'empresa', 'hospital', 'hotel', 'comercio', 'residencial', 'industria',
     'construccion', 'restaurante', 'escuela', 'otro',
     name='generadortipo',
+    create_type=False,  # managed explicitly via .create(checkfirst=True) below
 )
 _GENERADOR_SOURCE = sa.Enum(
     'denue', 'manual', 'decision_tree', 'bulk_upload', 'admin',
     name='generadorsource',
+    create_type=False,
 )
 _DECISION_TREE_TYPE = sa.Enum(
     'construccion', 'hospital', 'comercio', 'restaurante', 'industria',
     'hotel', 'escuela', 'residencial',
     name='decisiontreetype',
+    create_type=False,
 )
 
 
@@ -39,9 +42,10 @@ def _has_table(bind: Connection, name: str) -> bool:
 
 def upgrade() -> None:
     bind = op.get_bind()
-    _GENERADOR_TIPO.create(bind, checkfirst=True)
-    _GENERADOR_SOURCE.create(bind, checkfirst=True)
-    _DECISION_TREE_TYPE.create(bind, checkfirst=True)
+    # Create ENUM types idempotently before any table that references them.
+    op.execute("CREATE TYPE IF NOT EXISTS generadortipo AS ENUM ('empresa','hospital','hotel','comercio','residencial','industria','construccion','restaurante','escuela','otro')")
+    op.execute("CREATE TYPE IF NOT EXISTS generadorsource AS ENUM ('denue','manual','decision_tree','bulk_upload','admin')")
+    op.execute("CREATE TYPE IF NOT EXISTS decisiontreetype AS ENUM ('construccion','hospital','comercio','restaurante','industria','hotel','escuela','residencial')")
 
     if not _has_table(bind, 'generador_entities'):
         op.create_table(
