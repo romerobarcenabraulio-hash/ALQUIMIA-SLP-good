@@ -4,7 +4,8 @@ import { TENANT_DIAGNOSTIC_FIXTURES } from '@/lib/tenantDiagnosticData'
 
 describe('tenantConsultingApiContext', () => {
   it('blocks API automation when tenant lacks formal municipal context', () => {
-    const status = buildTenantConsultingApiContext(TENANT_DIAGNOSTIC_FIXTURES['municipio-demo'])
+    const noContext = { ...TENANT_DIAGNOSTIC_FIXTURES['municipio-demo'], municipio_id: undefined, clave_inegi: undefined, zm: undefined }
+    const status = buildTenantConsultingApiContext(noContext)
 
     expect(status.ready).toBe(false)
     expect(status.context).toBeNull()

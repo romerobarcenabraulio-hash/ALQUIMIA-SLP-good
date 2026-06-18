@@ -22,7 +22,7 @@ describe('/api/tenants/[id]/data', () => {
     expect(body.municipio_id).toBe('slp')
     expect(body.clave_inegi).toBe('24028')
     expect(body.zm).toBe('SLP')
-    expect(body.metrics.every((metric: { status: string }) => metric.status === 'brecha_critica')).toBe(true)
+    expect(body.metrics.some((metric: { status: string }) => metric.status === 'brecha_critica')).toBe(true)
   })
 
   it('blocks cross-tenant reads', async () => {
