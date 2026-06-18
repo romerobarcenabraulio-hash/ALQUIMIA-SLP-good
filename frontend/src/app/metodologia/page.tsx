@@ -122,8 +122,7 @@ export default function MethodologyPage() {
                 Cero cifras sin cita; cero benchmarks tratados como estudio local.
               </h2>
               <p className="mt-4 max-w-md text-[14px] leading-7 text-[#5C574F]">
-                La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un
-                claim municipal local ni sustituye reglamento, estudio local o documento del cliente.
+                La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un claim municipal local ni sustituye reglamento, estudio local o documento del cliente.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">

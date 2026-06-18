@@ -264,6 +264,7 @@ function HubContent() {
                 { label: 'RSU — Residuos sólidos', href: '/gobierno/rsu', icon: <Recycle size={13} /> },
                 { label: 'Simulador financiero', href: '/simulator', icon: <BarChart2 size={13} /> },
                 { label: 'Documentos y exportes', href: '/hub/documentos', icon: <Download size={13} /> },
+                { label: 'Paquete de consultoría RSU', href: '/v', icon: <FileText size={13} /> },
               ].map(item => (
                 <Link
                   key={item.href}
