@@ -80,6 +80,27 @@ export default function MethodologyPage() {
         ))}
       </section>
 
+      <section className="mx-auto max-w-6xl px-5 pb-10">
+        <div className="border-t border-[#D8D2C5] py-8">
+          <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8C8880]">
+            Esquema de cita
+          </p>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              { code: 'A', label: 'Datos investigados', desc: 'Fuente oficial verificada: INEGI, SEMARNAT, gobierno municipal o estatal. Requiere institución, año, URL y fecha de consulta. Formato Chicago.' },
+              { code: 'B', label: 'Datos calculados', desc: 'Derivados de categoría A mediante fórmula transparente. Conservan fórmula, campos fuente y sello "Calculado · ver metodología".' },
+              { code: 'C', label: 'Datos del cliente', desc: 'Documentos cargados directamente por el municipio. Conservan nombre, página, cita literal, usuario de carga y estado de revisión.' },
+            ].map(item => (
+              <div key={item.code} className="rounded-[8px] border border-[#E8E4DC] bg-[#FDFCFA] p-5">
+                <p className="font-mono text-[11px] font-semibold text-[#A8A49C]">{item.code}</p>
+                <h3 className="mt-1 text-[14px] font-semibold text-[#1C1B18]">{item.code} · {item.label}</h3>
+                <p className="mt-2 text-[13px] leading-6 text-[#5C574F]">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl px-5 pb-20">
         <div className="border-t border-[#D8D2C5] bg-transparent py-8">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
