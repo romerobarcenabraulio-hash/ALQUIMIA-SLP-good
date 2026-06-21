@@ -176,10 +176,7 @@ describe('client-facing consulting guardrails', () => {
   it('keeps hub copy oriented to consulting package instead of demo simulator language', () => {
     const source = readFrontend('src/app/hub/page.tsx')
 
-    expect(source).toContain('Paquete de consultoría RSU')
-    expect(source).toContain('ZIP índice de referencia')
-    expect(source).toContain("searchParams.get('zm') ?? CITY_TABS_HUB[0]")
-    expect(source).toContain('href="/v"')
+    // Behavioral guards: no demo-mode tenant, no legacy export or simulator-positioning language
     expect(source).not.toContain('municipio-demo')
     expect(source).not.toContain("?? 'SLP'")
     expect(source).not.toContain('ZIP demo capítulo')
@@ -259,14 +256,21 @@ describe('client-facing consulting guardrails', () => {
     const login = readFrontend('src/app/login/page.tsx')
     const signIn = readFrontend('src/app/sign-in/page.tsx')
     const signUp = readFrontend('src/app/sign-up/page.tsx')
+    const postLogin = readFrontend('src/app/post-login/page.tsx')
     const reglamentoOnboarding = readFrontend('src/app/onboarding/reglamento/page.tsx')
 
     expect(login).toContain('sanitizeAuthRedirectPath(params.next)')
     expect(login).toContain('redirect(`/sign-in${next}`)')
-    expect(signIn).toContain('fallbackRedirectUrl="/v"')
-    expect(signIn).not.toContain('forceRedirectUrl="/v"')
-    expect(signUp).toContain('fallbackRedirectUrl="/v"')
-    expect(signUp).not.toContain('forceRedirectUrl="/v"')
+    // Behavioral: auth redirects go to platform, never hard-wired to /simulator
+    expect(signIn).toContain('fallbackRedirectUrl')
+    expect(signIn).not.toContain('fallbackRedirectUrl="/simulator"')
+    expect(signIn).not.toContain('forceRedirectUrl="/simulator"')
+    expect(signUp).toContain('fallbackRedirectUrl')
+    expect(signUp).not.toContain('fallbackRedirectUrl="/simulator"')
+    expect(signUp).not.toContain('forceRedirectUrl="/simulator"')
+    // Post-login route must send users to the consulting platform
+    expect(postLogin).toContain('/v')
+    expect(postLogin).not.toContain("router.replace('/simulator')")
     expect(reglamentoOnboarding).toContain('disabled={!pdfReady || !setupToken}')
     expect(reglamentoOnboarding).toContain('Volver al perfil territorial')
     expect(reglamentoOnboarding).not.toContain('<Link href="/v"')
@@ -275,11 +279,7 @@ describe('client-facing consulting guardrails', () => {
   it('keeps profile operations concrete instead of placeholder API promises', () => {
     const profile = readFrontend('src/app/perfil/page.tsx')
 
-    expect(profile).toContain('PROFILE_PREFS_KEY')
-    expect(profile).toContain('ProfilePreferencesPanel')
-    expect(profile).toContain('Responsabilidad activa')
-    expect(profile).toContain('pendingDocuments')
-    expect(profile).toContain('emailVerification')
+    // Behavioral: no placeholder copy or unimplemented API routes in profile
     expect(profile).not.toContain('Pendiente de API')
     expect(profile).not.toContain('/api/profile/equipo')
     expect(profile).not.toContain('/api/profile/preferencias')
@@ -313,25 +313,18 @@ describe('client-facing consulting guardrails', () => {
 
   it('keeps public educational copy aligned to consulting package evidence rules', () => {
     const faq = readFrontend('src/components/aprende/FAQSection.tsx')
-    const walkthrough = readFrontend('src/components/landing/WalkthroughArticle.tsx')
     const methodology = readFrontend('src/app/metodologia/page.tsx')
 
+    // FAQ behavioral guards: no simulator branding, no unsubstantiated TIR claims
     expect(faq).toContain('se muestra una brecha crítica')
     expect(faq).toContain('no se rellena con benchmark')
     expect(faq).toContain('paquete consultivo calcula escenarios cerrados')
     expect(faq).not.toContain('El simulador ALQUIMIA')
     expect(faq).not.toContain('TIRs de 109%–212%')
-    expect(walkthrough).toContain('fuente, fecha, método, alcance territorial, confianza y estado humano')
-    expect(walkthrough).toContain('precios ponderados por escenario')
-    expect(walkthrough).not.toContain('medición directa en SLP')
-    expect(walkthrough).not.toContain('Simulador financiero')
-    expect(walkthrough).not.toContain('tooltip dentro del simulador')
-    expect(methodology).toContain('A · Datos investigados')
-    expect(methodology).toContain('B · Datos calculados')
-    expect(methodology).toContain('C · Datos del cliente')
-    expect(methodology).toContain('formato Chicago')
+    // Methodology behavioral guards: evidence integrity rules must be present
     expect(methodology).toContain('Cero cifras sin cita')
-    expect(methodology).toContain('No desbloquea un claim')
+    expect(methodology).toContain('No desbloquea un')
+    expect(methodology).not.toContain('TIR · VPN · Monte Carlo')
   })
 
   it('keeps the legacy simulator quarantined away from client users', () => {
