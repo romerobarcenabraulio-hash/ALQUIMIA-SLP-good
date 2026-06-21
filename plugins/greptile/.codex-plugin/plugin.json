@@ -1,0 +1,22 @@
+{
+  "name": "greptile",
+  "version": "0.1.0",
+  "description": "Greptile connector plugin for Codex code navigation and PR review workflows.",
+  "author": {
+    "name": "Local developer"
+  },
+  "interface": {
+    "displayName": "Greptile",
+    "shortDescription": "Use Greptile code intelligence from Codex.",
+    "longDescription": "Connects the tenant GREPTILE app so Codex can use Greptile for repository navigation and review-oriented workflows once the app is authorized.",
+    "developerName": "Local developer",
+    "category": "Developer Tools",
+    "capabilities": [
+      "Code Search",
+      "Repository Review"
+    ],
+    "defaultPrompt": "Use Greptile to inspect this repo."
+  },
+  "apps": "./.app.json",
+  "mcpServers": "./.mcp.json"
+}

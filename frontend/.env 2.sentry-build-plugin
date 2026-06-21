@@ -1,0 +1,7 @@
+# Sentry Build Plugin Configuration
+# These variables are used during the Next.js build to upload source maps to Sentry
+# Set these in your Vercel environment variables for automatic source map uploads
+
+SENTRY_AUTH_TOKEN=
+SENTRY_ORG=
+SENTRY_PROJECT=

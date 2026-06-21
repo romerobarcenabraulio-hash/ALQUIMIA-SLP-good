@@ -1,0 +1,41 @@
+{
+  "audiencia": "pmo",
+  "fecha": "2026-06-17",
+  "municipio_id": "jua",
+  "supuesto_base": "Modelo_BASED.xlsx · Fase 0-1 · ZM SLP",
+  "resumen_ejecutivo": {
+    "ac_total": "0",
+    "capex_baseline": "153641308",
+    "opex_mensual_referencia": "277316",
+    "hermes_dias_consumidos": 0,
+    "semaforo_costo_ton": "VERDE"
+  },
+  "ac_por_categoria": {
+    "capex_incurrido": "0",
+    "opex_referencia_mes": "277316",
+    "logistica_hermes_acumulado": "0",
+    "no_calidad": "0"
+  },
+  "costos_no_calidad": {
+    "merma_logistica": "0",
+    "rechazo_contaminacion": "0",
+    "tiempo_muerto_flota": "0",
+    "costo_relleno_evitable": "0",
+    "total": "0"
+  },
+  "indicadores_eficiencia": {
+    "costo_por_tonelada_mxn": "0",
+    "costo_por_vivienda_mxn": "1.24",
+    "payback_simple_anios": "1.81",
+    "costo_no_calidad_pct": "0.00",
+    "semaforo_costo_ton": "VERDE",
+    "alerta_roja_no_calidad": false
+  },
+  "alertas_y_acciones": [
+    "Sin feeds HERMES en /Users/braulioromerobarcena/Documents/alquimia-slp/data/logistics/daily_summary — pipeline opera con estructura vacía/sintética"
+  ],
+  "fuentes": {
+    "hermes": "data/logistics/daily_summary/",
+    "baseline": "Modelo_BASED.xlsx · Fase 0-1 · ZM SLP"
+  }
+}
