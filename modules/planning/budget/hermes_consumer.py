@@ -43,7 +43,7 @@ def load_hermes_feed(path: Path) -> HermesDailyFeed | None:
 def consume_hermes_feeds(
     municipio_id: str | None = None,
     *,
-    lookback_days: int = 14,
+    lookback_days: int = 60,
     fecha_hasta: date | None = None,
 ) -> tuple[list[HermesDailyFeed], list[str]]:
     """

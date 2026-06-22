@@ -89,7 +89,7 @@ def test_coverage_status_refleja_campos_faltantes():
 
     assert csp.presupuesto == SourceStatus.no_disponible
     assert csp.contrato == SourceStatus.no_disponible
-    assert csp.operacion == SourceStatus.no_disponible
+    assert csp.operacion == SourceStatus.estimado
     assert csp.siguiente_accion
 
 
