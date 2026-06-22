@@ -12,6 +12,8 @@ from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
 from urllib.parse import urljoin, urlencode
 
+from app.pdf_intake import OcrUnavailableError, extract_pdf_text_with_fallback
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,10 +67,9 @@ async def _get_json(url: str, timeout: int = 20) -> Optional[dict]:
 
 
 async def extract_text_from_pdf_url(pdf_url: str) -> str:
-    """Download PDF and extract text using pdfplumber."""
+    """Download PDF and extract text with CID-safe OCR fallback."""
     try:
         import aiohttp
-        import io
 
         async with aiohttp.ClientSession() as session:
             async with session.get(pdf_url, timeout=aiohttp.ClientTimeout(total=60)) as resp:
@@ -77,23 +78,26 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
                 pdf_bytes = await resp.read()
 
         try:
-            import pdfplumber
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                text = "\n".join(
-                    page.extract_text() or "" for page in pdf.pages[:10]  # First 10 pages
+            force_ocr = bool(re.search(r"(dof|diario|periodico|per[ií]odico|gaceta)", pdf_url, re.IGNORECASE))
+            text, direct, _ocr = extract_pdf_text_with_fallback(
+                pdf_bytes,
+                source=pdf_url,
+                force_ocr_for_official=force_ocr,
+            )
+            if direct.suspicious:
+                logger.info(
+                    "PDF direct extraction suspicious for %s (%s chars, %s words); OCR fallback attempted",
+                    pdf_url,
+                    direct.char_count,
+                    direct.word_count,
                 )
-                return text[:50000]  # Limit to 50k chars
-        except Exception:
-            try:
-                import PyPDF2
-                reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-                text = "\n".join(
-                    reader.pages[i].extract_text() or ""
-                    for i in range(min(10, len(reader.pages)))
-                )
-                return text[:50000]
-            except Exception:
-                return ""
+            return text[:50000]
+        except OcrUnavailableError as exc:
+            logger.warning("OCR required but unavailable for %s: %s", pdf_url, exc)
+            return ""
+        except Exception as exc:
+            logger.error("Error extracting PDF text for %s: %s", pdf_url, exc)
+            return ""
 
     except Exception as e:
         logger.error(f"Error extracting PDF {pdf_url}: {e}")
