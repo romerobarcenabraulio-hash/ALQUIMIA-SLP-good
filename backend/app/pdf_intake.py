@@ -101,7 +101,20 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
     name = Path(raw_path).name
     provenance = Provenance(raw_path, utc_now(), "filename_path_rules_v1")
 
-    if any(token in lower for token in ("periodico", "periódico", "diario", "dof", "gaceta", "nota_detalle")):
+    official_publication = any(
+        token in lower
+        for token in (
+            "periodico",
+            "periódico",
+            "diario oficial",
+            "diario_oficial",
+            "diario-oficial",
+            "dof",
+            "gaceta",
+            "nota_detalle",
+        )
+    )
+    if official_publication:
         return PdfClassification(
             archivo=raw_path,
             tipo="iniciativa",
@@ -189,7 +202,7 @@ def assess_text_quality(text: str, *, min_chars: int = 120) -> tuple[bool, float
     if len(stripped) < min_chars:
         return True, 0.0, len(words)
 
-    replacement_count = stripped.count("\ufffd") + stripped.count("�")
+    replacement_count = stripped.count("\ufffd")
     control_count = sum(1 for char in stripped if ord(char) < 32 and char not in "\n\r\t")
     replacement_ratio = (replacement_count + control_count) / max(1, len(stripped))
     alpha_count = sum(1 for char in stripped if char.isalpha())
@@ -373,6 +386,8 @@ def extract_with_raster_ocr_from_bytes(
 ) -> OcrResult:
     with tempfile.TemporaryDirectory(prefix="alquimia-pdf-ocr-") as tmp:
         images = rasterize_pdf_to_jpeg(pdf_bytes, tmp, source=source, resolution=150, max_pages=max_pages)
+        if not images:
+            raise OcrUnavailableError("OCR requerido pero no se generaron imagenes del PDF")
         text = ocr_backend(images)
     return OcrResult(
         text=text[:50000],
@@ -415,6 +430,10 @@ def extract_pdf_text_with_fallback(
         if force_ocr_for_official and not direct.suspicious and direct.text.strip():
             return direct.text, direct, None
         raise
+    if not ocr.text.strip():
+        if direct.text.strip():
+            return direct.text, direct, ocr
+        raise OcrUnavailableError("OCR requerido pero no produjo texto")
     return ocr.text, direct, ocr
 
 
