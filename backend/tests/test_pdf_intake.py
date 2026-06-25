@@ -71,6 +71,16 @@ def test_diario_oficial_signal_is_initiative():
     assert result.modulo_destino == "catalogo_iniciativas / Modo B / M03B"
 
 
+def test_periodico_without_official_signal_is_not_initiative():
+    report = classify_pdf_path("reportes/indicadores_periodicos_Q1.pdf")
+    municipal = classify_pdf_path("reportes/periodico_municipal_rsu.pdf")
+    official = classify_pdf_path("estado/periodico_oficial_residuos.pdf")
+
+    assert report.tipo == "otro"
+    assert municipal.tipo == "dato_cliente"
+    assert official.tipo == "iniciativa"
+
+
 def test_detects_cid_empty_or_garbage_text_as_suspicious():
     cid_result = assess_text_quality("(cid:123) (cid:555) \ufffd \ufffd")
     garbage_result = assess_text_quality("BBBBB TTTTT PPPPP 12345 ///// " * 20)
