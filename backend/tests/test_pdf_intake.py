@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 
 from app.pdf_intake import (
     OcrUnavailableError,
+    OcrResult,
+    Provenance,
     assess_text_quality,
     build_inventory,
     classify_pdf_path,
@@ -51,6 +54,20 @@ def test_municipal_signal_wins_over_standard_tokens():
 
     assert result.tipo == "dato_cliente"
     assert result.modulo_destino == "M03/M03B legal municipal"
+
+
+def test_diario_without_official_signal_stays_client_data():
+    result = classify_pdf_path("reportes/bitacora/diario_de_ruta_municipal.pdf")
+
+    assert result.tipo == "dato_cliente"
+    assert result.modulo_destino == "M03/M03B legal municipal"
+
+
+def test_diario_oficial_signal_is_initiative():
+    result = classify_pdf_path("DOF/diario_oficial_residuos.pdf")
+
+    assert result.tipo == "iniciativa"
+    assert result.modulo_destino == "catalogo_iniciativas / Modo B / M03B"
 
 
 def test_detects_cid_empty_or_garbage_text_as_suspicious():
@@ -134,6 +151,57 @@ def test_forced_official_ocr_preserves_usable_direct_text_when_ocr_missing(monke
     assert ocr is None
     assert direct.suspicious is False
     assert "Texto oficial legible" in text
+
+
+def test_pdf_text_fallback_keeps_partial_direct_text_when_ocr_is_empty(monkeypatch):
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_text_direct_from_bytes",
+        lambda pdf_bytes, source, max_pages=10: type(
+            "Direct",
+            (),
+            {
+                "text": "Articulo 9. Texto parcial util del PDF con obligaciones municipales.",
+                "method": "pdftotext",
+                "char_count": 90,
+                "word_count": 10,
+                "replacement_ratio": 0.0,
+                "suspicious": True,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_with_raster_ocr_from_bytes",
+        lambda pdf_bytes, source, ocr_backend: OcrResult(
+            text="",
+            method="pdftoppm_jpeg_150_then_ocr",
+            image_count=1,
+            claims=[],
+            provenance=Provenance(source, "2026-06-25T00:00:00+00:00", "test"),
+        ),
+    )
+
+    text, direct, ocr = extract_pdf_text_with_fallback(b"%PDF-1.4", source="fixture.pdf")
+
+    assert direct.suspicious is True
+    assert ocr is not None
+    assert "Texto parcial util" in text
+
+
+def test_raster_ocr_rejects_empty_page_list(monkeypatch):
+    monkeypatch.setattr("app.pdf_intake.rasterize_pdf_to_jpeg", lambda *args, **kwargs: [])
+
+    try:
+        from app.pdf_intake import extract_with_raster_ocr_from_bytes
+
+        extract_with_raster_ocr_from_bytes(
+            b"%PDF-1.4",
+            source="fixture.pdf",
+            ocr_backend=lambda images: "",
+        )
+    except OcrUnavailableError as exc:
+        assert "no se generaron imagenes" in str(exc)
+    else:
+        raise AssertionError("empty raster output should fail before OCR")
 
 
 def test_rasterize_returns_only_current_run_pages(tmp_path, monkeypatch):
@@ -274,3 +342,23 @@ def test_inventory_records_failed_pdf_and_continues(tmp_path, monkeypatch):
     assert rows[0].texto_extraible == "no"
     assert "ValueError" in rows[0].provenance.metodo
     assert rows[1].tipo == "norma"
+
+
+def test_dof_scraper_populates_content_from_linked_pdf(monkeypatch):
+    from app.web_scraper import scrapers
+
+    async def fake_get_html(url, timeout=20):
+        if "busqueda" in url:
+            return '<a href="/nota_detalle.php?codigo=123">Norma de residuos municipales</a>'
+        return '<html><body><a href="/docs/nota.pdf">PDF</a></body></html>'
+
+    async def fake_pdf_text(url):
+        return "Articulo 1. El municipio debera gestionar residuos solidos urbanos."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_text_from_pdf_url", fake_pdf_text)
+
+    docs = asyncio.run(scrapers.DOFScraper().search_documents(["residuos"], days_back=1))
+
+    assert len(docs) == 1
+    assert "municipio debera" in docs[0].contenido_text
