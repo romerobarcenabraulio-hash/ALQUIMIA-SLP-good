@@ -108,6 +108,53 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
         return ""
 
 
+def _looks_like_pdf_url(url: str) -> bool:
+    return bool(re.search(r"\.pdf(?:$|[?#])", url, re.IGNORECASE))
+
+
+def _iter_html_links(html: str) -> list[tuple[str, str]]:
+    """Return (href, text) links using BeautifulSoup when present, with a regex fallback."""
+    try:
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        return [(link.get("href", ""), link.get_text(strip=True)) for link in soup.find_all("a", href=True)]
+    except ImportError:
+        links: list[tuple[str, str]] = []
+        for match in re.finditer(r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", html, flags=re.IGNORECASE | re.DOTALL):
+            href, raw_text = match.groups()
+            text = re.sub(r"<[^>]+>", " ", raw_text)
+            text = re.sub(r"\s+", " ", text).strip()
+            links.append((href, text))
+        return links
+
+
+async def extract_content_from_document_url(document_url: str) -> str:
+    """Extract content from a PDF URL or from the first PDF linked by an HTML document."""
+    if _looks_like_pdf_url(document_url):
+        return await extract_text_from_pdf_url(document_url)
+
+    html = await _get_html(document_url, timeout=15)
+    if not html:
+        return ""
+
+    for href, _text in _iter_html_links(html):
+        if _looks_like_pdf_url(href):
+            return await extract_text_from_pdf_url(urljoin(document_url, href))
+
+    try:
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        return re.sub(r"\s+", " ", soup.get_text(" ", strip=True))[:50000]
+    except ImportError:
+        text = re.sub(r"<[^>]+>", " ", html)
+        return re.sub(r"\s+", " ", text).strip()[:50000]
+    except Exception as exc:
+        logger.error("Error extracting linked document content for %s: %s", document_url, exc)
+        return ""
+
+
 def _parse_date_mx(date_str: str) -> Optional[str]:
     """Parse Spanish date string to YYYY-MM-DD."""
     MONTHS = {
@@ -154,29 +201,26 @@ class DOFScraper:
                     continue
 
                 try:
-                    from bs4 import BeautifulSoup
-                    soup = BeautifulSoup(html, "lxml")
-
                     # DOF search results have links with class "ligas"
-                    for link in soup.find_all("a", href=True)[:20]:
-                        href = link.get("href", "")
-                        text = link.get_text(strip=True)
+                    for href, text in _iter_html_links(html)[:20]:
 
                         if not text or len(text) < 10:
                             continue
 
                         if "nota_detalle" in href or "nota_detalle_popup" in href:
                             full_url = urljoin(self.BASE_URL, href)
+                            contenido_text = await extract_content_from_document_url(full_url)
                             doc = ScrapedDocumentInfo(
                                 titulo=text[:500],
                                 url=full_url,
                                 descripcion=f"DOF — búsqueda: {keyword}",
                                 fecha_publicacion=None,
+                                contenido_text=contenido_text,
                             )
                             documents.append(doc)
 
                 except ImportError:
-                    logger.warning("BeautifulSoup not installed, returning empty DOF results")
+                    logger.warning("No HTML link parser available, returning empty DOF results")
 
             except Exception as e:
                 logger.error(f"DOF scraper error for keyword {keyword}: {e}")
@@ -184,7 +228,7 @@ class DOFScraper:
         return documents
 
 
-# ─── SEMARNAT Scraper ───────────────────────────────────────────────────────
+# ─── SEMARNAT Scraper ─────────────────────────────────────────────────────────
 
 class SEMARNATScraper:
     """Scraper for SEMARNAT publications via gob.mx."""
@@ -238,7 +282,7 @@ class SEMARNATScraper:
         return documents
 
 
-# ─── COFEMER Scraper ──────────────────────────────────────────────────────
+# ─── COFEMER Scraper ─────────────────────────────────────────────────────────
 
 class COFEMERScraper:
     """Scraper for COFEMER regulatory impact documents."""
@@ -268,7 +312,7 @@ class COFEMERScraper:
         return documents
 
 
-# ─── INEGI Scraper ───────────────────────────────────────────────────────
+# ─── INEGI Scraper ─────────────────────────────────────────────────────────
 
 class INEGIScraper:
     """Scraper for INEGI data and publications."""
