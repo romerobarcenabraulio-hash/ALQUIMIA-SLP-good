@@ -78,7 +78,7 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
                 pdf_bytes = await resp.read()
 
         try:
-            force_ocr = bool(re.search(r"(dof|diario|periodico|per[ií]odico|gaceta)", pdf_url, re.IGNORECASE))
+            force_ocr = _is_official_pdf_url(pdf_url)
             text, direct, _ocr = await asyncio.wait_for(
                 asyncio.to_thread(
                     extract_pdf_text_with_fallback,
@@ -109,7 +109,19 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
 
 
 def _looks_like_pdf_url(url: str) -> bool:
-    return bool(re.search(r"\.pdf(?:$|[?#])", url, re.IGNORECASE))
+    return bool(re.search(r"\.pdf(?:$|[/?#&=])", url, re.IGNORECASE))
+
+
+def _is_official_pdf_url(url: str) -> bool:
+    """Return true for DOF/official-gazette URLs that warrant OCR validation."""
+    return bool(
+        re.search(
+            r"(dof\.gob\.mx|/dof/|nota_detalle|diario[ _-]oficial|gaceta|"
+            r"periodico[ _-]oficial|per[ií]odico[ _-]oficial)",
+            url,
+            re.IGNORECASE,
+        )
+    )
 
 
 def _iter_html_links(html: str) -> list[tuple[str, str]]:
@@ -195,7 +207,14 @@ class DOFScraper:
 
         for keyword in keywords[:3]:  # Limit to 3 keywords to avoid overload
             try:
-                url = f"{self.BASE_URL}/index.php?action=busqueda&lang=es&texto={keyword}&fInicial={since}&fFinal={until}"
+                query = urlencode({
+                    "action": "busqueda",
+                    "lang": "es",
+                    "texto": keyword,
+                    "fInicial": since,
+                    "fFinal": until,
+                })
+                url = f"{self.BASE_URL}/index.php?{query}"
                 html = await _get_html(url)
                 if not html:
                     continue
@@ -209,15 +228,21 @@ class DOFScraper:
 
                         if "nota_detalle" in href or "nota_detalle_popup" in href:
                             full_url = urljoin(self.BASE_URL, href)
-                            contenido_text = await extract_content_from_document_url(full_url)
                             doc = ScrapedDocumentInfo(
                                 titulo=text[:500],
                                 url=full_url,
                                 descripcion=f"DOF — búsqueda: {keyword}",
                                 fecha_publicacion=None,
-                                contenido_text=contenido_text,
+                                contenido_text="",
                             )
                             documents.append(doc)
+                            try:
+                                doc.contenido_text = await asyncio.wait_for(
+                                    extract_content_from_document_url(full_url),
+                                    timeout=20,
+                                )
+                            except asyncio.TimeoutError:
+                                logger.warning("Timed out extracting DOF content for %s", full_url)
 
                 except ImportError:
                     logger.warning("No HTML link parser available, returning empty DOF results")
