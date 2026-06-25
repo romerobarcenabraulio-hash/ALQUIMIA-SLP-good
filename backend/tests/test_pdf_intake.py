@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from urllib.parse import parse_qs, urlparse
 
 from app.pdf_intake import (
     OcrUnavailableError,
@@ -362,3 +363,64 @@ def test_dof_scraper_populates_content_from_linked_pdf(monkeypatch):
 
     assert len(docs) == 1
     assert "municipio debera" in docs[0].contenido_text
+
+
+def test_pdf_url_detection_accepts_pdf_in_query_parameters():
+    from app.web_scraper import scrapers
+
+    assert scrapers._looks_like_pdf_url("https://example.test/download?file=nota.pdf&id=123") is True
+
+
+def test_official_pdf_url_detection_does_not_force_client_diario_files():
+    from app.web_scraper import scrapers
+
+    assert scrapers._is_official_pdf_url("https://cliente.test/reportes/diario_operacion.pdf") is False
+    assert scrapers._is_official_pdf_url("https://www.dof.gob.mx/nota_detalle.php?codigo=123") is True
+    assert scrapers._is_official_pdf_url("https://estado.test/periodico_oficial_residuos.pdf") is True
+
+
+def test_dof_scraper_urlencodes_keyword_query(monkeypatch):
+    from app.web_scraper import scrapers
+
+    captured_urls: list[str] = []
+
+    async def fake_get_html(url, timeout=20):
+        captured_urls.append(url)
+        return ""
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+
+    docs = asyncio.run(
+        scrapers.DOFScraper().search_documents(["residuos&fFinal=01/01/2000"], days_back=1)
+    )
+
+    query = parse_qs(urlparse(captured_urls[0]).query)
+    assert docs == []
+    assert query["texto"] == ["residuos&fFinal=01/01/2000"]
+
+
+def test_dof_scraper_preserves_metadata_when_content_extraction_times_out(monkeypatch):
+    from app.web_scraper import scrapers
+
+    async def fake_get_html(url, timeout=20):
+        return '<a href="/nota_detalle.php?codigo=123">Norma de residuos municipales</a>'
+
+    async def timeout_extract(url):
+        raise asyncio.TimeoutError
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_content_from_document_url", timeout_extract)
+
+    docs = asyncio.run(scrapers.DOFScraper().search_documents(["residuos"], days_back=1))
+
+    assert len(docs) == 1
+    assert docs[0].titulo == "Norma de residuos municipales"
+    assert docs[0].contenido_text == ""
+
+
+def test_scheduler_marks_extracted_text_only_when_content_is_present():
+    from app.web_scraper.scheduler import _has_extracted_text
+
+    assert _has_extracted_text(" Articulo 1. ") is True
+    assert _has_extracted_text("   ") is False
+    assert _has_extracted_text(None) is False
