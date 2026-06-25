@@ -13,6 +13,7 @@ import re
 import shutil
 import subprocess
 import tempfile
+import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -100,16 +101,6 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
     name = Path(raw_path).name
     provenance = Provenance(raw_path, utc_now(), "filename_path_rules_v1")
 
-    if any(token in lower for token in ("gri", "iso", "nom-", "norma", "esrs", "tcfd", "aa1000")):
-        return PdfClassification(
-            archivo=raw_path,
-            tipo="norma",
-            dato_clave=_standard_key(name),
-            modulo_destino="catalogo_estandares / M18-M19",
-            estado="pendiente_catalogar",
-            provenance=provenance,
-        )
-
     if any(token in lower for token in ("periodico", "periódico", "diario", "dof", "gaceta", "nota_detalle")):
         return PdfClassification(
             archivo=raw_path,
@@ -124,6 +115,8 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
         token in lower
         for token in (
             "reglamento",
+            "municipal",
+            "municipio",
             "licitacion",
             "licitación",
             "contrato",
@@ -142,6 +135,16 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
             dato_clave=_tenant_key(name),
             modulo_destino="M03/M03B legal municipal",
             estado="pendiente_validacion_juridica",
+            provenance=provenance,
+        )
+
+    if any(token in lower for token in ("gri", "iso", "nom-", "norma", "esrs", "tcfd", "aa1000")):
+        return PdfClassification(
+            archivo=raw_path,
+            tipo="norma",
+            dato_clave=_standard_key(name),
+            modulo_destino="catalogo_estandares / M18-M19",
+            estado="pendiente_catalogar",
             provenance=provenance,
         )
 
@@ -290,7 +293,7 @@ def rasterize_pdf_to_jpeg(
     with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
         tmp.write(pdf_bytes)
         tmp.flush()
-        prefix = out_dir / "page"
+        prefix = out_dir / f"page-{uuid.uuid4().hex}"
         cmd = [
             pdftoppm,
             "-jpeg",
@@ -304,7 +307,7 @@ def rasterize_pdf_to_jpeg(
             str(prefix),
         ]
         subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=60)
-    return sorted(out_dir.glob("page-*.jpg"))
+    return sorted(out_dir.glob(f"{prefix.name}-*.jpg"))
 
 
 def rasterize_pdf_path_to_jpeg(
@@ -406,7 +409,12 @@ def extract_pdf_text_with_fallback(
     needs_ocr = direct.suspicious or force_ocr_for_official
     if not needs_ocr:
         return direct.text, direct, None
-    ocr = extract_with_raster_ocr_from_bytes(pdf_bytes, source=source, ocr_backend=ocr_backend)
+    try:
+        ocr = extract_with_raster_ocr_from_bytes(pdf_bytes, source=source, ocr_backend=ocr_backend)
+    except (FileNotFoundError, OcrUnavailableError):
+        if force_ocr_for_official and not direct.suspicious and direct.text.strip():
+            return direct.text, direct, None
+        raise
     return ocr.text, direct, ocr
 
 
@@ -417,7 +425,7 @@ def build_inventory(paths: Iterable[str | Path]) -> list[PdfInventoryRow]:
         classification = classify_pdf_path(path)
         try:
             direct = extract_text_direct_from_path(path)
-        except OSError as exc:
+        except Exception as exc:
             rows.append(
                 PdfInventoryRow(
                     archivo=str(path),
@@ -425,11 +433,11 @@ def build_inventory(paths: Iterable[str | Path]) -> list[PdfInventoryRow]:
                     texto_extraible="no",
                     dato_clave=classification.dato_clave,
                     modulo_destino=classification.modulo_destino,
-                    estado="falla: archivo no legible",
+                    estado="falla: extraccion directa no completada",
                     provenance=Provenance(
                         source=str(path),
                         fecha=utc_now(),
-                        metodo=f"filesystem_read_failed; error={type(exc).__name__}: {exc}",
+                        metodo=f"direct_extraction_failed; error={type(exc).__name__}: {exc}",
                     ),
                 )
             )

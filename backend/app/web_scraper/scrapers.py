@@ -79,10 +79,14 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
 
         try:
             force_ocr = bool(re.search(r"(dof|diario|periodico|per[ií]odico|gaceta)", pdf_url, re.IGNORECASE))
-            text, direct, _ocr = extract_pdf_text_with_fallback(
-                pdf_bytes,
-                source=pdf_url,
-                force_ocr_for_official=force_ocr,
+            text, direct, _ocr = await asyncio.wait_for(
+                asyncio.to_thread(
+                    extract_pdf_text_with_fallback,
+                    pdf_bytes,
+                    source=pdf_url,
+                    force_ocr_for_official=force_ocr,
+                ),
+                timeout=90,
             )
             if direct.suspicious:
                 logger.info(
@@ -180,7 +184,7 @@ class DOFScraper:
         return documents
 
 
-# ─── SEMARNAT Scraper ─────────────────────────────────────────────────────────
+# ─── SEMARNAT Scraper ───────────────────────────────────────────────────────
 
 class SEMARNATScraper:
     """Scraper for SEMARNAT publications via gob.mx."""
@@ -234,7 +238,7 @@ class SEMARNATScraper:
         return documents
 
 
-# ─── COFEMER Scraper ─────────────────────────────────────────────────────────
+# ─── COFEMER Scraper ──────────────────────────────────────────────────────
 
 class COFEMERScraper:
     """Scraper for COFEMER regulatory impact documents."""
@@ -264,7 +268,7 @@ class COFEMERScraper:
         return documents
 
 
-# ─── INEGI Scraper ─────────────────────────────────────────────────────────
+# ─── INEGI Scraper ───────────────────────────────────────────────────────
 
 class INEGIScraper:
     """Scraper for INEGI data and publications."""

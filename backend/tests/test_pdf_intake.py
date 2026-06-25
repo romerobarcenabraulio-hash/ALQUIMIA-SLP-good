@@ -9,6 +9,7 @@ from app.pdf_intake import (
     classify_pdf_path,
     extract_claims,
     extract_pdf_text_with_fallback,
+    rasterize_pdf_to_jpeg,
     run_pdf_scraping_checklist,
 )
 
@@ -36,6 +37,20 @@ def test_classifies_gaceta_dof_as_initiative_catalog():
     assert result.tipo == "iniciativa"
     assert result.modulo_destino == "catalogo_iniciativas / Modo B / M03B"
     assert result.estado == "pendiente_extraer_claims_y_alerta"
+
+
+def test_official_signal_wins_over_standard_tokens():
+    result = classify_pdf_path("https://dof.gob.mx/nota_detalle.php?codigo=NOM-083-norma.pdf")
+
+    assert result.tipo == "iniciativa"
+    assert result.modulo_destino == "catalogo_iniciativas / Modo B / M03B"
+
+
+def test_municipal_signal_wins_over_standard_tokens():
+    result = classify_pdf_path("NORMAS/reglamento_norma_municipal.pdf")
+
+    assert result.tipo == "dato_cliente"
+    assert result.modulo_destino == "M03/M03B legal municipal"
 
 
 def test_detects_cid_empty_or_garbage_text_as_suspicious():
@@ -87,6 +102,56 @@ def test_pdf_text_fallback_uses_ocr_when_direct_text_is_suspicious(monkeypatch):
     assert ocr is not None
     assert ocr.method == "pdftoppm_jpeg_150_then_ocr"
     assert "municipio" in text.lower()
+
+
+def test_forced_official_ocr_preserves_usable_direct_text_when_ocr_missing(monkeypatch):
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_text_direct_from_bytes",
+        lambda pdf_bytes, source, max_pages=10: type(
+            "Direct",
+            (),
+            {
+                "text": "Texto oficial legible con articulos y obligaciones suficientes.",
+                "method": "pdfplumber",
+                "char_count": 250,
+                "word_count": 35,
+                "replacement_ratio": 0.0,
+                "suspicious": False,
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_with_raster_ocr_from_bytes",
+        lambda *args, **kwargs: (_ for _ in ()).throw(OcrUnavailableError("sin tesseract")),
+    )
+
+    text, direct, ocr = extract_pdf_text_with_fallback(
+        b"%PDF-1.4",
+        source="https://dof.gob.mx/nota_detalle.pdf",
+        force_ocr_for_official=True,
+    )
+
+    assert ocr is None
+    assert direct.suspicious is False
+    assert "Texto oficial legible" in text
+
+
+def test_rasterize_returns_only_current_run_pages(tmp_path, monkeypatch):
+    stale = tmp_path / "page-stale-1.jpg"
+    stale.write_text("stale")
+
+    monkeypatch.setattr("app.pdf_intake._pdftoppm_path", lambda: "/usr/bin/pdftoppm")
+
+    def fake_run(cmd, check, capture_output, text, timeout):
+        prefix = Path(cmd[-1])
+        (tmp_path / f"{prefix.name}-1.jpg").write_text("current")
+
+    monkeypatch.setattr("app.pdf_intake.subprocess.run", fake_run)
+
+    images = rasterize_pdf_to_jpeg(b"%PDF-1.4", tmp_path, source="fixture.pdf")
+
+    assert images == [next(path for path in tmp_path.glob("page-*-1.jpg") if path != stale)]
+    assert stale not in images
 
 
 def test_checklist_breaks_at_extract_when_ocr_is_unavailable(tmp_path, monkeypatch):
@@ -180,3 +245,32 @@ def test_inventory_rows_include_source_fecha_method(tmp_path, monkeypatch):
     assert rows[0].provenance.source.endswith("GRI 306_ Waste 2020.pdf")
     assert rows[0].provenance.fecha
     assert "pdfplumber" in rows[0].provenance.metodo
+
+
+def test_inventory_records_failed_pdf_and_continues(tmp_path, monkeypatch):
+    first = _fake_pdf(tmp_path / "bad_reglamento.pdf")
+    second = _fake_pdf(tmp_path / "GRI 306_ Waste 2020.pdf")
+
+    def fake_extract(path):
+        if Path(path).name == "bad_reglamento.pdf":
+            raise ValueError("malformed PDF")
+        return type(
+            "Direct",
+            (),
+            {
+                "suspicious": False,
+                "char_count": 250,
+                "word_count": 40,
+                "text": "GRI 306 residuos " * 40,
+                "method": "pdfplumber",
+            },
+        )()
+
+    monkeypatch.setattr("app.pdf_intake.extract_text_direct_from_path", fake_extract)
+
+    rows = build_inventory([first, second])
+
+    assert len(rows) == 2
+    assert rows[0].texto_extraible == "no"
+    assert "ValueError" in rows[0].provenance.metodo
+    assert rows[1].tipo == "norma"
