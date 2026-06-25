@@ -104,8 +104,12 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
     official_publication = any(
         token in lower
         for token in (
-            "periodico",
-            "periódico",
+            "periodico oficial",
+            "periodico_oficial",
+            "periodico-oficial",
+            "periódico oficial",
+            "periódico_oficial",
+            "periódico-oficial",
             "diario oficial",
             "diario_oficial",
             "diario-oficial",
