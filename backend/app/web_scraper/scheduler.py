@@ -23,6 +23,10 @@ KEYWORD_SETS = {
 }
 
 
+def _has_extracted_text(value: Optional[str]) -> bool:
+    return bool((value or "").strip())
+
+
 async def scrape_and_store_documents(
     db: Session,
     source: ScraperSource,
@@ -76,6 +80,7 @@ async def scrape_and_store_documents(
                     url=doc_info.url,
                     fecha_publicacion=doc_info.fecha_publicacion,
                     contenido_text=doc_info.contenido_text,
+                    extraido_text=_has_extracted_text(doc_info.contenido_text),
                     pdf_hash=doc_info.pdf_hash,
                 )
 
