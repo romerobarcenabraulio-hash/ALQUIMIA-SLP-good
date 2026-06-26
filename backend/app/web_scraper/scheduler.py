@@ -27,6 +27,23 @@ def _has_extracted_text(value: Optional[str]) -> bool:
     return bool((value or "").strip())
 
 
+def _backfill_existing_document(existing: ScrapedDocument, doc_info) -> bool:
+    """Backfill recovered extraction text on duplicate scraped documents."""
+    if not _has_extracted_text(doc_info.contenido_text):
+        return False
+    if _has_extracted_text(existing.contenido_text) and existing.extraido_text:
+        return False
+
+    existing.contenido_text = doc_info.contenido_text
+    existing.extraido_text = True
+    classification = classify_document(doc_info.titulo, doc_info.contenido_text)
+    existing.ambito = classification.get("ambito")
+    existing.tema = classification.get("tema")
+    existing.aplicable_rsu = classification.get("aplicable_rsu", False)
+    existing.aplicable_rcd = classification.get("aplicable_rcd", False)
+    return True
+
+
 async def scrape_and_store_documents(
     db: Session,
     source: ScraperSource,
@@ -70,6 +87,7 @@ async def scrape_and_store_documents(
 
                 if existing:
                     results["documentos_duplicados"] += 1
+                    _backfill_existing_document(existing, doc_info)
                     continue
 
                 # Create new document

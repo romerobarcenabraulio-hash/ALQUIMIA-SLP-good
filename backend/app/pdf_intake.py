@@ -101,7 +101,7 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
     name = Path(raw_path).name
     provenance = Provenance(raw_path, utc_now(), "filename_path_rules_v1")
 
-    official_publication = any(
+    official_publication = bool(re.search(r"(^|[\W_])dof([\W_]|$)|dof\.gob\.mx", lower)) or any(
         token in lower
         for token in (
             "periodico oficial",
@@ -113,7 +113,6 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
             "diario oficial",
             "diario_oficial",
             "diario-oficial",
-            "dof",
             "gaceta",
             "nota_detalle",
         )
@@ -226,7 +225,7 @@ def assess_text_quality(text: str, *, min_chars: int = 120) -> tuple[bool, float
 def extract_text_direct_from_bytes(pdf_bytes: bytes, *, source: str, max_pages: int = 10) -> DirectTextResult:
     text = ""
     method = "pdftotext"
-    pdftotext = shutil.which("pdftotext") or os.environ.get("PDFTOTEXT_PATH")
+    pdftotext = os.environ.get("PDFTOTEXT_PATH") or shutil.which("pdftotext")
     if pdftotext:
         try:
             with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp:
@@ -371,7 +370,14 @@ def extract_claims(text: str, *, limit: int = 12) -> list[str]:
         flags=re.IGNORECASE,
     )
     claims: list[str] = []
+    pending_marker: str | None = None
     for sentence in re.split(r"(?<=[.;:])\s+", clean):
+        if pending_marker:
+            sentence = f"{pending_marker} {sentence}".strip()
+            pending_marker = None
+        elif len(sentence) < 25 and markers.search(sentence):
+            pending_marker = sentence
+            continue
         if len(sentence) < 25:
             continue
         if markers.search(sentence):
@@ -527,6 +533,8 @@ def run_pdf_scraping_checklist(
     if direct.suspicious:
         try:
             ocr_result = extract_with_raster_ocr_from_path(path, ocr_backend=ocr_backend)
+            if not ocr_result.text.strip():
+                raise OcrUnavailableError("OCR requerido pero no produjo texto")
             add(
                 2,
                 "extrae",

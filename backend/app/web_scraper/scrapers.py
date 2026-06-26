@@ -10,7 +10,7 @@ import re
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
-from urllib.parse import urljoin, urlencode
+from urllib.parse import parse_qs, unquote, urljoin, urlencode, urlparse
 
 from app.pdf_intake import OcrUnavailableError, extract_pdf_text_with_fallback
 
@@ -114,11 +114,12 @@ def _looks_like_pdf_url(url: str) -> bool:
 
 def _is_official_pdf_url(url: str) -> bool:
     """Return true for DOF/official-gazette URLs that warrant OCR validation."""
+    normalized = unquote(unquote(url)).lower()
     return bool(
         re.search(
             r"(dof\.gob\.mx|/dof/|nota_detalle|diario[ _-]oficial|gaceta|"
-            r"periodico[ _-]oficial|per[ií]odico[ _-]oficial)",
-            url,
+            r"periodico[ _-]oficial|per[ií]odico[ _-]oficial|periódico[ _-]oficial)",
+            normalized,
             re.IGNORECASE,
         )
     )
@@ -141,6 +142,32 @@ def _iter_html_links(html: str) -> list[tuple[str, str]]:
         return links
 
 
+def _select_document_pdf_link(document_url: str, links: list[tuple[str, str]]) -> str | None:
+    pdf_links = [(href, text) for href, text in links if _looks_like_pdf_url(href)]
+    if not pdf_links:
+        return None
+    if len(pdf_links) == 1:
+        return pdf_links[0][0]
+
+    parsed = urlparse(document_url)
+    code = parse_qs(parsed.query).get("codigo", [""])[0]
+
+    def score(link: tuple[str, str]) -> int:
+        href, text = link
+        haystack = unquote(f"{href} {text}").lower()
+        value = 0
+        if code and code.lower() in haystack:
+            value += 6
+        if re.search(r"\b(nota|detalle|publicacion|documento)\b", haystack):
+            value += 3
+        if re.search(r"\b(anexo|adjunto|attachment|relacionado)\b", haystack):
+            value -= 3
+        return value
+
+    best = max(pdf_links, key=score)
+    return best[0] if score(best) > 0 else None
+
+
 async def extract_content_from_document_url(document_url: str) -> str:
     """Extract content from a PDF URL or from the first PDF linked by an HTML document."""
     if _looks_like_pdf_url(document_url):
@@ -150,9 +177,9 @@ async def extract_content_from_document_url(document_url: str) -> str:
     if not html:
         return ""
 
-    for href, _text in _iter_html_links(html):
-        if _looks_like_pdf_url(href):
-            return await extract_text_from_pdf_url(urljoin(document_url, href))
+    selected_pdf = _select_document_pdf_link(document_url, _iter_html_links(html))
+    if selected_pdf:
+        return await extract_text_from_pdf_url(urljoin(document_url, selected_pdf))
 
     try:
         from bs4 import BeautifulSoup
@@ -243,6 +270,8 @@ class DOFScraper:
                                 )
                             except asyncio.TimeoutError:
                                 logger.warning("Timed out extracting DOF content for %s", full_url)
+                            except Exception as exc:
+                                logger.error("Error extracting DOF content for %s: %s", full_url, exc)
 
                 except ImportError:
                     logger.warning("No HTML link parser available, returning empty DOF results")

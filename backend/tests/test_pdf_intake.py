@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 from pathlib import Path
+from types import SimpleNamespace
 from urllib.parse import parse_qs, urlparse
 
 from app.pdf_intake import (
@@ -81,6 +82,13 @@ def test_periodico_without_official_signal_is_not_initiative():
     assert official.tipo == "iniciativa"
 
 
+def test_dof_abbreviation_does_not_match_client_dofiscales_path():
+    result = classify_pdf_path("referencia/DoFiscales/contrato_cliente.pdf")
+
+    assert result.tipo == "dato_cliente"
+    assert result.modulo_destino == "M03/M03B legal municipal"
+
+
 def test_detects_cid_empty_or_garbage_text_as_suspicious():
     cid_result = assess_text_quality("(cid:123) (cid:555) \ufffd \ufffd")
     garbage_result = assess_text_quality("BBBBB TTTTT PPPPP 12345 ///// " * 20)
@@ -97,6 +105,35 @@ def test_claim_extraction_finds_legal_obligations():
 
     assert claims
     assert "municipio" in claims[0].lower()
+
+
+def test_claim_extraction_keeps_split_article_marker_with_body():
+    claims = extract_claims(
+        "Articulo 5. Se adiciona una fraccion para que el municipio debera separar residuos solidos."
+    )
+
+    assert claims
+    assert claims[0].startswith("Articulo 5.")
+    assert "municipio debera" in claims[0].lower()
+
+
+def test_direct_extraction_prefers_configured_pdftotext(monkeypatch):
+    from app import pdf_intake
+
+    captured_cmds: list[list[str]] = []
+
+    def fake_run(cmd, **kwargs):
+        captured_cmds.append(cmd)
+        return SimpleNamespace(stdout="Articulo 1. El municipio debera gestionar residuos solidos.")
+
+    monkeypatch.setenv("PDFTOTEXT_PATH", "/tmp/known-good-pdftotext")
+    monkeypatch.setattr(pdf_intake.shutil, "which", lambda name: "/usr/bin/system-pdftotext")
+    monkeypatch.setattr(pdf_intake.subprocess, "run", fake_run)
+
+    result = pdf_intake.extract_text_direct_from_bytes(b"%PDF-1.4", source="fixture.pdf")
+
+    assert captured_cmds[0][0] == "/tmp/known-good-pdftotext"
+    assert "municipio" in result.text
 
 
 def test_pdf_text_fallback_uses_ocr_when_direct_text_is_suspicious(monkeypatch):
@@ -264,6 +301,40 @@ def test_checklist_breaks_at_extract_when_ocr_is_unavailable(tmp_path, monkeypat
     assert "OCR" in result.steps[1].evidence
 
 
+def test_checklist_breaks_at_extract_when_ocr_returns_empty_text(tmp_path, monkeypatch):
+    pdf = _fake_pdf(tmp_path / "periodico_oficial_fixture.pdf")
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_text_direct_from_path",
+        lambda path: type(
+            "Direct",
+            (),
+            {
+                "suspicious": True,
+                "char_count": 20,
+                "word_count": 2,
+                "text": "(cid:123)",
+                "method": "pdftotext",
+            },
+        )(),
+    )
+    monkeypatch.setattr(
+        "app.pdf_intake.extract_with_raster_ocr_from_path",
+        lambda path, ocr_backend: OcrResult(
+            text="",
+            method="pdftoppm_jpeg_150_then_ocr",
+            image_count=1,
+            claims=[],
+            provenance=Provenance(str(path), "2026-06-25T00:00:00Z", "pdftoppm_jpeg_150_then_ocr"),
+        ),
+    )
+
+    result = run_pdf_scraping_checklist(pdf, downloaded=True, source_kind="iniciativa")
+
+    assert result.broken_step == 2
+    assert result.steps[1].status == "failed"
+    assert "no produjo texto" in result.steps[1].evidence
+
+
 def test_checklist_reaches_alert_when_ocr_recovers_claims_for_existing_tenant(tmp_path, monkeypatch):
     pdf = _fake_pdf(tmp_path / "periodico_oficial_fixture.pdf")
     monkeypatch.setattr(
@@ -375,6 +446,30 @@ def test_dof_scraper_populates_content_from_linked_pdf(monkeypatch):
     assert "municipio debera" in docs[0].contenido_text
 
 
+def test_document_page_selects_matching_note_pdf_instead_of_first_pdf(monkeypatch):
+    from app.web_scraper import scrapers
+
+    requested_pdf_urls: list[str] = []
+
+    async def fake_get_html(url, timeout=20):
+        return """
+        <a href="/docs/anexo.pdf">Anexo relacionado</a>
+        <a href="/docs/nota_123.pdf">Documento de publicacion codigo 123</a>
+        """
+
+    async def fake_pdf_text(url):
+        requested_pdf_urls.append(url)
+        return "Articulo 1. Texto correcto."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_text_from_pdf_url", fake_pdf_text)
+
+    text = asyncio.run(scrapers.extract_content_from_document_url("https://www.dof.gob.mx/nota_detalle.php?codigo=123"))
+
+    assert text == "Articulo 1. Texto correcto."
+    assert requested_pdf_urls == ["https://www.dof.gob.mx/docs/nota_123.pdf"]
+
+
 def test_pdf_url_detection_accepts_pdf_in_query_parameters():
     from app.web_scraper import scrapers
 
@@ -387,6 +482,8 @@ def test_official_pdf_url_detection_does_not_force_client_diario_files():
     assert scrapers._is_official_pdf_url("https://cliente.test/reportes/diario_operacion.pdf") is False
     assert scrapers._is_official_pdf_url("https://www.dof.gob.mx/nota_detalle.php?codigo=123") is True
     assert scrapers._is_official_pdf_url("https://estado.test/periodico_oficial_residuos.pdf") is True
+    assert scrapers._is_official_pdf_url("https://estado.test/Peri%C3%B3dico_Oficial/doc.pdf") is True
+    assert scrapers._is_official_pdf_url("https://estado.test/Peri%25C3%25B3dico_Oficial/doc.pdf") is True
 
 
 def test_dof_scraper_urlencodes_keyword_query(monkeypatch):
@@ -428,9 +525,57 @@ def test_dof_scraper_preserves_metadata_when_content_extraction_times_out(monkey
     assert docs[0].contenido_text == ""
 
 
+def test_dof_scraper_keeps_remaining_links_after_extraction_error(monkeypatch):
+    from app.web_scraper import scrapers
+
+    async def fake_get_html(url, timeout=20):
+        return """
+        <a href="/nota_detalle.php?codigo=1">Primera norma de residuos</a>
+        <a href="/nota_detalle.php?codigo=2">Segunda norma de residuos</a>
+        """
+
+    async def flaky_extract(url):
+        if "codigo=1" in url:
+            raise RuntimeError("linked page failed")
+        return "Articulo 2. El municipio debera recuperar residuos."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_content_from_document_url", flaky_extract)
+
+    docs = asyncio.run(scrapers.DOFScraper().search_documents(["residuos"], days_back=1))
+
+    assert len(docs) == 2
+    assert docs[0].contenido_text == ""
+    assert "municipio debera" in docs[1].contenido_text
+
+
 def test_scheduler_marks_extracted_text_only_when_content_is_present():
     from app.web_scraper.scheduler import _has_extracted_text
 
     assert _has_extracted_text(" Articulo 1. ") is True
     assert _has_extracted_text("   ") is False
     assert _has_extracted_text(None) is False
+
+
+def test_scheduler_backfills_duplicate_when_new_scrape_recovers_content():
+    from app.web_scraper.scheduler import _backfill_existing_document
+
+    existing = SimpleNamespace(
+        contenido_text=None,
+        extraido_text=False,
+        ambito=None,
+        tema=None,
+        aplicable_rsu=False,
+        aplicable_rcd=False,
+    )
+    doc_info = SimpleNamespace(
+        titulo="DOF residuos municipales",
+        contenido_text="Articulo 1. El municipio debera gestionar residuos solidos urbanos.",
+    )
+
+    changed = _backfill_existing_document(existing, doc_info)
+
+    assert changed is True
+    assert existing.extraido_text is True
+    assert "municipio debera" in existing.contenido_text
+    assert existing.aplicable_rsu is True
