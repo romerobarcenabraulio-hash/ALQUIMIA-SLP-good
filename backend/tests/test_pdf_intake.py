@@ -89,6 +89,12 @@ def test_dof_abbreviation_does_not_match_client_dofiscales_path():
     assert result.modulo_destino == "M03/M03B legal municipal"
 
 
+def test_encoded_official_url_classifies_as_initiative():
+    result = classify_pdf_path("https://estado.test/Peri%25C3%25B3dico_Oficial/doc.pdf")
+
+    assert result.tipo == "iniciativa"
+
+
 def test_detects_cid_empty_or_garbage_text_as_suspicious():
     cid_result = assess_text_quality("(cid:123) (cid:555) \ufffd \ufffd")
     garbage_result = assess_text_quality("BBBBB TTTTT PPPPP 12345 ///// " * 20)
@@ -115,6 +121,12 @@ def test_claim_extraction_keeps_split_article_marker_with_body():
     assert claims
     assert claims[0].startswith("Articulo 5.")
     assert "municipio debera" in claims[0].lower()
+
+
+def test_claim_extraction_rejects_marker_prefixed_intro_text():
+    claims = extract_claims("Articulo 5. Este apartado describe antecedentes generales sin obligaciones nuevas.")
+
+    assert claims == []
 
 
 def test_direct_extraction_prefers_configured_pdftotext(monkeypatch):
@@ -470,6 +482,57 @@ def test_document_page_selects_matching_note_pdf_instead_of_first_pdf(monkeypatc
     assert requested_pdf_urls == ["https://www.dof.gob.mx/docs/nota_123.pdf"]
 
 
+def test_document_page_with_pdf_query_still_uses_html_path(monkeypatch):
+    from app.web_scraper import scrapers
+
+    calls: list[str] = []
+
+    async def fake_get_html(url, timeout=20):
+        calls.append(f"html:{url}")
+        return '<a href="/docs/nota.pdf">Descargar PDF</a>'
+
+    async def fake_pdf_text(url):
+        calls.append(f"pdf:{url}")
+        return "Articulo 1. PDF real."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_text_from_pdf_url", fake_pdf_text)
+
+    text = asyncio.run(
+        scrapers.extract_content_from_document_url(
+            "https://www.dof.gob.mx/nota_detalle.php?redirect=manual.pdf&id=123"
+        )
+    )
+
+    assert text == "Articulo 1. PDF real."
+    assert calls[0].startswith("html:")
+    assert calls[1] == "pdf:https://www.dof.gob.mx/docs/nota.pdf"
+
+
+def test_document_page_keeps_generic_pdf_when_scores_tie(monkeypatch):
+    from app.web_scraper import scrapers
+
+    requested_pdf_urls: list[str] = []
+
+    async def fake_get_html(url, timeout=20):
+        return """
+        <a href="/docs/download.pdf">Descargar PDF</a>
+        <a href="/docs/print.pdf">Version impresa PDF</a>
+        """
+
+    async def fake_pdf_text(url):
+        requested_pdf_urls.append(url)
+        return "Articulo 1. Publicacion generica."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_text_from_pdf_url", fake_pdf_text)
+
+    text = asyncio.run(scrapers.extract_content_from_document_url("https://www.dof.gob.mx/nota_detalle.php?id=123"))
+
+    assert text == "Articulo 1. Publicacion generica."
+    assert requested_pdf_urls == ["https://www.dof.gob.mx/docs/download.pdf"]
+
+
 def test_pdf_url_detection_accepts_pdf_in_query_parameters():
     from app.web_scraper import scrapers
 
@@ -480,8 +543,10 @@ def test_official_pdf_url_detection_does_not_force_client_diario_files():
     from app.web_scraper import scrapers
 
     assert scrapers._is_official_pdf_url("https://cliente.test/reportes/diario_operacion.pdf") is False
+    assert scrapers._is_official_pdf_url("https://cliente.test/reportes/gaceta_interna_cliente.pdf") is False
     assert scrapers._is_official_pdf_url("https://www.dof.gob.mx/nota_detalle.php?codigo=123") is True
     assert scrapers._is_official_pdf_url("https://estado.test/periodico_oficial_residuos.pdf") is True
+    assert scrapers._is_official_pdf_url("https://estado.test/gaceta118_2009.pdf") is True
     assert scrapers._is_official_pdf_url("https://estado.test/Peri%C3%B3dico_Oficial/doc.pdf") is True
     assert scrapers._is_official_pdf_url("https://estado.test/Peri%25C3%25B3dico_Oficial/doc.pdf") is True
 
@@ -549,6 +614,25 @@ def test_dof_scraper_keeps_remaining_links_after_extraction_error(monkeypatch):
     assert "municipio debera" in docs[1].contenido_text
 
 
+def test_dof_scraper_filters_result_links_before_limiting(monkeypatch):
+    from app.web_scraper import scrapers
+
+    async def fake_get_html(url, timeout=20):
+        nav = "".join(f'<a href="/nav/{i}">Navegacion {i}</a>' for i in range(25))
+        return nav + '<a href="/nota_detalle.php?codigo=123">Norma de residuos municipales</a>'
+
+    async def fake_extract(url):
+        return "Articulo 1. El municipio debera gestionar residuos."
+
+    monkeypatch.setattr(scrapers, "_get_html", fake_get_html)
+    monkeypatch.setattr(scrapers, "extract_content_from_document_url", fake_extract)
+
+    docs = asyncio.run(scrapers.DOFScraper().search_documents(["residuos"], days_back=1))
+
+    assert len(docs) == 1
+    assert "municipio debera" in docs[0].contenido_text
+
+
 def test_scheduler_marks_extracted_text_only_when_content_is_present():
     from app.web_scraper.scheduler import _has_extracted_text
 
@@ -579,3 +663,26 @@ def test_scheduler_backfills_duplicate_when_new_scrape_recovers_content():
     assert existing.extraido_text is True
     assert "municipio debera" in existing.contenido_text
     assert existing.aplicable_rsu is True
+
+
+def test_scheduler_backfill_does_not_overwrite_existing_content_when_flag_was_false():
+    from app.web_scraper.scheduler import _backfill_existing_document
+
+    existing = SimpleNamespace(
+        contenido_text="Articulo 1. Texto largo ya recuperado con obligaciones municipales completas.",
+        extraido_text=False,
+        ambito=None,
+        tema=None,
+        aplicable_rsu=False,
+        aplicable_rcd=False,
+    )
+    doc_info = SimpleNamespace(
+        titulo="DOF residuos municipales",
+        contenido_text="Texto corto",
+    )
+
+    changed = _backfill_existing_document(existing, doc_info)
+
+    assert changed is True
+    assert existing.extraido_text is True
+    assert existing.contenido_text.startswith("Articulo 1. Texto largo")

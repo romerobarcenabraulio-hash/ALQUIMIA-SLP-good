@@ -14,6 +14,7 @@ import shutil
 import subprocess
 import tempfile
 import uuid
+from urllib.parse import unquote
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -97,11 +98,13 @@ class OcrUnavailableError(RuntimeError):
 
 def classify_pdf_path(path: str | Path) -> PdfClassification:
     raw_path = str(path)
-    lower = raw_path.lower()
+    lower = unquote(unquote(raw_path)).lower()
     name = Path(raw_path).name
     provenance = Provenance(raw_path, utc_now(), "filename_path_rules_v1")
 
-    official_publication = bool(re.search(r"(^|[\W_])dof([\W_]|$)|dof\.gob\.mx", lower)) or any(
+    official_publication = bool(
+        re.search(r"(^|[\W_])dof([\W_]|$)|dof\.gob\.mx|gaceta\d+", lower)
+    ) or any(
         token in lower
         for token in (
             "periodico oficial",
@@ -113,7 +116,12 @@ def classify_pdf_path(path: str | Path) -> PdfClassification:
             "diario oficial",
             "diario_oficial",
             "diario-oficial",
-            "gaceta",
+            "gaceta oficial",
+            "gaceta_oficial",
+            "gaceta-oficial",
+            "gaceta municipal",
+            "gaceta_municipal",
+            "gaceta-municipal",
             "nota_detalle",
         )
     )
@@ -369,12 +377,19 @@ def extract_claims(text: str, *, limit: int = 12) -> list[str]:
         r"\b(art[ií]culo|deber[aá]|obligaci[oó]n|municipio|ayuntamiento|residuo|reglamento|norma|iniciativa|publicaci[oó]n|diario oficial|gaceta)\b",
         flags=re.IGNORECASE,
     )
+    body_markers = re.compile(
+        r"\b(deber[aá]|obligaci[oó]n|municipio|ayuntamiento|residuo|reglamento|norma|iniciativa|publicaci[oó]n|diario oficial|gaceta)\b",
+        flags=re.IGNORECASE,
+    )
     claims: list[str] = []
     pending_marker: str | None = None
     for sentence in re.split(r"(?<=[.;:])\s+", clean):
         if pending_marker:
-            sentence = f"{pending_marker} {sentence}".strip()
+            marker = pending_marker
             pending_marker = None
+            if not body_markers.search(sentence):
+                continue
+            sentence = f"{marker} {sentence}".strip()
         elif len(sentence) < 25 and markers.search(sentence):
             pending_marker = sentence
             continue

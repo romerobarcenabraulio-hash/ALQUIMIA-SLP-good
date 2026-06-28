@@ -31,7 +31,10 @@ def _backfill_existing_document(existing: ScrapedDocument, doc_info) -> bool:
     """Backfill recovered extraction text on duplicate scraped documents."""
     if not _has_extracted_text(doc_info.contenido_text):
         return False
-    if _has_extracted_text(existing.contenido_text) and existing.extraido_text:
+    if _has_extracted_text(existing.contenido_text):
+        if not existing.extraido_text:
+            existing.extraido_text = True
+            return True
         return False
 
     existing.contenido_text = doc_info.contenido_text

@@ -112,12 +112,23 @@ def _looks_like_pdf_url(url: str) -> bool:
     return bool(re.search(r"\.pdf(?:$|[/?#&=])", url, re.IGNORECASE))
 
 
+def _is_direct_pdf_document_url(url: str) -> bool:
+    parsed = urlparse(url)
+    path = unquote(parsed.path).lower()
+    if path.endswith(".pdf"):
+        return True
+    if path.endswith((".php", ".html", ".htm")) or "nota_detalle" in path:
+        return False
+    return _looks_like_pdf_url(url)
+
+
 def _is_official_pdf_url(url: str) -> bool:
     """Return true for DOF/official-gazette URLs that warrant OCR validation."""
     normalized = unquote(unquote(url)).lower()
     return bool(
         re.search(
-            r"(dof\.gob\.mx|/dof/|nota_detalle|diario[ _-]oficial|gaceta|"
+            r"(dof\.gob\.mx|/dof/|nota_detalle|diario[ _-]oficial|"
+            r"gaceta(?:[ _-](?:oficial|municipal)|\d)|"
             r"periodico[ _-]oficial|per[ií]odico[ _-]oficial|periódico[ _-]oficial)",
             normalized,
             re.IGNORECASE,
@@ -165,12 +176,12 @@ def _select_document_pdf_link(document_url: str, links: list[tuple[str, str]]) -
         return value
 
     best = max(pdf_links, key=score)
-    return best[0] if score(best) > 0 else None
+    return best[0]
 
 
 async def extract_content_from_document_url(document_url: str) -> str:
     """Extract content from a PDF URL or from the first PDF linked by an HTML document."""
-    if _looks_like_pdf_url(document_url):
+    if _is_direct_pdf_document_url(document_url):
         return await extract_text_from_pdf_url(document_url)
 
     html = await _get_html(document_url, timeout=15)
@@ -248,30 +259,30 @@ class DOFScraper:
 
                 try:
                     # DOF search results have links with class "ligas"
-                    for href, text in _iter_html_links(html)[:20]:
-
-                        if not text or len(text) < 10:
-                            continue
-
-                        if "nota_detalle" in href or "nota_detalle_popup" in href:
-                            full_url = urljoin(self.BASE_URL, href)
-                            doc = ScrapedDocumentInfo(
-                                titulo=text[:500],
-                                url=full_url,
-                                descripcion=f"DOF — búsqueda: {keyword}",
-                                fecha_publicacion=None,
-                                contenido_text="",
+                    result_links = [
+                        (href, text)
+                        for href, text in _iter_html_links(html)
+                        if text and len(text) >= 10 and ("nota_detalle" in href or "nota_detalle_popup" in href)
+                    ]
+                    for href, text in result_links[:20]:
+                        full_url = urljoin(self.BASE_URL, href)
+                        doc = ScrapedDocumentInfo(
+                            titulo=text[:500],
+                            url=full_url,
+                            descripcion=f"DOF — búsqueda: {keyword}",
+                            fecha_publicacion=None,
+                            contenido_text="",
+                        )
+                        documents.append(doc)
+                        try:
+                            doc.contenido_text = await asyncio.wait_for(
+                                extract_content_from_document_url(full_url),
+                                timeout=20,
                             )
-                            documents.append(doc)
-                            try:
-                                doc.contenido_text = await asyncio.wait_for(
-                                    extract_content_from_document_url(full_url),
-                                    timeout=20,
-                                )
-                            except asyncio.TimeoutError:
-                                logger.warning("Timed out extracting DOF content for %s", full_url)
-                            except Exception as exc:
-                                logger.error("Error extracting DOF content for %s: %s", full_url, exc)
+                        except asyncio.TimeoutError:
+                            logger.warning("Timed out extracting DOF content for %s", full_url)
+                        except Exception as exc:
+                            logger.error("Error extracting DOF content for %s: %s", full_url, exc)
 
                 except ImportError:
                     logger.warning("No HTML link parser available, returning empty DOF results")
