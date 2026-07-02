@@ -24,7 +24,9 @@ from app.national.alerts import (
 def db():
     """SQLite in-memory database for testing"""
     engine = create_engine("sqlite:///:memory:")
-    Base.metadata.create_all(engine)
+    # Only create tables for this test (avoid JSONB columns from other tables)
+    MunicipalAlertModel.__table__.create(engine, checkfirst=True)
+    AlertSubscriptionModel.__table__.create(engine, checkfirst=True)
     SessionLocal = sessionmaker(bind=engine)
     db = SessionLocal()
     yield db
