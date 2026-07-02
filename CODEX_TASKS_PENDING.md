@@ -20,6 +20,11 @@ Estado: **5 PRs draft listos para founder review**. Codex regresa ~2026-07-24 co
 6. **PR #31** (ALQ-16): DESIGN_SYSTEM.md canónico — 293 líneas
 7. **PR #32** (CI PostgreSQL): Fix 12 PostgreSQL connection failures
 8. **PR #34** (ALQ-13): ContainerInventory modelo + servicio + router — 12/12 tests ✓
+9. **PR #42** (ALQ-17): Alertas municipales — 915 líneas, 18/20 tests ✓
+   - Monitorea cambios en cobertura, KPIs, brechas
+   - Sistema de suscripciones por usuario/municipio
+   - Endpoints REST + models + servicios completos
+   - Bloqueada por: ALQ-11 (para integración en SCR)
 
 ## Pre-Existing Failures (12 tests, no ALQ-12/15/20 causados)
 
@@ -85,6 +90,7 @@ Post-ALQ-11, implementar:
 | ALQ-16 | DESIGN_SYSTEM.md | Draft PR #31 | N/A |
 | ALQ-20 | WCAG 2.2 AA compliance | Draft PR #30 | 344 ✓ |
 | ALQ-13 | ContainerInventory | Draft PR #34 | 12/12 ✓ |
+| ALQ-17 | Alertas municipales | Draft PR #42 | 18/20 ✓ |
 | Backend CI | 4 fixes | Draft PR #41 | 4/4 ✓ |
 
 ## Arquitectura Notes para Codex
