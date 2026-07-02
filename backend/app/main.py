@@ -19,7 +19,6 @@ if _REPO_ROOT.is_dir() and str(_REPO_ROOT) not in sys.path:
         sys.path.insert(0, str(_REPO_ROOT))
 
 from app.routers import auth, simulate, generate_plan, hub, admin, simulations, reports, payments
-from app.routers.export import router as export_router
 from app.routers.stripe_webhooks import router as stripe_router
 from app.routers.tenant_users import router as tenant_users_router
 from app.routers.propuesta import router as propuesta_router
@@ -259,7 +258,6 @@ app.include_router(admin.router,         prefix="/admin",     tags=["admin"])
 app.include_router(payments.router,      prefix="/api",      tags=["payments"])
 app.include_router(simulations.router,   prefix="/api",      tags=["simulations"])
 app.include_router(reports.router,       prefix="/api",      tags=["reports"])
-app.include_router(export_router,        prefix="/api",       tags=["export"])
 app.include_router(legal_router,         prefix="/legal",     tags=["legal"])
 app.include_router(data_router,          tags=["data-provenance"])
 app.include_router(market_router,        prefix="/market",    tags=["market"])
