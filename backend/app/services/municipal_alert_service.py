@@ -120,6 +120,14 @@ class MunicipalAlertService:
 class AlertSubscriptionService:
     """Servicio para gestionar suscripciones a alertas"""
 
+    # Severity level ordering for filtering
+    SEVERITY_LEVEL = {
+        AlertSeverity.CRITICAL: 4,
+        AlertSeverity.HIGH: 3,
+        AlertSeverity.MEDIUM: 2,
+        AlertSeverity.LOW: 1,
+    }
+
     @staticmethod
     def create_subscription(
         db: Session,
@@ -155,11 +163,11 @@ class AlertSubscriptionService:
 
         for sub in subscriptions:
             alert_types = json.loads(sub.alert_types)
-            if alert.alert_type.value not in alert_types:
+            if alert.alert_type.name not in alert_types:
                 continue
 
             # Verificar severidad mínima
-            if sub.min_severity.value > alert.severity.value:
+            if AlertSubscriptionService.SEVERITY_LEVEL.get(sub.min_severity, 0) > AlertSubscriptionService.SEVERITY_LEVEL.get(alert.severity, 0):
                 continue
 
             # Verificar filtro de municipios

@@ -199,10 +199,11 @@ class TestMunicipalAlertService:
             )
             MunicipalAlertService.record_alert(db, alert)
 
-        # Resolve one
+        # Resolve the CRITICAL alert
         alerts, _ = MunicipalAlertService.list_alerts(db, municipio_id="25001")
-        if alerts:
-            MunicipalAlertService.resolve_alert(db, alerts[0].id)
+        critical_alert = next((a for a in alerts if a.severity == AlertSeverity.CRITICAL), None)
+        if critical_alert:
+            MunicipalAlertService.resolve_alert(db, critical_alert.id)
 
         summary = MunicipalAlertService.count_unresolved_by_municipio(db, "25001")
         assert summary["total"] == 2  # 3 - 1 resolved
