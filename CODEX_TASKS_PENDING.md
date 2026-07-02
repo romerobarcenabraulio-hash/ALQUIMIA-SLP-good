@@ -1,6 +1,6 @@
-# Tareas Pendientes para Codex · 2026-07-02
+# Tareas Pendientes para Codex · 2026-07-02 (Actualizado 21:40 UTC)
 
-Estado: **5 PRs draft listos para founder review**. Codex regresa ~2026-07-24 con más endpoints desbloqueados.
+Estado: **6 PRs draft listos para founder review** (ALQ-17/18 completadas hoy). Codex regresa ~2026-07-24 con más endpoints desbloqueados.
 
 ## PRs Draft Esperando Founder Approval
 
@@ -20,6 +20,11 @@ Estado: **5 PRs draft listos para founder review**. Codex regresa ~2026-07-24 co
 6. **PR #31** (ALQ-16): DESIGN_SYSTEM.md canónico — 293 líneas
 7. **PR #32** (CI PostgreSQL): Fix 12 PostgreSQL connection failures
 8. **PR #34** (ALQ-13): ContainerInventory modelo + servicio + router — 12/12 tests ✓
+9. **PR #42** (ALQ-17/18): Alertas municipales + Export Excel
+   - ALQ-17 Alertas: 20/20 tests ✓
+   - ALQ-18 Export: 11/11 tests ✓
+   - Fixes: enum comparison, severity filtering, SQLite fixture JSONB
+   - Export router wired + real data queries implemented
 
 ## Pre-Existing Failures (12 tests, no ALQ-12/15/20 causados)
 
@@ -64,8 +69,8 @@ Una vez Codex implementa estos endpoints, PR #30 puede mergearse:
 
 ### Phase 2: Nuevas Features
 Post-ALQ-11, implementar:
-- ALQ-17: Alerts y notificaciones para cambios municipales
-- ALQ-18: Export Excel de cobertura municipal
+- ✓ ALQ-17: Alerts y notificaciones para cambios municipales (COMPLETADO)
+- ✓ ALQ-18: Export Excel de cobertura municipal (COMPLETADO)
 - ALQ-19: Comparador multi-municipio
 
 ### Phase 3: Refinamiento
@@ -85,6 +90,8 @@ Post-ALQ-11, implementar:
 | ALQ-16 | DESIGN_SYSTEM.md | Draft PR #31 | N/A |
 | ALQ-20 | WCAG 2.2 AA compliance | Draft PR #30 | 344 ✓ |
 | ALQ-13 | ContainerInventory | Draft PR #34 | 12/12 ✓ |
+| ALQ-17 | Alertas municipales | Draft PR #42 | 20/20 ✓ |
+| ALQ-18 | Export Excel cobertura | Draft PR #42 | 11/11 ✓ |
 | Backend CI | 4 fixes | Draft PR #41 | 4/4 ✓ |
 
 ## Arquitectura Notes para Codex
