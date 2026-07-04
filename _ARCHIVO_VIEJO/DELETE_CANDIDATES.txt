@@ -1,0 +1,198 @@
+# Candidatos a borrar — requiere tu git rm. Generado 2026-06-20
+
+## Duplicados Mac (" 2."):
+./IMPLEMENTATION_PLAN 2.md
+./IMPLEMENTATION_PLAN_V2 2.md
+./SPRINT_EXECUTION_PLAN_V2 2.md
+./backend/alembic/versions/20260604_0016_data_point_v2_schema 2.py
+./backend/alembic/versions/20260604_0017_simulation_persistence 2.py
+./backend/alembic/versions/20260604_0018_payment_models 2.py
+./backend/alembic/versions/20260610_0019_phase_d_generador_decision_tree 2.py
+./backend/app/archivo/__init__ 2.py
+./backend/app/archivo/embeddings 2.py
+./backend/app/data_integrity 2.py
+./backend/app/db/security 2.py
+./backend/app/decision_tree/__init__ 2.py
+./backend/app/decision_tree/engine 2.py
+./backend/app/error_handling 2.py
+./backend/app/logging_config 2.py
+./backend/app/models/archivo 2.py
+./backend/app/models/data_point 2.py
+./backend/app/models/decision_tree 2.py
+./backend/app/models/generador 2.py
+./backend/app/models/notification 2.py
+./backend/app/models/nous_insights 2.py
+./backend/app/models/partner 2.py
+./backend/app/models/payment 2.py
+./backend/app/models/rcd_fraccion 2.py
+./backend/app/models/simulation 2.py
+./backend/app/models/web_scraper 2.py
+./backend/app/notifications/__init__ 2.py
+./backend/app/notifications/triggers 2.py
+./backend/app/nous/__init__ 2.py
+./backend/app/nous/engine 2.py
+./backend/app/rate_limiter 2.py
+./backend/app/redis_cache 2.py
+./backend/app/residue_tracking/__init__ 2.py
+./backend/app/residue_tracking/aggregator 2.py
+./backend/app/residue_tracking/analyzer 2.py
+./backend/app/routers/archivo 2.py
+./backend/app/routers/banobras 2.py
+./backend/app/routers/catalogo_iniciativas 2.py
+./backend/app/routers/decision_tree 2.py
+./backend/app/routers/esg_report 2.py
+./backend/app/routers/generador 2.py
+./backend/app/routers/modo_b 2.py
+./backend/app/routers/notifications 2.py
+./backend/app/routers/nous 2.py
+./backend/app/routers/partners 2.py
+./backend/app/routers/payments 2.py
+./backend/app/routers/propuesta 2.py
+./backend/app/routers/rcd_fraccion 2.py
+./backend/app/routers/reports 2.py
+./backend/app/routers/simulations 2.py
+./backend/app/routers/stripe_webhooks 2.py
+./backend/app/routers/tenant_users 2.py
+./backend/app/routers/web_scraper 2.py
+./backend/app/routes/documents 2.py
+./backend/app/scheduler 2.py
+./backend/app/services/archivo_pipeline 2.py
+./backend/app/validation 2.py
+./backend/app/web_scraper/__init__ 2.py
+./backend/app/web_scraper/kickoff 2.py
+./backend/app/web_scraper/scheduler 2.py
+./backend/app/web_scraper/scrapers 2.py
+./backend/scripts/seed_db 2.py
+./docs/execution/PRICE_MIX_AND_MODELING_PRINCIPLE 2.md
+./frontend/.env 2.sentry-build-plugin
+./frontend/.next/app-path-routes-manifest 2.json
+./frontend/.next/build-manifest 2.json
+./frontend/.next/diagnostics/route-bundle-stats 2.json
+./frontend/.next/export-marker 2.json
+./frontend/.next/fallback-build-manifest 2.json
+./frontend/.next/images-manifest 2.json
+./frontend/.next/next-minimal-server.js.nft 2.json
+./frontend/.next/next-server.js.nft 2.json
+./frontend/.next/package 2.json
+./frontend/.next/prerender-manifest 2.json
+./frontend/.next/required-server-files 2.js
+./frontend/.next/required-server-files 2.json
+./frontend/.next/routes-manifest 2.json
+./frontend/.next/server/app-paths-manifest 2.json
+./frontend/.next/server/functions-config-manifest 2.json
+./frontend/.next/server/interception-route-rewrite-manifest 2.js
+./frontend/.next/server/middleware-build-manifest 2.js
+./frontend/.next/server/middleware-manifest 2.json
+./frontend/.next/server/next-font-manifest 2.js
+./frontend/.next/server/next-font-manifest 2.json
+./frontend/.next/server/pages-manifest 2.json
+./frontend/.next/server/prefetch-hints 2.json
+./frontend/.next/server/server-reference-manifest 2.js
+./frontend/.next/server/server-reference-manifest 2.json
+./frontend/instrumentation 2.ts
+./frontend/sentry.client.config 2.ts
+./frontend/sentry.edge.config 2.ts
+./frontend/sentry.server.config 2.ts
+./frontend/src/app/admin/master-table/page 2.tsx
+./frontend/src/app/admin/scraper-management/page 2.tsx
+./frontend/src/app/archivo/page 2.tsx
+./frontend/src/app/comenzar/propuesta/page 2.tsx
+./frontend/src/app/decision-tree/page 2.tsx
+./frontend/src/app/hub/banobras/page 2.tsx
+./frontend/src/app/hub/catalogo-iniciativas/page 2.tsx
+./frontend/src/app/hub/documentos/page 2.tsx
+./frontend/src/app/hub/generadores/page 2.tsx
+./frontend/src/app/hub/mapa-circularidad/page 2.tsx
+./frontend/src/app/hub/partners/page 2.tsx
+./frontend/src/app/hub/plan-maestro/page 2.tsx
+./frontend/src/app/hub/reporte-esg/page 2.tsx
+./frontend/src/app/hub/residue-analytics/page 2.tsx
+./frontend/src/app/notifications/page 2.tsx
+./frontend/src/app/perfil/page 2.tsx
+./frontend/src/app/post-login/page 2.tsx
+./frontend/src/app/rcd/page 2.tsx
+./frontend/src/app/residue-recording/page 2.tsx
+./frontend/src/app/simulaciones/page 2.tsx
+./frontend/src/components/admin/AdminDashboard 2.tsx
+./frontend/src/components/admin/AdminDocumentUploadModal 2.tsx
+./frontend/src/components/admin/AdminMasterTable 2.tsx
+./frontend/src/components/admin/AdminNotificationCenter 2.tsx
+./frontend/src/components/admin/AdminTenantDrawer 2.tsx
+./frontend/src/components/auditor/AuditorBadge 2.tsx
+./frontend/src/components/datapoint/DataPointCell 2.tsx
+./frontend/src/components/datapoint/DataPointHistory 2.tsx
+./frontend/src/components/datapoint/index 2.ts
+./frontend/src/components/forms/FormButton 2.tsx
+./frontend/src/components/forms/FormInput 2.tsx
+./frontend/src/components/forms/FormSelect 2.tsx
+./frontend/src/components/forms/FormTextarea 2.tsx
+./frontend/src/components/hub/ModoBToggle 2.tsx
+./frontend/src/components/journey/JourneyPanel 2.tsx
+./frontend/src/components/layout/MobileNav 2.tsx
+./frontend/src/components/layout/TenantContextChip 2.tsx
+./frontend/src/components/notifications/NotificationBell 2.tsx
+./frontend/src/components/nous/InsightsPanel 2.tsx
+./frontend/src/components/rbac/ProtectedContent 2.tsx
+./frontend/src/components/rbac/ProtectedInput 2.tsx
+./frontend/src/components/simulator/ModuleCompletionButton 2.tsx
+./frontend/src/components/simulator/ModuleProgressionBar 2.tsx
+./frontend/src/components/simulator/ModuleProgressionIndicator 2.tsx
+./frontend/src/components/simulator/ModuleProgressionLock 2.tsx
+./frontend/src/components/simulator/ModuleProgressionTimeline 2.tsx
+./frontend/src/components/simulator/ModuleWithDataPoints 2.tsx
+./frontend/src/components/simulator/ReportGenerator 2.tsx
+./frontend/src/components/simulator/SimulationActivityLog 2.tsx
+./frontend/src/components/simulator/SimulationContextMenu 2.tsx
+./frontend/src/components/simulator/SimulationControlPanel 2.tsx
+./frontend/src/components/simulator/SimulationHelp 2.tsx
+./frontend/src/components/simulator/SimulationPersistencePanel 2.tsx
+./frontend/src/components/simulator/SimulationStats 2.tsx
+./frontend/src/components/simulator/SimulationVersionTimeline 2.tsx
+./frontend/src/components/simulator/VersionComparison 2.tsx
+./frontend/src/hooks/useAdminMasterTable 2.ts
+./frontend/src/hooks/useAdminNotifications 2.ts
+./frontend/src/hooks/useDataPermissions 2.ts
+./frontend/src/hooks/useDataPointsByModule 2.ts
+./frontend/src/hooks/useExportPermissions 2.ts
+./frontend/src/hooks/useModuleProgression 2.ts
+./frontend/src/hooks/useRBAC 2.ts
+./frontend/src/hooks/useSimulationPersistence 2.ts
+./frontend/src/hooks/useSimulationPersistenceV2 2.ts
+./frontend/src/lib/DATA_PERSISTENCE 2.md
+./frontend/src/lib/RBAC_IMPLEMENTATION 2.md
+./frontend/src/lib/alquimiaTemplates 2.ts
+./frontend/src/lib/alquimiaTemplates.test 2.ts
+./frontend/src/lib/auditLog 2.ts
+./frontend/src/lib/dataExportImport 2.ts
+./frontend/src/lib/errorRecovery 2.ts
+./frontend/src/lib/moduleProgressionMapping 2.ts
+./frontend/src/lib/municipalityPreparation 2.ts
+./frontend/src/lib/municipalityPreparation.test 2.ts
+./frontend/src/lib/rbac 2.ts
+./frontend/src/lib/rbac.test 2.ts
+./frontend/src/lib/simulationPersistence 2.ts
+./frontend/src/lib/stateValidation 2.ts
+./frontend/src/lib/stateValidation.test 2.ts
+./frontend/src/lib/useAlquimiaToken 2.ts
+./frontend/src/types/dataPoint 2.ts
+
+## Temporales:
+./.DS_Store
+./~$stado de observaciones.docx
+./alquimia_ci.db
+./SLP ( contexto )  /.DS_Store
+./SLP ( contexto )  /DOCS/.DS_Store
+./SLP ( contexto )  /files/.DS_Store
+./etapa de cierre y apertura planeacion/.DS_Store
+./REGLAMENTOS DE ASEO PUBBLICO/.DS_Store
+./.obsidian/.DS_Store
+./backend/.DS_Store
+./backend/alquimia_ci.db
+./AJUSTES PARA FINIQUITAR/.DS_Store
+./referencia/ESTANDARES INTERNACIONALES/.DS_Store
+./referencia/FRONTEND DEFINITIVO/.DS_Store
+./referencia/ADENDOS: LEGAL/.DS_Store
+./_ARCHIVO_VIEJO/AJUSTES.ALQUIMIA/.DS_Store
+./_ARCHIVO_VIEJO/AJUSTES POST-RESCATE/.DS_Store
+./_ARCHIVO_VIEJO/AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/.DS_Store
+./_ARCHIVO_VIEJO/AJUSTES.ALQUIMIA/reestructura_maestra_2026-04-30/planeacion_ejecucion/.DS_Store
