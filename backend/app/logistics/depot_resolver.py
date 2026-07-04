@@ -68,6 +68,9 @@ def resolve_depot(
         and (
             c.fuente == "perfil_municipal"
             or c.score_confianza <= 0.55
+            # Un operador principal no verificado con coordenadas es candidato
+            # válido (perfil DENUE/Places de confianza media) antes que el fallback.
+            or c.es_operador_principal
         )
     ]
     if candidatos:

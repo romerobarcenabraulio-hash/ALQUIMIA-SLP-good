@@ -1,15 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from starlette.responses import Response
 from contextlib import asynccontextmanager
 import logging
 import os
 import sys
-import time
-from collections import defaultdict
 from pathlib import Path
 
 # Monorepo: modules/, config/, data/ viven en la raíz del repo (ver backend/scripts/start.sh)
@@ -136,43 +132,7 @@ def _cors_allow_origins() -> list[str]:
     return origins
 
 
-class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, limit: int = 100, window_seconds: int = 60):
-        super().__init__(app)
-        self.limit = limit
-        self.window_seconds = window_seconds
-        self.requests_by_ip: dict[str, list[float]] = defaultdict(list)
-        self._request_counter = 0
-
-    def _cleanup(self, now: float) -> None:
-        cutoff = now - self.window_seconds
-        for ip in list(self.requests_by_ip.keys()):
-            timestamps = [ts for ts in self.requests_by_ip[ip] if ts >= cutoff]
-            if timestamps:
-                self.requests_by_ip[ip] = timestamps
-            else:
-                self.requests_by_ip.pop(ip, None)
-
-    async def dispatch(self, request: Request, call_next):
-        now = time.time()
-        self._request_counter += 1
-        if self._request_counter % 10 == 0:
-            self._cleanup(now)
-
-        ip = request.client.host if request.client else "unknown"
-        timestamps = self.requests_by_ip[ip]
-        cutoff = now - self.window_seconds
-        timestamps[:] = [ts for ts in timestamps if ts >= cutoff]
-        timestamps.append(now)
-
-        if len(timestamps) > self.limit:
-            return Response(
-                content='{"detail":"Rate limit exceeded"}',
-                status_code=429,
-                media_type="application/json",
-            )
-
-        return await call_next(request)
+from app.middleware.rate_limit import RateLimitMiddleware  # noqa: E402
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):

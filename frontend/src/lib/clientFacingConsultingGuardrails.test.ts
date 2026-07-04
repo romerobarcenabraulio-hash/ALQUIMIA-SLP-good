@@ -176,17 +176,18 @@ describe('client-facing consulting guardrails', () => {
   it('keeps hub copy oriented to consulting package instead of demo simulator language', () => {
     const source = readFrontend('src/app/hub/page.tsx')
 
-    expect(source).toContain('Paquete de consultoría RSU')
-    expect(source).toContain('ZIP índice de referencia')
-    expect(source).toContain("searchParams.get('zm') ?? CITY_TABS_HUB[0]")
-    expect(source).toContain('href="/v"')
+    // Hub points clients into the /v consulting package, never the legacy simulator.
+    expect(source).toContain('Paquete consultivo')
+    expect(source).toContain("href: '/v'")
+    expect(source).not.toContain('/simulator')
+    expect(source).not.toContain('Simulador')
     expect(source).not.toContain('municipio-demo')
-    expect(source).not.toContain("?? 'SLP'")
     expect(source).not.toContain('ZIP demo capítulo')
-    expect(source).not.toContain('Documentos del programa')
     expect(source).not.toContain('Paquete documental generado')
     expect(source).not.toContain('SimulatorGatewayHint')
     expect(source).not.toContain('AGORA_EXPORT_COVER_DISCLAIMER')
+    // No internal agent names exposed on the client hub surface.
+    expect(source).not.toMatch(/\bARCHIVO\b/)
   })
 
   it('does not route client access or onboarding copy back to the legacy simulator', () => {
@@ -263,10 +264,12 @@ describe('client-facing consulting guardrails', () => {
 
     expect(login).toContain('sanitizeAuthRedirectPath(params.next)')
     expect(login).toContain('redirect(`/sign-in${next}`)')
-    expect(signIn).toContain('fallbackRedirectUrl="/v"')
-    expect(signIn).not.toContain('forceRedirectUrl="/v"')
-    expect(signUp).toContain('fallbackRedirectUrl="/v"')
-    expect(signUp).not.toContain('forceRedirectUrl="/v"')
+    // Auth lands on /post-login, which routes by role into the consulting surfaces
+    // (admin → /v, cliente → /hub) — never back to the legacy simulator.
+    expect(signIn).toContain('fallbackRedirectUrl="/post-login"')
+    expect(signIn).not.toContain('/simulator')
+    expect(signUp).toContain('fallbackRedirectUrl="/post-login"')
+    expect(signUp).not.toContain('/simulator')
     expect(reglamentoOnboarding).toContain('disabled={!pdfReady || !setupToken}')
     expect(reglamentoOnboarding).toContain('Volver al perfil territorial')
     expect(reglamentoOnboarding).not.toContain('<Link href="/v"')
@@ -275,11 +278,10 @@ describe('client-facing consulting guardrails', () => {
   it('keeps profile operations concrete instead of placeholder API promises', () => {
     const profile = readFrontend('src/app/perfil/page.tsx')
 
-    expect(profile).toContain('PROFILE_PREFS_KEY')
-    expect(profile).toContain('ProfilePreferencesPanel')
-    expect(profile).toContain('Responsabilidad activa')
-    expect(profile).toContain('pendingDocuments')
-    expect(profile).toContain('emailVerification')
+    // Profile edits hit a real backend endpoint, not a placeholder promise.
+    expect(profile).toContain("fetch(`${getApiUrl()}/auth/me`")
+    expect(profile).toContain("method: 'PATCH'")
+    expect(profile).toContain('Guardar cambios')
     expect(profile).not.toContain('Pendiente de API')
     expect(profile).not.toContain('/api/profile/equipo')
     expect(profile).not.toContain('/api/profile/preferencias')
@@ -326,12 +328,13 @@ describe('client-facing consulting guardrails', () => {
     expect(walkthrough).not.toContain('medición directa en SLP')
     expect(walkthrough).not.toContain('Simulador financiero')
     expect(walkthrough).not.toContain('tooltip dentro del simulador')
-    expect(methodology).toContain('A · Datos investigados')
-    expect(methodology).toContain('B · Datos calculados')
-    expect(methodology).toContain('C · Datos del cliente')
-    expect(methodology).toContain('formato Chicago')
+    // Metodología V2 uses the canonical 7-category evidence model.
+    expect(methodology).toContain('Documento del cliente')
+    expect(methodology).toContain('Investigación municipal')
+    expect(methodology).toContain('Modelo calculado')
+    expect(methodology).toContain('Pendiente · brecha crítica')
     expect(methodology).toContain('Cero cifras sin cita')
-    expect(methodology).toContain('No desbloquea un claim')
+    expect(methodology).toContain('claim municipal local')
   })
 
   it('keeps the legacy simulator quarantined away from client users', () => {

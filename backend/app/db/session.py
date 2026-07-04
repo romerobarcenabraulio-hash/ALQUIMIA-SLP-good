@@ -59,6 +59,8 @@ def _init_engine() -> bool:
 
         _engine = create_engine(db_url, **engine_kwargs)
         _SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
+        from app.db.tenant_isolation import install_tenant_filter
+        install_tenant_filter(_SessionLocal)
         _DB_AVAILABLE = True
         logger.info("PostgreSQL conectado: %s", db_url.split("@")[-1])
         return True
@@ -125,6 +127,7 @@ def create_all_tables() -> bool:
         import_all_models()
         db_url = _get_database_url() or ""
         if db_url.startswith("sqlite"):
+            from app.models.container import Container
             from app.models.document_archive import DocumentGap, TenantDocument
             from app.models.user_account import (
                 AccessLog,
@@ -136,6 +139,7 @@ def create_all_tables() -> bool:
             Base.metadata.create_all(
                 bind=_engine,
                 tables=[
+                    Container.__table__,
                     UserAccount.__table__,
                     EmailVerificationToken.__table__,
                     SmsVerificationCode.__table__,

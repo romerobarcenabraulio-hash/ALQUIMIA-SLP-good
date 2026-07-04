@@ -37,6 +37,9 @@ describe('tenantMunicipalContextHeaders', () => {
 
     expect(data.municipio_id).toBe('slp')
     expect(data.clave_inegi).toBe('24028')
-    expect(data.metrics.every(metric => metric.status === 'brecha_critica')).toBe(true)
+    // Enrichment overlays municipal context but must not rewrite evidence status.
+    expect(data.metrics.map(metric => metric.status)).toEqual(
+      TENANT_DIAGNOSTIC_FIXTURES['municipio-demo'].metrics.map(metric => metric.status),
+    )
   })
 })

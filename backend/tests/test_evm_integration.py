@@ -1,4 +1,5 @@
 """Tests integración EVM AURUM + HERMES."""
+import datetime as _dt
 import json
 from pathlib import Path
 
@@ -7,7 +8,19 @@ import pytest
 from app.planning.budget.evm_integration import derive_evm_from_aurum_hermes
 
 
-def test_derive_evm_from_aurum_hermes_with_repo_fixtures():
+class _FrozenDate(_dt.date):
+    """Congela hoy a la fecha de los fixtures HERMES para que la ventana de
+    14 días siempre los incluya, sin depender de la fecha real de ejecución."""
+
+    @classmethod
+    def today(cls):
+        return _dt.date(2026, 5, 25)
+
+
+def test_derive_evm_from_aurum_hermes_with_repo_fixtures(monkeypatch):
+    import modules.planning.budget.hermes_consumer as _hc
+    monkeypatch.setattr(_hc, "date", _FrozenDate)
+
     ac_path = Path(__file__).resolve().parents[2] / "data" / "financial" / "costs" / "ac_latest.json"
     if not ac_path.is_file():
         pytest.skip("ac_latest.json no disponible")
