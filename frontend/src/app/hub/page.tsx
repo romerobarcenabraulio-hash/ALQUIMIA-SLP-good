@@ -41,6 +41,8 @@ interface QuickAction {
   desc: string
 }
 
+const CITY_TABS_HUB = ['QRO', 'MTY', 'SLP'] as const
+
 // ─── Quick actions per stage ──────────────────────────────────────────────────
 
 const ACTIONS_BY_STAGE: Record<string, QuickAction[]> = {
@@ -114,6 +116,7 @@ function ActionCard({ action }: { action: QuickAction }) {
 
 function HubContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { token: bridgedToken, loading: tokenLoading } = useAlquimiaToken()
   const [profile, setProfile] = useState<UserProfile | null>(null)
   const [tenant, setTenant] = useState<TenantSummary | null>(null)
@@ -167,6 +170,7 @@ function HubContent() {
   }
 
   const stage = (tenant?.current_stage ?? 'validation') as keyof typeof ACTIONS_BY_STAGE
+  const selectedZm = searchParams.get('zm') ?? CITY_TABS_HUB[0]
   const actions = ACTIONS_BY_STAGE[stage] ?? ACTIONS_BY_STAGE.validation
   const municipioNombre = profile?.municipio_nombre
     ?? (typeof window !== 'undefined' ? sessionStorage.getItem('alquimia_active_tenant_nombre') : null)
@@ -197,9 +201,14 @@ function HubContent() {
         <h1 className="font-serif text-[26px] font-semibold text-[#1C1B18]">
           {municipioNombre}
         </h1>
+        <p className="mt-2 text-[13px] font-semibold text-[#3B6D11]">Paquete de consultoría RSU</p>
+        <Link href="/v" className="mt-2 inline-flex text-[12px] font-semibold text-[#3B6D11]">
+          Abrir paquete consultivo
+        </Link>
         {profile?.estado_mx && (
           <p className="mt-1 text-[13px] text-[#6B6760]">{profile.estado_mx}</p>
         )}
+        <p className="mt-1 text-[11px] text-[#8E8980]">ZM activa: {selectedZm}</p>
       </div>
 
       {/* KPI bar */}
@@ -261,9 +270,9 @@ function HubContent() {
             <p className="mb-2 text-[11px] uppercase tracking-wide text-[#8E8980]">Módulos</p>
             <div className="space-y-1">
               {[
-                { label: 'RSU — Residuos sólidos', href: '/gobierno/rsu', icon: <Recycle size={13} /> },
-                { label: 'Simulador financiero', href: '/simulator', icon: <BarChart2 size={13} /> },
-                { label: 'Documentos y exportes', href: '/hub/documentos', icon: <Download size={13} /> },
+                { label: 'Paquete consultivo', href: '/v', icon: <Recycle size={13} /> },
+                { label: 'Escenarios financieros', href: '/p', icon: <BarChart2 size={13} /> },
+                { label: 'ZIP índice de referencia', href: '/hub/documentos', icon: <Download size={13} /> },
               ].map(item => (
                 <Link
                   key={item.href}

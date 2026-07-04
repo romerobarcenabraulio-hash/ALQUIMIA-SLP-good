@@ -6,11 +6,13 @@ Navigator: almacenamiento EPSG:4326; aquí solo metadatos administrativos (CVEge
 from __future__ import annotations
 
 import logging
+import json
 from functools import lru_cache
 from typing import Any
 
 import httpx
 
+from app.repo_paths import repo_root
 from app.city.municipios_mx import (
     GEN_KG_HAB_MODEL,
     MunicipioMxRow,
@@ -114,6 +116,46 @@ def _row_from_inegi_item(item: dict[str, Any], estado_nombre: str) -> MunicipioM
     )
 
 
+def _rows_from_geo_manifest(estado_id: str, estado_nombre: str) -> list[MunicipioMxRow]:
+    manifest_path = repo_root() / "data" / "geo" / "centros_acopio" / "coverage_manifest.json"
+    if not manifest_path.is_file():
+        return []
+    try:
+        payload = json.loads(manifest_path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        logger.warning("Coverage manifest no disponible para estado %s: %s", estado_id, exc)
+        return []
+
+    rows: list[MunicipioMxRow] = []
+    municipios = payload.get("municipios", {})
+    if not isinstance(municipios, dict):
+        return rows
+    for cve, item in municipios.items():
+        if not isinstance(item, dict):
+            continue
+        cvegeo = str(item.get("clave_inegi") or cve).zfill(5)
+        if cvegeo[:2] != estado_id:
+            continue
+        seed = get_municipio_mx_by_clave(cvegeo)
+        if seed:
+            rows.append(seed)
+            continue
+        rows.append(
+            MunicipioMxRow(
+                clave_inegi=cvegeo,
+                nombre=str(item.get("municipio") or "Municipio"),
+                estado_nombre=str(item.get("estado") or estado_nombre),
+                estado_id=estado_id,
+                poblacion=50_000,
+                generacion_rsu_dia=_rsu_ton_dia(50_000),
+                zm_simulator_id=zm_for_estado(estado_id),
+                municipio_simulator_id=municipio_simulator_id_from_cve(cvegeo),
+                datos_estimados=True,
+            )
+        )
+    return rows
+
+
 def fetch_municipios_inegi(estado_id: str) -> list[MunicipioMxRow]:
     """Consulta INEGI Gaia por entidad; cache en memoria por proceso."""
     eid = estado_id.strip().zfill(2)
@@ -135,6 +177,12 @@ def fetch_municipios_inegi(estado_id: str) -> list[MunicipioMxRow]:
                     rows.append(_row_from_inegi_item(item, estado_nombre))
     except Exception as exc:
         logger.warning("INEGI Gaia no disponible para estado %s: %s", eid, exc)
+
+    manifest_rows = _rows_from_geo_manifest(eid, estado_nombre)
+    if len(rows) < len(manifest_rows):
+        merged = {r.clave_inegi: r for r in manifest_rows}
+        merged.update({r.clave_inegi: r for r in rows})
+        rows = list(merged.values())
 
     if not rows:
         from app.city.municipios_mx import list_municipios_mx

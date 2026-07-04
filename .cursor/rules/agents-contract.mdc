@@ -1,0 +1,18 @@
+---
+description: Contrato permanente de agentes ALQUIMIA
+alwaysApply: true
+---
+
+# Contrato Permanente
+
+Antes de modificar el repo, lee y aplica:
+
+- `AGENTS.md`
+- `etapa de cierre y apertura planeacion/HANDOOF AGENTE DE CODIGO/REGLAS_DE_EJECUCION_AGENTES.md`
+
+Reglas duras:
+- No commit directo a `main`.
+- No force-push, reset destructivo, rebase compartido, borrado de datos/ramas ni acciones externas sin gate humano.
+- Si hay rebase o conflicto, parar y reportar salvo autorizacion explicita.
+- Codex: backend/datos/migraciones/infra/repo. Claude Code: frontend/UI/SCR/auditoria visual.
+- Cada tarea: codificar, auto-auditar, corregir, PR, Greptile review, CI verde, palomear Linear.

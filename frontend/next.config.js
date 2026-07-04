@@ -1,4 +1,5 @@
 const { withSentryConfig } = require('@sentry/nextjs')
+const path = require('node:path')
 
 const isVercelProduction = process.env.VERCEL === '1' && process.env.VERCEL_ENV === 'production'
 const publicApiUrl = process.env.NEXT_PUBLIC_API_URL?.trim()
@@ -12,6 +13,9 @@ const nextConfig = {
   reactStrictMode: true,
   experimental: {
     externalDir: true,
+  },
+  turbopack: {
+    root: path.resolve(__dirname),
   },
   // output: 'export' eliminado (R3) — el proyecto usa middleware Edge y Route Handlers
   // Route handlers legacy (POST /api/acceso) + auth (POST /api/auth/login) requieren runtime Node/Edge en Vercel.
