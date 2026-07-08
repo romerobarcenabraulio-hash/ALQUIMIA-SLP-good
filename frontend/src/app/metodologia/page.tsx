@@ -51,6 +51,12 @@ const dataCategories = [
   },
 ]
 
+const dataTypeLabels = [
+  { label: 'A · Datos investigados', description: 'Fuentes documentales del municipio, estado o primarias' },
+  { label: 'B · Datos calculados', description: 'Derivados mediante fórmula transparente desde categoría A' },
+  { label: 'C · Datos del cliente', description: 'Documentos, reportes o archivos cargados por el municipio' },
+]
+
 const notDo = [
   'No certifica resultados como oficiales.',
   'No sustituye estudios locales.',
@@ -62,6 +68,7 @@ const notDo = [
 ]
 
 export default function MethodologyPage() {
+  // Rule: No desbloquea un claim sin evidencia investigada, calculada o provista
   return (
     <PublicPageShell actionLabel="Ver mi municipio">
       <PublicHero
@@ -80,6 +87,17 @@ export default function MethodologyPage() {
         ))}
       </section>
 
+      <section className="mx-auto max-w-6xl px-5 pb-10">
+        <div className="grid gap-3 md:grid-cols-3">
+          {dataTypeLabels.map(item => (
+            <div key={item.label} className="rounded-[8px] border border-[#E8E4DC] bg-[#F8F6F1] px-4 py-3">
+              <p className="text-[13px] font-semibold text-[#1C1B18]">{item.label}</p>
+              <p className="mt-2 text-[12px] text-[#6B6760]">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       <section className="mx-auto max-w-6xl px-5 pb-20">
         <div className="border-t border-[#D8D2C5] bg-transparent py-8">
           <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
@@ -93,6 +111,9 @@ export default function MethodologyPage() {
               <p className="mt-4 max-w-md text-[14px] leading-7 text-[#5C574F]">
                 La bibliografía comparable puede orientar hipótesis, planeación y contexto. No desbloquea un
                 claim municipal local ni sustituye reglamento, estudio local o documento del cliente.
+              </p>
+              <p className="mt-4 text-[12px] text-[#8E8980]">
+                formato Chicago para todas las citas.
               </p>
             </div>
             <div className="grid gap-3 md:grid-cols-2">
