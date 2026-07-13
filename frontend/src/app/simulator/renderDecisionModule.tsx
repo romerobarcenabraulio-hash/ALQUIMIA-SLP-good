@@ -31,6 +31,8 @@ import { useTenantMunicipalProfile } from '@/hooks/useTenantMunicipalProfile'
 import { useDataPointsByModule } from '@/hooks/useDataPointsByModule'
 import { ModuleProgressionLock } from '@/components/simulator/ModuleProgressionLock'
 import { getDecisionModuleId, hasModuleProgression } from '@/lib/moduleProgressionMapping'
+import { ContainersProvider } from '@/components/simulator/ContainersProvider'
+import { SimulatorModuleErrorBoundary } from '@/components/simulator/SimulatorModuleErrorBoundary'
 
 const FutureGoalsModule = dynamic(
   () =>
@@ -248,13 +250,9 @@ export function renderDecisionModule(ctx: DecisionModuleRenderContext): ReactNod
         return <DeclaracionWizard />
       case 'containers_provider':
         return (
-          <section className="section rounded-[12px] border border-[#E8E4DC] bg-[#FDFCFA] px-4 py-4">
-            <p className="text-[10px] uppercase tracking-[0.06em] text-[#A8A49C]">Logística y contenedores</p>
-            <p className="mt-2 text-[13px] leading-relaxed text-[#6B6760]">
-              La ubicación de contenedores y rutas internas se resuelve con el checklist del módulo de plan por giro y con el
-              borrador exportable; aquí no se abre un configurator adicional.
-            </p>
-          </section>
+          <SimulatorModuleErrorBoundary moduleLabel="Logística y contenedores">
+            <ContainersProvider />
+          </SimulatorModuleErrorBoundary>
         )
       case 'market_traceability':
         return <PortalEmpresarial />
