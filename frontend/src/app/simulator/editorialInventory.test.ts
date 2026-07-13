@@ -51,7 +51,6 @@ describe('editorial inventory', () => {
     const paths = [
       'src/components/simulator/stacks/GuiaCircularidadStack.tsx',
       'src/components/simulator/stacks/DobleMaterialidadStack.tsx',
-      'src/components/simulator/FloatingCTA.tsx',
       'src/components/simulator/GovernancePanel.tsx',
       'src/components/simulator/NarrativeBridge.tsx',
       'src/app/simulator/renderDecisionModule.tsx',
