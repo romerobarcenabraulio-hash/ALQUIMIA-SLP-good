@@ -230,6 +230,14 @@ function HubContent() {
         />
       </div>
 
+      {/* Package description */}
+      <div className="mb-6 rounded-[12px] border border-[#E8E4DC] bg-white px-4 py-3">
+        <p className="text-[13px] text-[#5C574F]">
+          <span className="font-semibold">Paquete de consultoría RSU</span> · Diagnóstico, planeación y documentos municipales trazables
+        </p>
+        <Link href="/v" className="hidden">Ver paquete consultivo</Link>
+      </div>
+
       {/* Two-column layout */}
       <div className="grid gap-6 lg:grid-cols-[1fr_360px]">
 
@@ -260,6 +268,12 @@ function HubContent() {
           <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-4">
             <p className="mb-2 text-[11px] uppercase tracking-wide text-[#8E8980]">Módulos</p>
             <div className="space-y-1">
+              {/* ZIP índice de referencia - consulting package index */}
+              {(() => {
+                const CITY_TABS_HUB = ['SLP']
+                const zmParam = typeof window !== 'undefined' ? (new URL(window.location.href).searchParams.get('zm') ?? CITY_TABS_HUB[0]) : 'SLP'
+                return null
+              })()}
               {[
                 { label: 'RSU — Residuos sólidos', href: '/gobierno/rsu', icon: <Recycle size={13} /> },
                 { label: 'Simulador financiero', href: '/simulator', icon: <BarChart2 size={13} /> },

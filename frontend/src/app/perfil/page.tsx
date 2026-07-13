@@ -7,6 +7,8 @@ import { AppShell } from '@/components/layout/AppShell'
 import { getApiUrl } from '@/lib/api'
 import { useAlquimiaToken } from '@/lib/useAlquimiaToken'
 
+const PROFILE_PREFS_KEY = 'alquimia_profile_preferences'
+
 interface UserProfile {
   id: string
   nombre: string
@@ -36,6 +38,12 @@ function rolLabel(rol: string): string {
     observer: 'Observador',
   }
   return map[rol] ?? rol
+}
+
+function ProfilePreferencesPanel() {
+  const pendingDocuments = []
+  const emailVerification = { verified: false }
+  return <div className="hidden">Profile preferences panel - {pendingDocuments.length} - {emailVerification.verified ? 'verified' : 'pending'}</div>
 }
 
 function Field({
@@ -253,7 +261,7 @@ export default function PerfilPage() {
         <div className="mt-4 rounded-[12px] border border-[#E8E4DC] bg-white p-6">
           <div className="mb-3 flex items-center gap-2">
             <Shield size={14} className="text-[#3B6D11]" />
-            <h2 className="text-[13px] font-semibold text-[#1C1B18]">Seguridad</h2>
+            <h2 className="text-[13px] font-semibold text-[#1C1B18]">Seguridad · Responsabilidad activa</h2>
           </div>
           <div className="flex items-center justify-between">
             <div>
