@@ -10,7 +10,9 @@ import re
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, List, Dict, Any
-from urllib.parse import urljoin, urlencode
+from urllib.parse import parse_qs, unquote, urljoin, urlencode, urlparse
+
+from app.pdf_intake import OcrUnavailableError, extract_pdf_text_with_fallback
 
 logger = logging.getLogger(__name__)
 
@@ -65,10 +67,9 @@ async def _get_json(url: str, timeout: int = 20) -> Optional[dict]:
 
 
 async def extract_text_from_pdf_url(pdf_url: str) -> str:
-    """Download PDF and extract text using pdfplumber."""
+    """Download PDF and extract text with CID-safe OCR fallback."""
     try:
         import aiohttp
-        import io
 
         async with aiohttp.ClientSession() as session:
             async with session.get(pdf_url, timeout=aiohttp.ClientTimeout(total=60)) as resp:
@@ -77,26 +78,130 @@ async def extract_text_from_pdf_url(pdf_url: str) -> str:
                 pdf_bytes = await resp.read()
 
         try:
-            import pdfplumber
-            with pdfplumber.open(io.BytesIO(pdf_bytes)) as pdf:
-                text = "\n".join(
-                    page.extract_text() or "" for page in pdf.pages[:10]  # First 10 pages
+            force_ocr = _is_official_pdf_url(pdf_url)
+            text, direct, _ocr = await asyncio.wait_for(
+                asyncio.to_thread(
+                    extract_pdf_text_with_fallback,
+                    pdf_bytes,
+                    source=pdf_url,
+                    force_ocr_for_official=force_ocr,
+                ),
+                timeout=90,
+            )
+            if direct.suspicious:
+                logger.info(
+                    "PDF direct extraction suspicious for %s (%s chars, %s words); OCR fallback attempted",
+                    pdf_url,
+                    direct.char_count,
+                    direct.word_count,
                 )
-                return text[:50000]  # Limit to 50k chars
-        except Exception:
-            try:
-                import PyPDF2
-                reader = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
-                text = "\n".join(
-                    reader.pages[i].extract_text() or ""
-                    for i in range(min(10, len(reader.pages)))
-                )
-                return text[:50000]
-            except Exception:
-                return ""
+            return text[:50000]
+        except OcrUnavailableError as exc:
+            logger.warning("OCR required but unavailable for %s: %s", pdf_url, exc)
+            return ""
+        except Exception as exc:
+            logger.error("Error extracting PDF text for %s: %s", pdf_url, exc)
+            return ""
 
     except Exception as e:
         logger.error(f"Error extracting PDF {pdf_url}: {e}")
+        return ""
+
+
+def _looks_like_pdf_url(url: str) -> bool:
+    return bool(re.search(r"\.pdf(?:$|[/?#&=])", url, re.IGNORECASE))
+
+
+def _is_direct_pdf_document_url(url: str) -> bool:
+    parsed = urlparse(url)
+    path = unquote(parsed.path).lower()
+    if path.endswith(".pdf"):
+        return True
+    if path.endswith((".php", ".html", ".htm")) or "nota_detalle" in path:
+        return False
+    return _looks_like_pdf_url(url)
+
+
+def _is_official_pdf_url(url: str) -> bool:
+    """Return true for DOF/official-gazette URLs that warrant OCR validation."""
+    normalized = unquote(unquote(url)).lower()
+    return bool(
+        re.search(
+            r"(dof\.gob\.mx|/dof/|nota_detalle|diario[ _-]oficial|"
+            r"gaceta(?:[ _-](?:oficial|municipal)|\d)|"
+            r"periodico[ _-]oficial|per[ií]odico[ _-]oficial|periódico[ _-]oficial)",
+            normalized,
+            re.IGNORECASE,
+        )
+    )
+
+
+def _iter_html_links(html: str) -> list[tuple[str, str]]:
+    """Return (href, text) links using BeautifulSoup when present, with a regex fallback."""
+    try:
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        return [(link.get("href", ""), link.get_text(strip=True)) for link in soup.find_all("a", href=True)]
+    except ImportError:
+        links: list[tuple[str, str]] = []
+        for match in re.finditer(r"<a\b[^>]*href=[\"']([^\"']+)[\"'][^>]*>(.*?)</a>", html, flags=re.IGNORECASE | re.DOTALL):
+            href, raw_text = match.groups()
+            text = re.sub(r"<[^>]+>", " ", raw_text)
+            text = re.sub(r"\s+", " ", text).strip()
+            links.append((href, text))
+        return links
+
+
+def _select_document_pdf_link(document_url: str, links: list[tuple[str, str]]) -> str | None:
+    pdf_links = [(href, text) for href, text in links if _looks_like_pdf_url(href)]
+    if not pdf_links:
+        return None
+    if len(pdf_links) == 1:
+        return pdf_links[0][0]
+
+    parsed = urlparse(document_url)
+    code = parse_qs(parsed.query).get("codigo", [""])[0]
+
+    def score(link: tuple[str, str]) -> int:
+        href, text = link
+        haystack = unquote(f"{href} {text}").lower()
+        value = 0
+        if code and code.lower() in haystack:
+            value += 6
+        if re.search(r"\b(nota|detalle|publicacion|documento)\b", haystack):
+            value += 3
+        if re.search(r"\b(anexo|adjunto|attachment|relacionado)\b", haystack):
+            value -= 3
+        return value
+
+    best = max(pdf_links, key=score)
+    return best[0]
+
+
+async def extract_content_from_document_url(document_url: str) -> str:
+    """Extract content from a PDF URL or from the first PDF linked by an HTML document."""
+    if _is_direct_pdf_document_url(document_url):
+        return await extract_text_from_pdf_url(document_url)
+
+    html = await _get_html(document_url, timeout=15)
+    if not html:
+        return ""
+
+    selected_pdf = _select_document_pdf_link(document_url, _iter_html_links(html))
+    if selected_pdf:
+        return await extract_text_from_pdf_url(urljoin(document_url, selected_pdf))
+
+    try:
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        return re.sub(r"\s+", " ", soup.get_text(" ", strip=True))[:50000]
+    except ImportError:
+        text = re.sub(r"<[^>]+>", " ", html)
+        return re.sub(r"\s+", " ", text).strip()[:50000]
+    except Exception as exc:
+        logger.error("Error extracting linked document content for %s: %s", document_url, exc)
         return ""
 
 
@@ -140,35 +245,47 @@ class DOFScraper:
 
         for keyword in keywords[:3]:  # Limit to 3 keywords to avoid overload
             try:
-                url = f"{self.BASE_URL}/index.php?action=busqueda&lang=es&texto={keyword}&fInicial={since}&fFinal={until}"
+                query = urlencode({
+                    "action": "busqueda",
+                    "lang": "es",
+                    "texto": keyword,
+                    "fInicial": since,
+                    "fFinal": until,
+                })
+                url = f"{self.BASE_URL}/index.php?{query}"
                 html = await _get_html(url)
                 if not html:
                     continue
 
                 try:
-                    from bs4 import BeautifulSoup
-                    soup = BeautifulSoup(html, "lxml")
-
                     # DOF search results have links with class "ligas"
-                    for link in soup.find_all("a", href=True)[:20]:
-                        href = link.get("href", "")
-                        text = link.get_text(strip=True)
-
-                        if not text or len(text) < 10:
-                            continue
-
-                        if "nota_detalle" in href or "nota_detalle_popup" in href:
-                            full_url = urljoin(self.BASE_URL, href)
-                            doc = ScrapedDocumentInfo(
-                                titulo=text[:500],
-                                url=full_url,
-                                descripcion=f"DOF — búsqueda: {keyword}",
-                                fecha_publicacion=None,
+                    result_links = [
+                        (href, text)
+                        for href, text in _iter_html_links(html)
+                        if text and len(text) >= 10 and ("nota_detalle" in href or "nota_detalle_popup" in href)
+                    ]
+                    for href, text in result_links[:20]:
+                        full_url = urljoin(self.BASE_URL, href)
+                        doc = ScrapedDocumentInfo(
+                            titulo=text[:500],
+                            url=full_url,
+                            descripcion=f"DOF — búsqueda: {keyword}",
+                            fecha_publicacion=None,
+                            contenido_text="",
+                        )
+                        documents.append(doc)
+                        try:
+                            doc.contenido_text = await asyncio.wait_for(
+                                extract_content_from_document_url(full_url),
+                                timeout=20,
                             )
-                            documents.append(doc)
+                        except asyncio.TimeoutError:
+                            logger.warning("Timed out extracting DOF content for %s", full_url)
+                        except Exception as exc:
+                            logger.error("Error extracting DOF content for %s: %s", full_url, exc)
 
                 except ImportError:
-                    logger.warning("BeautifulSoup not installed, returning empty DOF results")
+                    logger.warning("No HTML link parser available, returning empty DOF results")
 
             except Exception as e:
                 logger.error(f"DOF scraper error for keyword {keyword}: {e}")
