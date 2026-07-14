@@ -8,6 +8,7 @@ Create Date: 2026-06-10 19:00:00.000000
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql
 from sqlalchemy.engine import Connection
 
 
@@ -17,19 +18,22 @@ branch_labels = None
 depends_on = None
 
 
-_GENERADOR_TIPO = sa.Enum(
+_GENERADOR_TIPO = postgresql.ENUM(
     'empresa', 'hospital', 'hotel', 'comercio', 'residencial', 'industria',
     'construccion', 'restaurante', 'escuela', 'otro',
     name='generadortipo',
+    create_type=False,
 )
-_GENERADOR_SOURCE = sa.Enum(
+_GENERADOR_SOURCE = postgresql.ENUM(
     'denue', 'manual', 'decision_tree', 'bulk_upload', 'admin',
     name='generadorsource',
+    create_type=False,
 )
-_DECISION_TREE_TYPE = sa.Enum(
+_DECISION_TREE_TYPE = postgresql.ENUM(
     'construccion', 'hospital', 'comercio', 'restaurante', 'industria',
     'hotel', 'escuela', 'residencial',
     name='decisiontreetype',
+    create_type=False,
 )
 
 
