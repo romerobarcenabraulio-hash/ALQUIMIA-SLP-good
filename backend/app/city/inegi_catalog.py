@@ -90,7 +90,8 @@ def _rsu_ton_dia(poblacion: int) -> float:
 
 
 def _row_from_inegi_item(item: dict[str, Any], estado_nombre: str) -> MunicipioMxRow:
-    cvegeo = str(item.get("cvegeo", "")).zfill(5)
+    raw = str(item.get("cvegeo", ""))
+    cvegeo = raw[:5].zfill(5) if len(raw) >= 5 else raw.zfill(5)
     estado_id = str(item.get("cve_ent", cvegeo[:2])).zfill(2)
     try:
         poblacion = int(str(item.get("pob_total", "0")).replace(",", "") or "0")
