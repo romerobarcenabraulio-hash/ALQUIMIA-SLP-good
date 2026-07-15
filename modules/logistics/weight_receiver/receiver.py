@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from typing import Iterable
 
 from modules.logistics.schemas import WeightEvent
@@ -72,7 +72,7 @@ def synthetic_weight_events(
                 toneladas=0.0,
                 pureza_pct=None,
                 source="synthetic_zero",
-                recorded_at=datetime.utcnow(),
+                recorded_at=datetime.now(timezone.utc),
             )
             for f in FRACCIONES_DEFAULT
         ]
@@ -86,7 +86,7 @@ def synthetic_weight_events(
             toneladas=round(ton_total * shares[i], 3),
             pureza_pct=purezas[i],
             source="synthetic_distributed",
-            recorded_at=datetime.utcnow(),
+            recorded_at=datetime.now(timezone.utc),
         )
         for i in range(len(FRACCIONES_DEFAULT))
     ]

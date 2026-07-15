@@ -58,7 +58,7 @@ def _evm_block_from_result(
 def derive_evm_from_aurum_hermes(
     municipio_id: str | None,
     *,
-    lookback_days: int = 14,
+    lookback_days: int = 90,
 ) -> tuple[dict[str, Any], str, list[str], dict[str, Any]]:
     """
     Construye EVM desde ac_latest (AURUM) + cost_structure + feeds HERMES.

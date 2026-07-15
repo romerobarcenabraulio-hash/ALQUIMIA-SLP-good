@@ -86,7 +86,7 @@ def coverage_for_municipio(municipio_id: str) -> CoverageStatus:
         legal=legal_status,
         contrato=contrato,
         presupuesto=presupuesto,
-        operacion=SourceStatus.estimado if profile else SourceStatus.no_disponible,
+        operacion=SourceStatus.estimado if profile and profile.dependencia_responsable else SourceStatus.no_disponible,
         documentos=SourceStatus.bloqueado if bloqueos else SourceStatus.estimado,
         bloqueos=list(dict.fromkeys(bloqueos)),
         siguiente_accion=(
@@ -101,4 +101,3 @@ def coverage_for_municipio(municipio_id: str) -> CoverageStatus:
 
 def coverage_for_zm(zm_id: str) -> List[CoverageStatus]:
     return [coverage_for_municipio(m) for m in list_zm_municipios(zm_id)]
-

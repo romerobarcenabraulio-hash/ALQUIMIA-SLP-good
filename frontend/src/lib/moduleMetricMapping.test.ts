@@ -7,7 +7,7 @@ describe('moduleMetricMapping', () => {
     const metrics = tenantDiagnosticDataFor('municipio-demo').metrics
     const labels = metricsForConsultingModule('city_baseline', metrics).map(metric => metric.label)
 
-    expect(labels).toContain('Generación RSU')
+    expect(labels).toContain('Generación RSU calculada')
     expect(labels).toContain('Caracterización física local')
     expect(labels).toContain('Estudio de rutas y tiempos')
     expect(labels).not.toContain('Aceptación a pago por servicio')

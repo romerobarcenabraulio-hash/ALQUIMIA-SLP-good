@@ -174,6 +174,8 @@ def _seed_demo() -> None:
             fuente="places_api",
             verificado=True,
             score_confianza=0.90,
+            clave_inegi="19039",
+            es_operador_principal=True,
         ),
     ]
     for c in demos:
