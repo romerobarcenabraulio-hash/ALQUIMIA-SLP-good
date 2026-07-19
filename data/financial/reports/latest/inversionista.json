@@ -20,8 +20,8 @@
     "costo_por_vivienda_mxn": "1.24"
   },
   "riesgos_costo": [
-    "Costos de no-calidad > 8% ingreso bruto → escalamiento a revisión humana",
-    "Feed operativo > 3 días sin publicar → AC EVM desactualizado",
+    "Costos de no-calidad > 8% ingreso bruto → escalación SUPREME",
+    "Feed HERMES > 3 días sin publicar → AC EVM desactualizado",
     "Categoría OPEX > 20% sobre presupuesto → alerta roja"
   ],
   "disclaimer_proyeccion": "Proyección basada en: Modelo_BASED.xlsx · ZM SLP · mayo 2026. No sustituye conciliación contable ni auditoría."
