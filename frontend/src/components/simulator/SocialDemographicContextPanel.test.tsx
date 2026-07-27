@@ -1,9 +1,9 @@
 /**
  * @vitest-environment jsdom
  */
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import type { ReactNode } from 'react'
-import { render } from '@testing-library/react'
+import { cleanup, render } from '@testing-library/react'
 import { SocialDemographicContextPanel } from '@/components/simulator/SocialDemographicContextPanel'
 import type { SociodemographicDisplayBlock } from '@/types/socialDemographicContext'
 import { SOCIAL_DEMOGRAPHIC_UI_DISCLAIMER } from '@/lib/socialContextPlaceholder'
@@ -14,6 +14,10 @@ const baseBlock: SociodemographicDisplayBlock = {
   fuente_declarada: '',
   screen_anchor: 'marco_legal',
 }
+
+afterEach(() => {
+  cleanup()
+})
 
 function queryInRender(ui: ReactNode) {
   const { container } = render(ui)
