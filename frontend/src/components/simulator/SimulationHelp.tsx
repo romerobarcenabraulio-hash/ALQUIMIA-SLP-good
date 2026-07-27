@@ -52,7 +52,7 @@ const HELP_TOPICS: HelpTopic[] = [
       'Click the "Export" button to see export options',
       'Choose "Export as JSON" for technical use or data backup',
       'Choose "Export as CSV" for spreadsheet analysis',
-      'Download your file and share with decision makers',
+      'Download your file and share with actors and interested parties',
     ],
   },
   {

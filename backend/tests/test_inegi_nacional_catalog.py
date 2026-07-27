@@ -53,6 +53,7 @@ def test_fetch_municipios_slp_via_inegi(monkeypatch):
             return FakeResponse()
 
     monkeypatch.setattr(inegi_catalog.httpx, "Client", FakeClient)
+    monkeypatch.setattr(inegi_catalog, "_rows_from_geo_manifest", lambda *args: [])
 
     rows = fetch_municipios_inegi("24")
     assert len(rows) == 2
