@@ -1,0 +1,764 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ALQUIMIA — Arquitectura del motor de razonamiento · Brief para el primer programador</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#12161c; --ink2:#3d4753; --mut:#6b7684; --line:#dde3ea; --bg:#fbfcfd;
+    --a:#2f6df6;   /* núcleo / motor */
+    --b:#0e9f6e;   /* área A: organizaciones */
+    --c:#b45309;   /* área B: política pública */
+    --d:#7c3aed;   /* red / hub */
+    --warn:#c2410c;
+    --soft:#f2f5f9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 100px}
+  header.top{border-bottom:2px solid var(--ink);padding-bottom:22px;margin-bottom:40px}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);font-weight:700}
+  h1{font-size:38px;line-height:1.15;margin:10px 0 8px;letter-spacing:-.02em}
+  .sub{font-size:18px;color:var(--ink2);max-width:78ch}
+  .meta{margin-top:14px;font-size:13px;color:var(--mut)}
+  h2{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);
+     margin:64px 0 6px;font-weight:800}
+  h2 + .lead{font-size:26px;line-height:1.25;letter-spacing:-.015em;margin:0 0 18px;max-width:60ch}
+  h3{font-size:17px;margin:32px 0 8px}
+  p{margin:0 0 14px;max-width:82ch;color:var(--ink2)}
+  strong{color:var(--ink)}
+  code{font:13px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--soft);
+    padding:1px 5px;border-radius:4px;color:var(--ink)}
+  figure{margin:26px 0 30px}
+  figcaption{font-size:13px;color:var(--mut);margin-top:10px}
+  svg{width:100%;height:auto;display:block}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:860px){.grid2,.grid3{grid-template-columns:1fr}}
+  .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;
+    text-transform:uppercase;padding:3px 8px;border-radius:999px;color:#fff}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:14px 0 8px}
+  th,td{text-align:left;padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);
+     border-bottom:1.5px solid var(--ink2)}
+  td:first-child{font-weight:650;color:var(--ink);white-space:nowrap}
+  ul{margin:0 0 14px;padding-left:20px;color:var(--ink2)} li{margin:5px 0;max-width:80ch}
+  .rule{height:1px;background:var(--line);margin:56px 0}
+  .callout{border-left:3px solid var(--a);background:#fff;padding:14px 18px;border-radius:0 10px 10px 0;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+  .callout.warn{border-left-color:var(--warn)}
+  .mono-s{font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--mut)}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">Alquimia · documento de arquitectura · v1</div>
+  <h1>Un motor de razonamiento, no otro chatbot</h1>
+  <p class="sub">Cómo está partido el producto en dos áreas, qué construye exactamente el motor, y cómo se
+  fabrican los conectores que le dan manos. Este documento existe para que la primera persona que escriba
+  código sepa qué es núcleo (nuestro moat) y qué es envase (reemplazable).</p>
+  <div class="meta">Audiencia: primer ingeniero de plataforma · Autor: Braulio Romero (Founder)</div>
+</header>
+
+<!-- ============ 1. TESIS ============ -->
+<h2>1 · La tesis</h2>
+<p class="lead">Los LLMs mejoran solos. Lo que no existe es la capa que los relaciona, los somete a un
+estándar y los deja ejecutar sin romper nada.</p>
+
+<div class="grid3">
+  <div class="card">
+    <h3 style="margin-top:0">El problema 1: aislamiento</h3>
+    <p style="margin:0">Cada modelo, cada app y cada MCP viven en su propia isla. No hay un lugar donde el
+    contexto de tu CRM, tu ERP, tu norma técnica y tu proyecto se toquen y produzcan <em>una</em> decisión.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">El problema 2: dispersión</h3>
+    <p style="margin:0">La cantidad de aplicaciones es inabarcable. Nadie va a integrar 400 SaaS a mano.
+    La integración tiene que ser <strong>fabricada por la máquina</strong>, no artesanal.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">El problema 3: no razonan</h3>
+    <p style="margin:0">Un LLM interpola lenguaje muy bien; no garantiza un procedimiento. No puedes
+    auditarlo, no puedes certificarlo, no repite el mismo resultado dos veces.</p>
+  </div>
+</div>
+
+<div class="callout" style="margin-top:20px">
+  <p style="margin:0"><strong>Nuestra apuesta:</strong> el LLM es la <em>membrana</em> — traduce entre el
+  humano (voz, jerga, ambigüedad) y el sistema. El <em>razonamiento</em> vive afuera del modelo, en una capa
+  explícita: estándares de proceso, reglas de certificación, cálculo cuantitativo, ontología con procedencia.
+  <br><br><strong>Regla de moat:</strong> la defensibilidad es inversamente proporcional a cuánto juicio vive
+  dentro del prompt. Todo criterio que movemos del prompt a la capa explícita es moat. Todo criterio que
+  dejamos en el prompt se lo estamos regalando al próximo modelo.</p>
+</div>
+
+<!-- ============ 2. VISTA GENERAL ============ -->
+<h2>2 · Vista general</h2>
+<p class="lead">Un núcleo, dos áreas de negocio, una red que las conecta.</p>
+
+<figure>
+<svg viewBox="0 0 1160 560" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#6b7684"/>
+    </marker>
+    <marker id="arB" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#0e9f6e"/>
+    </marker>
+    <marker id="arC" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#b45309"/>
+    </marker>
+    <marker id="arD" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#7c3aed"/>
+    </marker>
+  </defs>
+
+  <!-- entradas -->
+  <rect x="20" y="30" width="200" height="86" rx="10" fill="#fff" stroke="#dde3ea"/>
+  <text x="36" y="56" font-size="12.5" font-weight="800" fill="#6b7684">ENTRADA</text>
+  <text x="36" y="78" font-size="15" fill="#12161c">Voz · texto · evento</text>
+  <text x="36" y="98" font-size="13" fill="#6b7684">del humano o de un sistema</text>
+
+  <!-- feed -->
+  <rect x="20" y="140" width="200" height="100" rx="10" fill="#fff" stroke="#dde3ea"/>
+  <text x="36" y="166" font-size="12.5" font-weight="800" fill="#6b7684">FEED CONTINUO</text>
+  <text x="36" y="188" font-size="14" fill="#12161c">Scraping normativo</text>
+  <text x="36" y="207" font-size="14" fill="#12161c">Registro de MCPs</text>
+  <text x="36" y="226" font-size="14" fill="#12161c">Nuevas capacidades LLM</text>
+
+  <!-- NUCLEO -->
+  <rect x="290" y="24" width="330" height="300" rx="14" fill="#eef3ff" stroke="#2f6df6" stroke-width="2"/>
+  <text x="312" y="52" font-size="13" font-weight="800" fill="#2f6df6" letter-spacing="1.5">EL MOTOR (núcleo común)</text>
+  <text x="312" y="76" font-size="19" font-weight="700" fill="#12161c">Razonamiento auditable</text>
+
+  <rect x="310" y="94" width="290" height="42" rx="8" fill="#fff" stroke="#c3d4fb"/>
+  <text x="324" y="112" font-size="13.5" font-weight="700" fill="#12161c">Membrana (LLM ⇄ humano)</text>
+  <text x="324" y="128" font-size="12" fill="#6b7684">entiende, traduce, redacta — no decide</text>
+
+  <rect x="310" y="144" width="290" height="52" rx="8" fill="#fff" stroke="#c3d4fb"/>
+  <text x="324" y="163" font-size="13.5" font-weight="700" fill="#12161c">Núcleo simbólico</text>
+  <text x="324" y="180" font-size="12" fill="#6b7684">estándares de proceso · reglas de certificación</text>
+  <text x="324" y="192" font-size="12" fill="#6b7684">cálculo · árboles de decisión · motor ECA</text>
+
+  <rect x="310" y="204" width="290" height="42" rx="8" fill="#fff" stroke="#c3d4fb"/>
+  <text x="324" y="222" font-size="13.5" font-weight="700" fill="#12161c">Ontología con procedencia</text>
+  <text x="324" y="238" font-size="12" fill="#6b7684">cada dato sabe de dónde vino y quién lo firmó</text>
+
+  <rect x="310" y="254" width="290" height="48" rx="8" fill="#fff" stroke="#c3d4fb"/>
+  <text x="324" y="273" font-size="13.5" font-weight="700" fill="#12161c">Ejecutor + firewall de acciones</text>
+  <text x="324" y="290" font-size="12" fill="#6b7684">plan → simulación → gate → acción → verificación</text>
+
+  <!-- conectores -->
+  <rect x="290" y="352" width="330" height="118" rx="12" fill="#fff" stroke="#dde3ea"/>
+  <text x="312" y="378" font-size="12.5" font-weight="800" fill="#6b7684">CAPA DE MANOS</text>
+  <text x="312" y="400" font-size="16" font-weight="700" fill="#12161c">Fábrica de conectores</text>
+  <text x="312" y="421" font-size="12.5" fill="#6b7684">MCP · APIs REST/GraphQL · RPA/browser · archivos</text>
+  <text x="312" y="439" font-size="12.5" fill="#6b7684">CRM · ERP · correo · calendario · SIG · bancos</text>
+  <text x="312" y="457" font-size="12.5" fill="#6b7684">tipado, permisos y reversa por conector</text>
+
+  <!-- AREA A -->
+  <rect x="690" y="24" width="440" height="150" rx="14" fill="#effaf5" stroke="#0e9f6e" stroke-width="2"/>
+  <text x="712" y="50" font-size="12.5" font-weight="800" fill="#0e9f6e" letter-spacing="1.4">ÁREA A · PRODUCTO</text>
+  <text x="712" y="76" font-size="20" font-weight="700" fill="#12161c">Agentes para organizaciones</text>
+  <text x="712" y="100" font-size="13.5" fill="#3d4753">Asistente adscrito al ROL, no a la persona. Aprende del</text>
+  <text x="712" y="118" font-size="13.5" fill="#3d4753">usuario que entrevista, hereda su RBAC, automatiza su día.</text>
+  <text x="712" y="142" font-size="12.5" fill="#0e9f6e" font-weight="700">Ingreso: suscripción por rol activo</text>
+  <text x="712" y="160" font-size="12.5" fill="#6b7684">Se instala sobre el stack que la empresa ya tiene</text>
+
+  <!-- AREA B -->
+  <rect x="690" y="196" width="440" height="150" rx="14" fill="#fdf5ec" stroke="#b45309" stroke-width="2"/>
+  <text x="712" y="222" font-size="12.5" font-weight="800" fill="#b45309" letter-spacing="1.4">ÁREA B · SERVICIO</text>
+  <text x="712" y="248" font-size="20" font-weight="700" fill="#12161c">Proyectos de política pública</text>
+  <text x="712" y="272" font-size="13.5" fill="#3d4753">El motor ejecuta el proyecto (diagnóstico → módulo vivo →</text>
+  <text x="712" y="290" font-size="13.5" fill="#3d4753">implementación) y al cerrar <tspan font-weight="700" fill="#12161c">deposita agentes</tspan> en la institución.</text>
+  <text x="712" y="314" font-size="12.5" fill="#b45309" font-weight="700">Ingreso: proyecto + cola de Área A</text>
+  <text x="712" y="332" font-size="12.5" fill="#6b7684">Cada proyecto entregado se vuelve cliente recurrente</text>
+
+  <!-- RED -->
+  <rect x="690" y="368" width="440" height="102" rx="14" fill="#f6f2fe" stroke="#7c3aed" stroke-width="2"/>
+  <text x="712" y="394" font-size="12.5" font-weight="800" fill="#7c3aed" letter-spacing="1.4">CAPA C · RED</text>
+  <text x="712" y="420" font-size="19" font-weight="700" fill="#12161c">Hub de agentes · red económica</text>
+  <text x="712" y="443" font-size="13" fill="#3d4753">Los agentes de distintas organizaciones se descubren, negocian y</text>
+  <text x="712" y="460" font-size="13" fill="#3d4753">automatizan entre sí. Grafo anonimizado = el moat que no se copia.</text>
+
+  <!-- flechas -->
+  <path d="M220,73 L286,120" stroke="#6b7684" fill="none" marker-end="url(#ar)"/>
+  <path d="M220,190 L286,200" stroke="#6b7684" fill="none" marker-end="url(#ar)"/>
+  <path d="M455,326 L455,348" stroke="#6b7684" fill="none" marker-end="url(#ar)"/>
+  <path d="M622,150 L686,95" stroke="#0e9f6e" fill="none" marker-end="url(#arB)"/>
+  <path d="M622,230 L686,255" stroke="#b45309" fill="none" marker-end="url(#arC)"/>
+  <path d="M622,410 L686,415" stroke="#7c3aed" fill="none" marker-end="url(#arD)"/>
+  <path d="M910,346 L910,364" stroke="#7c3aed" fill="none" marker-end="url(#arD)"/>
+  <path d="M910,174 L910,192" stroke="#b45309" fill="none" marker-end="url(#arC)" stroke-dasharray="4 3"/>
+  <text x="922" y="188" font-size="11.5" fill="#b45309">B alimenta a A</text>
+
+  <text x="1100" y="510" font-size="11" fill="#6b7684" text-anchor="end">Un solo núcleo. Dos formas de cobrarlo. Una red que las compone.</text>
+</svg>
+<figcaption>Fig. 1 — El motor es único. Área A lo vende como producto, Área B lo vende como servicio que
+termina instalando Área A, y la red convierte a los clientes en nodos de un grafo económico.</figcaption>
+</figure>
+
+<!-- ============ 3. ANATOMIA DEL MOTOR ============ -->
+<h2>3 · Anatomía del motor</h2>
+<p class="lead">Siete estaciones entre "dime qué necesito hacer" y "está hecho y puedo probarlo".</p>
+
+<figure>
+<svg viewBox="0 0 1160 520" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#2f6df6"/>
+    </marker>
+    <marker id="a3" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#c2410c"/>
+    </marker>
+  </defs>
+
+  <!-- pipeline -->
+  <g>
+    <rect x="20" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="42" cy="84" r="12" fill="#eef3ff"/><text x="42" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">1</text>
+    <text x="64" y="88" font-size="14.5" font-weight="700" fill="#12161c">Percepción</text>
+    <text x="36" y="112" font-size="12" fill="#3d4753">Voz → texto → intención</text>
+    <text x="36" y="130" font-size="12" fill="#3d4753">Quién habla, con qué rol,</text>
+    <text x="36" y="146" font-size="12" fill="#3d4753">en qué proyecto, con qué</text>
+    <text x="36" y="162" font-size="12" fill="#3d4753">permisos.</text>
+
+    <rect x="190" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="212" cy="84" r="12" fill="#eef3ff"/><text x="212" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">2</text>
+    <text x="234" y="88" font-size="14.5" font-weight="700" fill="#12161c">Anclaje</text>
+    <text x="206" y="112" font-size="12" fill="#3d4753">La intención se amarra a</text>
+    <text x="206" y="130" font-size="12" fill="#3d4753">entidades reales de la</text>
+    <text x="206" y="146" font-size="12" fill="#3d4753">ontología: cliente, ruta,</text>
+    <text x="206" y="162" font-size="12" fill="#3d4753">expediente, activo.</text>
+
+    <rect x="360" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="382" cy="84" r="12" fill="#eef3ff"/><text x="382" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">3</text>
+    <text x="404" y="88" font-size="14.5" font-weight="700" fill="#12161c">Encuadre</text>
+    <text x="376" y="112" font-size="12" fill="#3d4753">¿Qué estándar aplica?</text>
+    <text x="376" y="130" font-size="12" fill="#3d4753">Norma, certificación,</text>
+    <text x="376" y="146" font-size="12" fill="#3d4753">política interna, contrato.</text>
+    <text x="376" y="162" font-size="12" fill="#3d4753">Aquí vive el criterio.</text>
+
+    <rect x="530" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="552" cy="84" r="12" fill="#eef3ff"/><text x="552" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">4</text>
+    <text x="574" y="88" font-size="14.5" font-weight="700" fill="#12161c">Razonamiento</text>
+    <text x="546" y="112" font-size="12" fill="#3d4753">Motor determinista:</text>
+    <text x="546" y="130" font-size="12" fill="#3d4753">cálculo, reglas ECA,</text>
+    <text x="546" y="146" font-size="12" fill="#3d4753">árbol de diagnóstico.</text>
+    <text x="546" y="162" font-size="12" fill="#3d4753">Mismo input = mismo output.</text>
+
+    <rect x="700" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="722" cy="84" r="12" fill="#eef3ff"/><text x="722" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">5</text>
+    <text x="744" y="88" font-size="14.5" font-weight="700" fill="#12161c">Plan</text>
+    <text x="716" y="112" font-size="12" fill="#3d4753">Grafo de acciones sobre</text>
+    <text x="716" y="130" font-size="12" fill="#3d4753">conectores, con costo,</text>
+    <text x="716" y="146" font-size="12" fill="#3d4753">riesgo y reversa por paso.</text>
+    <text x="716" y="162" font-size="12" fill="#3d4753">Se simula antes de correr.</text>
+
+    <rect x="870" y="60" width="150" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="892" cy="84" r="12" fill="#eef3ff"/><text x="892" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">6</text>
+    <text x="914" y="88" font-size="14.5" font-weight="700" fill="#12161c">Ejecución</text>
+    <text x="886" y="112" font-size="12" fill="#3d4753">Idempotente, con reintento</text>
+    <text x="886" y="130" font-size="12" fill="#3d4753">y compensación. Toda</text>
+    <text x="886" y="146" font-size="12" fill="#3d4753">escritura pasa por gate</text>
+    <text x="886" y="162" font-size="12" fill="#3d4753">de autoridad.</text>
+
+    <rect x="1035" y="60" width="105" height="120" rx="10" fill="#fff" stroke="#2f6df6"/>
+    <circle cx="1057" cy="84" r="12" fill="#eef3ff"/><text x="1057" y="88" font-size="12" font-weight="800" fill="#2f6df6" text-anchor="middle">7</text>
+    <text x="1050" y="112" font-size="13.5" font-weight="700" fill="#12161c">Verificación</text>
+    <text x="1050" y="134" font-size="12" fill="#3d4753">¿Pasó lo que</text>
+    <text x="1050" y="150" font-size="12" fill="#3d4753">dijimos que</text>
+    <text x="1050" y="166" font-size="12" fill="#3d4753">iba a pasar?</text>
+  </g>
+
+  <g stroke="#2f6df6" fill="none" marker-end="url(#a2)">
+    <path d="M170,120 L186,120"/><path d="M340,120 L356,120"/><path d="M510,120 L526,120"/>
+    <path d="M680,120 L696,120"/><path d="M850,120 L866,120"/><path d="M1020,120 L1031,120"/>
+  </g>
+
+  <!-- firewall -->
+  <rect x="530" y="230" width="490" height="86" rx="10" fill="#fff7ed" stroke="#c2410c" stroke-width="1.6"/>
+  <text x="552" y="256" font-size="12.5" font-weight="800" fill="#c2410c" letter-spacing="1.2">FIREWALL DE ACCIONES — cruza los pasos 5, 6 y 7</text>
+  <text x="552" y="279" font-size="13.5" fill="#3d4753">Toda acción con efecto externo (escribir, pagar, notificar, publicar) se clasifica:</text>
+  <text x="552" y="300" font-size="13.5" fill="#12161c" font-weight="650">auto · auto-con-aviso · requiere-humano · prohibida</text>
+  <path d="M775,182 L775,226" stroke="#c2410c" fill="none" marker-end="url(#a3)" stroke-dasharray="4 3"/>
+
+  <!-- aprendizaje -->
+  <rect x="20" y="230" width="490" height="86" rx="10" fill="#f6f2fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="42" y="256" font-size="12.5" font-weight="800" fill="#7c3aed" letter-spacing="1.2">VOLANTE DE APRENDIZAJE</text>
+  <text x="42" y="279" font-size="13.5" fill="#3d4753">Cada vez que un humano corrige al motor se guarda la tupla</text>
+  <text x="42" y="300" font-size="13" font-family="ui-monospace,Menlo,monospace" fill="#12161c">(situación, recomendación, decisión humana, razón, procedencia)</text>
+
+  <!-- memoria -->
+  <rect x="20" y="356" width="1120" height="120" rx="12" fill="#fff" stroke="#dde3ea"/>
+  <text x="42" y="382" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.2">MEMORIA — atraviesa todo el pipeline</text>
+  <g font-size="13">
+    <rect x="42" y="396" width="255" height="62" rx="8" fill="#f2f5f9"/>
+    <text x="58" y="418" font-weight="700" fill="#12161c">Ontología del dominio</text>
+    <text x="58" y="438" fill="#6b7684">entidades, relaciones, unidades</text>
+    <text x="58" y="452" fill="#6b7684">de análisis, taxonomías sectoriales</text>
+
+    <rect x="313" y="396" width="255" height="62" rx="8" fill="#f2f5f9"/>
+    <text x="329" y="418" font-weight="700" fill="#12161c">Memoria de rol</text>
+    <text x="329" y="438" fill="#6b7684">cómo trabaja ESTE puesto: rutinas,</text>
+    <text x="329" y="452" fill="#6b7684">criterios, formatos, contrapartes</text>
+
+    <rect x="584" y="396" width="255" height="62" rx="8" fill="#f2f5f9"/>
+    <text x="600" y="418" font-weight="700" fill="#12161c">Memoria de proyecto</text>
+    <text x="600" y="438" fill="#6b7684">estado, decisiones tomadas,</text>
+    <text x="600" y="452" fill="#6b7684">pendientes, evidencia acumulada</text>
+
+    <rect x="855" y="396" width="263" height="62" rx="8" fill="#f2f5f9"/>
+    <text x="871" y="418" font-weight="700" fill="#12161c">Registro de capacidades</text>
+    <text x="871" y="438" fill="#6b7684">qué conectores existen, qué saben</text>
+    <text x="871" y="452" fill="#6b7684">hacer, qué tan confiables son</text>
+  </g>
+</svg>
+<figcaption>Fig. 2 — El LLM participa en 1, 3 (redacción) y 7 (explicación). Los pasos 4, 5 y 6 son
+deterministas y reproducibles: ahí es donde el producto se vuelve auditable y certificable.</figcaption>
+</figure>
+
+<div class="callout warn">
+  <p style="margin:0"><strong>Criterio de ingeniería que no se negocia:</strong> si un resultado no se puede
+  reproducir corriendo el mismo input dos veces, no es una salida del motor — es una opinión del modelo, y va
+  marcada como tal en la interfaz. La frontera entre "el motor calculó" y "el modelo sugirió" tiene que ser
+  visible en el dato, no solo en el diseño.</p>
+</div>
+
+<!-- ============ 4. CONECTORES ============ -->
+<h2>4 · Los conectores</h2>
+<p class="lead">No integramos apps a mano. Fabricamos conectores con una línea de ensamblaje, y el
+inventario de MCPs del mundo es nuestra materia prima gratis.</p>
+
+<figure>
+<svg viewBox="0 0 1160 600" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="a4" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+      <path d="M0,0 L9,4.5 L0,9 z" fill="#6b7684"/>
+    </marker>
+  </defs>
+
+  <!-- fuentes -->
+  <text x="20" y="34" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.3">FUENTES DE CAPACIDAD (entrada de la fábrica)</text>
+  <g font-size="13">
+    <rect x="20" y="48" width="212" height="56" rx="9" fill="#fff" stroke="#dde3ea"/>
+    <text x="36" y="70" font-weight="700" fill="#12161c">Servidores MCP existentes</text>
+    <text x="36" y="90" fill="#6b7684">Slack, Notion, Drive, GitHub, Linear…</text>
+
+    <rect x="248" y="48" width="212" height="56" rx="9" fill="#fff" stroke="#dde3ea"/>
+    <text x="264" y="70" font-weight="700" fill="#12161c">APIs documentadas</text>
+    <text x="264" y="90" fill="#6b7684">OpenAPI / GraphQL / SOAP heredado</text>
+
+    <rect x="476" y="48" width="212" height="56" rx="9" fill="#fff" stroke="#dde3ea"/>
+    <text x="492" y="70" font-weight="700" fill="#12161c">Sistemas cerrados</text>
+    <text x="492" y="90" fill="#6b7684">ERP viejo, portal gov, Excel, PDF</text>
+
+    <rect x="704" y="48" width="212" height="56" rx="9" fill="#fff" stroke="#dde3ea"/>
+    <text x="720" y="70" font-weight="700" fill="#12161c">Navegador (último recurso)</text>
+    <text x="720" y="90" fill="#6b7684">RPA sobre DOM, sesión del usuario</text>
+
+    <rect x="932" y="48" width="208" height="56" rx="9" fill="#fff" stroke="#dde3ea"/>
+    <text x="948" y="70" font-weight="700" fill="#12161c">Feed de scraping</text>
+    <text x="948" y="90" fill="#6b7684">normas, precios, padrones, DOF</text>
+  </g>
+
+  <path d="M580,110 L580,136" stroke="#6b7684" fill="none" marker-end="url(#a4)"/>
+
+  <!-- linea de ensamblaje -->
+  <rect x="20" y="146" width="1120" height="212" rx="14" fill="#eef3ff" stroke="#2f6df6" stroke-width="2"/>
+  <text x="42" y="174" font-size="12.5" font-weight="800" fill="#2f6df6" letter-spacing="1.3">LÍNEA DE ENSAMBLAJE DE CONECTORES — seis pasos, iguales para todos</text>
+
+  <g font-size="12.5">
+    <rect x="42" y="190" width="170" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="58" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">1 · Descubrir</text>
+    <text x="58" y="234" fill="#3d4753">Leer el schema real:</text>
+    <text x="58" y="250" fill="#3d4753">tools MCP, OpenAPI,</text>
+    <text x="58" y="266" fill="#3d4753">o sondeo del DOM.</text>
+    <text x="58" y="290" fill="#12161c" font-weight="650">Nunca asumir la</text>
+    <text x="58" y="306" fill="#12161c" font-weight="650">forma del payload:</text>
+    <text x="58" y="322" fill="#12161c" font-weight="650">observarla.</text>
+
+    <rect x="228" y="190" width="170" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="244" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">2 · Normalizar</text>
+    <text x="244" y="234" fill="#3d4753">Mapear los campos</text>
+    <text x="244" y="250" fill="#3d4753">de la app a nuestra</text>
+    <text x="244" y="266" fill="#3d4753">ontología.</text>
+    <text x="244" y="290" fill="#6b7684">"deal", "oportunidad"</text>
+    <text x="244" y="306" fill="#6b7684">y "expediente" pueden</text>
+    <text x="244" y="322" fill="#6b7684">ser la misma entidad.</text>
+
+    <rect x="414" y="190" width="170" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="430" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">3 · Tipar acciones</text>
+    <text x="430" y="234" fill="#3d4753">Cada operación se</text>
+    <text x="430" y="250" fill="#3d4753">declara con:</text>
+    <text x="430" y="270" fill="#12161c">lectura / escritura</text>
+    <text x="430" y="286" fill="#12161c">reversible / no</text>
+    <text x="430" y="302" fill="#12161c">costo · latencia</text>
+    <text x="430" y="318" fill="#12161c">datos sensibles</text>
+
+    <rect x="600" y="190" width="170" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="616" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">4 · Gobernar</text>
+    <text x="616" y="234" fill="#3d4753">Credenciales por</text>
+    <text x="616" y="250" fill="#3d4753">tenant, nunca del</text>
+    <text x="616" y="266" fill="#3d4753">agente. El agente</text>
+    <text x="616" y="282" fill="#3d4753">hereda el RBAC del</text>
+    <text x="616" y="298" fill="#3d4753">rol humano.</text>
+    <text x="616" y="322" fill="#c2410c" font-weight="700">Nadie sube de nivel.</text>
+
+    <rect x="786" y="190" width="170" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="802" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">5 · Probar</text>
+    <text x="802" y="234" fill="#3d4753">Contrato ejecutable:</text>
+    <text x="802" y="250" fill="#3d4753">grabar respuestas</text>
+    <text x="802" y="266" fill="#3d4753">reales y correr contra</text>
+    <text x="802" y="282" fill="#3d4753">ellas en CI.</text>
+    <text x="802" y="306" fill="#6b7684">Si la app cambia el</text>
+    <text x="802" y="322" fill="#6b7684">schema, CI se pone rojo.</text>
+
+    <rect x="972" y="190" width="146" height="148" rx="9" fill="#fff" stroke="#c3d4fb"/>
+    <text x="988" y="212" font-size="13.5" font-weight="700" fill="#2f6df6">6 · Publicar</text>
+    <text x="988" y="234" fill="#3d4753">Entra al registro</text>
+    <text x="988" y="250" fill="#3d4753">de capacidades</text>
+    <text x="988" y="266" fill="#3d4753">con su score de</text>
+    <text x="988" y="282" fill="#3d4753">confiabilidad.</text>
+    <text x="988" y="306" fill="#6b7684">El planificador ya</text>
+    <text x="988" y="322" fill="#6b7684">puede usarlo.</text>
+  </g>
+
+  <path d="M580,364 L580,392" stroke="#6b7684" fill="none" marker-end="url(#a4)"/>
+
+  <!-- salida -->
+  <rect x="20" y="402" width="1120" height="94" rx="12" fill="#fff" stroke="#dde3ea"/>
+  <text x="42" y="428" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.3">CONTRATO ÚNICO QUE VE EL MOTOR</text>
+  <text x="42" y="456" font-size="14" font-family="ui-monospace,Menlo,monospace" fill="#12161c">capability(id, verbo, entidad_ontológica, entrada, salida, efectos, reversa, autoridad_requerida, costo, confiabilidad)</text>
+  <text x="42" y="480" font-size="13" fill="#6b7684">El motor no sabe si detrás hay un MCP, una API o un robot de navegador. Solo ve verbos sobre entidades. Eso es lo que hace que agregar la app #400 no cueste como la #1.</text>
+
+  <text x="20" y="536" font-size="13.5" font-weight="700" fill="#12161c">Consecuencia de diseño:</text>
+  <text x="20" y="558" font-size="13.5" fill="#3d4753">añadir una app nueva no toca el motor. Y un cambio de criterio en el motor se propaga a las 400 apps sin reescribir integraciones.</text>
+  <text x="20" y="580" font-size="13.5" fill="#3d4753">Esa asimetría — motor caro y estable, conectores baratos y desechables — es toda la economía del producto.</text>
+</svg>
+<figcaption>Fig. 3 — La fábrica de conectores. Los MCP que ya existen entran gratis como materia prima; lo
+que agregamos es el tipado de efectos, la gobernanza de identidad y la prueba de contrato.</figcaption>
+</figure>
+
+<h3>Cómo se decide qué tipo de conector construir</h3>
+<table>
+  <thead><tr><th>Si la app tiene…</th><th>Usamos</th><th>Esfuerzo</th><th>Fragilidad</th></tr></thead>
+  <tbody>
+    <tr><td>Servidor MCP</td><td>Adaptador delgado sobre el MCP</td><td>Horas</td><td>Baja — pero el schema cambia sin avisar; por eso pruebas de contrato</td></tr>
+    <tr><td>OpenAPI / GraphQL</td><td>Generación de capabilities desde el spec + mapeo ontológico a mano</td><td>1–2 días</td><td>Baja</td></tr>
+    <tr><td>API sin spec</td><td>Sondeo, grabación de tráfico, cliente tipado</td><td>3–5 días</td><td>Media</td></tr>
+    <tr><td>Solo exportables</td><td>Ingesta de archivo + parser + reconciliación</td><td>2–4 días</td><td>Media — el formato humano se degrada</td></tr>
+    <tr><td>Solo interfaz web</td><td>RPA en navegador con sesión del usuario</td><td>1 semana</td><td>Alta — se declara explícitamente como conector de baja confiabilidad</td></tr>
+  </tbody>
+</table>
+<p>El registro de capacidades guarda esa confiabilidad como número. El planificador prefiere rutas
+confiables y solo cae a RPA cuando no hay alternativa — y cuando lo hace, sube el nivel de autoridad
+requerida.</p>
+
+<!-- ============ 5. FEED ============ -->
+<h2>5 · El feed: por qué el producto mejora solo</h2>
+<p class="lead">Tres corrientes entran continuamente. Ninguna requiere que nosotros escribamos el
+conocimiento a mano.</p>
+
+<div class="grid3">
+  <div class="card">
+    <span class="tag" style="background:var(--a)">Corriente 1</span>
+    <h3>Conocimiento del mundo</h3>
+    <p>Scraping dirigido de normas, publicaciones oficiales, precios de referencia, padrones. No entra crudo:
+    pasa por extracción a la ontología con <strong>procedencia y fecha</strong>, y se versiona. Un cambio
+    normativo cambia una regla, no un prompt.</p>
+  </div>
+  <div class="card">
+    <span class="tag" style="background:var(--d)">Corriente 2</span>
+    <h3>Capacidades del ecosistema</h3>
+    <p>Cada MCP nuevo que publica el mundo es una capacidad que podemos absorber sin escribir la integración
+    desde cero. El registro se sincroniza, la fábrica lo tipa, el planificador lo empieza a usar.</p>
+  </div>
+  <div class="card">
+    <span class="tag" style="background:var(--b)">Corriente 3</span>
+    <h3>Corrección humana</h3>
+    <p>Cada override en el firewall es una etiqueta de entrenamiento con contexto. El mecanismo de seguridad
+    <em>es</em> el mecanismo de aprendizaje. Esto es lo único que un competidor no puede scrapear.</p>
+  </div>
+</div>
+
+<p style="margin-top:18px">Y una consecuencia estratégica: <strong>cuando los LLMs mejoran, nosotros
+mejoramos gratis.</strong> Como el juicio no vive en los pesos, cambiar de modelo es cambiar una membrana.
+El motor, la ontología y los conectores no se enteran. Esa es la razón técnica de por qué la membrana debe
+ser intercambiable desde el día uno — no como abstracción prematura, sino como la única apuesta que hace
+que el avance de la industria juegue a nuestro favor en vez de en contra.</p>
+
+<!-- ============ 6. LAS DOS AREAS ============ -->
+<h2>6 · Las dos áreas, en detalle</h2>
+<p class="lead">Mismo motor. Distinto contrato, distinto ciclo, distinta forma de entrar.</p>
+
+<figure>
+<svg viewBox="0 0 1160 470" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="a5" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#0e9f6e"/></marker>
+    <marker id="a6" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 z" fill="#b45309"/></marker>
+  </defs>
+
+  <!-- Area A -->
+  <rect x="20" y="20" width="545" height="190" rx="12" fill="#effaf5" stroke="#0e9f6e" stroke-width="1.8"/>
+  <text x="42" y="46" font-size="12.5" font-weight="800" fill="#0e9f6e" letter-spacing="1.3">ÁREA A · ASISTENTES Y AUTOMATIZACIÓN PARA ORGANIZACIONES</text>
+  <g font-size="12.5">
+    <rect x="42" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#b9e6d3"/>
+    <text x="56" y="82" font-weight="700" font-size="13" fill="#12161c">Entrevista</text>
+    <text x="56" y="100" fill="#6b7684">El agente entrevista</text>
+    <text x="56" y="114" fill="#6b7684">al titular del rol</text>
+
+    <rect x="176" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#b9e6d3"/>
+    <text x="190" y="82" font-weight="700" font-size="13" fill="#12161c">Mapeo</text>
+    <text x="190" y="100" fill="#6b7684">Qué apps toca,</text>
+    <text x="190" y="114" fill="#6b7684">qué decide, qué firma</text>
+
+    <rect x="310" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#b9e6d3"/>
+    <text x="324" y="82" font-weight="700" font-size="13" fill="#12161c">Conexión</text>
+    <text x="324" y="100" fill="#6b7684">Conectores + RBAC</text>
+    <text x="324" y="114" fill="#6b7684">heredado del rol</text>
+
+    <rect x="444" y="60" width="99" height="60" rx="8" fill="#fff" stroke="#b9e6d3"/>
+    <text x="458" y="82" font-weight="700" font-size="13" fill="#12161c">Operación</text>
+    <text x="458" y="100" fill="#6b7684">Corre el día</text>
+    <text x="458" y="114" fill="#6b7684">a día por voz</text>
+
+    <text x="42" y="146" font-size="13" fill="#3d4753">El agente está adscrito al <tspan font-weight="700" fill="#12161c">ROL</tspan>, no a la persona. Si el titular se va, la memoria del puesto se queda.</text>
+    <text x="42" y="168" font-size="13" fill="#3d4753">Compone: "cotiza esto, checa inventario en el ERP, agenda la visita y mándale el correo al cliente" = 4 apps, una frase.</text>
+    <text x="42" y="192" font-size="13" fill="#0e9f6e" font-weight="700">Valor medible: horas devueltas al rol + errores evitados, no "usamos IA".</text>
+  </g>
+
+  <!-- Area B -->
+  <rect x="595" y="20" width="545" height="190" rx="12" fill="#fdf5ec" stroke="#b45309" stroke-width="1.8"/>
+  <text x="617" y="46" font-size="12.5" font-weight="800" fill="#b45309" letter-spacing="1.3">ÁREA B · EJECUCIÓN DE PROYECTOS DE POLÍTICA PÚBLICA</text>
+  <g font-size="12.5">
+    <rect x="617" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#f0d3b0"/>
+    <text x="631" y="82" font-weight="700" font-size="13" fill="#12161c">Diagnóstico</text>
+    <text x="631" y="100" fill="#6b7684">Árbol + cálculo por</text>
+    <text x="631" y="114" fill="#6b7684">unidad de análisis</text>
+
+    <rect x="751" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#f0d3b0"/>
+    <text x="765" y="82" font-weight="700" font-size="13" fill="#12161c">Módulo vivo</text>
+    <text x="765" y="100" fill="#6b7684">DB + frontend armados</text>
+    <text x="765" y="114" fill="#6b7684">por el orquestador</text>
+
+    <rect x="885" y="60" width="118" height="60" rx="8" fill="#fff" stroke="#f0d3b0"/>
+    <text x="899" y="82" font-weight="700" font-size="13" fill="#12161c">Implantación</text>
+    <text x="899" y="100" fill="#6b7684">Se conecta a los</text>
+    <text x="899" y="114" fill="#6b7684">sistemas del cliente</text>
+
+    <rect x="1019" y="60" width="99" height="60" rx="8" fill="#fff" stroke="#f0d3b0"/>
+    <text x="1033" y="82" font-weight="700" font-size="13" fill="#12161c">Depósito</text>
+    <text x="1033" y="100" fill="#6b7684">Deja agentes</text>
+    <text x="1033" y="114" fill="#6b7684">de Área A dentro</text>
+
+    <text x="617" y="146" font-size="13" fill="#3d4753">El entregable central <tspan font-weight="700" fill="#12161c">no es un documento</tspan>: es un módulo operando, con su base de datos y su interfaz.</text>
+    <text x="617" y="168" font-size="13" fill="#3d4753">El proyecto es el caballo de Troya comercial: entra por licitación o convenio, sale como plataforma instalada.</text>
+    <text x="617" y="192" font-size="13" fill="#b45309" font-weight="700">Cada proyecto cerrado convierte a la institución en cliente recurrente de Área A.</text>
+  </g>
+
+  <path d="M1068,212 L1068,238 L300,238 L300,262" stroke="#b45309" fill="none" stroke-dasharray="5 4" marker-end="url(#a6)"/>
+  <text x="640" y="232" font-size="12.5" font-weight="700" fill="#b45309">los agentes depositados por B se vuelven suscripciones de A</text>
+
+  <!-- Red -->
+  <rect x="20" y="272" width="1120" height="176" rx="12" fill="#f6f2fe" stroke="#7c3aed" stroke-width="1.8"/>
+  <text x="42" y="298" font-size="12.5" font-weight="800" fill="#7c3aed" letter-spacing="1.3">CAPA C · HUB DE AGENTES — LA RED ECONÓMICA</text>
+  <text x="42" y="322" font-size="14" fill="#3d4753">Cuando hay agentes dentro de muchas organizaciones, aparece algo que ninguna de las dos áreas puede dar por separado:</text>
+
+  <g font-size="12.5">
+    <rect x="42" y="336" width="258" height="94" rx="9" fill="#fff" stroke="#ddd0fa"/>
+    <text x="58" y="358" font-size="13.5" font-weight="700" fill="#12161c">Descubrimiento entre agentes</text>
+    <text x="58" y="378" fill="#6b7684">Un agente publica qué capacidades y</text>
+    <text x="58" y="394" fill="#6b7684">qué necesidades tiene su organización.</text>
+    <text x="58" y="414" fill="#6b7684">Otro agente las encuentra y propone.</text>
+
+    <rect x="316" y="336" width="258" height="94" rx="9" fill="#fff" stroke="#ddd0fa"/>
+    <text x="332" y="358" font-size="13.5" font-weight="700" fill="#12161c">Automatización inter-empresa</text>
+    <text x="332" y="378" fill="#6b7684">Pedido, cotización, factura y entrega</text>
+    <text x="332" y="394" fill="#6b7684">negociados agente-a-agente, con el</text>
+    <text x="332" y="414" fill="#6b7684">humano solo en los gates de autoridad.</text>
+
+    <rect x="590" y="336" width="258" height="94" rx="9" fill="#fff" stroke="#ddd0fa"/>
+    <text x="606" y="358" font-size="13.5" font-weight="700" fill="#12161c">Grafo económico anonimizado</text>
+    <text x="606" y="378" fill="#6b7684">Quién compra a quién, a qué ritmo, con</text>
+    <text x="606" y="394" fill="#6b7684">qué fricción — sin exponer datos del</text>
+    <text x="606" y="414" fill="#6b7684">tenant. Ningún ERP puede verlo.</text>
+
+    <rect x="864" y="336" width="254" height="94" rx="9" fill="#fff" stroke="#ddd0fa"/>
+    <text x="880" y="358" font-size="13.5" font-weight="700" fill="#12161c">Layouts compartidos</text>
+    <text x="880" y="378" fill="#6b7684">Un flujo que funcionó en una empresa</text>
+    <text x="880" y="394" fill="#6b7684">se empaqueta y se instala en otra,</text>
+    <text x="880" y="414" fill="#6b7684">como se instala una app.</text>
+  </g>
+</svg>
+<figcaption>Fig. 4 — Áreas A y B comparten motor. La capa C solo existe cuando A y B ya poblaron el
+terreno: es consecuencia, no punto de partida.</figcaption>
+</figure>
+
+<!-- ============ 7. EL NO-ERP ============ -->
+<h2>7 · El "no-ERP": gestor de interfaz</h2>
+<p class="lead">No vamos a competir con SAP ni con Odoo. Vamos a hacer lo que hace un navegador o el
+escritorio de tu computadora: ordenar el acceso a todo lo demás.</p>
+
+<figure>
+<svg viewBox="0 0 1160 340" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <rect x="20" y="20" width="1120" height="300" rx="14" fill="#fff" stroke="#dde3ea"/>
+
+  <rect x="44" y="44" width="1072" height="46" rx="8" fill="#12161c"/>
+  <text x="66" y="73" font-size="14.5" fill="#fff" font-weight="600">Proyecto activo: “Cierre de relleno sanitario — Etapa 3”</text>
+  <circle cx="1058" cy="67" r="12" fill="#2f6df6"/><text x="1058" y="72" font-size="12" fill="#fff" text-anchor="middle" font-weight="800">A</text>
+  <text x="920" y="72" font-size="12.5" fill="#9aa5b1">agente embebido · escuchando</text>
+
+  <g font-size="12.5">
+    <rect x="44" y="106" width="250" height="190" rx="10" fill="#f2f5f9"/>
+    <text x="62" y="130" font-size="13.5" font-weight="700" fill="#12161c">Panel del proyecto</text>
+    <text x="62" y="154" fill="#6b7684">El agente decide qué se muestra</text>
+    <text x="62" y="170" fill="#6b7684">según la fase en que está el</text>
+    <text x="62" y="186" fill="#6b7684">proyecto — no un menú fijo.</text>
+    <text x="62" y="214" fill="#12161c" font-weight="650">Hoy arriba: expedientes por</text>
+    <text x="62" y="230" fill="#12161c" font-weight="650">firmar y ruta de recolección.</text>
+    <text x="62" y="258" fill="#6b7684">Mañana, otra cosa.</text>
+
+    <rect x="310" y="106" width="250" height="190" rx="10" fill="#f2f5f9"/>
+    <text x="328" y="130" font-size="13.5" font-weight="700" fill="#12161c">Vistas traídas de otras apps</text>
+    <text x="328" y="154" fill="#6b7684">CRM, ERP, correo, expedientes,</text>
+    <text x="328" y="170" fill="#6b7684">mapas — no copiados, leídos por</text>
+    <text x="328" y="186" fill="#6b7684">conector y compuestos en una</text>
+    <text x="328" y="202" fill="#6b7684">sola pantalla.</text>
+    <text x="328" y="230" fill="#12161c" font-weight="650">El dato sigue viviendo en su</text>
+    <text x="328" y="246" fill="#12161c" font-weight="650">sistema. Nosotros no lo</text>
+    <text x="328" y="262" fill="#12161c" font-weight="650">secuestramos.</text>
+
+    <rect x="576" y="106" width="250" height="190" rx="10" fill="#f2f5f9"/>
+    <text x="594" y="130" font-size="13.5" font-weight="700" fill="#12161c">Hilo de razonamiento</text>
+    <text x="594" y="154" fill="#6b7684">Qué hizo el agente, con qué</text>
+    <text x="594" y="170" fill="#6b7684">regla, con qué dato y de dónde</text>
+    <text x="594" y="186" fill="#6b7684">vino ese dato.</text>
+    <text x="594" y="214" fill="#12161c" font-weight="650">Esta columna es el producto.</text>
+    <text x="594" y="238" fill="#6b7684">Sin ella somos un chatbot con</text>
+    <text x="594" y="254" fill="#6b7684">permisos peligrosos.</text>
+
+    <rect x="842" y="106" width="274" height="190" rx="10" fill="#f2f5f9"/>
+    <text x="860" y="130" font-size="13.5" font-weight="700" fill="#12161c">Cola de autoridad</text>
+    <text x="860" y="154" fill="#6b7684">Lo que el agente quiere hacer y</text>
+    <text x="860" y="170" fill="#6b7684">necesita que un humano apruebe.</text>
+    <text x="860" y="198" fill="#12161c" font-weight="650">Cada aprobación o rechazo</text>
+    <text x="860" y="214" fill="#12161c" font-weight="650">alimenta el volante de</text>
+    <text x="860" y="230" fill="#12161c" font-weight="650">aprendizaje.</text>
+    <text x="860" y="258" fill="#6b7684">Es la pantalla más importante</text>
+    <text x="860" y="274" fill="#6b7684">del sistema.</text>
+  </g>
+</svg>
+<figcaption>Fig. 5 — El shell. No guarda la verdad de la empresa: la <em>ordena</em> alrededor del proyecto en
+curso, con el agente adentro y la trazabilidad siempre visible.</figcaption>
+</figure>
+
+<div class="rule"></div>
+
+<!-- ============ 8. QUE CONSTRUYE ============ -->
+<h2>8 · Qué construyes tú (y qué no)</h2>
+<p class="lead">El orden importa más que la velocidad. Construir la capa 3 antes que la 1 es la forma más
+cara de perder seis meses.</p>
+
+<table>
+  <thead><tr><th>Orden</th><th>Qué</th><th>Por qué primero</th><th>Terminado significa</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td>Contrato de <code>capability</code> + registro</td>
+      <td>Es la interfaz que desacopla motor de conectores. Todo lo demás depende de que esté bien.</td>
+      <td>Tres conectores heterogéneos (un MCP, una API REST, un archivo) exponen el mismo contrato y el motor no distingue cuál es cuál.</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td>Ejecutor + firewall de acciones</td>
+      <td>Sin gates no podemos dejar que el agente toque nada real, y sin acciones reales no hay producto.</td>
+      <td>Plan simulado, ejecutado, revertido y auditado end-to-end con un caso que escribe en un sistema externo.</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td>Ontología mínima + procedencia</td>
+      <td>Sin entidades compartidas, cada conector inventa su vocabulario y la composición entre apps no ocurre.</td>
+      <td>Una entidad del CRM y una del ERP se reconcilian en la misma entidad canónica, y se puede rastrear qué fuente aportó qué campo.</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td>Núcleo simbólico de un dominio real</td>
+      <td>El criterio codificado es el moat. Un dominio hecho bien vale más que cinco a medias.</td>
+      <td>Golden tests: el motor reproduce, bit a bit, resultados que hoy salen de una hoja de cálculo del Founder.</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td>Membrana intercambiable (voz + texto)</td>
+      <td>Va después a propósito: si va antes, el juicio se filtra al prompt y perdemos el moat.</td>
+      <td>Cambiar de proveedor de LLM es un cambio de configuración, y hay una prueba que lo demuestra.</td>
+    </tr>
+    <tr>
+      <td>6</td>
+      <td>Shell de interfaz</td>
+      <td>Es envase. Importante, pero reemplazable — y solo tiene sentido cuando hay algo que mostrar.</td>
+      <td>Un rol real hace su día completo dentro del shell sin abrir otra pestaña.</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>Lo que NO construimos todavía</h3>
+<ul>
+  <li><strong>Un modelo propio.</strong> No entrenamos nada. La membrana es de terceros y así se queda mientras siga mejorando gratis.</li>
+  <li><strong>Un ERP.</strong> No somos el sistema de registro. En el momento en que empecemos a guardar la verdad operativa del cliente, heredamos su deuda y perdemos la portabilidad.</li>
+  <li><strong>La red (capa C).</strong> Requiere densidad de nodos. Diseñamos para no cerrarnos la puerta — identidades y capacidades ya son direccionables — pero no escribimos ni una línea de marketplace todavía.</li>
+  <li><strong>400 conectores.</strong> Se construyen bajo demanda de un cliente que ya paga. Un conector sin usuario es deuda.</li>
+</ul>
+
+<!-- ============ 9. RIESGOS ============ -->
+<h2>9 · Los cuatro riesgos reales</h2>
+<p class="lead">Cada uno con su ruta de salida. Si alguno te parece subestimado, dilo el primer día, no el
+tercer mes.</p>
+
+<div class="grid2">
+  <div class="card">
+    <h3 style="margin-top:0">1 · El motor se convierte en un prompt gigante</h3>
+    <p>Es el fracaso más probable, y es silencioso: uno va empujando criterio al prompt "solo por hoy".</p>
+    <p style="margin:0"><strong>Ruta:</strong> métrica de gobierno explícita — porcentaje de decisiones cuyo
+    resultado es reproducible sin LLM. Si baja de un umbral, se detiene el desarrollo de features. La
+    reproducibilidad se mide en CI, no en opinión.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">2 · Los conectores se rompen más rápido de lo que los arreglamos</h3>
+    <p>Con N integraciones, el mantenimiento crece lineal y el equipo no. Es como mueren las plataformas de integración.</p>
+    <p style="margin:0"><strong>Ruta:</strong> pruebas de contrato grabadas desde el día uno + degradación
+    declarada (un conector roto se marca como no disponible y el planificador ruta distinto) + presupuesto
+    fijo de conectores vivos por ingeniero. Preferir MCP siempre que exista: el mantenimiento lo paga otro.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">3 · La ontología se vuelve un proyecto infinito</h3>
+    <p>Modelar "todo el dominio" es una trampa clásica de la ingeniería del conocimiento. Nunca termina y nunca vende.</p>
+    <p style="margin:0"><strong>Ruta:</strong> la ontología solo crece cuando un caso de uso pagado la
+    necesita. Regla dura: ninguna entidad entra sin al menos dos conectores que la escriban o la lean.</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">4 · Los LLMs nos alcanzan por arriba</h3>
+    <p>El escenario que hay que mirar de frente: si los modelos razonan de verdad y ejecutan con permisos, ¿qué queda?</p>
+    <p style="margin:0"><strong>Ruta:</strong> queda exactamente lo que no está en internet — el criterio
+    específico del dominio, la procedencia auditable exigida por regulación, la identidad y los permisos
+    dentro de la organización, y el grafo entre organizaciones. Por eso invertimos ahí y no en imitar
+    capacidades del modelo. Si algún día un modelo hace gratis lo que hace nuestra membrana, brindamos: esa
+    parte siempre fue del proveedor.</p>
+  </div>
+</div>
+
+<div class="rule"></div>
+
+<h2>10 · Cómo leer este documento</h2>
+<p>Todo lo que está a la izquierda de la palabra "conector" es el negocio. Todo lo que está a la derecha es
+plomería que debe ser aburrida, probada y desechable. Tu trabajo en los primeros meses es hacer que la
+plomería sea tan aburrida que podamos dedicar el resto del tiempo a codificar criterio.</p>
+<p class="mono-s" style="margin-top:26px">Alquimia · documento de arquitectura v1 · el motor arriba de todo;
+los proyectos son sus creaciones.</p>
+
+</div>
