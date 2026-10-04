@@ -36,25 +36,22 @@ class ReadinessEvalRequest(BaseModel):
 @router.get("/readiness/{municipio_id}")
 async def get_readiness(municipio_id: str, scenario_id: Optional[str] = None):
     """
-    Score de readiness usando datos del escenario más reciente del municipio.
-    Sin BD activa, usa datos demo para mostrar la funcionalidad.
+    Readiness GRI/SASB/ISO/ODS del municipio SIN datos capturados.
+
+    Este endpoint no tiene acceso a datos verificados del municipio, así que
+    evalúa con datos vacíos: el resultado enumera las brechas reales (qué falta
+    capturar) en lugar de mostrar un score. Antes devolvía un score demo fijo
+    (85.1, "listo") para CUALQUIER municipio, incluso inexistente — un dato
+    inventado servido como real (REGLAS §6). Con datos reales del cliente se usa
+    POST /readiness/{municipio_id}/evaluate.
     """
-    datos_demo = {
-        "ton_rsu_generadas_anual": 45_000,
-        "ton_rsu_desviadas_anual": 9_500,
-        "ton_rsu_relleno_sanitario": 35_500,
-        "tasa_desvio_pct": 21.1,
-        "co2e_evitadas_ton": 1_800,
-        "ingreso_materiales_mxn": 2_400_000,
-        "empleos_generados": 12,
-        "poblacion_atendida": 180_000,
-        "tir_pct": 18.5,
-        "capex_total_mxn": 8_500_000,
-        "_diagnostico_ok": True,
-        "_campeon_ok": True,
-        "_plan_ok": True,
-    }
-    return _build_readiness_response(municipio_id, datos_demo, {}, "2025-demo")
+    response = _build_readiness_response(municipio_id, {}, {}, "sin-datos")
+    response["datos_disponibles"] = False
+    response["aviso"] = (
+        "Sin datos verificados del municipio: el score refleja solo lo que falta "
+        "capturar. Evalúa con datos reales vía POST /readiness/{municipio_id}/evaluate."
+    )
+    return response
 
 
 @router.post("/readiness/{municipio_id}/evaluate")
