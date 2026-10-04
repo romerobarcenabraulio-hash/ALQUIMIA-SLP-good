@@ -1,0 +1,583 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ALQUIMIA — Qué haremos, cómo lo haremos, qué venderemos y cómo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root{
+    --ink:#12161c; --ink2:#3d4753; --mut:#6b7684; --line:#dde3ea; --bg:#fbfcfd;
+    --a:#2f6df6; --b:#0e9f6e; --c:#b45309; --d:#7c3aed; --warn:#c2410c; --soft:#f2f5f9;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font:16.5px/1.68 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 28px 100px}
+  header.top{border-bottom:2px solid var(--ink);padding-bottom:24px;margin-bottom:10px}
+  .kicker{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--mut);font-weight:700}
+  h1{font-size:37px;line-height:1.14;margin:10px 0 10px;letter-spacing:-.02em;max-width:22ch}
+  .sub{font-size:18px;color:var(--ink2);max-width:80ch}
+  .meta{margin-top:16px;font-size:13px;color:var(--mut)}
+  .partnum{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--a);font-weight:800}
+  h2{font-size:30px;line-height:1.2;letter-spacing:-.018em;margin:8px 0 4px;max-width:24ch}
+  .part{margin-top:72px;padding-top:26px;border-top:1px solid var(--line)}
+  .part-intro{font-size:18.5px;color:var(--ink2);max-width:76ch;margin:10px 0 26px}
+  h3{font-size:19px;margin:36px 0 10px;letter-spacing:-.01em}
+  h4{font-size:15.5px;margin:24px 0 6px}
+  p{margin:0 0 15px;max-width:86ch;color:var(--ink2)}
+  strong{color:var(--ink);font-weight:640}
+  code{font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--soft);padding:1px 5px;border-radius:4px;color:var(--ink)}
+  figure{margin:28px 0 32px} figcaption{font-size:13px;color:var(--mut);margin-top:10px;max-width:90ch}
+  svg{width:100%;height:auto;display:block}
+  .card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:880px){.grid2,.grid3{grid-template-columns:1fr}}
+  table{border-collapse:collapse;width:100%;font-size:14.5px;margin:18px 0 10px}
+  th,td{text-align:left;padding:12px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.55}
+  th{font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--mut);border-bottom:1.5px solid var(--ink2)}
+  td:first-child{font-weight:650;color:var(--ink)}
+  ul{margin:0 0 15px;padding-left:20px;color:var(--ink2)} li{margin:7px 0;max-width:84ch}
+  .note{border-left:3px solid var(--a);background:#fff;padding:16px 20px;border-radius:0 10px 10px 0;
+    border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line);margin:20px 0}
+  .note.warn{border-left-color:var(--warn)} .note.ok{border-left-color:var(--b)}
+  .note p:last-child{margin-bottom:0}
+  .tag{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+    padding:3px 8px;border-radius:999px;color:#fff;margin-bottom:8px}
+  .dark{background:var(--ink);color:#fff;border-radius:14px;padding:32px 36px;margin:28px 0}
+  .dark p{color:#c7d0da;max-width:80ch} .dark strong{color:#fff}
+  .dark .big{font-size:26px;line-height:1.32;color:#fff;font-weight:600;letter-spacing:-.012em;max-width:44ch;margin-bottom:16px}
+  .mono-s{font:12px/1.5 ui-monospace,Menlo,monospace;color:var(--mut)}
+  .toc{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:26px 0 0}
+  @media(max-width:880px){.toc{grid-template-columns:1fr 1fr}}
+  .toc a{text-decoration:none;border:1px solid var(--line);background:#fff;border-radius:10px;padding:14px 16px;display:block}
+  .toc a span{display:block;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--mut);font-weight:800;margin-bottom:4px}
+  .toc a b{font-size:16px;color:var(--ink);letter-spacing:-.01em}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <div class="kicker">Alquimia · documento de dirección · v2</div>
+  <h1>Qué haremos, cómo lo haremos, qué venderemos y cómo lo venderemos</h1>
+  <p class="sub">Este documento explica el problema antes que la solución, porque la solución solo se
+  entiende si el problema está bien planteado. No está escrito para convencer a nadie: está escrito para que
+  quien lo lea pueda reconstruir el razonamiento completo y discutirlo.</p>
+  <div class="meta">Braulio Romero, Founder · complementa el documento de arquitectura v1</div>
+</header>
+
+<div class="toc">
+  <a href="#p0"><span>Punto de partida</span><b>El problema, explicado</b></a>
+  <a href="#p1"><span>Parte 1</span><b>Qué haremos</b></a>
+  <a href="#p2"><span>Parte 2</span><b>Cómo lo haremos</b></a>
+  <a href="#p3"><span>Parte 3 y 4</span><b>Qué y cómo venderemos</b></a>
+</div>
+
+<!-- ============================================================ -->
+<section class="part" id="p0">
+<div class="partnum">Punto de partida</div>
+<h2>El problema no es la falta de inteligencia. Es la distancia.</h2>
+<p class="part-intro">Antes de decir qué construimos, hay que decir con precisión qué está roto. Si esta
+sección está mal, todo lo demás está mal.</p>
+
+<p>En casi cualquier proceso de una organización ya existe una respuesta correcta. Está resuelta por una
+norma, por un estándar técnico, por la evidencia científica, por un cálculo o por una práctica documentada
+que alguien probó antes. Nadie tiene que descubrirla de nuevo cada mañana. A eso le llamamos, a lo largo de
+todo este documento, <strong>lo bien determinado</strong>.</p>
+
+<p>Y sin embargo las organizaciones operan lejos de ahí. No por mala fe ni por falta de talento: porque
+aplicar lo bien determinado en cada decisión chica requiere tener el criterio a la mano, el dato reconciliado
+y el tiempo para hacerlo. Casi nadie tiene las tres cosas al mismo tiempo. El criterio vive en la cabeza de
+una persona o en un Excel heredado. El dato vive partido en cinco sistemas y en papel. El tiempo no existe.</p>
+
+<p>El resultado es una distancia permanente entre lo que la organización hace y lo que está determinado que
+debería hacer. Esa distancia se paga todos los días en retrabajo, en desperdicio, en multas, en decisiones
+tomadas tarde y en conocimiento que se pierde cuando se va quien lo tenía. <strong>Esa distancia es
+medible, y es el problema que atacamos.</strong></p>
+
+<figure>
+<svg viewBox="0 0 1160 330" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="p1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0e9f6e"/></marker>
+    <marker id="p2" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#6b7684"/></marker>
+  </defs>
+  <rect x="40" y="60" width="230" height="72" rx="10" fill="#fff" stroke="#dde3ea"/>
+  <text x="60" y="86" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.1">PRÁCTICA ACTUAL</text>
+  <text x="60" y="110" font-size="13.5" fill="#3d4753">lo que se hace porque</text>
+  <text x="60" y="126" font-size="13.5" fill="#3d4753">siempre se ha hecho así</text>
+
+  <rect x="300" y="52" width="470" height="88" rx="10" fill="#effaf5" stroke="#0e9f6e" stroke-width="1.8"/>
+  <text x="535" y="82" font-size="13" font-weight="800" fill="#0e9f6e" text-anchor="middle" letter-spacing="1.2">LA DISTANCIA — ES LO QUE SE PAGA HOY</text>
+  <text x="535" y="106" font-size="13.5" fill="#3d4753" text-anchor="middle">retrabajo · desperdicio · multas · decisiones tardías</text>
+  <text x="535" y="126" font-size="13.5" fill="#3d4753" text-anchor="middle">criterio que se perdió cuando se fue quien lo sabía</text>
+
+  <rect x="800" y="60" width="320" height="72" rx="10" fill="#12161c"/>
+  <text x="822" y="86" font-size="12.5" font-weight="800" fill="#8fa8d4" letter-spacing="1.1">LO BIEN DETERMINADO</text>
+  <text x="822" y="110" font-size="13.5" fill="#c7d0da">norma · estándar · evidencia · cálculo</text>
+  <text x="822" y="126" font-size="13.5" fill="#c7d0da">práctica documentada</text>
+
+  <path d="M274,96 L296,96" stroke="#6b7684" fill="none" marker-end="url(#p2)"/>
+  <path d="M774,96 L796,96" stroke="#0e9f6e" fill="none" marker-end="url(#p1)"/>
+
+  <text x="40" y="192" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.2">POR QUÉ LA DISTANCIA NO SE CIERRA SOLA</text>
+  <g font-size="13">
+    <rect x="40" y="206" width="345" height="98" rx="10" fill="#fff" stroke="#dde3ea"/>
+    <text x="60" y="232" font-size="14" font-weight="700" fill="#12161c">El criterio no es ejecutable</text>
+    <text x="60" y="256" fill="#6b7684">Vive en una persona o en una hoja de</text>
+    <text x="60" y="273" fill="#6b7684">cálculo. No corre solo, no escala, y</text>
+    <text x="60" y="290" fill="#6b7684">se va cuando se va su dueño.</text>
+
+    <rect x="405" y="206" width="345" height="98" rx="10" fill="#fff" stroke="#dde3ea"/>
+    <text x="425" y="232" font-size="14" font-weight="700" fill="#12161c">El dato no está reconciliado</text>
+    <text x="425" y="256" fill="#6b7684">Existe, pero repartido. Ninguna</text>
+    <text x="425" y="273" fill="#6b7684">pregunta que cruce dos sistemas se</text>
+    <text x="425" y="290" fill="#6b7684">puede contestar en el momento.</text>
+
+    <rect x="770" y="206" width="350" height="98" rx="10" fill="#fff" stroke="#dde3ea"/>
+    <text x="790" y="232" font-size="14" font-weight="700" fill="#12161c">No hay quien lo opere</text>
+    <text x="790" y="256" fill="#6b7684">Y contratar más gente para aplicar</text>
+    <text x="790" y="273" fill="#6b7684">reglas conocidas es la forma más cara</text>
+    <text x="790" y="290" fill="#6b7684">de resolver un problema mecánico.</text>
+  </g>
+</svg>
+<figcaption>Fig. 0 — Las tres causas por las que la distancia persiste. Cualquier solución que atienda solo
+una de las tres deja el problema intacto, y eso explica por qué las herramientas actuales no lo resuelven.</figcaption>
+</figure>
+
+<p>Vale la pena detenerse en la tercera causa, porque es la que suele malinterpretarse. El trabajo que
+separa a una organización de lo bien determinado es, en su mayoría, <strong>mecánico</strong>: buscar el
+dato, aplicar la regla, verificar, registrar, avisar. Es trabajo que no requiere talento pero sí requiere
+constancia. Contratar personas para hacerlo es caro y, además, no funciona: las personas se cansan, rotan y
+se llevan el criterio consigo. Ese es el hueco que el software puede llenar, y no lo ha llenado porque hasta
+ahora el software no podía leer una norma, entender una situación ambigua ni hablar con un sistema que no
+tenía API.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="part" id="p1">
+<div class="partnum">Parte 1</div>
+<h2>Qué haremos</h2>
+<p class="part-intro">Construimos la capa que mantiene a una organización operando dentro de lo bien
+determinado, de forma continua y verificable.</p>
+
+<p>Dicho sin adornos: tomamos el criterio que hoy vive en la cabeza de un experto o en un Excel, lo
+convertimos en un motor que corre; conectamos ese motor a los sistemas donde ya está el dato de la
+organización; y lo dejamos operando con permiso para actuar dentro de límites explícitos, dejando evidencia
+de cada decisión.</p>
+
+<p>Eso produce tres efectos, en este orden:</p>
+
+<div class="grid3">
+  <div class="card">
+    <span class="tag" style="background:var(--a)">Efecto 1</span>
+    <h4 style="margin-top:2px">Se mide la distancia</h4>
+    <p style="margin:0">Por primera vez la organización puede ver, con número y con fuente, qué tan lejos
+    está de lo que la norma o el cálculo dicen. Antes de mejorar nada, esto ya vale: es el diagnóstico que
+    hoy se paga a un consultor y que llega tarde.</p>
+  </div>
+  <div class="card">
+    <span class="tag" style="background:var(--a)">Efecto 2</span>
+    <h4 style="margin-top:2px">Se cierra la distancia</h4>
+    <p style="margin:0">El motor no solo señala la brecha: ejecuta lo que la cierra. Actualiza el sistema,
+    genera el documento, avisa a quien corresponde, agenda, calcula, reporta. El trabajo mecánico deja de
+    depender de que alguien tenga tiempo.</p>
+  </div>
+  <div class="card">
+    <span class="tag" style="background:var(--a)">Efecto 3</span>
+    <h4 style="margin-top:2px">Se mantiene cerrada</h4>
+    <p style="margin:0">Cuando cambia la norma, cambia la regla y todo lo que dependía de ella se recalcula.
+    Cuando se va la persona, el criterio se queda. Este efecto es el que convierte una venta en una relación
+    permanente.</p>
+  </div>
+</div>
+
+<h3>La inversión de figura frente al resto de la industria</h3>
+<p>Casi todo lo que hoy se vende como "IA para empresas" pone al modelo de lenguaje en el centro y le cuelga
+la organización alrededor: se le pregunta al modelo y se espera que acierte. Nosotros hacemos lo contrario.
+El procedimiento determinado manda, y <strong>el modelo de lenguaje entra a la organización como un
+trabajador más</strong>: tiene un puesto, un alcance, un jefe, permisos heredados del rol al que sirve, y se
+le audita como a cualquiera.</p>
+
+<p>Al modelo se le asigna exactamente lo que <em>no</em> está determinado: entender lo que dice un humano
+que habla con la jerga de su oficio, redactar, buscar, clasificar lo ambiguo y avisar cuando una situación no
+encaja en ninguna regla conocida. Cuando el trabajo sí está determinado, no se le pregunta al modelo: se
+ejecuta el procedimiento.</p>
+
+<div class="note ok">
+  <p>Esta decisión no es una postura filosófica; es lo que hace vendible el producto en una organización que
+  responde ante un auditor, un cabildo o un cliente. <strong>Un trabajador que no razona del todo bien se
+  acota y se supervisa; no se le entrega la empresa.</strong> Tratar al modelo como personal —con alcance,
+  con jefe y con bitácora— es precisamente lo que permite darle acceso real a los sistemas sin pedirle fe a
+  nadie. La confianza no se pide: se administra.</p>
+</div>
+
+<p>Tiene además una consecuencia económica que conviene ver de frente: como el juicio no vive dentro del
+modelo, cambiar de proveedor de modelo es cambiar una pieza. Cuando los modelos mejoran —y van a seguir
+mejorando— nuestro producto mejora sin que escribamos código. Si hubiéramos puesto el criterio dentro del
+prompt, cada avance de la industria nos volvería más prescindibles en vez de más fuertes.</p>
+</section>
+
+<!-- ============================================================ -->
+<section class="part" id="p2">
+<div class="partnum">Parte 2</div>
+<h2>Cómo lo haremos</h2>
+<p class="part-intro">Cuatro piezas. Ninguna es exótica por separado; el producto es que estén juntas y en
+este orden.</p>
+
+<h3>Pieza 1 — El criterio, convertido en motor</h3>
+<p>Tomamos el procedimiento que define lo bien determinado en un dominio —la fórmula de una norma, el árbol
+de decisión de una certificación, el cálculo de una hoja que hoy usa un experto— y lo escribimos como código
+determinista. Determinista quiere decir algo muy concreto: el mismo dato de entrada produce el mismo
+resultado, hoy y dentro de un año, y se puede explicar paso por paso.</p>
+<p>Esto es lo contrario de pedirle a un modelo que estime. Un modelo puede darte un número plausible; un
+motor te da un número defendible. Cuando el cliente tiene que sostener ese número frente a un tercero, la
+diferencia entre plausible y defendible es la diferencia entre que compre o no compre.</p>
+
+<h3>Pieza 2 — Los conectores, fabricados en serie</h3>
+<p>El motor no sirve de nada si no puede leer y escribir en los sistemas donde vive la operación real. El
+error que mata a las plataformas de integración es construir cada conexión a mano: con veinte funciona, con
+doscientos el equipo se dedica solo a reparar. Por eso no integramos aplicaciones: fabricamos conectores en
+una línea de ensamblaje, y todos entregan el mismo contrato al motor.</p>
+<p>Ese contrato declara, por cada acción posible, qué entidad toca, si es lectura o escritura, si es
+reversible, cuánto cuesta y qué nivel de autoridad exige. El motor nunca sabe si detrás hay una API moderna,
+un archivo exportado o un robot operando una pantalla vieja: solo ve verbos sobre entidades. Esa
+indiferencia es lo que hace que conectar la aplicación número doscientos no cueste como la primera.</p>
+
+<h3>Pieza 3 — La memoria con procedencia</h3>
+<p>Cada dato que entra al sistema guarda de dónde salió, cuándo, quién lo firmó y qué regla se le aplicó. No
+es un módulo de auditoría que se compra aparte: es la forma en que el dato está construido. De ahí sale la
+capacidad de responder "¿por qué se decidió esto?" en segundos en vez de en días, que es la pregunta que
+define si una organización regulada puede o no defenderse.</p>
+<p>La misma memoria guarda cómo trabaja cada puesto —sus rutinas, sus criterios, sus contrapartes— y cada
+vez que un humano corrige al sistema, guarda la corrección con su razón. Con el tiempo eso hace que el
+agente adscrito a un rol sepa cosas que ningún manual documentó nunca.</p>
+
+<h3>Pieza 4 — El modelo, en su puesto</h3>
+<p>Encima de todo lo anterior está la conversación: el usuario habla —por voz o por texto— con su jerga, en
+su contexto, y el modelo traduce entre esa forma humana de decir las cosas y las entidades y verbos del
+sistema. También redacta lo que hay que redactar y explica lo que hizo el motor. Es una capa intercambiable y
+deliberadamente delgada.</p>
+
+<figure>
+<svg viewBox="0 0 1160 300" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs><marker id="m1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2f6df6"/></marker></defs>
+
+  <rect x="20" y="24" width="1120" height="60" rx="10" fill="#eef3ff" stroke="#2f6df6" stroke-width="1.6"/>
+  <text x="44" y="48" font-size="12.5" font-weight="800" fill="#2f6df6" letter-spacing="1.2">PIEZA 4 · LA MEMBRANA (intercambiable)</text>
+  <text x="44" y="70" font-size="14" fill="#3d4753">El modelo entiende al humano, redacta y explica. No decide donde hay regla. Se puede reemplazar por otro proveedor sin tocar nada más.</text>
+
+  <rect x="20" y="98" width="1120" height="60" rx="10" fill="#fff" stroke="#dde3ea"/>
+  <text x="44" y="122" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.2">PIEZA 1 · EL MOTOR DE CRITERIO (el moat)</text>
+  <text x="44" y="144" font-size="14" fill="#3d4753">Norma, cálculo y árbol de decisión escritos como código determinista. Mismo input, mismo output, explicable paso por paso.</text>
+
+  <rect x="20" y="172" width="1120" height="60" rx="10" fill="#fff" stroke="#dde3ea"/>
+  <text x="44" y="196" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.2">PIEZA 3 · MEMORIA CON PROCEDENCIA</text>
+  <text x="44" y="218" font-size="14" fill="#3d4753">Cada dato sabe su origen, su fecha y su firma. Cada corrección humana se guarda con su razón y alimenta al sistema.</text>
+
+  <rect x="20" y="246" width="1120" height="42" rx="10" fill="#12161c"/>
+  <text x="44" y="264" font-size="12.5" font-weight="800" fill="#8fa8d4" letter-spacing="1.2">PIEZA 2 · CONECTORES FABRICADOS EN SERIE</text>
+  <text x="44" y="281" font-size="13.5" fill="#c7d0da">Un solo contrato para todas las aplicaciones: qué toca, si es reversible, cuánto cuesta, qué autoridad exige.</text>
+</svg>
+<figcaption>Fig. 1 — El orden importa: la membrana se construye al final, a propósito. Si se construye
+primero, el criterio se filtra hacia el prompt y se pierde justo lo que nos hace defendibles.</figcaption>
+</figure>
+
+<h3>Cómo el sistema mejora sin que nosotros lo empujemos</h3>
+<p>Tres corrientes entran de manera continua, y ninguna requiere que escribamos el conocimiento a mano. La
+primera es el mundo exterior: publicaciones oficiales, cambios normativos, precios de referencia, padrones,
+recogidos automáticamente y anclados a la ontología con su fecha y su fuente. Un cambio en la norma se
+convierte en un cambio de regla, no en un proyecto.</p>
+<p>La segunda son las capacidades del ecosistema. Cada integración que el mundo publica —hoy hay miles,
+mantenidas por otros— es materia prima que nuestra fábrica puede tipar y poner a disposición del motor sin
+escribirla desde cero.</p>
+<p>La tercera, y la única que nadie puede copiarnos, es la corrección humana. Cada vez que una persona
+aprueba, rechaza o corrige al sistema, queda registrada la situación, lo que el sistema propuso, lo que el
+humano decidió y por qué. El mecanismo de seguridad y el mecanismo de aprendizaje son el mismo mecanismo.</p>
+
+<div class="note warn">
+  <p><strong>El riesgo que hay que vigilar todos los días.</strong> El fracaso más probable de este diseño no
+  es técnico ni comercial: es la erosión. Consiste en ir empujando criterio hacia el prompt "solo por hoy",
+  porque es más rápido. Cuando eso pasa, el producto se convierte en un chatbot con permisos peligrosos y
+  perdemos la única razón por la que alguien nos pagaría.</p>
+  <p><strong>Cómo lo controlamos:</strong> con una métrica de gobierno, no con buenas intenciones. Se mide
+  qué porcentaje de las decisiones del sistema es reproducible sin intervención del modelo. Si esa cifra
+  baja de un umbral, se detiene el desarrollo de funciones nuevas hasta recuperarla. Se mide en integración
+  continua, no en opinión.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="part" id="p3">
+<div class="partnum">Parte 3</div>
+<h2>Qué venderemos</h2>
+<p class="part-intro">Cuatro cosas concretas y facturables. Deliberadamente, ninguna se llama "inteligencia
+artificial".</p>
+
+<table>
+  <thead><tr><th style="width:22%">Lo que se vende</th><th style="width:31%">Qué recibe el cliente</th><th style="width:19%">Cómo se cobra</th><th>Por qué lo compra</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>1 · Diagnóstico ejecutable</td>
+      <td>Un módulo operando —no un documento— que mide la distancia entre su operación y la norma, por
+      unidad de análisis, con la fuente de cada número. Incluye base de datos y pantalla propia.</td>
+      <td>Proyecto cerrado, con pago al inicio</td>
+      <td>Porque hoy paga por un diagnóstico que llega tarde, en PDF, y que caduca en cuanto cambia algo.</td>
+    </tr>
+    <tr>
+      <td>2 · Suscripción por rol asistido</td>
+      <td>Un agente adscrito a un puesto concreto: conectado a los sistemas que ese puesto usa, con los
+      permisos de ese puesto y con la memoria del puesto.</td>
+      <td>Mensual, por rol activo</td>
+      <td>Porque devuelve horas de trabajo mecánico y porque el criterio del puesto deja de irse con la
+      persona.</td>
+    </tr>
+    <tr>
+      <td>3 · Implantación y conexión</td>
+      <td>La conexión a los sistemas del cliente, incluidos los que no tienen API: exportables, portales,
+      sistemas viejos, papel digitalizado.</td>
+      <td>Una vez, por conector no estándar</td>
+      <td>Porque es el trabajo que ningún proveedor quiere hacer y sin el cual nada de lo demás funciona.</td>
+    </tr>
+    <tr>
+      <td>4 · Pack de dominio</td>
+      <td>El criterio de un dominio ya codificado y probado (residuos, agua, y los que sigan), listo para
+      instalarse en otra organización cambiando datos, no lógica.</td>
+      <td>Licencia recurrente</td>
+      <td>Porque construir ese criterio desde cero le costaría meses y un experto que probablemente no
+      encuentre.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>La relación entre las cuatro no es casual. La primera es la puerta: entra por una obligación concreta y
+se paga sola. La tercera es el trabajo sucio que crea la barrera de salida real —una vez conectados los
+sistemas, reemplazarnos cuesta más que quedarse. La segunda es el ingreso recurrente que sostiene la
+empresa. Y la cuarta es la que convierte el esfuerzo de un cliente en un activo que se vende al siguiente
+sin volver a construirlo.</p>
+
+<div class="note">
+  <p><strong>Lo que explícitamente no vendemos.</strong> No vendemos un sistema de registro: no queremos ser
+  el lugar donde vive la verdad operativa del cliente, porque en el momento en que lo fuéramos heredamos su
+  deuda técnica y perdemos la portabilidad que es toda nuestra economía. No vendemos horas de consultoría, no
+  vendemos un modelo propio, y no vendemos automatización genérica —eso ya lo hace bien quien lo hace barato,
+  y nos conviene usarlo en vez de competirle.</p>
+</div>
+
+<h3>Cómo se explica en treinta segundos</h3>
+<div class="dark">
+  <p class="big">Hacemos que una organización opere siempre dentro de lo que ya está bien determinado: el
+  criterio codificado, corriendo sobre los sistemas que ya tiene, con evidencia de cada decisión.</p>
+  <p>Y si alguien pregunta por la inteligencia artificial: <strong>es uno de los trabajadores, no es el
+  producto.</strong> El producto es la eficiencia demostrable — la distancia que se cierra y se queda
+  cerrada.</p>
+</div>
+</section>
+
+<!-- ============================================================ -->
+<section class="part">
+<div class="partnum">Parte 4</div>
+<h2>Cómo lo venderemos</h2>
+<p class="part-intro">Entramos por una obligación, no por una promesa. Y entramos por dos carriles a la vez,
+porque uno da legitimidad y el otro da caja.</p>
+
+<h3>Por dónde se entra: la obligación</h3>
+<p>Vender eficiencia en abstracto es difícil, porque compite contra el presupuesto discrecional y contra la
+inercia. Vender cumplimiento de una obligación es distinto: ya existe una partida asignada, ya existe una
+consecuencia por no cumplir, y ya existe alguien cuyo puesto depende de que se cumpla. Por eso la puerta de
+entrada es siempre una obligación normativa concreta, y no una conversación sobre transformación digital.</p>
+
+<p>El dominio que elegimos para empezar es <strong>residuos sólidos urbanos y de manejo especial en
+México</strong>. Las razones son verificables, no de intuición:</p>
+
+<table>
+  <thead><tr><th style="width:32%">Criterio</th><th>Cómo lo cumple este dominio</th></tr></thead>
+  <tbody>
+    <tr><td>Es obligación, no aspiración</td><td>El cumplimiento es exigible por ley. No dependemos de que alguien "vea el valor de la IA": hay partida y hay consecuencia.</td></tr>
+    <tr><td>El criterio ya es nuestro</td><td>El método de cálculo existe hoy en una hoja de trabajo propia. No hay que descubrirlo ni comprarlo: hay que codificarlo. Arrancamos con ventaja de años.</td></tr>
+    <tr><td>Los datos son malos, y eso ayuda</td><td>Papel, básculas, capturas manuales, hojas sueltas. Un producto genérico no puede operar ahí. Quien resuelve la reconciliación se queda con el cliente.</td></tr>
+    <tr><td>No hay incumbente de software</td><td>No desplazamos a un líder de categoría: competimos contra Excel y contra el consultor externo.</td></tr>
+    <tr><td>La unidad de análisis se repite</td><td>Ruta, sitio, generador, tonelada. El módulo se replica en el siguiente cliente cambiando datos, no lógica.</td></tr>
+    <tr><td>Prueba la portabilidad</td><td>Agua y sequía comparten estructura. Montar el segundo dominio sin tocar el núcleo es la demostración pública de que tenemos un motor y no un producto vertical.</td></tr>
+  </tbody>
+</table>
+
+<h3>Los dos carriles, y por qué son dos</h3>
+
+<figure>
+<svg viewBox="0 0 1160 430" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs>
+    <marker id="w1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#b45309"/></marker>
+    <marker id="w2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#0e9f6e"/></marker>
+  </defs>
+  <rect x="20" y="24" width="1120" height="60" rx="11" fill="#12161c"/>
+  <text x="44" y="50" font-size="12.5" font-weight="800" fill="#8fa8d4" letter-spacing="1.3">MISMA NORMA · MISMO MOTOR · CERO REESCRITURA ENTRE CARRILES</text>
+  <text x="44" y="72" font-size="17" font-weight="700" fill="#fff">Residuos sólidos urbanos y de manejo especial — México</text>
+
+  <rect x="20" y="104" width="548" height="176" rx="12" fill="#fdf5ec" stroke="#b45309" stroke-width="1.8"/>
+  <text x="44" y="130" font-size="12.5" font-weight="800" fill="#b45309" letter-spacing="1.3">CARRIL 1 · LEGITIMIDAD</text>
+  <text x="44" y="156" font-size="19" font-weight="700" fill="#12161c">Municipio (piloto público)</text>
+  <text x="44" y="182" font-size="13.5" fill="#3d4753">Aporta caso de referencia citable, datos reales de campo,</text>
+  <text x="44" y="202" font-size="13.5" fill="#3d4753">interpretación oficial de la norma y presión regulatoria.</text>
+  <text x="44" y="230" font-size="13.5" fill="#c2410c" font-weight="700">Cobra caro en tiempo: pagos lentos, compras públicas con</text>
+  <text x="44" y="250" font-size="13.5" fill="#c2410c" font-weight="700">fricción, y cambio de administración cada tres años.</text>
+  <text x="44" y="272" font-size="12.5" fill="#6b7684">Es la validación. No es el sustento.</text>
+
+  <rect x="592" y="104" width="548" height="176" rx="12" fill="#effaf5" stroke="#0e9f6e" stroke-width="1.8"/>
+  <text x="616" y="130" font-size="12.5" font-weight="800" fill="#0e9f6e" letter-spacing="1.3">CARRIL 2 · CAJA</text>
+  <text x="616" y="156" font-size="19" font-weight="700" fill="#12161c">El regulado privado, con la misma norma</text>
+  <text x="616" y="182" font-size="13.5" fill="#3d4753">Concesionaria de recolección, generador industrial con plan</text>
+  <text x="616" y="202" font-size="13.5" fill="#3d4753">de manejo, transportista, parque industrial, gran superficie.</text>
+  <text x="616" y="230" font-size="13.5" fill="#0e9f6e" font-weight="700">Misma obligación y mismo módulo, pero decide en semanas,</text>
+  <text x="616" y="250" font-size="13.5" fill="#0e9f6e" font-weight="700">paga en semanas y no tiene ciclo electoral.</text>
+  <text x="616" y="272" font-size="12.5" fill="#6b7684">Aquí vive la supervivencia mientras el piloto público madura.</text>
+
+  <path d="M294,286 L294,318" stroke="#b45309" fill="none" marker-end="url(#w1)"/>
+  <path d="M866,286 L866,318" stroke="#0e9f6e" fill="none" marker-end="url(#w2)"/>
+
+  <rect x="20" y="326" width="1120" height="80" rx="12" fill="#fff" stroke="#dde3ea"/>
+  <text x="44" y="352" font-size="12.5" font-weight="800" fill="#6b7684" letter-spacing="1.3">LO QUE AMBOS CARRILES DEJAN INSTALADO</text>
+  <text x="44" y="378" font-size="14" fill="#3d4753">Un módulo operando · agentes adscritos a roles · la ontología del dominio con procedencia · conectores probados contra sistemas reales.</text>
+  <text x="44" y="398" font-size="14" fill="#12161c" font-weight="650">Eso se vuelve a vender —sin volver a construirlo— al siguiente municipio, a la siguiente concesionaria y al siguiente dominio.</text>
+</svg>
+<figcaption>Fig. 2 — El carril público valida y da referencia; el carril privado paga. Como comparten norma
+y motor, atender los dos no duplica el trabajo: lo amortiza.</figcaption>
+</figure>
+
+<div class="note warn">
+  <p><strong>La objeción más fuerte a este plan, dicha completa:</strong> el gobierno municipal mexicano es
+  un cliente difícil —pago lento, compras con fricción política, horizonte de tres años—. Si la empresa
+  depende de ese ingreso, se queda sin flujo antes de terminar de probar la tesis.</p>
+  <p><strong>Por eso la regla es explícita:</strong> el piloto público es validación y el regulado privado es
+  sustento. Ninguna decisión de producto se justifica por un ingreso público todavía no cobrado, y el primer
+  contrato que sostenga nómina tiene que ser privado.</p>
+</div>
+
+<h3>Cómo crece una cuenta, una vez adentro</h3>
+<p>La secuencia comercial es siempre la misma y no depende del carril. Se entra por un diagnóstico
+ejecutable, que se paga porque atiende una obligación con fecha. Al construirlo hay que conectarse a los
+sistemas del cliente, y esa conexión —que se cobra— es la que deja instalada la infraestructura. Con los
+sistemas ya conectados, ofrecer el primer rol asistido no requiere un proyecto nuevo: requiere una
+conversación. A partir del segundo rol, el crecimiento es interno y barato.</p>
+<p>Dicho de otro modo: el proyecto no es el negocio, es el permiso de entrada. El negocio son los roles
+asistidos que quedan operando después, y esos solo se pueden vender desde adentro.</p>
+
+<h3>Por qué esto no lo hará otro antes que nosotros</h3>
+<p>Esta pregunta merece una respuesta seria, porque la respuesta fácil —"somos mejores"— no es una
+respuesta. Cada categoría de competidor tiene una razón de <em>modelo de negocio</em>, no de capacidad
+técnica, por la que no va a ocupar este espacio:</p>
+
+<table>
+  <thead><tr><th style="width:26%">Quién</th><th style="width:37%">Qué se lo impide</th><th>Qué haremos con ellos</th></tr></thead>
+  <tbody>
+    <tr><td>Plataformas de automatización<br><span style="font-weight:400;color:var(--mut);font-size:13px">Zapier, Make, n8n</span></td>
+        <td>Su economía depende de ser horizontales y auto-servicio. Aprender una norma por vertical multiplica su costo de soporte y rompe su margen.</td>
+        <td>Consumirlos. Su catálogo, mantenido por ellos, es materia prima de nuestra fábrica de conectores. No competimos: compramos manos baratas.</td></tr>
+    <tr><td>Copilotos de suite<br><span style="font-weight:400;color:var(--mut);font-size:13px">Microsoft, Google, Salesforce</span></td>
+        <td>Su objetivo es atraer los datos hacia su propia nube. La neutralidad entre proveedores es contraria a su negocio.</td>
+        <td>Convivir. Somos la capa que cruza suites, que es justo lo que ellos no pueden ofrecer sin debilitar su propio bloqueo.</td></tr>
+    <tr><td>Plataformas de datos premium<br><span style="font-weight:400;color:var(--mut);font-size:13px">Palantir y similares</span></td>
+        <td>Su calidad viene de desplegar ingenieros en el cliente, y eso fija un piso de precio y de plazo que no pueden bajar sin desmontar su modelo.</td>
+        <td>Evitar el choque frontal. Operamos en el segmento que ellos no atienden: municipios y empresas medianas.</td></tr>
+    <tr><td>Consultoras y despachos</td>
+        <td>Su ingreso es por hora facturable. Codificar su criterio en software canibaliza su propio producto.</td>
+        <td>Aliarnos o sustituirlos según el caso. Pueden comprar la tecnología; difícilmente la van a inventar.</td></tr>
+    <tr><td>SaaS vertical de IA</td>
+        <td>El criterio está soldado a un solo dominio. Portar a un segundo les cuesta casi lo mismo que empezar de cero.</td>
+        <td>Ganar por portabilidad. Nuestra apuesta entera es que el segundo dominio nos cueste una fracción del primero.</td></tr>
+    <tr><td>Los propios modelos de lenguaje</td>
+        <td>Son proveedores de capacidad general. No van a poseer el criterio interno de una organización ni sus permisos.</td>
+        <td>Aprovecharlos. Cada mejora suya nos abarata. Somos complemento, no sustituto.</td></tr>
+  </tbody>
+</table>
+
+<h3>El orden de expansión, y sus compuertas</h3>
+<p>Cada paso se abre solo cuando el anterior cumplió una prueba empírica, no cuando llega una fecha:</p>
+
+<figure>
+<svg viewBox="0 0 1160 240" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Inter,sans-serif">
+  <defs><marker id="s1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#2f6df6"/></marker></defs>
+  <rect x="20" y="30" width="255" height="150" rx="11" fill="#fff" stroke="#2f6df6" stroke-width="1.6"/>
+  <text x="42" y="60" font-size="30" font-weight="750" fill="#2f6df6">01</text>
+  <text x="42" y="88" font-size="15.5" font-weight="700" fill="#12161c">Cuña: residuos</text>
+  <text x="42" y="112" font-size="13" fill="#3d4753">Un módulo vivo en cada carril.</text>
+  <text x="42" y="144" font-size="11.5" font-weight="800" fill="#c2410c" letter-spacing="1">COMPUERTA</text>
+  <text x="42" y="162" font-size="12.5" fill="#3d4753">Un cliente privado paga y renueva.</text>
+
+  <rect x="303" y="30" width="255" height="150" rx="11" fill="#fff" stroke="#2f6df6" stroke-width="1.6"/>
+  <text x="325" y="60" font-size="30" font-weight="750" fill="#2f6df6">02</text>
+  <text x="325" y="88" font-size="15.5" font-weight="700" fill="#12161c">Portabilidad: agua</text>
+  <text x="325" y="112" font-size="13" fill="#3d4753">Segundo dominio, mismo núcleo.</text>
+  <text x="325" y="144" font-size="11.5" font-weight="800" fill="#c2410c" letter-spacing="1">COMPUERTA</text>
+  <text x="325" y="162" font-size="12.5" fill="#3d4753">Se monta sin tocar el motor.</text>
+
+  <rect x="586" y="30" width="255" height="150" rx="11" fill="#fff" stroke="#2f6df6" stroke-width="1.6"/>
+  <text x="608" y="60" font-size="30" font-weight="750" fill="#2f6df6">03</text>
+  <text x="608" y="88" font-size="15.5" font-weight="700" fill="#12161c">Roles asistidos</text>
+  <text x="608" y="112" font-size="13" fill="#3d4753">Expansión dentro de los clientes</text>
+  <text x="608" y="128" font-size="13" fill="#3d4753">donde ya estamos adentro.</text>
+  <text x="608" y="152" font-size="11.5" font-weight="800" fill="#c2410c" letter-spacing="1">COMPUERTA</text>
+  <text x="608" y="170" font-size="12.5" fill="#3d4753">Delegan escrituras sin que se lo pidamos.</text>
+
+  <rect x="869" y="30" width="271" height="150" rx="11" fill="#f6f2fe" stroke="#7c3aed" stroke-width="1.6"/>
+  <text x="891" y="60" font-size="30" font-weight="750" fill="#7c3aed">04</text>
+  <text x="891" y="88" font-size="15.5" font-weight="700" fill="#12161c">Red entre organizaciones</text>
+  <text x="891" y="112" font-size="13" fill="#3d4753">Agentes que se descubren y</text>
+  <text x="891" y="128" font-size="13" fill="#3d4753">operan entre empresas.</text>
+  <text x="891" y="152" font-size="11.5" font-weight="800" fill="#7c3aed" letter-spacing="1">SOLO CON DENSIDAD</text>
+  <text x="891" y="170" font-size="12.5" fill="#3d4753">No se escribe una línea antes.</text>
+
+  <g stroke="#2f6df6" fill="none" marker-end="url(#s1)">
+    <path d="M275,105 L299,105"/><path d="M558,105 L582,105"/><path d="M841,105 L865,105"/>
+  </g>
+  <text x="20" y="218" font-size="13" fill="#6b7684">Saltarse un paso es el error caro: el paso 3 sin el 1 es vender algo que no existe, y el paso 4 sin el 3 es construir un mercado sin oferentes.</text>
+</svg>
+<figcaption>Fig. 3 — La secuencia con sus compuertas. Cada compuerta es una pregunta que se responde con
+evidencia del mercado, no con una junta interna.</figcaption>
+</figure>
+</section>
+
+<!-- ============================================================ -->
+<section class="part">
+<div class="partnum">Cierre</div>
+<h2>Cómo sabremos que estábamos equivocados</h2>
+<p class="part-intro">Un plan que no se puede falsear no es un plan. Estas cinco observaciones se miden, y
+cada una trae escrita su corrección para no tener que improvisarla bajo presión.</p>
+
+<table>
+  <thead><tr><th style="width:32%">Si observamos esto…</th><th style="width:26%">…significa que</th><th>Y entonces hacemos esto</th></tr></thead>
+  <tbody>
+    <tr><td>El segundo dominio no se monta sin tocar el núcleo</td>
+        <td>No tenemos un motor: tenemos un producto vertical de residuos</td>
+        <td>Aceptarlo rápido y monetizarlo como vertical, que sigue siendo un negocio real aunque más chico. Lo caro es pasar otro año diciendo "motor".</td></tr>
+    <tr><td>El cliente paga por el resultado pero le da igual la procedencia</td>
+        <td>La auditabilidad es una convicción nuestra, no una demanda del mercado</td>
+        <td>Mover el precio al ahorro operativo medible y dejar la procedencia como higiene interna, no como argumento de venta.</td></tr>
+    <tr><td>Conectar los sistemas tarda más que correr el diagnóstico</td>
+        <td>La fábrica de conectores no está funcionando como fábrica</td>
+        <td>Congelar dominios nuevos y meter todo el esfuerzo en la línea de ensamblaje. Sin eso no hay negocio escalable, hay servicio artesanal.</td></tr>
+    <tr><td>A treinta días, ningún responsable delega una acción de escritura</td>
+        <td>Los controles generan fricción en vez de confianza</td>
+        <td>Rediseñar la delegación: empezar por acciones reversibles y de bajo costo, y ganar autoridad por evidencia acumulada en vez de pedirla por diseño.</td></tr>
+    <tr><td>Un competidor horizontal encaja criterio de dominio sin perder margen</td>
+        <td>La barrera estructural que asumimos no existe</td>
+        <td>Replegarnos a lo que sigue siendo defendible: identidad, permisos y procedencia dentro de la organización, y la red entre organizaciones.</td></tr>
+  </tbody>
+</table>
+
+<h3>Las tres decisiones que este documento deja cerradas</h3>
+<div class="grid3">
+  <div class="card"><span class="tag" style="background:var(--ink)">Decisión 1</span>
+    <p style="margin:6px 0 0">Vendemos <strong>operar dentro de lo bien determinado</strong> —eficiencia
+    medida como distancia a la norma—, no integración ni orquestación de modelos. El modelo de lenguaje es un
+    trabajador con puesto y bitácora; nunca la autoridad.</p></div>
+  <div class="card"><span class="tag" style="background:var(--ink)">Decisión 2</span>
+    <p style="margin:6px 0 0">La entrada es <strong>residuos con dos carriles</strong>: municipio para
+    legitimidad, regulado privado para caja. El primer contrato que sostenga nómina será privado.</p></div>
+  <div class="card"><span class="tag" style="background:var(--ink)">Decisión 3</span>
+    <p style="margin:6px 0 0">Las plataformas de automatización son <strong>insumo, no rival</strong>. Se
+    absorben en la fábrica de conectores; nuestro producto empieza donde termina su alcance.</p></div>
+</div>
+
+<p class="mono-s" style="margin-top:34px">Alquimia · documento de dirección v2 · el criterio al centro, el
+modelo en un puesto.</p>
+</section>
+
+</div>
