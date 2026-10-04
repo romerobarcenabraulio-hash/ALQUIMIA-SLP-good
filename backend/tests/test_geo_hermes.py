@@ -26,9 +26,36 @@ def test_depot_resolver_slp_verificado():
 
 
 def test_depot_resolver_mty_perfil_candidato():
-    """Perfil municipal (score > 0.55) debe usarse antes que fallback."""
-    depot = resolve_depot("19039", zm="MTY")
-    assert depot["confianza"] in ("verificado", "candidato")
+    """Perfil municipal (score > 0.55) debe usarse antes que fallback.
+
+    Antes este test pasaba gracias al centro FICTICIO "Ecolón Monterrey" del
+    seed demo (eliminado: se servía en prod como verificado). Ahora el operador
+    es un fixture explícito de test; se prueba la prioridad del resolver, no
+    datos inventados.
+    """
+    from app.agents.schemas import CentroAcopio, CentroAcopioTipo
+
+    perfil = CentroAcopio(
+        centro_id="test-mty-perfil",
+        nombre="Operador de prueba (fixture)",
+        tipo=CentroAcopioTipo.empresa_recicladora,
+        direccion="fixture",
+        municipio="Monterrey",
+        estado="Nuevo León",
+        zm="MTY",
+        lat=25.67,
+        lon=-100.31,
+        materiales=[],
+        fuente="perfil_municipal",
+        verificado=False,
+        score_confianza=0.7,
+        clave_inegi="19039",
+        es_operador_principal=True,
+    )
+    with patch("app.logistics.depot_resolver.is_db_available", return_value=False):
+        with patch("app.centros_acopio.repository.list_centros", return_value=[perfil]):
+            depot = resolve_depot("19039", zm="MTY")
+    assert depot["confianza"] == "candidato"
     assert depot["lat"] is not None
     assert abs(depot["lat"] - 25.67) < 0.1
 

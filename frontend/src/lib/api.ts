@@ -1372,6 +1372,9 @@ export interface ReadinessReport {
   score_global:    number
   nivel:           string
   recomendaciones: string[]
+  /** false = sin datos verificados del municipio: el score solo refleja lo que falta capturar */
+  datos_disponibles?: boolean
+  aviso?: string
   estandares: {
     gri306:  StandardScore
     sasb:    StandardScore
